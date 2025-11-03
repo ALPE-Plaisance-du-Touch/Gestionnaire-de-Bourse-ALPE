@@ -1,0 +1,59 @@
+meta:
+  title: Manifest des spécifications — ALPE
+  version: 0.1.0
+  updated: 2025-11-03
+  owner: ALPE Plaisance du Touch
+  idScheme:
+    requirement: REQ-xxx | REQ-F-xxx | REQ-NF-xxx
+    userStory: US-xxx
+    decision: DEC-xxx
+documents:
+  - id: DOC-000-README
+    path: docs/README.md
+    type: overview
+    status: draft
+  - id: DOC-010-GLOSSAIRE
+    path: docs/glossaire.md
+    type: glossary
+    status: draft
+  - id: DOC-020-PERSONAS
+    path: docs/personas.md
+    type: personas
+    status: draft
+  - id: DOC-030-US
+    path: docs/user-stories.md
+    type: user-stories
+    status: draft
+  - id: DOC-040-REQS
+    path: docs/exigences.md
+    type: requirements
+    status: draft
+  - id: DOC-050-ARCHI
+    path: docs/architecture.md
+    type: architecture
+    status: draft
+  - id: DOC-060-DOMAIN
+    path: docs/domain-model.md
+    type: domain-model
+    status: draft
+  - id: DOC-070-UI
+    path: docs/ui.md
+    type: ui
+    status: draft
+  - id: DOC-080-SECURITE
+    path: docs/securite.md
+    type: security
+    status: draft
+  - id: DOC-090-OPS
+    path: docs/operations.md
+    type: operations
+    status: draft
+  - id: DEC-000
+    path: docs/adr/DEC-000.md
+    type: adr
+    status: proposed
+  - id: API-OPENAPI
+    path: docs/api/openapi.yaml
+    type: openapi
+    status: draft
+

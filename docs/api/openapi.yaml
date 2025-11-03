@@ -1,0 +1,32 @@
+openapi: 3.1.0
+info:
+  title: API — Gestionnaire de Bourse ALPE
+  version: 0.0.0-draft
+  description: |
+    Squelette d’API pour l’application de gestion de bourse ALPE.
+    À compléter au fil des exigences et des US.
+servers:
+  - url: https://api.example.com
+    description: Brouillon
+paths: {}
+components:
+  schemas:
+    Article:
+      type: object
+      properties:
+        id: { type: string }
+        libelle: { type: string }
+        categorie: { type: string }
+        taille: { type: string, nullable: true }
+        prixPropose: { type: number }
+      required: [id, libelle, prixPropose]
+    Deposant:
+      type: object
+      properties:
+        id: { type: string }
+        nom: { type: string }
+        contact: { type: string }
+        iban: { type: string, nullable: true }
+      required: [id, nom, contact]
+security: []
+
