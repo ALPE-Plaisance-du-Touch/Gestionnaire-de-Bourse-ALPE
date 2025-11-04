@@ -12,6 +12,10 @@ documents:
     path: docs/README.md
     type: overview
     status: draft
+  - id: DOC-005-PLAN
+    path: docs/plan.md
+    type: planning
+    status: draft
   - id: DOC-010-GLOSSAIRE
     path: docs/glossaire.md
     type: glossary
