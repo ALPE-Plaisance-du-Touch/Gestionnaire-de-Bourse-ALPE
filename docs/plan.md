@@ -36,11 +36,12 @@ Organiser la production et la validation des spécifications de l’application 
 
 ## DOC-030 — User Stories
 - [x] Rédiger US-001 (activation sur invitation) avec critères et contraintes mot de passe.
+- [x] Enrichir US-001 : 14 AC détaillés, sécurité, accessibilité, RGPD, performance, 16 tests.
 - [ ] Détailler US-002 (enregistrement articles) avec AC métier (catégories, validation prix).
-- [ ] Détailler US-003 (génération étiquettes) incluant scénarios d’impression/QR.
+- [ ] Détailler US-003 (génération étiquettes) incluant scénarios d'impression/QR.
 - [ ] Détailler US-004 (scannage vente) avec cas offline et performance.
 - [ ] Détailler US-005 (clôture & reversements) avec règles de calcul et validations.
-- [ ] Ajouter US bénévoles pour l’émission des invitations (`REQ-F-00X`).
+- [ ] Ajouter US bénévoles pour l'émission des invitations (`REQ-F-00X`).
 - [ ] Mettre en place traçabilité croisée US ↔ REQ ↔ tests.
 
 ## DOC-040 — Exigences
