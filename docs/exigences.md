@@ -2,10 +2,13 @@
 id: DOC-040-REQS
 title: Exigences (fonctionnelles et non-fonctionnelles)
 status: draft
-version: 0.2.0
-updated: 2025-11-05
+version: 0.3.0
+updated: 2025-11-06
 owner: ALPE Plaisance du Touch
-links: []
+links:
+  - rel: source
+    href: Reglement_deposant.md
+    title: Règlement déposant
 ---
 
 # Règles d’écriture
@@ -50,12 +53,62 @@ links: []
   - **Priorité :** Must have
   - **Responsable validation :** Administrateur ALPE + SecOps
 
+- REQ-F-011 — Le système DOIT gérer une date limite de déclaration des articles par édition.
+  - **Critères d'acceptation :**
+    - La date limite est configurable par le gestionnaire (dans US-007)
+    - Après la date limite, le déposant ne peut plus ajouter/modifier ses articles
+    - Un message d'avertissement est affiché 3 jours avant la date limite
+    - Si les listes ne sont pas complétées avant la date limite, le dépôt n'est pas pris en compte (notification automatique au déposant)
+  - **Priorité :** Must have
+  - **Responsable validation :** Gestionnaire
+
+- REQ-F-012 — Le système DOIT afficher les rappels réglementaires pour le jour du dépôt.
+  - **Critères d'acceptation :**
+    - Dans l'espace déposant, afficher les rappels :
+      - "À apporter le jour du dépôt : pièce d'identité, articles propres et repassés dans l'ordre de votre liste, enveloppe timbrée à votre adresse"
+      - "Seuls les articles présents sur la liste seront acceptés (pas de remplacement possible)"
+      - "L'association se réserve le droit de refuser tout article taché, abîmé, incomplet, cassé ou non conforme"
+      - "Vous devez venir le jour et à l'heure indiqués (créneau réservé via Billetweb)"
+      - "Articles non récupérés en temps voulu seront donnés à des associations caritatives"
+      - "L'association décline toute responsabilité en cas de perte ou de vol"
+    - Affichage sur page de confirmation après déclaration des articles
+    - Email de rappel envoyé 2 jours avant le créneau de dépôt
+  - **Priorité :** Should have
+  - **Responsable validation :** Déposant test
+
 ## Gestion des articles et ventes
 
-- REQ-F-002 — Le système DOIT permettre l'enregistrement d'articles avec prix, catégorie, taille, rattachés à un déposant et une édition. (US-002)
-  - **Critères d'acceptation :** Validation prix > 0, catégories prédéfinies par édition, rattachement édition active
+- REQ-F-002 — Le système DOIT permettre l'enregistrement d'articles organisés en listes avec contraintes réglementaires. (US-002)
+  - **Critères d'acceptation :**
+    - Un déposant peut créer maximum 2 listes par édition
+    - Chaque liste contient maximum 24 articles dont 12 vêtements maximum (lignes 1-12 réservées aux vêtements)
+    - Prix article : minimum 1€, maximum 150€ (uniquement pour poussettes/landaus)
+    - Catégories obligatoires : Vêtements, Chaussures, Jouets, Livres, Puériculture, Accessoires
+    - Attributs article : catégorie, genre (optionnel), taille (optionnel), description, prix
+    - Contraintes par catégorie (selon règlement déposant) :
+      - 1 seul manteau ou blouson par liste
+      - 1 seul sac à main par liste
+      - Maximum 2 foulards par liste
+      - 1 seul tour de lit par liste
+      - 1 peluche par liste
+      - 5 livres adultes maximum par liste
+    - Lots autorisés : vêtements enfant (pyjama/bodys) en lot de 3 articles max, taille et marque identiques, acceptés jusqu'à 36 mois
+    - Un lot compte comme 1 article dans la limite des 24
+    - Articles refusés automatiquement si catégorie dans la liste noire (sièges-autos, biberons, CD/DVD, etc.)
   - **Priorité :** Must have
-  - **Responsable validation :** Déposant test
+  - **Responsable validation :** Déposant test + Gestionnaire
+
+- REQ-F-002-BIS — Le système DOIT valider la qualité déclarée des articles selon le règlement. (US-002)
+  - **Critères d'acceptation :**
+    - Pour vêtements : déclaration "propre, repassé, non taché, non déchiré, boutons complets, de saison, non démodé"
+    - Pour puériculture : déclaration "très propre, parfait état"
+    - Pour chaussures : déclaration "propres, très bon état" (uniquement chaussures spécifiques à un sport, bottes pluie/neige)
+    - Pour jouets : déclaration "complets, sans pièce manquante"
+    - Pour puzzles > 104 pièces : déclaration "neuf sous emballage"
+    - Pour livres : déclaration "bon état, non jauni, non abîmé, prix en euros visible"
+    - Case à cocher obligatoire par article : "Je certifie que cet article respecte les critères de qualité du règlement"
+  - **Priorité :** Must have
+  - **Responsable validation :** Bénévole (vérification physique lors du dépôt)
 
 - REQ-F-003 — Le système DOIT générer des étiquettes scannables uniques par article au sein d'une édition. (US-003)
   - **Critères d'acceptation :** Code unique/édition, format QR code ou code-barres, impression PDF
@@ -67,8 +120,15 @@ links: []
   - **Priorité :** Must have
   - **Responsable validation :** Bénévole caisse
 
-- REQ-F-005 — Le système DOIT calculer commissions et reversements par déposant en fin d'édition. (US-005)
-  - **Critères d'acceptation :** Formule : montant_net = ventes − (commission% × ventes), édition par édition, export liste reversements
+- REQ-F-005 — Le système DOIT calculer commissions et reversements par déposant en fin d'édition selon la tarification réglementaire. (US-005)
+  - **Critères d'acceptation :**
+    - Frais d'inscription : 5€ par déposant pour 2 listes (payé via Billetweb, non remboursable)
+    - Commission ALPE : 20% du montant total des ventes du déposant
+    - Formule reversement : montant_net = total_ventes − (20% × total_ventes)
+    - Note : Les frais d'inscription sont gérés en dehors du système (Billetweb), seule la commission est calculée par l'application
+    - Calcul édition par édition (un déposant peut avoir plusieurs éditions)
+    - Export liste reversements en CSV/PDF pour édition de chèques
+    - Statuts reversement : en_attente, calculé, payé, annulé
   - **Priorité :** Must have
   - **Responsable validation :** Gestionnaire + Administrateur
 
