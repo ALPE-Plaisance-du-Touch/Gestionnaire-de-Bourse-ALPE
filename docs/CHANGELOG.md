@@ -2,13 +2,64 @@
 id: DOC-099-CHANGELOG
 title: Changelog (SemVer)
 status: draft
-version: 0.1.0
-updated: 2025-11-03
+version: 0.4.0
+updated: 2025-11-06
 owner: ALPE Plaisance du Touch
-links: []
+links:
+  - rel: source
+    href: Reglement_deposant.md
+    title: Règlement déposant
 ---
 
 # Historique des versions
+
+## [0.4.0] - 2025-11-06
+- **Intégration complète du Règlement déposant**
+  - **Source** : docs/Reglement_deposant.md (règlement officiel ALPE du 23/09/2025)
+
+  - **US-002 (nouvelle)** : Déclarer mes articles dans mes listes
+    - 15 critères d'acceptation détaillés couvrant toutes les règles métier
+    - Gestion des 2 listes max par déposant (24 articles max dont 12 vêtements)
+    - Lignes 1-12 réservées vêtements, lignes 13-24 pour toutes catégories
+    - Contraintes par catégorie (1 manteau, 1 sac, 2 foulards, 1 tour de lit, 1 peluche, 5 livres adultes max)
+    - Gestion des lots (vêtements enfant bodys/pyjamas jusqu'à 36 mois, 3 articles max)
+    - Validation prix (1€ min, 150€ max pour poussettes)
+    - Liste noire d'articles refusés (sièges-autos, CD/DVD, casques, etc.)
+    - Date limite de déclaration avec blocage après échéance
+    - Certification de conformité obligatoire par article
+    - Aide contextuelle avec prix indicatifs selon catégorie
+    - 20 cas de test suggérés
+
+  - **Exigences (v0.3.0)** : enrichissement avec contraintes réglementaires
+    - REQ-F-002 : ajout contraintes listes (2 max), articles (24 max dont 12 vêtements), prix (1-150€), catégories
+    - REQ-F-002-BIS (nouveau) : validation qualité articles selon règlement
+    - REQ-F-005 : ajout tarification précise (5€ frais + 20% commission)
+    - REQ-F-011 (nouveau) : gestion date limite de déclaration avec avertissement 3 jours avant
+    - REQ-F-012 (nouveau) : affichage rappels réglementaires jour de dépôt
+
+  - **Modèle de domaine (v0.3.0)** : refonte avec entité Liste
+    - Ajout entité **Liste** avec attributs (numero, statut, compteurs articles/vêtements)
+    - Refonte entité **Article** avec (numero_ligne 1-24, is_lot, lot_quantity, lot_marque, conformite_certifiee)
+    - Mise à jour **Edition** avec date_limite_declaration
+    - Mise à jour **Deposant** avec creneau_depot
+    - Relations : Deposant → Liste (max 2) → Articles (max 24)
+    - Ajout 9 invariants pour contraintes listes et articles
+    - Règles métier détaillées par entité avec références REQ
+    - Documentation tarification ALPE (5€ + 20% commission)
+
+  - **Catégories articles (v1.0.0)** : nouveau document de référence pour bénévoles
+    - Guide complet des catégories acceptées avec critères qualité
+    - Liste exhaustive des articles refusés (liste noire)
+    - Grille de prix indicatifs par type d'article
+    - Procédure de vérification au dépôt (checklist bénévole)
+    - Gestion des refus et rappels réglementaires
+
+  - **US-007 enrichie** : ajout date limite déclaration et tarification
+    - Configuration date_limite_declaration (avant première date de dépôt)
+    - Taux commission par défaut 20%
+    - Note informative sur frais inscription 5€ (Billetweb)
+    - Validation ordre chronologique incluant date limite
+    - Blocage modification listes après date limite
 
 ## [0.3.0] - 2025-11-05
 - **Concept fondamental : Gestion des Éditions de bourse**
