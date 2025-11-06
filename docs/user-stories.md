@@ -245,11 +245,13 @@ so_that: "Afin de respecter le règlement (24 articles max dont 12 vêtements) e
 
 # Contexte métier
 notes: |
-  - Cette US s'appuie sur le Règlement déposant (docs/Reglement_deposant.md)
+  - Cette US s'appuie sur le Règlement déposant (docs/Reglement_deposant.md) et le Règlement intérieur
   - Le déposant doit compléter ses listes AVANT la date limite de déclaration
+  - **Date limite recommandée : 3 semaines avant le début de la collecte** pour permettre l'impression des étiquettes par ALPE
   - Anciennement fait via Google Forms, maintenant intégré dans l'application
   - Les frais d'inscription (5€) sont payés via Billetweb pour réserver le créneau
   - Les bénévoles vérifieront physiquement les articles lors du dépôt
+  - **Un déposant ne peut effectuer qu'un seul dépôt par semaine de collecte** (vérification par pièce d'identité lors du dépôt physique)
 
 acceptance_criteria:
   # AC-1 : Accès à la déclaration d'articles
@@ -721,6 +723,27 @@ acceptance_criteria:
     AND passe l'édition au statut "Configurée"
     AND affiche un message : "Configuration enregistrée. L'édition est maintenant prête pour l'import des inscriptions."
     AND les déposants pourront déclarer leurs articles jusqu'à la date limite configurée
+
+  # AC-2bis : Configuration des créneaux de dépôt avec capacités
+  - GIVEN je configure les dates de dépôt pour l'édition
+    WHEN j'ajoute un créneau de dépôt
+    THEN le système m'affiche un formulaire pour chaque créneau :
+      • Date du créneau (ex: mercredi 13/03/2025)
+      • Heure de début (ex: 9h30)
+      • Heure de fin (ex: 11h30)
+      • Capacité maximum de déposants (ex: 20)
+      • Case à cocher "Réservé aux habitants de Plaisance-du-Touch"
+      • Description optionnelle
+    AND je peux ajouter plusieurs créneaux sur différents jours
+    AND le système propose des exemples de capacités standard :
+      - Mercredi matin 9h30-11h30 : 20 déposants
+      - Mercredi après-midi 14h-18h : 40 déposants
+      - Mercredi soir 20h-22h : 20 déposants (réservé Plaisançois)
+      - Jeudi matin 9h30-12h : 15 déposants
+      - Jeudi soir 17h-21h : 32 déposants
+      - Vendredi matin 9h30-12h : 15 déposants (réservé Plaisançois)
+    AND une fois les créneaux configurés, les déposants peuvent réserver leur créneau via Billetweb
+    AND le système bloque les réservations une fois la capacité atteinte
 
   # AC-3 : Erreur - incohérence chronologique
   - GIVEN je saisis des dates incohérentes (ex: récupération avant vente)

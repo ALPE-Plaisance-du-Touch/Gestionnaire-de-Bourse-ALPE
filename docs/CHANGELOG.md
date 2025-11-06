@@ -2,16 +2,63 @@
 id: DOC-099-CHANGELOG
 title: Changelog (SemVer)
 status: draft
-version: 0.4.0
+version: 0.5.0
 updated: 2025-11-06
 owner: ALPE Plaisance du Touch
 links:
   - rel: source
     href: Reglement_deposant.md
     title: Règlement déposant
+  - rel: source
+    href: Reglement_interne.md
+    title: Règlement intérieur
 ---
 
 # Historique des versions
+
+## [0.5.0] - 2025-11-06
+- **Intégration du Règlement intérieur** (organisation bénévoles et processus opérationnels)
+  - **Source** : docs/Reglement_interne.md (règlement interne ALPE septembre 2025, 879 lignes)
+
+  - **Glossaire (v0.4.0)** : ajout termes organisation et listes spéciales
+    - Adhérent ALPE (conditions : cotisation à jour, participation 8h min pour listes 1000/2000)
+    - Listes 1000 (étiquettes blanches) : adhérents participants, numéros fixes, 2→4 listes, 1€/liste déduit ventes
+    - Listes 2000 (étiquettes groseille) : famille/amis adhérents, numérotation liée aux 1000, max 4 listes pour 2 personnes, 5€ pour 2 listes
+    - Créneaux de dépôt avec capacités (20/40/15/32 déposants selon horaire)
+    - Créneaux réservés Plaisançois (mercredi 20h-22h, vendredi 9h30-12h)
+    - Couleurs d'étiquettes par numéro (100=bleu ciel, 200=jaune, 300=fushia, 400=lilas, 500=vert menthe, 600=clémentine, 1000=blanc, 2000=groseille)
+    - Horaires restitution différenciés (lundi 18h30-19h30 pour standard, dimanche 17h-18h pour 1000/2000)
+    - Date limite recommandée : 3 semaines avant collecte (impression étiquettes par ALPE)
+    - Vente privée écoles/ALAE (vendredi 17h-18h avant vente publique)
+
+  - **Exigences (v0.4.0)** : 6 nouvelles exigences d'organisation
+    - REQ-F-011 : précision date limite 3 semaines avant collecte
+    - REQ-F-013 (nouveau) : restrictions dépôts (1 seul/semaine, majeur uniquement, vérification identité, créneaux Plaisançois réservés sur justificatif domicile)
+    - REQ-F-014 (nouveau) : gestion créneaux avec capacités (mercredi 20/40/20, jeudi 15/32, vendredi 15 déposants)
+    - REQ-F-015 (nouveau) : listes spéciales 1000/2000 (numérotation, frais différenciés, créneaux spéciaux mardi/mercredi/jeudi, restitution dimanche)
+    - REQ-F-016 (nouveau) : horaires restitution différenciés selon type liste
+    - REQ-F-017 (nouveau) : vente privée écoles/ALAE Plaisance-du-Touch vendredi 17h-18h
+
+  - **Modèle de domaine (v0.4.0)** : nouveau modèle créneaux et types de listes
+    - Nouvelle entité **Creneau** (date, heure_debut, heure_fin, capacite_max, places_reservees, reserve_plaisancois)
+    - Entité **Liste** enrichie avec type (standard/1000/2000), couleur_etiquette, frais selon type
+    - Relations : Edition → Creneau (définit), Deposant → Creneau (réserve)
+    - Section "Créneaux de dépôt" : capacités standard, créneaux spéciaux 1000/2000, restriction 1 seul créneau/déposant
+    - Section "Listes" refonte complète : 3 types détaillés, couleurs étiquettes, horaires restitution
+    - Section "Reversements" : tarification différenciée (standard 5€ Billetweb, 1000 1€/liste, 2000 5€/2 listes déduits des ventes)
+    - 7 nouveaux invariants (capacité créneau, un dépôt/semaine, créneaux Plaisançois, max listes selon type, numérotation 1000↔2000)
+
+  - **US-002 enrichie** : ajout contraintes date limite et dépôt
+    - Contexte métier : date limite 3 semaines avant collecte (impression étiquettes ALPE)
+    - Note : un déposant = un seul dépôt par semaine de collecte (vérification identité au dépôt physique)
+
+  - **US-007 enrichie** : ajout configuration créneaux avec capacités
+    - AC-2bis (nouveau) : configuration créneaux de dépôt (date, horaires, capacité max, réservé Plaisançois)
+    - Exemples capacités standard : mercredi 20/40/20, jeudi 15/32, vendredi 15 déposants
+    - Blocage réservations une fois capacité atteinte
+
+  - **Réorganisation user-stories (v0.3.1)** : ordre numérique
+    - US-001, US-002, US-006, US-007, US-008, US-009 maintenant dans l'ordre logique
 
 ## [0.4.0] - 2025-11-06
 - **Intégration complète du Règlement déposant**
