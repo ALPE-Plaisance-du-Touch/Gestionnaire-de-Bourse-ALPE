@@ -15,8 +15,8 @@ classDiagram
   class Edition {
     +UUID id
     +String nom
-    +Date date_debut
-    +Date date_fin
+    +DateTime datetime_debut
+    +DateTime datetime_fin
     +String lieu?
     +Text description?
     +Enum statut
@@ -122,13 +122,12 @@ stateDiagram-v2
 ## Édition
 - Une édition a un nom unique dans tout le système (porte généralement saison et année, ex: "Bourse Printemps 2025")
 - Le statut évolue selon le cycle de vie (voir diagramme)
-- **Lors de la création (US-006)** : seuls nom, date_debut, date_fin sont obligatoires
+- **Lors de la création (US-006)** : seuls nom, datetime_debut, datetime_fin sont obligatoires
 - **Lors de la configuration (US-007)** : dates_depot, dates_vente, date_retour_invendus, taux_commission sont ajoutés
-- La date de fin doit être strictement postérieure à la date de début
-- Les dates de dépôt doivent être comprises dans la période [date_debut, date_fin]
-- Les dates de vente doivent être comprises dans la période [date_debut, date_fin]
-- La date de retour des invendus doit être postérieure ou égale à la date de fin
-- L'ordre chronologique attendu : date_debut ≤ dates_depot ≤ dates_vente ≤ date_fin ≤ date_retour_invendus
+- La date/heure de fin doit être strictement postérieure à la date/heure de début
+- Les dates de dépôt doivent être comprises dans la période temporelle de l'édition
+- Les dates de vente doivent être comprises dans la période temporelle de l'édition
+- La date de retour des invendus doit être postérieure à la date/heure de fin
 - Le taux de commission est un pourcentage entre 0 et 100
 - Le lieu et la description sont optionnels
 - Une édition clôturée est en lecture seule définitive
@@ -167,8 +166,9 @@ stateDiagram-v2
 - **Unicité email** : Un email ne peut être associé qu'à un seul utilisateur
 - **Unicité étiquette/édition** : Un code étiquette est unique au sein d'une édition
 - **Unicité nom édition** : Le nom d'une édition est unique globalement
-- **Cohérence dates édition** : date_debut < date_fin ET date_fin ≤ date_retour_invendus
-- **Cohérence dates opérationnelles** : dates_depot ⊆ [date_debut, date_fin] ET dates_vente ⊆ [date_debut, date_fin]
+- **Cohérence dates/heures édition** : datetime_debut < datetime_fin
+- **Cohérence dates opérationnelles** : dates_depot et dates_vente comprises dans la période temporelle de l'édition
+- **Cohérence date retour invendus** : date_retour_invendus doit être postérieure à la partie date de datetime_fin
 - **Article → Vente** : Un article ne peut avoir qu'une seule vente (0..1 relation)
 - **Édition clôturée** : Aucune modification possible après clôture
 - **Invitation expirée** : Un token expiré ne peut plus être utilisé

@@ -262,8 +262,8 @@ acceptance_criteria:
     WHEN le formulaire s'affiche
     THEN je vois les champs suivants :
       • Nom de l'édition (obligatoire, ex: "Bourse Printemps 2025")
-      • Date de début (obligatoire, sélecteur de date)
-      • Date de fin (obligatoire, sélecteur de date)
+      • Date et heure de début (obligatoire, sélecteur date + heure)
+      • Date et heure de fin (obligatoire, sélecteur date + heure)
       • Lieu (optionnel, ex: "Salle des fêtes, Plaisance-du-Touch")
       • Description (optionnel, texte libre)
       • Statut initial (automatique: "Brouillon")
@@ -284,15 +284,15 @@ acceptance_criteria:
     THEN le système affiche une erreur : "Une édition avec ce nom existe déjà. Veuillez choisir un nom différent."
     AND le formulaire reste affiché avec mes données pré-remplies
 
-  # AC-5 : Validation de la cohérence des dates
-  - GIVEN je remplis les dates de l'édition
-    AND la date de fin est antérieure ou égale à la date de début
+  # AC-5 : Validation de la cohérence des dates et heures
+  - GIVEN je remplis les dates et heures de l'édition
+    AND la date/heure de fin est antérieure ou égale à la date/heure de début
     WHEN je tente de valider le formulaire
-    THEN le système affiche une erreur : "La date de fin doit être postérieure à la date de début"
+    THEN le système affiche une erreur : "La date et heure de fin doivent être postérieures à la date et heure de début"
     AND bloque la soumission
 
   # AC-6 : Erreur - champs obligatoires manquants
-  - GIVEN je n'ai pas rempli un ou plusieurs champs obligatoires (nom, date début, date fin)
+  - GIVEN je n'ai pas rempli un ou plusieurs champs obligatoires (nom, date/heure début, date/heure fin)
     WHEN je tente de soumettre le formulaire
     THEN le système affiche des messages d'erreur sous chaque champ manquant
     AND bloque la soumission jusqu'à correction
@@ -334,7 +334,7 @@ business_rules:
   - Le nom d'une édition doit être unique dans tout le système
   - Une édition créée est en statut "Brouillon" par défaut
   - Une édition en brouillon ne peut pas recevoir d'inscriptions ni d'articles
-  - La date de fin doit être strictement postérieure à la date de début
+  - La date/heure de fin doit être strictement postérieure à la date/heure de début
   - Le statut passe de "Brouillon" à "Configurée" après configuration des dates opérationnelles (US-007)
 
 # États du cycle de vie d'une édition
@@ -350,8 +350,8 @@ edition_lifecycle:
 data_model:
   - id (UUID, généré automatiquement)
   - nom (string, unique, max 100 caractères)
-  - date_debut (date, obligatoire)
-  - date_fin (date, obligatoire)
+  - datetime_debut (datetime, obligatoire)
+  - datetime_fin (datetime, obligatoire)
   - lieu (string, max 200 caractères, optionnel)
   - description (text, optionnel)
   - statut (enum selon lifecycle ci-dessus)
@@ -368,10 +368,10 @@ data_model:
 
 # Cas de test suggérés
 test_scenarios:
-  - T-US006-01 : Création nominale d'une édition "Bourse Printemps 2025"
+  - T-US006-01 : Création nominale avec date/heure valides (ex: 15/03/2025 08h00 au 17/03/2025 18h00)
   - T-US006-02 : Création d'une édition avec nom en double (erreur)
-  - T-US006-03 : Champs obligatoires manquants (nom, date début, date fin)
-  - T-US006-04 : Date de fin antérieure ou égale à date de début (erreur)
+  - T-US006-03 : Champs obligatoires manquants (nom, date/heure début, date/heure fin)
+  - T-US006-04 : Date/heure fin antérieure ou égale à date/heure début (erreur)
   - T-US006-05 : Lieu non renseigné (OK, optionnel)
   - T-US006-06 : Description non renseignée (OK, optionnel)
   - T-US006-07 : Annulation du formulaire avec confirmation
