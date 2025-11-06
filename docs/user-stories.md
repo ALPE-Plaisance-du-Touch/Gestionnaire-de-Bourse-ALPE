@@ -2,8 +2,8 @@
 id: DOC-030-US
 title: User Stories
 status: draft
-version: 0.3.0
-updated: 2025-11-05
+version: 0.3.1
+updated: 2025-11-06
 owner: ALPE Plaisance du Touch
 links: []
 ---
@@ -232,6 +232,301 @@ test_scenarios:
   - T-US001-16 : Réception email confirmation < 5min
 ```
 
+## US-002 — Déclarer mes articles dans mes listes
+
+```yaml
+id: US-002
+title: Déclarer mes articles dans mes listes
+actor: deposant
+benefit: "...pour préparer mon dépôt et obtenir mes étiquettes avant la bourse"
+as_a: "En tant que déposant inscrit à une édition"
+i_want: "Je veux créer mes listes (max 2) et y ajouter mes articles avec leurs caractéristiques"
+so_that: "Afin de respecter le règlement (24 articles max dont 12 vêtements) et valider ma participation à l'édition"
+
+# Contexte métier
+notes: |
+  - Cette US s'appuie sur le Règlement déposant (docs/Reglement_deposant.md)
+  - Le déposant doit compléter ses listes AVANT la date limite de déclaration
+  - Anciennement fait via Google Forms, maintenant intégré dans l'application
+  - Les frais d'inscription (5€) sont payés via Billetweb pour réserver le créneau
+  - Les bénévoles vérifieront physiquement les articles lors du dépôt
+
+acceptance_criteria:
+  # AC-1 : Accès à la déclaration d'articles
+  - GIVEN je suis connecté en tant que déposant
+    AND je suis inscrit à une édition active (statut "Inscriptions ouvertes" ou "En cours")
+    AND la date limite de déclaration n'est pas dépassée
+    WHEN j'accède à mon espace déposant
+    THEN je vois :
+      • Le nom de l'édition et mes informations (créneau de dépôt réservé via Billetweb)
+      • Un encart "Mes listes" avec bouton "Créer ma première liste" (si aucune liste)
+      • La liste de mes listes existantes avec nombre d'articles saisis / 24
+      • Un rappel visible : "Vous avez droit à 2 listes maximum de 24 articles chacune (dont 12 vêtements max)"
+      • Un compteur : "Listes créées : X / 2"
+
+  # AC-2 : Création d'une liste
+  - GIVEN je n'ai pas encore atteint la limite de 2 listes pour cette édition
+    WHEN je clique sur "Créer une nouvelle liste"
+    THEN le système crée une liste vide numérotée (ex: "Liste 1", "Liste 2")
+    AND m'affiche le formulaire de saisie des articles avec :
+      • Un tableau de 24 lignes numérotées (1 à 24)
+      • Les lignes 1-12 sont marquées "Vêtements uniquement" avec fond coloré distinct
+      • Les lignes 13-24 acceptent toutes les catégories
+      • Colonnes : N° ligne | Catégorie | Genre (opt.) | Taille (opt.) | Description | Prix (€) | Actions
+      • Un bouton "Sauvegarder la liste" en bas
+
+  # AC-3 : Ajout d'un article - cas nominal vêtement
+  - GIVEN je suis dans une de mes listes (< 24 articles)
+    AND je sélectionne une ligne entre 1 et 12 (zone vêtements)
+    WHEN je remplis les champs :
+      • Catégorie : "Vêtements" (imposé automatiquement pour lignes 1-12)
+      • Genre : "Garçon" (menu déroulant : Fille/Garçon/Mixte/Adulte Homme/Adulte Femme/Mixte Adulte)
+      • Taille : "4 ans" (menu déroulant avec tailles standard)
+      • Description : "Pull rayé bleu marine"
+      • Prix : "5"
+    AND je clique sur "Ajouter l'article"
+    THEN le système enregistre l'article dans la ligne sélectionnée
+    AND met à jour le compteur "Articles : X / 24 (Y vêtements / 12)"
+    AND affiche un message de confirmation vert : "Article ajouté"
+
+  # AC-4 : Validation des contraintes par catégorie
+  - GIVEN j'ai déjà saisi 1 manteau dans ma liste
+    AND je tente d'ajouter un 2ème article de catégorie "Manteau/Blouson"
+    WHEN je clique sur "Ajouter l'article"
+    THEN le système affiche une erreur : "Vous avez déjà 1 manteau/blouson dans cette liste. Maximum autorisé : 1 par liste (selon règlement)"
+    AND bloque l'ajout
+    # Règles similaires pour :
+    # - 1 sac à main max
+    # - 2 foulards max
+    # - 1 tour de lit max
+    # - 1 peluche max
+    # - 5 livres adultes max
+
+  # AC-5 : Validation prix minimum et maximum
+  - GIVEN je saisis un article avec un prix < 1€ (ex: 0.50)
+    WHEN je quitte le champ prix ou tente d'ajouter l'article
+    THEN le système affiche : "Prix minimum : 1€ (selon règlement)"
+    AND bloque l'ajout
+
+  - GIVEN je saisis un article catégorie "Puériculture > Poussette/Landau" avec prix > 150€
+    WHEN je tente d'ajouter l'article
+    THEN le système affiche : "Prix maximum pour les poussettes/landaus : 150€ (selon règlement)"
+    AND bloque l'ajout
+
+  # AC-6 : Gestion des lots (vêtements enfant)
+  - GIVEN je sélectionne "Créer un lot" dans la ligne
+    WHEN le formulaire s'adapte :
+      • Catégorie : "Vêtements enfant (lot)" (obligatoire)
+      • Type : "Bodys" ou "Pyjamas/Grenouillères" (menu déroulant)
+      • Taille : "18 mois" (jusqu'à 36 mois max)
+      • Marque : "Petit Bateau" (texte libre)
+      • Nombre d'articles : "3" (slider 1-3)
+      • Description : "3 bodys blancs à manches courtes"
+      • Prix : "4" (prix du lot complet)
+    AND je valide
+    THEN le système :
+      • Enregistre le lot comme 1 article dans le compteur
+      • Vérifie taille ≤ 36 mois
+      • Vérifie nombre articles lot ≤ 3
+      • Affiche dans la liste : "LOT x3 - Bodys 18 mois Petit Bateau - 4€"
+
+  # AC-7 : Erreur - ajout article ligne vêtement (1-12) avec catégorie non-vêtement
+  - GIVEN je sélectionne une ligne entre 1 et 12
+    AND je tente de choisir une catégorie autre que "Vêtements" (ex: "Jouets")
+    WHEN le système détecte l'incohérence
+    THEN il affiche : "Les lignes 1 à 12 sont réservées aux vêtements. Pour les autres articles, utilisez les lignes 13 à 24."
+    AND force la catégorie "Vêtements" ou propose de basculer sur une ligne 13-24 disponible
+
+  # AC-8 : Blocage articles refusés (liste noire)
+  - GIVEN je tente d'ajouter un article avec catégorie dans la liste noire :
+      • Sièges-autos / rehausseurs
+      • Biberons, pots, vaisselle bébé
+      • CD/DVD/Vinyles
+      • Casques (vélo, ski, équitation)
+      • Consoles de jeu, jeux PC/Mac
+      • Meubles, luminaires, décoration
+      • Literie (matelas, oreillers)
+      • Livres jaunis/abîmés, encyclopédies
+      • Vêtements adultes > 14 ans (pyjamas, chemises de nuit, peignoirs)
+      • Sous-vêtements adultes / enfants > 2 ans
+      • Chaussettes (sauf ski), collants, chaussons enfants
+      • Costumes hommes, cravates, kimono
+    WHEN je sélectionne cette catégorie
+    THEN le système affiche une modale explicative :
+      "Cette catégorie est refusée selon le règlement de la bourse. Consultez la liste complète des articles refusés dans le règlement."
+    AND propose un lien vers le règlement complet
+    AND empêche la sélection
+
+  # AC-9 : Déclaration de conformité qualité
+  - GIVEN je viens d'ajouter un article
+    WHEN le formulaire affiche une case à cocher obligatoire :
+      "☑ Je certifie que cet article est propre, en bon état, complet et conforme aux critères du règlement déposant"
+    AND je dois cocher avant de pouvoir sauvegarder la liste
+    THEN si je ne coche pas, le système affiche :
+      "Vous devez certifier la conformité de vos articles pour pouvoir sauvegarder votre liste"
+
+  # AC-10 : Limite 12 vêtements atteinte
+  - GIVEN j'ai déjà saisi 12 articles de catégorie "Vêtements" dans ma liste
+    WHEN je tente d'ajouter un 13ème vêtement (même sur ligne 13-24)
+    THEN le système affiche : "Limite atteinte : 12 vêtements maximum par liste (règlement ALPE)"
+    AND bloque l'ajout
+    AND propose : "Vous pouvez créer une 2ème liste si nécessaire (2 listes max par déposant)"
+
+  # AC-11 : Sauvegarde et modification de liste
+  - GIVEN j'ai saisi des articles dans ma liste
+    AND la date limite de déclaration n'est pas dépassée
+    WHEN je clique sur "Sauvegarder la liste"
+    THEN le système :
+      • Enregistre tous les articles saisis
+      • M'affiche un résumé : "Liste 1 : [X] articles saisis (Y vêtements)"
+      • Me permet de revenir modifier tant que la date limite n'est pas atteinte
+      • Affiche un statut : "Brouillon" (si < 5 articles) ou "Complète" (si ≥ 5 articles)
+
+  # AC-12 : Blocage après date limite
+  - GIVEN la date limite de déclaration est dépassée
+    WHEN j'accède à mes listes
+    THEN le système :
+      • Affiche mes listes en lecture seule
+      • Désactive les boutons "Ajouter" et "Modifier"
+      • Affiche un bandeau rouge : "Date limite dépassée. Vous ne pouvez plus modifier vos listes."
+      • Si mes listes sont vides ou incomplètes (< 3 articles), affiche :
+        "Vos listes sont incomplètes. Votre dépôt ne sera pas pris en compte. Contactez les bénévoles si nécessaire."
+
+  # AC-13 : Aide contextuelle avec prix indicatifs
+  - GIVEN je remplis le champ prix
+    WHEN le système détecte la catégorie sélectionnée
+    THEN il affiche une bulle d'aide avec les prix indicatifs du règlement :
+      Exemple pour "Vêtements > Robe enfant" :
+      "💡 Prix indicatif : 3€ à 13€ selon état et marque (voir grille complète dans le règlement)"
+
+  # AC-14 : Récapitulatif avant validation finale
+  - GIVEN j'ai complété mes listes (1 ou 2)
+    AND je clique sur "Valider mes listes pour cette édition"
+    WHEN le système affiche un récapitulatif modal :
+      • "Vous avez déclaré [X] articles répartis sur [Y] liste(s)"
+      • "Liste 1 : [N1] articles (dont [V1] vêtements)"
+      • "Liste 2 : [N2] articles (dont [V2] vêtements)" (si applicable)
+      • "Rappel : apportez vos articles propres, repassés et dans l'ordre de la liste le jour de votre créneau"
+      • Case à cocher finale : "J'ai lu et j'accepte les conditions de dépôt (pièce d'identité, enveloppe timbrée, articles conformes)"
+    AND je confirme
+    THEN le système :
+      • Passe le statut des listes à "Validée"
+      • M'envoie un email de confirmation avec récapitulatif PDF de mes listes
+      • Affiche un message de succès : "Listes validées avec succès ! Vous recevrez un rappel 2 jours avant votre créneau de dépôt."
+
+  # AC-15 : Indicateurs visuels de progression
+  - GIVEN je suis en train de remplir mes listes
+    WHEN j'ajoute/modifie des articles
+    THEN le système affiche en permanence :
+      • Barre de progression : "Articles : 15 / 24 (8 vêtements / 12)" avec barre visuelle
+      • Icônes de validation ✓/✗ pour chaque contrainte respectée/non respectée :
+        ✓ Maximum 2 listes respecté
+        ✓ Prix minimum 1€ respecté
+        ✓ Maximum 12 vêtements respecté (liste 1)
+        ✗ 1 manteau max (vous en avez 2 dans liste 2)
+      • Bouton "Valider" grisé tant que toutes les contraintes ne sont pas respectées
+
+dependencies:
+  - US-001  # Activation compte déposant
+  - US-008  # Import Billetweb (pour inscription à édition)
+
+links:
+  - rel: requirement
+    id: REQ-F-002  # Enregistrement articles
+  - rel: requirement
+    id: REQ-F-002-BIS  # Validation qualité
+  - rel: requirement
+    id: REQ-F-011  # Date limite déclaration
+  - rel: source
+    href: docs/Reglement_deposant.md
+    title: Règlement déposant ALPE
+
+# Règles métier complémentaires
+business_rules:
+  - Maximum 2 listes par déposant par édition
+  - Maximum 24 articles par liste dont 12 vêtements max
+  - Lignes 1-12 réservées aux vêtements uniquement
+  - Prix minimum 1€ pour tout article
+  - Prix maximum 150€ uniquement pour poussettes/landaus
+  - Lots autorisés : vêtements enfant (bodys/pyjamas) jusqu'à 36 mois, lot de 3 max, taille et marque identiques
+  - Un lot compte comme 1 article dans la limite des 24
+  - Contraintes par catégorie strictement appliquées (1 manteau, 1 sac, 2 foulards, 1 tour de lit, 1 peluche, 5 livres adultes max)
+  - Articles de la liste noire bloqués automatiquement
+  - Modification possible jusqu'à la date limite de déclaration
+  - Certification de conformité obligatoire pour chaque article
+  - Validation finale irréversible après date limite
+
+# Catégories principales
+categories:
+  Vêtements:
+    - Jupe, Tee-shirt, Robe, Ensemble, Pantalon, Chemise, Bermuda/Short, Jogging, Sweat/Pull, Imperméable, Veste/Blouson, Manteau/Anorak, Layette
+    - Contraintes : 12 max par liste, lignes 1-12
+  Chaussures:
+    - Chaussures sport (crampons, randonnée, ski, danse), Bottes pluie, Bottes neige
+    - Exclusions : Chaussons enfants, Chaussures > pointure 25, Chaussettes (sauf ski)
+  Puériculture:
+    - Poussettes, Landaus, Tour de lit (1 max), Articles bébé très propres
+    - Exclusions : Sièges-autos, Biberons, Pots, Vaisselle, Matelas, Baignoires
+  Jouets:
+    - Jouets complets, Jeux de société, Disquettes/CD jeux (avec boîte), Peluches (1 max)
+    - Exclusions : Consoles, Jeux PC/Mac, Circuits électriques, Jouets gonflables piscine
+  Livres:
+    - Livres enfants, Livres adultes (5 max), Magazines enfants en lot
+    - Exclusions : Livres jaunis/abîmés, Encyclopédies, Annales > 5 ans, Magazines adultes
+  Accessoires:
+    - Sacs à main (1 max), Foulards (2 max), Gants ski, Bonnets
+    - Exclusions : Sacs de voyage, Cravates, Gants de ville
+
+# Grille de prix indicatifs (selon règlement)
+prix_indicatifs:
+  Adultes:
+    - Jupe : 3-10€
+    - Tee-shirt : 3-8€
+    - Robe : 5-23€
+    - Pantalon : 4-13€
+    - Manteau : 8-31€
+  Enfants:
+    - Jupe : 2-8€
+    - Tee-shirt : 1-7€
+    - Robe : 3-13€
+    - Pantalon : 3-10€
+    - Manteau : 3-13€
+    - Layette : 1-8€
+  Spécial:
+    - Poussettes/Landaus : max 150€
+
+# Cas de test suggérés
+test_scenarios:
+  - T-US002-01 : Création de la première liste et ajout de 5 vêtements enfants
+  - T-US002-02 : Ajout de 24 articles (12 vêtements + 12 autres catégories)
+  - T-US002-03 : Tentative d'ajouter un 13ème vêtement (bloqué)
+  - T-US002-04 : Tentative d'ajouter un 2ème manteau dans la même liste (bloqué)
+  - T-US002-05 : Création d'un lot de 3 bodys 18 mois (OK)
+  - T-US002-06 : Tentative de lot > 36 mois (bloqué)
+  - T-US002-07 : Ajout article avec prix 0.50€ (bloqué, min 1€)
+  - T-US002-08 : Ajout poussette à 160€ (bloqué, max 150€)
+  - T-US002-09 : Tentative d'ajouter jouet sur ligne 1-12 (bloqué, zone vêtements)
+  - T-US002-10 : Tentative d'ajouter siège-auto (bloqué, liste noire)
+  - T-US002-11 : Tentative d'ajouter CD/DVD (bloqué, liste noire)
+  - T-US002-12 : Validation d'une liste avec 15 articles (OK)
+  - T-US002-13 : Création de 2 listes complètes (OK)
+  - T-US002-14 : Tentative de créer une 3ème liste (bloqué, max 2)
+  - T-US002-15 : Modification d'article avant date limite (OK)
+  - T-US002-16 : Tentative de modification après date limite (bloqué, lecture seule)
+  - T-US002-17 : Validation finale avec récapitulatif et email de confirmation
+  - T-US002-18 : Affichage prix indicatifs selon catégorie
+  - T-US002-19 : Case certification conformité non cochée (bloqué)
+  - T-US002-20 : Compteur visuel progression 24 articles et 12 vêtements
+```
+
+# User Stories déposants (à détailler)
+
+- US-003 — En tant que déposant, je veux obtenir/imprimer des étiquettes pour chaque article.
+
+# User Stories bénévoles (à détailler)
+
+- US-004 — En tant que bénévole, je veux scanner un article et enregistrer la vente.
+- US-005 — En tant que bénévole, je veux générer les reversements en fin d'édition.
 ## US-006 — Créer une nouvelle édition de bourse
 
 ```yaml
@@ -775,298 +1070,3 @@ test_scenarios:
   - T-US009-09 : Archivage d'une édition clôturée (> 1 an)
 ```
 
-## US-002 — Déclarer mes articles dans mes listes
-
-```yaml
-id: US-002
-title: Déclarer mes articles dans mes listes
-actor: deposant
-benefit: "...pour préparer mon dépôt et obtenir mes étiquettes avant la bourse"
-as_a: "En tant que déposant inscrit à une édition"
-i_want: "Je veux créer mes listes (max 2) et y ajouter mes articles avec leurs caractéristiques"
-so_that: "Afin de respecter le règlement (24 articles max dont 12 vêtements) et valider ma participation à l'édition"
-
-# Contexte métier
-notes: |
-  - Cette US s'appuie sur le Règlement déposant (docs/Reglement_deposant.md)
-  - Le déposant doit compléter ses listes AVANT la date limite de déclaration
-  - Anciennement fait via Google Forms, maintenant intégré dans l'application
-  - Les frais d'inscription (5€) sont payés via Billetweb pour réserver le créneau
-  - Les bénévoles vérifieront physiquement les articles lors du dépôt
-
-acceptance_criteria:
-  # AC-1 : Accès à la déclaration d'articles
-  - GIVEN je suis connecté en tant que déposant
-    AND je suis inscrit à une édition active (statut "Inscriptions ouvertes" ou "En cours")
-    AND la date limite de déclaration n'est pas dépassée
-    WHEN j'accède à mon espace déposant
-    THEN je vois :
-      • Le nom de l'édition et mes informations (créneau de dépôt réservé via Billetweb)
-      • Un encart "Mes listes" avec bouton "Créer ma première liste" (si aucune liste)
-      • La liste de mes listes existantes avec nombre d'articles saisis / 24
-      • Un rappel visible : "Vous avez droit à 2 listes maximum de 24 articles chacune (dont 12 vêtements max)"
-      • Un compteur : "Listes créées : X / 2"
-
-  # AC-2 : Création d'une liste
-  - GIVEN je n'ai pas encore atteint la limite de 2 listes pour cette édition
-    WHEN je clique sur "Créer une nouvelle liste"
-    THEN le système crée une liste vide numérotée (ex: "Liste 1", "Liste 2")
-    AND m'affiche le formulaire de saisie des articles avec :
-      • Un tableau de 24 lignes numérotées (1 à 24)
-      • Les lignes 1-12 sont marquées "Vêtements uniquement" avec fond coloré distinct
-      • Les lignes 13-24 acceptent toutes les catégories
-      • Colonnes : N° ligne | Catégorie | Genre (opt.) | Taille (opt.) | Description | Prix (€) | Actions
-      • Un bouton "Sauvegarder la liste" en bas
-
-  # AC-3 : Ajout d'un article - cas nominal vêtement
-  - GIVEN je suis dans une de mes listes (< 24 articles)
-    AND je sélectionne une ligne entre 1 et 12 (zone vêtements)
-    WHEN je remplis les champs :
-      • Catégorie : "Vêtements" (imposé automatiquement pour lignes 1-12)
-      • Genre : "Garçon" (menu déroulant : Fille/Garçon/Mixte/Adulte Homme/Adulte Femme/Mixte Adulte)
-      • Taille : "4 ans" (menu déroulant avec tailles standard)
-      • Description : "Pull rayé bleu marine"
-      • Prix : "5"
-    AND je clique sur "Ajouter l'article"
-    THEN le système enregistre l'article dans la ligne sélectionnée
-    AND met à jour le compteur "Articles : X / 24 (Y vêtements / 12)"
-    AND affiche un message de confirmation vert : "Article ajouté"
-
-  # AC-4 : Validation des contraintes par catégorie
-  - GIVEN j'ai déjà saisi 1 manteau dans ma liste
-    AND je tente d'ajouter un 2ème article de catégorie "Manteau/Blouson"
-    WHEN je clique sur "Ajouter l'article"
-    THEN le système affiche une erreur : "Vous avez déjà 1 manteau/blouson dans cette liste. Maximum autorisé : 1 par liste (selon règlement)"
-    AND bloque l'ajout
-    # Règles similaires pour :
-    # - 1 sac à main max
-    # - 2 foulards max
-    # - 1 tour de lit max
-    # - 1 peluche max
-    # - 5 livres adultes max
-
-  # AC-5 : Validation prix minimum et maximum
-  - GIVEN je saisis un article avec un prix < 1€ (ex: 0.50)
-    WHEN je quitte le champ prix ou tente d'ajouter l'article
-    THEN le système affiche : "Prix minimum : 1€ (selon règlement)"
-    AND bloque l'ajout
-
-  - GIVEN je saisis un article catégorie "Puériculture > Poussette/Landau" avec prix > 150€
-    WHEN je tente d'ajouter l'article
-    THEN le système affiche : "Prix maximum pour les poussettes/landaus : 150€ (selon règlement)"
-    AND bloque l'ajout
-
-  # AC-6 : Gestion des lots (vêtements enfant)
-  - GIVEN je sélectionne "Créer un lot" dans la ligne
-    WHEN le formulaire s'adapte :
-      • Catégorie : "Vêtements enfant (lot)" (obligatoire)
-      • Type : "Bodys" ou "Pyjamas/Grenouillères" (menu déroulant)
-      • Taille : "18 mois" (jusqu'à 36 mois max)
-      • Marque : "Petit Bateau" (texte libre)
-      • Nombre d'articles : "3" (slider 1-3)
-      • Description : "3 bodys blancs à manches courtes"
-      • Prix : "4" (prix du lot complet)
-    AND je valide
-    THEN le système :
-      • Enregistre le lot comme 1 article dans le compteur
-      • Vérifie taille ≤ 36 mois
-      • Vérifie nombre articles lot ≤ 3
-      • Affiche dans la liste : "LOT x3 - Bodys 18 mois Petit Bateau - 4€"
-
-  # AC-7 : Erreur - ajout article ligne vêtement (1-12) avec catégorie non-vêtement
-  - GIVEN je sélectionne une ligne entre 1 et 12
-    AND je tente de choisir une catégorie autre que "Vêtements" (ex: "Jouets")
-    WHEN le système détecte l'incohérence
-    THEN il affiche : "Les lignes 1 à 12 sont réservées aux vêtements. Pour les autres articles, utilisez les lignes 13 à 24."
-    AND force la catégorie "Vêtements" ou propose de basculer sur une ligne 13-24 disponible
-
-  # AC-8 : Blocage articles refusés (liste noire)
-  - GIVEN je tente d'ajouter un article avec catégorie dans la liste noire :
-      • Sièges-autos / rehausseurs
-      • Biberons, pots, vaisselle bébé
-      • CD/DVD/Vinyles
-      • Casques (vélo, ski, équitation)
-      • Consoles de jeu, jeux PC/Mac
-      • Meubles, luminaires, décoration
-      • Literie (matelas, oreillers)
-      • Livres jaunis/abîmés, encyclopédies
-      • Vêtements adultes > 14 ans (pyjamas, chemises de nuit, peignoirs)
-      • Sous-vêtements adultes / enfants > 2 ans
-      • Chaussettes (sauf ski), collants, chaussons enfants
-      • Costumes hommes, cravates, kimono
-    WHEN je sélectionne cette catégorie
-    THEN le système affiche une modale explicative :
-      "Cette catégorie est refusée selon le règlement de la bourse. Consultez la liste complète des articles refusés dans le règlement."
-    AND propose un lien vers le règlement complet
-    AND empêche la sélection
-
-  # AC-9 : Déclaration de conformité qualité
-  - GIVEN je viens d'ajouter un article
-    WHEN le formulaire affiche une case à cocher obligatoire :
-      "☑ Je certifie que cet article est propre, en bon état, complet et conforme aux critères du règlement déposant"
-    AND je dois cocher avant de pouvoir sauvegarder la liste
-    THEN si je ne coche pas, le système affiche :
-      "Vous devez certifier la conformité de vos articles pour pouvoir sauvegarder votre liste"
-
-  # AC-10 : Limite 12 vêtements atteinte
-  - GIVEN j'ai déjà saisi 12 articles de catégorie "Vêtements" dans ma liste
-    WHEN je tente d'ajouter un 13ème vêtement (même sur ligne 13-24)
-    THEN le système affiche : "Limite atteinte : 12 vêtements maximum par liste (règlement ALPE)"
-    AND bloque l'ajout
-    AND propose : "Vous pouvez créer une 2ème liste si nécessaire (2 listes max par déposant)"
-
-  # AC-11 : Sauvegarde et modification de liste
-  - GIVEN j'ai saisi des articles dans ma liste
-    AND la date limite de déclaration n'est pas dépassée
-    WHEN je clique sur "Sauvegarder la liste"
-    THEN le système :
-      • Enregistre tous les articles saisis
-      • M'affiche un résumé : "Liste 1 : [X] articles saisis (Y vêtements)"
-      • Me permet de revenir modifier tant que la date limite n'est pas atteinte
-      • Affiche un statut : "Brouillon" (si < 5 articles) ou "Complète" (si ≥ 5 articles)
-
-  # AC-12 : Blocage après date limite
-  - GIVEN la date limite de déclaration est dépassée
-    WHEN j'accède à mes listes
-    THEN le système :
-      • Affiche mes listes en lecture seule
-      • Désactive les boutons "Ajouter" et "Modifier"
-      • Affiche un bandeau rouge : "Date limite dépassée. Vous ne pouvez plus modifier vos listes."
-      • Si mes listes sont vides ou incomplètes (< 3 articles), affiche :
-        "Vos listes sont incomplètes. Votre dépôt ne sera pas pris en compte. Contactez les bénévoles si nécessaire."
-
-  # AC-13 : Aide contextuelle avec prix indicatifs
-  - GIVEN je remplis le champ prix
-    WHEN le système détecte la catégorie sélectionnée
-    THEN il affiche une bulle d'aide avec les prix indicatifs du règlement :
-      Exemple pour "Vêtements > Robe enfant" :
-      "💡 Prix indicatif : 3€ à 13€ selon état et marque (voir grille complète dans le règlement)"
-
-  # AC-14 : Récapitulatif avant validation finale
-  - GIVEN j'ai complété mes listes (1 ou 2)
-    AND je clique sur "Valider mes listes pour cette édition"
-    WHEN le système affiche un récapitulatif modal :
-      • "Vous avez déclaré [X] articles répartis sur [Y] liste(s)"
-      • "Liste 1 : [N1] articles (dont [V1] vêtements)"
-      • "Liste 2 : [N2] articles (dont [V2] vêtements)" (si applicable)
-      • "Rappel : apportez vos articles propres, repassés et dans l'ordre de la liste le jour de votre créneau"
-      • Case à cocher finale : "J'ai lu et j'accepte les conditions de dépôt (pièce d'identité, enveloppe timbrée, articles conformes)"
-    AND je confirme
-    THEN le système :
-      • Passe le statut des listes à "Validée"
-      • M'envoie un email de confirmation avec récapitulatif PDF de mes listes
-      • Affiche un message de succès : "Listes validées avec succès ! Vous recevrez un rappel 2 jours avant votre créneau de dépôt."
-
-  # AC-15 : Indicateurs visuels de progression
-  - GIVEN je suis en train de remplir mes listes
-    WHEN j'ajoute/modifie des articles
-    THEN le système affiche en permanence :
-      • Barre de progression : "Articles : 15 / 24 (8 vêtements / 12)" avec barre visuelle
-      • Icônes de validation ✓/✗ pour chaque contrainte respectée/non respectée :
-        ✓ Maximum 2 listes respecté
-        ✓ Prix minimum 1€ respecté
-        ✓ Maximum 12 vêtements respecté (liste 1)
-        ✗ 1 manteau max (vous en avez 2 dans liste 2)
-      • Bouton "Valider" grisé tant que toutes les contraintes ne sont pas respectées
-
-dependencies:
-  - US-001  # Activation compte déposant
-  - US-008  # Import Billetweb (pour inscription à édition)
-
-links:
-  - rel: requirement
-    id: REQ-F-002  # Enregistrement articles
-  - rel: requirement
-    id: REQ-F-002-BIS  # Validation qualité
-  - rel: requirement
-    id: REQ-F-011  # Date limite déclaration
-  - rel: source
-    href: docs/Reglement_deposant.md
-    title: Règlement déposant ALPE
-
-# Règles métier complémentaires
-business_rules:
-  - Maximum 2 listes par déposant par édition
-  - Maximum 24 articles par liste dont 12 vêtements max
-  - Lignes 1-12 réservées aux vêtements uniquement
-  - Prix minimum 1€ pour tout article
-  - Prix maximum 150€ uniquement pour poussettes/landaus
-  - Lots autorisés : vêtements enfant (bodys/pyjamas) jusqu'à 36 mois, lot de 3 max, taille et marque identiques
-  - Un lot compte comme 1 article dans la limite des 24
-  - Contraintes par catégorie strictement appliquées (1 manteau, 1 sac, 2 foulards, 1 tour de lit, 1 peluche, 5 livres adultes max)
-  - Articles de la liste noire bloqués automatiquement
-  - Modification possible jusqu'à la date limite de déclaration
-  - Certification de conformité obligatoire pour chaque article
-  - Validation finale irréversible après date limite
-
-# Catégories principales
-categories:
-  Vêtements:
-    - Jupe, Tee-shirt, Robe, Ensemble, Pantalon, Chemise, Bermuda/Short, Jogging, Sweat/Pull, Imperméable, Veste/Blouson, Manteau/Anorak, Layette
-    - Contraintes : 12 max par liste, lignes 1-12
-  Chaussures:
-    - Chaussures sport (crampons, randonnée, ski, danse), Bottes pluie, Bottes neige
-    - Exclusions : Chaussons enfants, Chaussures > pointure 25, Chaussettes (sauf ski)
-  Puériculture:
-    - Poussettes, Landaus, Tour de lit (1 max), Articles bébé très propres
-    - Exclusions : Sièges-autos, Biberons, Pots, Vaisselle, Matelas, Baignoires
-  Jouets:
-    - Jouets complets, Jeux de société, Disquettes/CD jeux (avec boîte), Peluches (1 max)
-    - Exclusions : Consoles, Jeux PC/Mac, Circuits électriques, Jouets gonflables piscine
-  Livres:
-    - Livres enfants, Livres adultes (5 max), Magazines enfants en lot
-    - Exclusions : Livres jaunis/abîmés, Encyclopédies, Annales > 5 ans, Magazines adultes
-  Accessoires:
-    - Sacs à main (1 max), Foulards (2 max), Gants ski, Bonnets
-    - Exclusions : Sacs de voyage, Cravates, Gants de ville
-
-# Grille de prix indicatifs (selon règlement)
-prix_indicatifs:
-  Adultes:
-    - Jupe : 3-10€
-    - Tee-shirt : 3-8€
-    - Robe : 5-23€
-    - Pantalon : 4-13€
-    - Manteau : 8-31€
-  Enfants:
-    - Jupe : 2-8€
-    - Tee-shirt : 1-7€
-    - Robe : 3-13€
-    - Pantalon : 3-10€
-    - Manteau : 3-13€
-    - Layette : 1-8€
-  Spécial:
-    - Poussettes/Landaus : max 150€
-
-# Cas de test suggérés
-test_scenarios:
-  - T-US002-01 : Création de la première liste et ajout de 5 vêtements enfants
-  - T-US002-02 : Ajout de 24 articles (12 vêtements + 12 autres catégories)
-  - T-US002-03 : Tentative d'ajouter un 13ème vêtement (bloqué)
-  - T-US002-04 : Tentative d'ajouter un 2ème manteau dans la même liste (bloqué)
-  - T-US002-05 : Création d'un lot de 3 bodys 18 mois (OK)
-  - T-US002-06 : Tentative de lot > 36 mois (bloqué)
-  - T-US002-07 : Ajout article avec prix 0.50€ (bloqué, min 1€)
-  - T-US002-08 : Ajout poussette à 160€ (bloqué, max 150€)
-  - T-US002-09 : Tentative d'ajouter jouet sur ligne 1-12 (bloqué, zone vêtements)
-  - T-US002-10 : Tentative d'ajouter siège-auto (bloqué, liste noire)
-  - T-US002-11 : Tentative d'ajouter CD/DVD (bloqué, liste noire)
-  - T-US002-12 : Validation d'une liste avec 15 articles (OK)
-  - T-US002-13 : Création de 2 listes complètes (OK)
-  - T-US002-14 : Tentative de créer une 3ème liste (bloqué, max 2)
-  - T-US002-15 : Modification d'article avant date limite (OK)
-  - T-US002-16 : Tentative de modification après date limite (bloqué, lecture seule)
-  - T-US002-17 : Validation finale avec récapitulatif et email de confirmation
-  - T-US002-18 : Affichage prix indicatifs selon catégorie
-  - T-US002-19 : Case certification conformité non cochée (bloqué)
-  - T-US002-20 : Compteur visuel progression 24 articles et 12 vêtements
-```
-
-# User Stories déposants (à détailler)
-
-- US-003 — En tant que déposant, je veux obtenir/imprimer des étiquettes pour chaque article.
-
-# User Stories bénévoles (à détailler)
-
-- US-004 — En tant que bénévole, je veux scanner un article et enregistrer la vente.
-- US-005 — En tant que bénévole, je veux générer les reversements en fin d'édition.
