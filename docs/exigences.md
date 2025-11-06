@@ -2,13 +2,16 @@
 id: DOC-040-REQS
 title: Exigences (fonctionnelles et non-fonctionnelles)
 status: draft
-version: 0.3.0
+version: 0.4.0
 updated: 2025-11-06
 owner: ALPE Plaisance du Touch
 links:
   - rel: source
     href: Reglement_deposant.md
     title: Règlement déposant
+  - rel: source
+    href: Reglement_interne.md
+    title: Règlement intérieur
 ---
 
 # Règles d’écriture
@@ -56,10 +59,74 @@ links:
 - REQ-F-011 — Le système DOIT gérer une date limite de déclaration des articles par édition.
   - **Critères d'acceptation :**
     - La date limite est configurable par le gestionnaire (dans US-007)
+    - **Date limite recommandée : 3 semaines avant le début de la collecte** pour permettre l'impression des étiquettes par ALPE
     - Après la date limite, le déposant ne peut plus ajouter/modifier ses articles
     - Un message d'avertissement est affiché 3 jours avant la date limite
     - Si les listes ne sont pas complétées avant la date limite, le dépôt n'est pas pris en compte (notification automatique au déposant)
   - **Priorité :** Must have
+  - **Responsable validation :** Gestionnaire
+
+- REQ-F-013 — Le système DOIT restreindre les dépôts selon les règles du règlement intérieur.
+  - **Critères d'acceptation :**
+    - Un déposant (personne physique majeure) ne peut effectuer qu'un seul dépôt par semaine de collecte
+    - Vérification par pièce d'identité lors du dépôt physique (processus manuel)
+    - Le déposant ne peut pas déposer pour une autre personne
+    - Créneaux spécifiques réservés aux Plaisançois (mercredi 20h-22h et vendredi 9h30-12h) : vérification domicile sur justificatif
+  - **Priorité :** Must have
+  - **Responsable validation :** Gestionnaire
+
+- REQ-F-014 — Le système DOIT gérer les créneaux de dépôt avec limites de capacité.
+  - **Critères d'acceptation :**
+    - Chaque créneau de dépôt a une capacité maximum de déposants (configurée par édition)
+    - Exemples de capacités standard :
+      - Mercredi 9h30-11h30 : 20 déposants
+      - Mercredi 14h-18h : 40 déposants
+      - Mercredi 20h-22h : 20 déposants (réservé Plaisançois)
+      - Jeudi 9h30-12h : 15 déposants
+      - Jeudi 17h-21h : 32 déposants
+      - Vendredi 9h30-12h : 15 déposants (réservé Plaisançois)
+    - Blocage des inscriptions une fois la capacité atteinte
+    - Indication visuelle du nombre de places restantes
+    - Possibilité de liste d'attente (optionnel)
+  - **Priorité :** Must have
+  - **Responsable validation :** Gestionnaire
+
+- REQ-F-015 — Le système DOIT gérer les listes spéciales 1000 et 2000 pour adhérents ALPE.
+  - **Critères d'acceptation :**
+    - **Listes 1000** (étiquettes blanches) :
+      - Réservées aux adhérents ALPE participant minimum 8h à la bourse
+      - Numérotation fixe attribuée de façon définitive tant que l'adhérent participe
+      - Limite : 2 listes pour première bourse, puis 4 ensuite
+      - Coût : 1€ par liste, déduit du montant des ventes
+      - Créneaux de dépôt spéciaux : mardi jusqu'à 23h, mercredi 12h-14h et 18h-20h, jeudi 21h-22h
+      - Restitution : dimanche 17h-18h (au lieu de lundi pour les autres)
+    - **Listes 2000** (étiquettes groseille) :
+      - Pour famille/amis d'adhérents ALPE ne participant pas à la bourse
+      - Numérotation liée aux listes 1000 (ex: adhérent avec 1100/1101/1102/1103 peut déposer 2100/2101/2102/2103)
+      - Limite : 4 listes pour 2 personnes maximum
+      - Coût : 5€ pour 2 listes, déduit du montant des ventes
+      - Mêmes créneaux de dépôt et restitution que les listes 1000
+      - Doivent être étiquetées sous contrôle d'un membre ALPE
+    - Distinction visuelle par couleur d'étiquettes (1000=blanc, 2000=groseille)
+    - Les frais (1€ ou 5€) sont déduits automatiquement du reversement final
+  - **Priorité :** Should have
+  - **Responsable validation :** Administrateur ALPE
+
+- REQ-F-016 — Le système DOIT différencier les horaires de restitution selon le type de liste.
+  - **Critères d'acceptation :**
+    - Listes standard : lundi 18h30-19h30 après la vente
+    - Listes 1000 et 2000 : dimanche 17h-18h (jour de la vente)
+    - Notification automatique avec le bon horaire selon le type de liste du déposant
+  - **Priorité :** Should have
+  - **Responsable validation :** Gestionnaire
+
+- REQ-F-017 — Le système DOIT gérer une vente privée pour écoles/ALAE.
+  - **Critères d'acceptation :**
+    - Vente privée réservée aux écoles et ALAE de Plaisance-du-Touch
+    - Horaire : vendredi 17h-18h précédant la vente publique
+    - Liste des écoles/ALAE autorisées configurable par édition
+    - Marquage des ventes "vente privée" pour statistiques
+  - **Priorité :** Could have
   - **Responsable validation :** Gestionnaire
 
 - REQ-F-012 — Le système DOIT afficher les rappels réglementaires pour le jour du dépôt.
