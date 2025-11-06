@@ -17,13 +17,13 @@ classDiagram
     +String nom
     +Date date_debut
     +Date date_fin
-    +String lieu
-    +Text description
+    +String lieu?
+    +Text description?
     +Enum statut
-    +Date[] dates_depot
-    +Date[] dates_vente
-    +Date date_retour_invendus
-    +Decimal taux_commission
+    +Date[] dates_depot?
+    +Date[] dates_vente?
+    +Date date_retour_invendus?
+    +Decimal taux_commission?
     +Timestamp created_at
     +User created_by
     +Timestamp updated_at
@@ -122,13 +122,15 @@ stateDiagram-v2
 ## Édition
 - Une édition a un nom unique dans tout le système (porte généralement saison et année, ex: "Bourse Printemps 2025")
 - Le statut évolue selon le cycle de vie (voir diagramme)
+- **Lors de la création (US-006)** : seuls nom, date_debut, date_fin sont obligatoires
+- **Lors de la configuration (US-007)** : dates_depot, dates_vente, date_retour_invendus, taux_commission sont ajoutés
 - La date de fin doit être strictement postérieure à la date de début
 - Les dates de dépôt doivent être comprises dans la période [date_debut, date_fin]
 - Les dates de vente doivent être comprises dans la période [date_debut, date_fin]
 - La date de retour des invendus doit être postérieure ou égale à la date de fin
 - L'ordre chronologique attendu : date_debut ≤ dates_depot ≤ dates_vente ≤ date_fin ≤ date_retour_invendus
 - Le taux de commission est un pourcentage entre 0 et 100
-- Le lieu est optionnel (peut être précisé ultérieurement)
+- Le lieu et la description sont optionnels
 - Une édition clôturée est en lecture seule définitive
 
 ## Utilisateurs et rôles

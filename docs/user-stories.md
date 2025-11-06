@@ -266,8 +266,6 @@ acceptance_criteria:
       • Date de fin (obligatoire, sélecteur de date)
       • Lieu (optionnel, ex: "Salle des fêtes, Plaisance-du-Touch")
       • Description (optionnel, texte libre)
-      • Jours de dépôt des articles (multi-sélection dates, au moins 1 date obligatoire)
-      • Date de retour des invendus (obligatoire, sélecteur de date)
       • Statut initial (automatique: "Brouillon")
     AND un bouton "Créer l'édition" et un bouton "Annuler"
 
@@ -293,39 +291,25 @@ acceptance_criteria:
     THEN le système affiche une erreur : "La date de fin doit être postérieure à la date de début"
     AND bloque la soumission
 
-  # AC-6 : Validation des jours de dépôt
-  - GIVEN je remplis les dates de l'édition
-    AND au moins un jour de dépôt est en dehors de la période [date début, date fin]
-    WHEN je tente de valider le formulaire
-    THEN le système affiche une erreur : "Les jours de dépôt doivent être compris entre la date de début et la date de fin de l'édition"
-    AND bloque la soumission
-
-  # AC-7 : Validation de la date de retour des invendus
-  - GIVEN je remplis les dates de l'édition
-    AND la date de retour des invendus est antérieure à la date de fin
-    WHEN je tente de valider le formulaire
-    THEN le système affiche une erreur : "La date de retour des invendus doit être postérieure à la date de fin de l'édition"
-    AND bloque la soumission
-
-  # AC-8 : Erreur - champs obligatoires manquants
-  - GIVEN je n'ai pas rempli un ou plusieurs champs obligatoires (nom, dates début/fin, jours dépôt, date retour)
+  # AC-6 : Erreur - champs obligatoires manquants
+  - GIVEN je n'ai pas rempli un ou plusieurs champs obligatoires (nom, date début, date fin)
     WHEN je tente de soumettre le formulaire
     THEN le système affiche des messages d'erreur sous chaque champ manquant
     AND bloque la soumission jusqu'à correction
 
-  # AC-9 : Annulation de la création
+  # AC-7 : Annulation de la création
   - GIVEN je suis en train de remplir le formulaire de création
     WHEN je clique sur "Annuler"
     THEN le système me demande confirmation : "Êtes-vous sûr de vouloir annuler ? Les données saisies seront perdues."
     AND si je confirme, me ramène à la liste des éditions sans créer l'édition
 
-  # AC-10 : Contrôle d'accès - non-administrateur
+  # AC-8 : Contrôle d'accès - non-administrateur
   - GIVEN je suis connecté avec un rôle autre qu'administrateur (gestionnaire, bénévole, déposant)
     WHEN j'essaie d'accéder à la création d'édition (URL directe ou navigation)
     THEN le système affiche un message : "Accès refusé. Seuls les administrateurs peuvent créer des éditions."
     AND me redirige vers ma page d'accueil
 
-  # AC-11 : Horodatage et traçabilité
+  # AC-9 : Horodatage et traçabilité
   - GIVEN une édition vient d'être créée
     WHEN je consulte ses métadonnées
     THEN je vois :
@@ -351,9 +335,7 @@ business_rules:
   - Une édition créée est en statut "Brouillon" par défaut
   - Une édition en brouillon ne peut pas recevoir d'inscriptions ni d'articles
   - La date de fin doit être strictement postérieure à la date de début
-  - Les jours de dépôt doivent être compris dans la période [date_debut, date_fin]
-  - La date de retour des invendus doit être postérieure ou égale à la date de fin
-  - Au moins un jour de dépôt doit être défini lors de la création
+  - Le statut passe de "Brouillon" à "Configurée" après configuration des dates opérationnelles (US-007)
 
 # États du cycle de vie d'une édition
 edition_lifecycle:
@@ -372,30 +354,32 @@ data_model:
   - date_fin (date, obligatoire)
   - lieu (string, max 200 caractères, optionnel)
   - description (text, optionnel)
-  - dates_depot (array de dates, min 1, obligatoire)
-  - date_retour_invendus (date, obligatoire)
   - statut (enum selon lifecycle ci-dessus)
   - created_at (timestamp)
   - created_by (référence utilisateur administrateur)
   - updated_at (timestamp)
   - updated_by (référence utilisateur)
 
+  # Dates opérationnelles (configurées via US-007)
+  - dates_depot (array de dates, configuré ultérieurement)
+  - dates_vente (array de dates, configuré ultérieurement)
+  - date_retour_invendus (date, configuré ultérieurement)
+  - taux_commission (decimal, configuré ultérieurement)
+
 # Cas de test suggérés
 test_scenarios:
-  - T-US006-01 : Création nominale d'une édition avec toutes les dates valides
+  - T-US006-01 : Création nominale d'une édition "Bourse Printemps 2025"
   - T-US006-02 : Création d'une édition avec nom en double (erreur)
-  - T-US006-03 : Champs obligatoires manquants (nom, dates)
+  - T-US006-03 : Champs obligatoires manquants (nom, date début, date fin)
   - T-US006-04 : Date de fin antérieure ou égale à date de début (erreur)
-  - T-US006-05 : Jour de dépôt en dehors de la période édition (erreur)
-  - T-US006-06 : Date retour invendus antérieure à date de fin (erreur)
-  - T-US006-07 : Aucun jour de dépôt défini (erreur)
-  - T-US006-08 : Lieu non renseigné (OK, optionnel)
-  - T-US006-09 : Annulation du formulaire avec confirmation
-  - T-US006-10 : Tentative de création par un gestionnaire (accès refusé)
-  - T-US006-11 : Tentative de création par un bénévole (accès refusé)
-  - T-US006-12 : Tentative de création par un déposant (accès refusé)
-  - T-US006-13 : Vérification métadonnées (horodatage, créateur)
-  - T-US006-14 : Affichage de l'édition dans la liste avec statut "Brouillon"
+  - T-US006-05 : Lieu non renseigné (OK, optionnel)
+  - T-US006-06 : Description non renseignée (OK, optionnel)
+  - T-US006-07 : Annulation du formulaire avec confirmation
+  - T-US006-08 : Tentative de création par un gestionnaire (accès refusé)
+  - T-US006-09 : Tentative de création par un bénévole (accès refusé)
+  - T-US006-10 : Tentative de création par un déposant (accès refusé)
+  - T-US006-11 : Vérification métadonnées (horodatage, créateur)
+  - T-US006-12 : Affichage de l'édition dans la liste avec statut "Brouillon"
 ```
 
 ## US-007 — Configurer les dates clés d'une édition
