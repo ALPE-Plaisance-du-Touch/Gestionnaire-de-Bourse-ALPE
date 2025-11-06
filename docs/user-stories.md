@@ -408,20 +408,24 @@ acceptance_criteria:
     THEN je vois un formulaire avec les champs de dates suivants :
       • Date de début des inscriptions (optionnel, informatif - géré par Billetweb)
       • Date de fin des inscriptions (optionnel, informatif - géré par Billetweb)
+      • **Date limite de déclaration des articles** (obligatoire, date avant laquelle les déposants doivent compléter leurs listes)
       • Date(s) de dépôt des articles (obligatoire, peut être plusieurs dates)
       • Date(s) de vente (obligatoire, peut être plusieurs dates/période)
       • Date de récupération des invendus (obligatoire)
-      • Paramètres tarifaires : taux de commission (%, obligatoire)
+      • **Paramètres tarifaires** :
+        - Taux de commission ALPE (%, obligatoire, par défaut 20%)
+        - Note informative : "Les frais d'inscription (5€ pour 2 listes) sont gérés via Billetweb et non remboursables"
       • Catégories d'articles autorisées (multi-sélection)
 
   # AC-2 : Saisie et validation des dates
-  - GIVEN je remplis les dates de dépôt, vente et récupération
-    AND les dates respectent l'ordre chronologique : dépôt < vente < récupération
-    AND je définis un taux de commission valide (entre 0 et 100%)
+  - GIVEN je remplis la date limite de déclaration, les dates de dépôt, vente et récupération
+    AND les dates respectent l'ordre chronologique : date_limite_declaration < dépôt < vente < récupération
+    AND je définis un taux de commission valide (entre 0 et 100%, par défaut 20%)
     WHEN je valide le formulaire
-    THEN le système enregistre les dates
+    THEN le système enregistre toutes les dates et le taux de commission
     AND passe l'édition au statut "Configurée"
     AND affiche un message : "Configuration enregistrée. L'édition est maintenant prête pour l'import des inscriptions."
+    AND les déposants pourront déclarer leurs articles jusqu'à la date limite configurée
 
   # AC-3 : Erreur - incohérence chronologique
   - GIVEN je saisis des dates incohérentes (ex: récupération avant vente)
@@ -459,18 +463,22 @@ links:
 
 # Règles métier complémentaires
 business_rules:
-  - Les dates doivent respecter l'ordre : inscriptions < dépôt < vente < récupération
-  - Le taux de commission doit être entre 0 et 100%
+  - Les dates doivent respecter l'ordre : inscriptions < date_limite_declaration < dépôt < vente < récupération
+  - La date limite de déclaration doit être antérieure à la première date de dépôt (pour laisser le temps aux déposants)
+  - Le taux de commission doit être entre 0 et 100% (par défaut 20% selon règlement ALPE)
+  - Tarification ALPE : 5€ frais d'inscription (Billetweb, non remboursable) + 20% commission sur ventes
   - Modification possible sans restriction tant qu'aucune inscription n'est importée
   - Modification avec notification obligatoire si des déposants sont actifs
   - Le statut passe de "Brouillon" à "Configurée" après validation
+  - Après la date limite de déclaration, les déposants ne peuvent plus modifier leurs listes
 
 # Données de configuration
 configuration_data:
-  - date_debut_inscriptions (date, optionnel)
-  - date_fin_inscriptions (date, optionnel)
-  - dates_depot (array de dates, min 1)
-  - dates_vente (array de dates/période, min 1)
+  - date_debut_inscriptions (date, optionnel - informatif)
+  - date_fin_inscriptions (date, optionnel - informatif)
+  - date_limite_declaration (date, obligatoire - bloque modification listes après cette date)
+  - dates_depot (array de dates, min 1, obligatoire)
+  - dates_vente (array de dates/période, min 1, obligatoire)
   - date_recuperation (date, obligatoire)
   - taux_commission (decimal, 0-100, par défaut 20%)
   - categories_autorisees (array, ex: ["Vêtements enfants", "Jouets", "Livres", "Puériculture"])
