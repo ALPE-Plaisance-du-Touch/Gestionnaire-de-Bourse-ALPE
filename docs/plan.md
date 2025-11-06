@@ -2,12 +2,16 @@
 id: DOC-005-PLAN
 title: Plan de rédaction des spécifications
 status: draft
-version: 0.2.0
-updated: 2025-11-05
+version: 0.3.0
+updated: 2025-11-06
 owner: ALPE Plaisance du Touch
 links:
   - rel: overview
     href: README.md
+  - rel: source
+    href: Reglement_deposant.md
+  - rel: source
+    href: Reglement_interne.md
 ---
 
 # Objectif
@@ -19,13 +23,14 @@ Organiser la production et la validation des spécifications de l’application 
 | Document | Livrable de référence | Statut actuel | Responsable | Échéance cible |
 |---|---|---|---|---|
 | README (DOC-000) | Vision, conventions | Ossature initiale à enrichir (exemples, FAQ) | Produit | 2025-11-10 |
-| Plan (DOC-005) | Pilotage & suivi | ✅ Mis à jour (v0.2.0) | Produit | 2025-11-05 |
-| Glossaire (DOC-010) | Table complète des termes | ✅ Enrichi (v0.2.0) - 20+ termes ajoutés (Edition, rôles, Billetweb) | UX | 2025-11-05 |
+| Plan (DOC-005) | Pilotage & suivi | ✅ Mis à jour (v0.3.0) | Produit | 2025-11-06 |
+| Glossaire (DOC-010) | Table complète des termes | ✅ Enrichi (v0.4.0) - Listes 1000/2000, créneaux capacités, couleurs étiquettes | UX | 2025-11-06 |
 | Personas (DOC-020) | 4 personas cibles | ✅ Complétés (v0.2.0) - 4 personas détaillés (Déposant, Bénévole, Gestionnaire, Admin) | UX | 2025-11-05 |
-| User Stories (DOC-030) | US complètes + critères | 🔄 En cours (v0.3.0) - US-001, US-006 à US-009 détaillées | Produit | 2025-11-15 |
-| Exigences (DOC-040) | REQ fonctionnelles & NF traçables | ✅ Structurées (v0.2.0) - REQ-F-001 à F-010 avec priorités et responsables | Produit | 2025-11-05 |
+| User Stories (DOC-030) | US complètes + critères | 🔄 En cours (v0.3.1) - US-001, US-002, US-006-009 détaillées (6/9 US) | Produit | 2025-11-15 |
+| Exigences (DOC-040) | REQ fonctionnelles & NF traçables | ✅ Enrichies (v0.4.0) - REQ-F-001 à F-017 avec règlements déposant/intérieur | Produit | 2025-11-06 |
 | Architecture (DOC-050) | C4 niv. 1-3 + contraintes | À compléter (diagrammes, ADR) | Tech Lead | 2025-11-22 |
-| Modèle de domaine (DOC-060) | Diagramme + règles métiers | ✅ Refonte complète (v0.2.0) - 7 entités + cycle de vie Edition + invariants | Produit + Tech | 2025-11-05 |
+| Modèle de domaine (DOC-060) | Diagramme + règles métiers | ✅ Enrichi (v0.4.0) - 8 entités (Creneau ajouté) + types listes + 23 invariants | Produit + Tech | 2025-11-06 |
+| Catégories articles (DOC-011) | Guide bénévoles | ✅ Créé (v1.0.0) - 317 lignes, acceptés/refusés, prix indicatifs, checklist | Produit | 2025-11-06 |
 | UI (DOC-070) | Parcours + wireframes clés | À produire (écrans détaillés) | UX | 2025-11-25 |
 | Sécurité (DOC-080) | Politique sécurité/RGPD | À consolider (contrôles techniques) | SecOps | 2025-11-22 |
 | Opérations (DOC-090) | SLO, observabilité, runbooks | À compléter (process run + alerte) | Ops | 2025-11-25 |
@@ -45,7 +50,7 @@ Organiser la production et la validation des spécifications de l’application 
 ### Gestion des déposants
 - [x] ✅ Rédiger US-001 (activation sur invitation) avec critères et contraintes mot de passe
 - [x] ✅ Enrichir US-001 : 14 AC détaillés, sécurité, accessibilité, RGPD, performance, 16 tests
-- [ ] Détailler US-002 (enregistrement articles) avec AC métier (catégories, validation prix)
+- [x] ✅ Détailler US-002 (enregistrement articles) avec AC métier (catégories, validation prix, date limite, restrictions dépôts)
 - [ ] Détailler US-003 (génération étiquettes) incluant scénarios d'impression/QR
 
 ### Gestion des bénévoles
@@ -62,17 +67,25 @@ Organiser la production et la validation des spécifications de l’application 
 - [x] ✅ Créer REQ-F-010 (gestion rôles)
 - [x] ✅ Ajouter critères d'acceptation mesurables pour REQ-F-001 à F-010
 - [x] ✅ Ajouter priorités (MoSCoW) et responsables de validation
+- [x] ✅ Créer REQ-F-011 (date limite déclaration articles - 3 semaines avant collecte)
+- [x] ✅ Créer REQ-F-013 (restrictions dépôts : 1 dépôt/semaine, créneaux Plaisançois)
+- [x] ✅ Créer REQ-F-014 (gestion créneaux avec capacités par édition)
+- [x] ✅ Créer REQ-F-015 (listes spéciales 1000/2000 adhérents ALPE)
+- [x] ✅ Créer REQ-F-016 (horaires restitution différenciés standard/1000/2000)
+- [x] ✅ Créer REQ-F-017 (vente privée écoles/ALAE)
 - [ ] Compléter REQ-F-002 à REQ-F-005 (articles, étiquettes, ventes, reversements)
 - [ ] Introduire exigences non-fonctionnelles supplémentaires (sécurité, scalabilité)
 - [ ] Lier chaque REQ aux futurs cas de test
 
 ## DOC-060 — Modèle de domaine
 - [x] ✅ Refonte complète avec entité Edition comme pivot central
-- [x] ✅ Créer diagramme de classes avec 7 entités (Edition, User, Deposant, Article, Vente, Reversement, Invitation)
+- [x] ✅ Créer diagramme de classes avec 8 entités (Edition, User, Deposant, Creneau, Liste, Article, Vente, Reversement, Invitation)
 - [x] ✅ Ajouter diagramme de cycle de vie Edition (6 états)
-- [x] ✅ Définir règles métier par entité (Edition, Users/rôles, Articles, Ventes, Reversements, Invitations)
-- [x] ✅ Décrire 7 invariants système (unicités, cohérence dates, immutabilité)
+- [x] ✅ Définir règles métier par entité (Edition, Users/rôles, Créneaux, Listes, Articles, Ventes, Reversements, Invitations)
+- [x] ✅ Décrire 23 invariants système (unicités, cohérence dates, capacités créneaux, contraintes listes)
 - [x] ✅ Détailler attributs et types pour Edition (dates, commission, statut, etc.)
+- [x] ✅ Ajouter entité Creneau avec capacités et réservations Plaisançois
+- [x] ✅ Enrichir entité Liste avec types (standard/1000/2000), couleurs, frais
 - [ ] Ajouter diagrammes séquence pour dépôts et ventes
 - [ ] Détailler états et transitions des Articles (brouillon → récupéré)
 
@@ -82,7 +95,15 @@ Organiser la production et la validation des spécifications de l’application 
 - [x] ✅ Définir acteurs et rôles (Administrateur, Gestionnaire, Bénévole, Déposant)
 - [x] ✅ Décrire processus et dates clés (inscriptions, dépôt, vente, récupération, clôture)
 - [x] ✅ Documenter outils externes (Billetweb)
+- [x] ✅ Ajouter termes règlement intérieur (listes 1000/2000, créneaux, couleurs étiquettes)
 - [ ] Ajouter acronymes si nécessaire (MVP, API, etc.)
+
+## DOC-011 — Catégories articles
+- [x] ✅ Créer guide de référence rapide pour bénévoles (317 lignes)
+- [x] ✅ Documenter critères de qualité par catégorie (vêtements, chaussures, puériculture, jouets, livres)
+- [x] ✅ Lister articles acceptés avec prix indicatifs
+- [x] ✅ Lister articles refusés (liste noire complète)
+- [x] ✅ Créer checklist de vérification au dépôt pour bénévoles
 
 ## DOC-020 — Personas
 - [x] ✅ Créer persona Déposant (Marie) détaillé avec profil, objectifs, freins, scénarios
@@ -134,43 +155,50 @@ Organiser la production et la validation des spécifications de l’application 
 - **Dépendance informations terrain** — collecter retours bourse précédente avant le 15/11.
 - **Complexité RGPD** — solliciter consultation juridique externe pour revue finale.
 
-# Bilan d'avancement (au 2025-11-05)
+# Bilan d'avancement (au 2025-11-06)
 
-## ✅ Réalisations clés (version 0.3.0)
+## ✅ Réalisations clés (version 0.5.0)
 
 ### Fondations conceptuelles établies
 - **Concept central : Gestion des Éditions** introduit et documenté
 - **Cycle de vie complet** : Brouillon → Configurée → Inscriptions → En cours → Clôturée → Archivée
 - **4 rôles définis** : Déposant, Bénévole, Gestionnaire, Administrateur
+- **Intégration complète des règlements** : Règlement déposant (v0.4.0) + Règlement intérieur (v0.5.0)
+- **Listes spéciales 1000/2000** : Système d'adhérents ALPE documenté
+- **Gestion des créneaux** : Capacités configurables, créneaux réservés Plaisançois
 
 ### Livrables complétés
 | Livrable | Statut | Détails |
 |----------|--------|---------|
-| Glossaire (v0.2.0) | ✅ | 20+ nouveaux termes structurés par catégorie |
+| Glossaire (v0.4.0) | ✅ | 30+ termes incluant listes 1000/2000, créneaux, couleurs étiquettes |
 | Personas (v0.2.0) | ✅ | 4 personas détaillés avec profils complets |
-| User Stories (v0.3.0) | 🔄 50% | US-001 + US-006 à US-009 détaillées (5/9 US) |
-| Exigences (v0.2.0) | ✅ | REQ-F-001 à F-010 structurées avec AC, priorités |
-| Modèle domaine (v0.2.0) | ✅ | 7 entités + diagrammes + règles + invariants |
+| User Stories (v0.3.1) | 🔄 67% | US-001, US-002, US-006-009 détaillées (6/9 US) |
+| Exigences (v0.4.0) | ✅ | REQ-F-001 à F-017 avec règlements déposant + intérieur |
+| Modèle domaine (v0.4.0) | ✅ | 8 entités + 23 invariants + types listes + créneaux |
+| Catégories articles (v1.0.0) | ✅ | Guide bénévoles complet (317 lignes) |
 
 ### Métriques
-- **User Stories créées** : 5 (US-001, US-006, US-007, US-008, US-009)
-- **Critères d'acceptation** : 48 (14 pour US-001 + 34 pour US-006-009)
-- **Scénarios de test** : 52 (16 pour US-001 + 36 pour US-006-009)
-- **Exigences fonctionnelles** : 10 (REQ-F-001 à F-010)
-- **Entités du domaine** : 7 (Edition, User, Deposant, Article, Vente, Reversement, Invitation)
+- **User Stories détaillées** : 6 (US-001, US-002, US-006, US-007, US-008, US-009)
+- **Critères d'acceptation** : 60+ (répartis sur 6 US avec règles métier complexes)
+- **Scénarios de test** : 70+ (couvrant parcours nominaux et alternatifs)
+- **Exigences fonctionnelles** : 17 (REQ-F-001 à F-017)
+- **Exigences non-fonctionnelles** : 4 (disponibilité, performance, RGPD, accessibilité)
+- **Entités du domaine** : 8 (Edition, User, Deposant, Creneau, Liste, Article, Vente, Reversement, Invitation)
+- **Invariants système** : 23 (contraintes métier, unicités, cohérences temporelles)
 
 ## 🎯 Priorités immédiates
 
 ### Court terme (semaine prochaine)
-1. **US-002** : Enregistrement des articles (déposant)
-2. **US-003** : Génération d'étiquettes (déposant)
-3. **US-004** : Scannage et encaissement (bénévole)
-4. **US-005** : Calcul reversements (bénévole/gestionnaire)
+1. **US-003** : Génération d'étiquettes avec codes QR/barres (déposant)
+2. **US-004** : Scannage et encaissement rapide (bénévole)
+3. **US-005** : Calcul reversements avec listes 1000/2000 (bénévole/gestionnaire)
+4. **REQ-F-002 à F-005** : Compléter exigences articles, étiquettes, ventes, reversements
 
 ### Moyen terme (2 semaines)
 1. Architecture : Diagrammes C4 + ADR choix technologiques
-2. API : Définition endpoints éditions, articles, ventes
-3. Sécurité : Matrice d'autorisations détaillée
+2. API : Définition endpoints éditions, créneaux, listes, articles, ventes
+3. Sécurité : Matrice d'autorisations détaillée par rôle
+4. Diagrammes séquence : Parcours dépôt et vente
 
 # Prochain check-in
 
