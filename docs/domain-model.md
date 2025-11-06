@@ -2,13 +2,16 @@
 id: DOC-060-DOMAIN
 title: Modèle de domaine
 status: draft
-version: 0.3.0
+version: 0.4.0
 updated: 2025-11-06
 owner: ALPE Plaisance du Touch
 links:
   - rel: source
     href: Reglement_deposant.md
     title: Règlement déposant
+  - rel: source
+    href: Reglement_interne.md
+    title: Règlement intérieur
 ---
 
 # Entités principales
@@ -52,12 +55,26 @@ classDiagram
     +String creneau_depot?
   }
 
+  class Creneau {
+    +UUID id
+    +Date date
+    +Time heure_debut
+    +Time heure_fin
+    +Integer capacite_max
+    +Integer places_reservees
+    +Boolean reserve_plaisancois
+    +String description?
+  }
+
   class Liste {
     +UUID id
     +Integer numero
+    +Enum type
     +Enum statut
+    +String couleur_etiquette
     +Integer nombre_articles
     +Integer nombre_vetements
+    +Decimal frais
     +Timestamp created_at
     +Timestamp validated_at?
   }
@@ -111,10 +128,12 @@ classDiagram
   Edition "1" -- "*" Liste : contient
   Edition "1" -- "*" Invitation : génère
   Edition "1" -- "*" Reversement : calcule
+  Edition "1" -- "*" Creneau : définit
 
-  Deposant "1" -- "*" Liste : crée (max 2 par édition)
+  Deposant "1" -- "*" Liste : crée (max 2/4 selon type)
   Deposant "1" -- "1" User : est
   Deposant "1" -- "*" Reversement : reçoit
+  Deposant "*" -- "0..1" Creneau : réserve
 
   Liste "1" -- "*" Article : contient (max 24)
   Liste "*" -- "1" Edition : pour
@@ -162,15 +181,44 @@ stateDiagram-v2
 - **Gestionnaire** : peut configurer les éditions et importer les inscriptions
 - **Administrateur** : peut créer/clôturer des éditions et gérer les utilisateurs
 
+## Créneaux de dépôt
+- Un créneau est défini par une date, une plage horaire (heure début - heure fin) et une capacité maximum
+- Chaque créneau peut être réservé aux habitants de Plaisance-du-Touch (mercredi 20h-22h, vendredi 9h30-12h)
+- Exemples de capacités standard (REQ-F-014) :
+  - Mercredi 9h30-11h30 : 20 déposants
+  - Mercredi 14h-18h : 40 déposants
+  - Mercredi 20h-22h : 20 déposants (réservé Plaisançois)
+  - Jeudi 9h30-12h : 15 déposants
+  - Jeudi 17h-21h : 32 déposants
+  - Vendredi 9h30-12h : 15 déposants (réservé Plaisançois)
+- Créneaux spéciaux pour listes 1000/2000 : mardi jusqu'à 23h, mercredi 12h-14h et 18h-20h, jeudi 21h-22h
+- Les inscriptions sont bloquées une fois la capacité atteinte
+- Un déposant ne peut réserver qu'un seul créneau par semaine de collecte (REQ-F-013)
+
 ## Listes
-- Un déposant peut créer maximum 2 listes par édition (REQ-F-002)
-- Chaque liste est numérotée (1 ou 2) et rattachée à un déposant et une édition
+- **Types de listes** (REQ-F-015) :
+  - **Standard** : maximum 2 listes par déposant par édition, frais 5€ pour 2 listes (Billetweb), couleurs 100-600 selon numéro
+  - **Liste 1000** (étiquettes blanches) : réservée aux adhérents ALPE participant min 8h, numéro fixe définitif, limite 2 listes (1ère bourse) puis 4, frais 1€/liste déduit des ventes
+  - **Liste 2000** (étiquettes groseille) : pour famille/amis d'adhérents ne participant pas, numérotation liée aux 1000, max 4 listes pour 2 personnes, frais 5€ pour 2 listes déduit des ventes
+- Chaque liste est numérotée et rattachée à un déposant et une édition
 - Une liste contient maximum 24 articles dont 12 vêtements maximum (REQ-F-002)
 - Statuts possibles : brouillon, validee
 - Les lignes 1-12 sont réservées aux vêtements uniquement
 - Les lignes 13-24 acceptent toutes les catégories
-- Une liste ne peut plus être modifiée après la date limite de déclaration (REQ-F-011)
+- Une liste ne peut plus être modifiée après la date limite de déclaration (REQ-F-011 : 3 semaines avant collecte)
 - Une liste validée génère un récapitulatif PDF envoyé au déposant par email
+- **Couleurs d'étiquettes par numéro** :
+  - 100 : Bleu ciel
+  - 200 : Jaune soleil
+  - 300 : Fushia
+  - 400 : Lilas
+  - 500 : Vert menthe
+  - 600 : Clémentine
+  - 1000 : Blanc
+  - 2000 : Groseille
+- **Horaires de restitution différenciés** (REQ-F-016) :
+  - Listes standard : lundi 18h30-19h30 après la vente
+  - Listes 1000/2000 : dimanche 17h-18h (jour de la vente)
 
 ## Articles
 - Un article appartient à une liste unique (rattaché à un déposant et une édition via la liste)
@@ -199,11 +247,12 @@ stateDiagram-v2
 - La vente est horodatée et traçable (bénévole vendeur)
 
 ## Reversements
-- Le reversement = somme des ventes du déposant − (20% × somme ventes)
-- Tarification ALPE (selon règlement) :
-  - Frais d'inscription : 5€ pour 2 listes (payé via Billetweb, non remboursable)
-  - Commission ALPE : 20% du montant total des ventes
-  - Note : Les frais d'inscription sont gérés hors application, seule la commission de 20% est calculée ici
+- Le reversement = somme des ventes du déposant − (20% × somme ventes) − frais selon type de liste
+- **Tarification ALPE** (selon règlement) :
+  - **Listes standard** : Frais d'inscription 5€ pour 2 listes (payé via Billetweb en amont, non remboursable) + Commission ALPE 20% des ventes
+  - **Listes 1000** : 1€ par liste déduit du montant des ventes + Commission ALPE 20% des ventes
+  - **Listes 2000** : 5€ pour 2 listes déduit du montant des ventes + Commission ALPE 20% des ventes
+  - Note : Pour listes standard, les frais Billetweb sont gérés hors application. Pour listes 1000/2000, les frais sont déduits automatiquement du reversement
 - Calculé après la période de vente, avant clôture
 - Versement par chèque sous quinzaine (enveloppe timbrée fournie par le déposant)
 - Statuts : en_attente, calculé, payé, annulé
@@ -223,8 +272,14 @@ stateDiagram-v2
 - **Cohérence dates/heures édition** : datetime_debut < datetime_fin
 - **Cohérence dates opérationnelles** : dates_depot et dates_vente comprises dans la période temporelle de l'édition
 - **Cohérence date retour invendus** : date_retour_invendus doit être postérieure à la partie date de datetime_fin
-- **Cohérence date limite déclaration** : date_limite_declaration doit être antérieure à la première date de dépôt
-- **Maximum 2 listes par déposant/édition** : Un déposant ne peut créer que 2 listes maximum pour une édition donnée
+- **Cohérence date limite déclaration** : date_limite_declaration doit être antérieure à la première date de dépôt (recommandé : 3 semaines avant)
+- **Maximum listes selon type** :
+  - Listes standard : 2 maximum par déposant par édition
+  - Listes 1000 : 2 pour première bourse, puis 4 pour adhérent régulier
+  - Listes 2000 : 4 maximum pour 2 personnes
+- **Un seul dépôt par semaine** : Un déposant ne peut effectuer qu'un seul dépôt physique par semaine de collecte (REQ-F-013)
+- **Capacité créneau** : Le nombre de réservations pour un créneau ne peut dépasser sa capacité maximum
+- **Créneau Plaisançois** : Les créneaux réservés Plaisançois ne peuvent être réservés que par des habitants de Plaisance-du-Touch
 - **Maximum 24 articles par liste** : Une liste ne peut contenir plus de 24 articles
 - **Maximum 12 vêtements par liste** : Une liste ne peut contenir plus de 12 articles de catégorie "Vêtements"
 - **Lignes 1-12 réservées vêtements** : Les articles en lignes 1-12 doivent obligatoirement être de catégorie "Vêtements"
@@ -235,4 +290,5 @@ stateDiagram-v2
 - **Édition clôturée** : Aucune modification possible après clôture
 - **Liste après date limite** : Aucune modification de liste possible après date_limite_declaration
 - **Invitation expirée** : Un token expiré ne peut plus être utilisé
+- **Numérotation 1000/2000** : Les numéros 2000 correspondent aux numéros 1000 (ex: 1100 → 2100)
 
