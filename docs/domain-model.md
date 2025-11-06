@@ -15,14 +15,14 @@ classDiagram
   class Edition {
     +UUID id
     +String nom
-    +Enum saison
-    +Integer annee
+    +Date date_debut
+    +Date date_fin
     +String lieu
     +Text description
     +Enum statut
     +Date[] dates_depot
     +Date[] dates_vente
-    +Date date_recuperation
+    +Date date_retour_invendus
     +Decimal taux_commission
     +Timestamp created_at
     +User created_by
@@ -120,10 +120,15 @@ stateDiagram-v2
 # Règles métier
 
 ## Édition
-- Une édition a un nom unique dans tout le système
+- Une édition a un nom unique dans tout le système (porte généralement saison et année, ex: "Bourse Printemps 2025")
 - Le statut évolue selon le cycle de vie (voir diagramme)
-- Les dates doivent respecter l'ordre : dépôt < vente < récupération
+- La date de fin doit être strictement postérieure à la date de début
+- Les dates de dépôt doivent être comprises dans la période [date_debut, date_fin]
+- Les dates de vente doivent être comprises dans la période [date_debut, date_fin]
+- La date de retour des invendus doit être postérieure ou égale à la date de fin
+- L'ordre chronologique attendu : date_debut ≤ dates_depot ≤ dates_vente ≤ date_fin ≤ date_retour_invendus
 - Le taux de commission est un pourcentage entre 0 et 100
+- Le lieu est optionnel (peut être précisé ultérieurement)
 - Une édition clôturée est en lecture seule définitive
 
 ## Utilisateurs et rôles
@@ -160,7 +165,8 @@ stateDiagram-v2
 - **Unicité email** : Un email ne peut être associé qu'à un seul utilisateur
 - **Unicité étiquette/édition** : Un code étiquette est unique au sein d'une édition
 - **Unicité nom édition** : Le nom d'une édition est unique globalement
-- **Cohérence dates** : date_depot < date_vente < date_recuperation
+- **Cohérence dates édition** : date_debut < date_fin ET date_fin ≤ date_retour_invendus
+- **Cohérence dates opérationnelles** : dates_depot ⊆ [date_debut, date_fin] ET dates_vente ⊆ [date_debut, date_fin]
 - **Article → Vente** : Un article ne peut avoir qu'une seule vente (0..1 relation)
 - **Édition clôturée** : Aucune modification possible après clôture
 - **Invitation expirée** : Un token expiré ne peut plus être utilisé
