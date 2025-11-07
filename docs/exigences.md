@@ -148,7 +148,10 @@ links:
 - REQ-F-002 — Le système DOIT permettre l'enregistrement d'articles organisés en listes avec contraintes réglementaires. (US-002)
   - **Critères d'acceptation :**
     - Un déposant peut créer maximum 2 listes par édition
-    - Chaque liste contient maximum 24 articles dont 12 vêtements maximum (lignes 1-12 réservées aux vêtements)
+    - Chaque liste contient maximum 24 articles dont 12 vêtements maximum
+    - Les articles sont automatiquement triés par catégorie dans l'ordre : Vêtements, Chaussures, Puériculture, Jeux et jouets, Livres, Accessoires, Autres
+    - Interface : bouton "Nouvel article" ouvre un formulaire avec sélection catégorie, puis insertion automatique à la bonne position
+    - Validation en temps réel : si 12 vêtements déjà saisis et catégorie "Vêtements" sélectionnée, bouton "Ajouter l'article" grisé avec message "Vous avez déjà ajouté vos 12 vêtements sur cette liste"
     - Prix article : minimum 1€, maximum 150€ (uniquement pour poussettes/landaus)
     - Catégories obligatoires : Vêtements, Chaussures, Jouets, Livres, Puériculture, Accessoires
     - Attributs article : catégorie, genre (optionnel), taille (optionnel), description, prix

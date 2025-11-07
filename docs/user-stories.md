@@ -270,26 +270,39 @@ acceptance_criteria:
   - GIVEN je n'ai pas encore atteint la limite de 2 listes pour cette édition
     WHEN je clique sur "Créer une nouvelle liste"
     THEN le système crée une liste vide numérotée (ex: "Liste 1", "Liste 2")
-    AND m'affiche le formulaire de saisie des articles avec :
-      • Un tableau de 24 lignes numérotées (1 à 24)
-      • Les lignes 1-12 sont marquées "Vêtements uniquement" avec fond coloré distinct
-      • Les lignes 13-24 acceptent toutes les catégories
+    AND m'affiche l'interface de gestion de liste avec :
+      • Un bouton "Nouvel article" en haut
+      • Une zone d'affichage des articles déjà ajoutés (vide initialement)
+      • Les articles seront automatiquement triés par catégorie selon l'ordre :
+        1. Vêtements (max 12)
+        2. Chaussures
+        3. Puériculture
+        4. Jeux et jouets
+        5. Livres
+        6. Accessoires
+        7. Autres
       • Colonnes : N° ligne | Catégorie | Genre (opt.) | Taille (opt.) | Description | Prix (€) | Actions
       • Un bouton "Sauvegarder la liste" en bas
 
   # AC-3 : Ajout d'un article - cas nominal vêtement
   - GIVEN je suis dans une de mes listes (< 24 articles)
-    AND je sélectionne une ligne entre 1 et 12 (zone vêtements)
-    WHEN je remplis les champs :
-      • Catégorie : "Vêtements" (imposé automatiquement pour lignes 1-12)
+    AND j'ai moins de 12 vêtements déjà saisis
+    WHEN je clique sur "Nouvel article"
+    THEN un formulaire s'ouvre avec les champs :
+      • Catégorie : menu déroulant (Vêtements/Chaussures/Puériculture/Jeux et jouets/Livres/Accessoires/Autres)
+    AND je sélectionne "Vêtements"
+    AND je remplis :
       • Genre : "Garçon" (menu déroulant : Fille/Garçon/Mixte/Adulte Homme/Adulte Femme/Mixte Adulte)
       • Taille : "4 ans" (menu déroulant avec tailles standard)
       • Description : "Pull rayé bleu marine"
       • Prix : "5"
     AND je clique sur "Ajouter l'article"
-    THEN le système enregistre l'article dans la ligne sélectionnée
-    AND met à jour le compteur "Articles : X / 24 (Y vêtements / 12)"
-    AND affiche un message de confirmation vert : "Article ajouté"
+    THEN le système :
+      • Enregistre l'article
+      • L'insère automatiquement dans la section "Vêtements" de la liste (au bon endroit selon le tri)
+      • Met à jour le compteur "Articles : X / 24 (Y vêtements / 12)"
+      • Affiche un message de confirmation vert : "Article ajouté"
+      • Renumérotе automatiquement toutes les lignes pour garder l'ordre 1 à X
 
   # AC-4 : Validation des contraintes par catégorie
   - GIVEN j'ai déjà saisi 1 manteau dans ma liste
@@ -332,12 +345,23 @@ acceptance_criteria:
       • Vérifie nombre articles lot ≤ 3
       • Affiche dans la liste : "LOT x3 - Bodys 18 mois Petit Bateau - 4€"
 
-  # AC-7 : Erreur - ajout article ligne vêtement (1-12) avec catégorie non-vêtement
-  - GIVEN je sélectionne une ligne entre 1 et 12
-    AND je tente de choisir une catégorie autre que "Vêtements" (ex: "Jouets")
-    WHEN le système détecte l'incohérence
-    THEN il affiche : "Les lignes 1 à 12 sont réservées aux vêtements. Pour les autres articles, utilisez les lignes 13 à 24."
-    AND force la catégorie "Vêtements" ou propose de basculer sur une ligne 13-24 disponible
+  # AC-7 : Tri automatique des articles par catégorie
+  - GIVEN j'ai ajouté plusieurs articles de catégories différentes dans ma liste :
+      • 2 vêtements (ligne 1-2)
+      • 1 livre (ligne 3)
+      • 1 jouet (ligne 4)
+    WHEN j'ajoute un nouveau vêtement
+    THEN le système l'insère automatiquement après les vêtements existants (ligne 3)
+    AND décale automatiquement les autres articles (livre devient ligne 4, jouet devient ligne 5)
+    AND maintient l'ordre de tri :
+      1. Vêtements (tous groupés)
+      2. Chaussures (tous groupés)
+      3. Puériculture
+      4. Jeux et jouets
+      5. Livres
+      6. Accessoires
+      7. Autres
+    AND renumérotе toutes les lignes de 1 à N pour refléter l'ordre final
 
   # AC-8 : Blocage articles refusés (liste noire)
   - GIVEN je tente d'ajouter un article avec catégorie dans la liste noire :
@@ -367,12 +391,18 @@ acceptance_criteria:
     THEN si je ne coche pas, le système affiche :
       "Vous devez certifier la conformité de vos articles pour pouvoir sauvegarder votre liste"
 
-  # AC-10 : Limite 12 vêtements atteinte
+  # AC-10 : Limite 12 vêtements atteinte - validation en temps réel
   - GIVEN j'ai déjà saisi 12 articles de catégorie "Vêtements" dans ma liste
-    WHEN je tente d'ajouter un 13ème vêtement (même sur ligne 13-24)
-    THEN le système affiche : "Limite atteinte : 12 vêtements maximum par liste (règlement ALPE)"
-    AND bloque l'ajout
-    AND propose : "Vous pouvez créer une 2ème liste si nécessaire (2 listes max par déposant)"
+    AND je clique sur "Nouvel article" pour en ajouter un nouveau
+    WHEN dans le formulaire je sélectionne la catégorie "Vêtements"
+    THEN le système :
+      • Grise immédiatement le bouton "Ajouter l'article" (non cliquable)
+      • Affiche un message d'erreur en rouge : "Vous avez déjà ajouté vos 12 vêtements sur cette liste"
+      • Affiche une suggestion : "Vous pouvez créer une 2ème liste si nécessaire (2 listes max par déposant)"
+      • Empêche la validation tant que la catégorie "Vêtements" reste sélectionnée
+    AND si je change la catégorie vers une autre valeur (ex: "Chaussures")
+    THEN le bouton "Ajouter l'article" redevient cliquable
+    AND le message d'erreur disparaît
 
   # AC-11 : Sauvegarde et modification de liste
   - GIVEN j'ai saisi des articles dans ma liste
@@ -447,7 +477,7 @@ links:
 business_rules:
   - Maximum 2 listes par déposant par édition
   - Maximum 24 articles par liste dont 12 vêtements max
-  - Lignes 1-12 réservées aux vêtements uniquement
+  - Articles automatiquement triés par catégorie : Vêtements, Chaussures, Puériculture, Jeux/jouets, Livres, Accessoires, Autres
   - Prix minimum 1€ pour tout article
   - Prix maximum 150€ uniquement pour poussettes/landaus
   - Lots autorisés : vêtements enfant (bodys/pyjamas) jusqu'à 36 mois, lot de 3 max, taille et marque identiques
@@ -462,22 +492,31 @@ business_rules:
 categories:
   Vêtements:
     - Jupe, Tee-shirt, Robe, Ensemble, Pantalon, Chemise, Bermuda/Short, Jogging, Sweat/Pull, Imperméable, Veste/Blouson, Manteau/Anorak, Layette
-    - Contraintes : 12 max par liste, lignes 1-12
+    - Contraintes : 12 max par liste
+    - Position : toujours en premier dans la liste (tri automatique)
   Chaussures:
     - Chaussures sport (crampons, randonnée, ski, danse), Bottes pluie, Bottes neige
+    - Position : 2ème dans la liste (après vêtements)
     - Exclusions : Chaussons enfants, Chaussures > pointure 25, Chaussettes (sauf ski)
   Puériculture:
     - Poussettes, Landaus, Tour de lit (1 max), Articles bébé très propres
+    - Position : 3ème dans la liste (après chaussures)
     - Exclusions : Sièges-autos, Biberons, Pots, Vaisselle, Matelas, Baignoires
-  Jouets:
+  "Jeux et jouets":
     - Jouets complets, Jeux de société, Disquettes/CD jeux (avec boîte), Peluches (1 max)
+    - Position : 4ème dans la liste (après puériculture)
     - Exclusions : Consoles, Jeux PC/Mac, Circuits électriques, Jouets gonflables piscine
   Livres:
     - Livres enfants, Livres adultes (5 max), Magazines enfants en lot
+    - Position : 5ème dans la liste (après jeux et jouets)
     - Exclusions : Livres jaunis/abîmés, Encyclopédies, Annales > 5 ans, Magazines adultes
   Accessoires:
     - Sacs à main (1 max), Foulards (2 max), Gants ski, Bonnets
+    - Position : 6ème dans la liste (après livres)
     - Exclusions : Sacs de voyage, Cravates, Gants de ville
+  Autres:
+    - Tous les articles ne rentrant pas dans les catégories précédentes
+    - Position : en dernier dans la liste
 
 # Grille de prix indicatifs (selon règlement)
 prix_indicatifs:
@@ -507,7 +546,8 @@ test_scenarios:
   - T-US002-06 : Tentative de lot > 36 mois (bloqué)
   - T-US002-07 : Ajout article avec prix 0.50€ (bloqué, min 1€)
   - T-US002-08 : Ajout poussette à 160€ (bloqué, max 150€)
-  - T-US002-09 : Tentative d'ajouter jouet sur ligne 1-12 (bloqué, zone vêtements)
+  - T-US002-09 : Tri automatique : ajout vêtement après 2 livres existants (vêtement s'insère en premier)
+  - T-US002-09bis : Validation temps réel : sélection catégorie "Vêtements" avec 12 déjà saisis (bouton grisé + message)
   - T-US002-10 : Tentative d'ajouter siège-auto (bloqué, liste noire)
   - T-US002-11 : Tentative d'ajouter CD/DVD (bloqué, liste noire)
   - T-US002-12 : Validation d'une liste avec 15 articles (OK)
