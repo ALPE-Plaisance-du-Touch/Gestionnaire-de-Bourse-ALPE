@@ -2,8 +2,8 @@
 id: DOC-030-US
 title: User Stories
 status: draft
-version: 0.3.1
-updated: 2025-11-06
+version: 0.4.0
+updated: 2025-11-07
 owner: ALPE Plaisance du Touch
 links: []
 ---
@@ -1958,5 +1958,312 @@ test_scenarios:
   - T-US009-07 : Accès refusé pour gestionnaire/bénévole/déposant
   - T-US009-08 : Traçabilité de la clôture (date, administrateur)
   - T-US009-09 : Archivage d'une édition clôturée (> 1 an)
+```
+
+## US-010 — Émettre des invitations manuellement en masse
+
+```yaml
+id: US-010
+title: Émettre des invitations manuellement en masse
+actor: gestionnaire
+benefit: "...pour permettre aux déposants de s'inscrire et déclarer leurs articles avant la bourse"
+as_a: "En tant que gestionnaire responsable des inscriptions"
+i_want: "Je veux créer et envoyer des invitations en masse aux déposants potentiels"
+so_that: "Afin de leur permettre d'activer leur compte et déclarer leurs articles dans les délais"
+
+# Contexte métier
+notes: |
+  - Deux modes d'inscription : via Billetweb (US-008) OU invitation manuelle (US-010)
+  - Les invitations manuelles servent à :
+    * Inviter des anciens déposants (déjà dans la base)
+    * Inviter de nouveaux déposants non passés par Billetweb
+    * Corriger des erreurs d'import Billetweb
+    * Gérer des cas exceptionnels (adhérents ALPE, VIP, bénévoles)
+  - Chaque invitation génère un token unique valide 7 jours
+  - Un email est envoyé automatiquement avec lien d'activation
+  - Les invitations peuvent être relancées si non activées
+  - Volume attendu : 50-100 invitations manuelles par édition
+
+acceptance_criteria:
+  # AC-1 : Accès à l'interface d'invitation
+  - GIVEN je suis connecté en tant que gestionnaire
+    AND une édition est en statut "Inscriptions ouvertes"
+    WHEN j'accède à la section "Gestion des invitations"
+    THEN je vois :
+      • Un tableau listant toutes les invitations de l'édition en cours :
+        - Email déposant
+        - Nom/Prénom (si connu)
+        - Date d'envoi
+        - Statut : "En attente" / "Activée" / "Expirée"
+        - Date d'activation (si activée)
+        - Actions : "Relancer" / "Annuler"
+      • Des filtres : par statut, par date d'envoi
+      • Un bouton "Nouvelle invitation"
+      • Un bouton "Invitations en masse"
+      • Des statistiques globales en haut :
+        - Total invitations envoyées : 245
+        - Activées : 198 (81%)
+        - En attente : 35 (14%)
+        - Expirées : 12 (5%)
+
+  # AC-2 : Création d'une invitation unique
+  - GIVEN je clique sur "Nouvelle invitation"
+    WHEN le formulaire s'affiche
+    THEN je vois les champs :
+      • Email du déposant (obligatoire, validation format email)
+      • Nom (optionnel, max 50 caractères)
+      • Prénom (optionnel, max 50 caractères)
+      • Type de liste : ○ Standard  ○ Liste 1000  ○ Liste 2000 (boutons radio)
+      • Commentaire interne (optionnel, non visible du déposant, ex: "Ancien déposant 2023")
+      • Case à cocher : ☑ Envoyer l'email d'invitation immédiatement
+      • Boutons : "Annuler" / "Créer l'invitation"
+    AND quand je valide :
+      • Le système vérifie que l'email n'a pas déjà une invitation active pour cette édition
+      • Crée l'invitation avec un token unique
+      • Si case cochée : envoie l'email immédiatement
+      • Affiche : "✓ Invitation créée et envoyée à sophie.martin@example.com"
+
+  # AC-3 : Validation unicité email par édition
+  - GIVEN un email a déjà une invitation active (non expirée) pour l'édition en cours
+    WHEN je tente de créer une nouvelle invitation avec cet email
+    THEN :
+      • Le système affiche une erreur : "⚠️ Une invitation active existe déjà pour cet email (envoyée le 03/11/2024, expire le 10/11/2024)"
+      • Propose 2 options :
+        - "Annuler l'invitation existante et créer une nouvelle" (bouton)
+        - "Relancer l'invitation existante" (bouton)
+      • La création est bloquée jusqu'à résolution
+
+  # AC-4 : Invitations en masse par CSV
+  - GIVEN je clique sur "Invitations en masse"
+    WHEN le formulaire s'affiche
+    THEN je vois :
+      • Un bouton "Télécharger le modèle CSV" (template avec colonnes attendues)
+      • Une zone de dépôt de fichier : "Glissez votre fichier CSV ici ou cliquez pour parcourir"
+      • Format attendu affiché :
+        Colonnes obligatoires : email
+        Colonnes optionnelles : nom, prenom, type_liste (standard/1000/2000), commentaire
+      • Exemple :
+        email,nom,prenom,type_liste,commentaire
+        sophie.martin@example.com,Martin,Sophie,standard,Ancien déposant 2023
+        jean.dupont@example.com,Dupont,Jean,1000,Adhérent ALPE
+      • Case à cocher : ☑ Envoyer tous les emails immédiatement après import
+      • Boutons : "Annuler" / "Valider et importer"
+
+  # AC-5 : Validation du fichier CSV
+  - GIVEN je sélectionne un fichier CSV pour import en masse
+    WHEN je clique sur "Valider et importer"
+    THEN le système :
+      • Valide le format CSV (séparateur virgule, encodage UTF-8)
+      • Vérifie la présence de la colonne "email"
+      • Valide chaque email (format correct)
+      • Vérifie que type_liste est dans : standard, 1000, 2000 (si fourni)
+      • Détecte les doublons dans le fichier
+      • Vérifie les emails déjà invités pour l'édition en cours
+      • Affiche un rapport de validation :
+        - ✓ 45 invitations valides à créer
+        - ⚠️ 3 emails en doublon dans le fichier (ignorés)
+        - ⚠️ 2 emails déjà invités pour cette édition (ignorés)
+        - ❌ 1 email invalide : "jean.dupont@" (ligne 12)
+      • Si erreurs critiques (emails invalides) : affiche la liste et bloque l'import
+      • Si seulement warnings : propose "Continuer avec 45 invitations" ou "Annuler"
+
+  # AC-6 : Import en masse effectif
+  - GIVEN le rapport de validation affiche 45 invitations valides
+    WHEN je confirme l'import
+    THEN :
+      • Le système affiche une barre de progression : "Création des invitations... 12/45"
+      • Crée 45 invitations avec tokens uniques
+      • Si case "Envoyer immédiatement" cochée : envoie les 45 emails (affichage progression)
+      • Affiche un rapport final :
+        - ✓ 45 invitations créées avec succès
+        - ✓ 45 emails envoyés (si case cochée) ou "⏸ En attente d'envoi" (si non cochée)
+        - ⚠️ 2 emails en échec d'envoi : liste des emails + raison
+      • Propose : "Télécharger le rapport CSV" (avec colonnes : email, statut, token, date_envoi, erreur_envoi)
+
+  # AC-7 : Contenu de l'email d'invitation
+  - GIVEN une invitation est envoyée à un déposant
+    WHEN l'email arrive dans sa boîte
+    THEN il contient :
+      • Objet : "Bourse Automne 2024 ALPE - Activez votre compte déposant"
+      • Corps :
+        - Logo ALPE
+        - "Bonjour Sophie," (si prénom connu) ou "Bonjour," (si inconnu)
+        - Texte explicatif : "Vous êtes invité(e) à participer à la Bourse Automne 2024 d'ALPE Plaisance du Touch."
+        - Si type liste 1000/2000 : "Vous bénéficiez d'une liste adhérent [1000/2000] avec restitution prioritaire."
+        - Bouton CTA : "Activer mon compte" (lien vers page activation avec token)
+        - Informations importantes :
+          * Date limite de déclaration des articles : 20/11/2024
+          * Date de la bourse : 30/11-01/12/2024
+          * Ce lien est valide 7 jours (jusqu'au 14/11/2024)
+        - Lien vers règlement déposant
+        - Footer : Contact ALPE, mentions légales
+      • Expéditeur : "ALPE Plaisance du Touch <noreply@alpe-bourse.fr>"
+      • Reply-To : "contact@alpe-bourse.fr"
+
+  # AC-8 : Relance d'une invitation
+  - GIVEN une invitation a été envoyée il y a 3 jours et n'est pas encore activée
+    WHEN je clique sur "Relancer" dans le tableau des invitations
+    THEN :
+      • Le système affiche une confirmation : "Renvoyer l'email d'invitation à sophie.martin@example.com ?"
+      • Si je confirme :
+        - Génère un nouveau token (l'ancien est invalidé)
+        - Prolonge la validité de 7 jours à partir de maintenant
+        - Envoie un nouvel email avec le nouveau lien
+        - Met à jour le statut : "Relancée le 06/11/2024"
+        - Affiche : "✓ Email de relance envoyé à sophie.martin@example.com"
+        - Trace l'action : qui a relancé, quand
+
+  # AC-9 : Annulation d'une invitation
+  - GIVEN une invitation est en statut "En attente" (non activée)
+    WHEN je clique sur "Annuler" dans le tableau
+    THEN :
+      • Le système affiche une confirmation : "⚠️ Annuler l'invitation de sophie.martin@example.com ? Le lien ne sera plus valide."
+      • Si je confirme :
+        - Invalide le token immédiatement
+        - Passe le statut à "Annulée"
+        - Si le déposant tente d'activer : message "Cette invitation a été annulée. Contactez l'organisation."
+        - Trace l'action : qui a annulé, quand, motif (optionnel)
+        - Affiche : "✓ Invitation annulée"
+
+  # AC-10 : Gestion des invitations expirées
+  - GIVEN une invitation a dépassé les 7 jours sans activation
+    WHEN le système vérifie les invitations (tâche cron quotidienne)
+    THEN :
+      • Le statut passe automatiquement à "Expirée"
+      • Le token devient invalide
+      • Si le déposant tente d'activer : message "Ce lien d'invitation a expiré (7 jours dépassés). Demandez une nouvelle invitation."
+      • Le gestionnaire voit dans le tableau : statut "Expirée" en rouge
+      • Action disponible : "Relancer" (crée une nouvelle invitation)
+
+  # AC-11 : Invitations pour anciens déposants
+  - GIVEN je veux inviter un ancien déposant (déjà dans la base de données)
+    WHEN je tape son email dans le formulaire "Nouvelle invitation"
+    THEN :
+      • Le système détecte l'email existant
+      • Affiche une info : "ℹ️ Déposant existant : Sophie MARTIN (dernière participation : Printemps 2024)"
+      • Pré-remplit automatiquement les champs Nom et Prénom
+      • Affiche l'historique : "3 éditions, 87 articles vendus (72% taux de vente)"
+      • Propose de réutiliser le même type de liste que la dernière fois : "Type suggéré : Standard"
+      • Je peux modifier ou valider tel quel
+
+  # AC-12 : Notifications gestionnaires
+  - GIVEN des invitations restent non activées 3 jours avant expiration
+    WHEN le système vérifie les invitations (tâche cron quotidienne)
+    THEN :
+      • Envoie un email récapitulatif aux gestionnaires :
+        Objet : "Bourse Automne 2024 - 12 invitations expirent dans 3 jours"
+        Corps :
+          - Liste des 12 emails non activés
+          - Bouton : "Relancer ces invitations en masse"
+          - Lien vers tableau de bord des invitations
+      • Affiche une alerte dans l'interface : "⚠️ 12 invitations expirent dans 3 jours"
+
+  # AC-13 : Statistiques et export
+  - GIVEN je veux analyser le taux d'activation des invitations
+    WHEN je clique sur "Statistiques détaillées"
+    THEN j'accède à un dashboard avec :
+      • Graphique d'évolution : invitations envoyées vs activées par jour
+      • Taux d'activation global : 81% (198/245)
+      • Délai moyen d'activation : 1,5 jours
+      • Taux d'expiration : 5% (12/245)
+      • Nombre de relances : 23 (dont 18 activées après relance)
+      • Répartition par type de liste :
+        - Standard : 210 invitations (85%)
+        - Liste 1000 : 25 invitations (10%)
+        - Liste 2000 : 10 invitations (5%)
+    AND je peux cliquer sur "Exporter Excel" pour obtenir :
+      • Feuille 1 : Liste complète des invitations (email, statut, dates, etc.)
+      • Feuille 2 : Statistiques globales
+      • Feuille 3 : Invitations non activées (à relancer)
+
+  # AC-14 : Traçabilité complète
+  - GIVEN je consulte l'historique d'une invitation
+    WHEN j'accède aux détails de l'invitation
+    THEN je vois :
+      • Création : "Créée le 03/11/2024 à 10:23 par Gestionnaire Sophie D."
+      • Envoi initial : "Email envoyé le 03/11/2024 à 10:23"
+      • Relances : "Relancée le 06/11/2024 à 14:15 par Gestionnaire Alice M."
+      • Activation : "Activée le 07/11/2024 à 09:42 (4 jours après envoi)"
+      • Token(s) : "abc123def456" (avec date de validité)
+      • Commentaire interne : "Ancien déposant 2023, très bon taux de vente"
+      • Modifications : historique de toutes les modifications (si annulation, motif)
+
+  # AC-15 : Sécurité et contrôles
+  - GIVEN je suis gestionnaire
+    WHEN j'utilise les fonctions d'invitation
+    THEN :
+      • Je ne peux inviter que pour l'édition en cours (pas pour éditions futures/passées)
+      • Je ne peux pas voir/modifier les invitations créées par d'autres gestionnaires (sauf admin)
+      • Les tokens sont générés avec cryptographie sécurisée (UUID v4 ou JWT)
+      • Les tokens sont hashés en base de données
+      • Les emails sont validés côté serveur (protection XSS/injection)
+      • Rate limiting : max 100 invitations/heure par gestionnaire (anti-spam)
+      • Logs d'audit : toutes les actions sont tracées (création, relance, annulation)
+
+business_rules:
+  - Une invitation = 1 email unique pour 1 édition donnée
+  - Validité : 7 jours calendaires après émission
+  - Token unique, non réutilisable après expiration ou annulation
+  - Relance = nouveau token (ancien invalidé) + nouveau délai 7 jours
+  - Un déposant peut avoir des invitations pour différentes éditions
+  - Import CSV : max 500 lignes par import (performance)
+  - Format email : RFC 5322 standard
+  - Types de liste : standard (défaut), 1000, 2000 (selon adhésion ALPE)
+  - Traçabilité obligatoire : qui a invité, quand, pour quelle édition
+  - Rate limiting : 100 invitations/heure par gestionnaire
+
+technical_specs:
+  token_generation:
+    - Format : UUID v4 ou JWT signé
+    - Longueur : 32-64 caractères
+    - Stockage : hashé (SHA-256) en base de données
+    - URL activation : https://app.alpe-bourse.fr/activation?token=abc123def456
+
+  email_sending:
+    - Service : SendGrid, AWS SES, ou équivalent
+    - Template : HTML responsive (mobile-friendly)
+    - Tracking : ouverture, clic (optionnel)
+    - Retry automatique en cas d'échec (max 3 tentatives)
+    - Bounce management : détecter emails invalides
+
+  csv_import:
+    - Format : CSV UTF-8, séparateur virgule
+    - Colonnes : email (obligatoire), nom, prenom, type_liste, commentaire
+    - Validation côté serveur (pas seulement client)
+    - Traitement asynchrone si > 50 lignes (job en background)
+    - Rapport d'erreurs détaillé ligne par ligne
+
+  cron_jobs:
+    - Vérification quotidienne (1h du matin) : invitations expirées
+    - Notification gestionnaires : invitations expirant dans 3 jours
+    - Nettoyage tokens expirés : suppression après 30 jours
+
+  security:
+    - Rate limiting : 100 requêtes/heure par gestionnaire
+    - CSRF protection sur formulaires
+    - Email validation : format + vérification MX record (optionnel)
+    - Logs d'audit : toutes actions tracées avec IP + user agent
+
+test_scenarios:
+  - T-US010-01 : Création invitation unique valide (OK, email envoyé, token généré)
+  - T-US010-02 : Tentative doublon email même édition (bloqué, message erreur)
+  - T-US010-03 : Import CSV 45 invitations valides (OK, 45 créées, 45 emails envoyés)
+  - T-US010-04 : Import CSV avec erreurs (5 emails invalides, 3 doublons, rapport affiché)
+  - T-US010-05 : Validation format email (OK pour valides, bloqué pour invalides)
+  - T-US010-06 : Relance invitation non activée après 3 jours (OK, nouveau token, email envoyé)
+  - T-US010-07 : Annulation invitation en attente (OK, token invalidé, statut "Annulée")
+  - T-US010-08 : Expiration automatique après 7 jours (OK, statut "Expirée", token invalide)
+  - T-US010-09 : Activation après expiration (bloqué, message "lien expiré")
+  - T-US010-10 : Invitation ancien déposant (OK, nom/prénom pré-remplis, historique affiché)
+  - T-US010-11 : Email d'invitation contient toutes sections (OK, logo, CTA, dates, règlement)
+  - T-US010-12 : Notification gestionnaires 3 jours avant expiration (OK, email récap envoyé)
+  - T-US010-13 : Statistiques dashboard (OK, graphiques, taux activation, délais)
+  - T-US010-14 : Export Excel invitations (OK, 3 feuilles, données complètes)
+  - T-US010-15 : Traçabilité invitation (OK, historique complet qui/quand/quoi)
+  - T-US010-16 : Sécurité tokens (OK, hashés en BDD, non lisibles)
+  - T-US010-17 : Rate limiting 100/heure (OK, 101ème requête bloquée)
+  - T-US010-18 : Import CSV 500 lignes (OK, traitement asynchrone, rapport final)
+  - T-US010-19 : Type liste 1000/2000 dans email (OK, mention priorité affichée)
+  - T-US010-20 : Gestionnaire ne voit que ses invitations (OK, isolation données)
 ```
 
