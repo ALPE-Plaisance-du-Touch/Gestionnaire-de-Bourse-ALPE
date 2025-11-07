@@ -561,9 +561,213 @@ test_scenarios:
   - T-US002-20 : Compteur visuel progression 24 articles et 12 vêtements
 ```
 
-# User Stories déposants (à détailler)
+## US-003 — Générer et imprimer mes étiquettes
 
-- US-003 — En tant que déposant, je veux obtenir/imprimer des étiquettes pour chaque article.
+```yaml
+id: US-003
+title: Générer et imprimer mes étiquettes
+actor: deposant
+benefit: "...pour identifier mes articles au moment du dépôt et permettre leur scannage en caisse"
+as_a: "En tant que déposant ayant validé mes listes"
+i_want: "Je veux générer et imprimer des étiquettes avec code-barres/QR pour chacun de mes articles"
+so_that: "Afin de préparer mon dépôt et permettre le scannage rapide en caisse le jour de la vente"
+
+# Contexte métier
+notes: |
+  - Cette US s'appuie sur la US-002 (déclaration des articles validée)
+  - Les étiquettes sont générées après validation finale des listes
+  - Chaque étiquette contient un code unique scannable (QR code ou code-barres)
+  - La couleur de l'étiquette dépend du numéro de liste (règlement intérieur) :
+    • Liste 100 : étiquette bleu ciel
+    • Liste 200 : étiquette jaune soleil
+    • Liste 300 : étiquette fushia
+    • Liste 400 : étiquette lilas
+    • Liste 500 : étiquette vert menthe
+    • Liste 600 : étiquette clémentine
+    • Liste 1000 : étiquette blanche
+    • Liste 2000 : étiquette groseille
+  - Le déposant imprime ses étiquettes chez lui et les découpe avant le dépôt
+  - Les étiquettes doivent être solidement attachées aux articles (épingle à nourrice, ruban, etc.)
+  - Les étiquettes sont présentées lors du dépôt physique pour vérification par les bénévoles
+
+acceptance_criteria:
+  # AC-1 : Accès à la génération d'étiquettes
+  - GIVEN j'ai validé mes listes (statut "Validée")
+    AND la date limite de déclaration n'est pas dépassée
+    WHEN j'accède à mon espace déposant
+    THEN je vois un bouton "Générer mes étiquettes" pour chaque liste validée
+    AND un message informatif :
+      "Vos étiquettes sont prêtes à être imprimées. Téléchargez le PDF et imprimez-les sur papier blanc A4 standard."
+
+  # AC-2 : Génération du fichier PDF - cas nominal
+  - GIVEN j'ai une liste validée avec 15 articles
+    WHEN je clique sur "Générer mes étiquettes" pour cette liste
+    THEN le système :
+      • Génère un code unique par article (format : EDI-[ID_EDITION]-L[NUMERO_LISTE]-A[NUMERO_ARTICLE])
+      • Crée un QR code scannable pour chaque article contenant ce code unique
+      • Produit un fichier PDF nommé "Etiquettes_Liste_[NUMERO]_[NOM_DEPOSANT].pdf"
+      • Lance automatiquement le téléchargement du PDF
+      • Affiche un message de confirmation : "PDF généré avec succès ! Téléchargement en cours..."
+
+  # AC-3 : Contenu d'une étiquette
+  - GIVEN une étiquette générée pour un article
+    WHEN je consulte le PDF téléchargé
+    THEN chaque étiquette contient :
+      • QR code scannable (taille 25x25mm minimum)
+      • Numéro de liste (ex: "Liste 245") en gros caractères
+      • Numéro d'article dans la liste (ex: "Article 3/15")
+      • Prix de vente en gros (ex: "5.00€")
+      • Description courte de l'article tronquée à 50 caractères max (ex: "Pull rayé bleu marine - 4 ans")
+      • Catégorie (icône + texte : "Vêtements", "Jouets", etc.)
+      • Indication couleur : fond de l'étiquette dans la couleur correspondant au numéro de liste
+      • Code unique en texte petit en bas (ex: "EDI-2024-11-L245-A03")
+
+  # AC-4 : Format d'impression optimisé
+  - GIVEN je consulte le PDF généré
+    THEN le document est optimisé pour impression :
+      • Format A4 portrait
+      • 8 étiquettes par page (2 colonnes × 4 lignes)
+      • Dimension étiquette : 105mm × 74mm (format carte postale standard)
+      • Lignes pointillées pour découpe entre chaque étiquette
+      • Marges de 10mm tout autour
+      • Police lisible (Arial ou équivalent, taille 10-14pt selon l'élément)
+      • Compatible impression couleur ou noir & blanc (la couleur de fond reste visible en noir & blanc)
+
+  # AC-5 : Instructions d'utilisation incluses
+  - GIVEN je télécharge le PDF d'étiquettes
+    THEN la première page du PDF contient :
+      • Titre : "Guide d'utilisation de vos étiquettes - Bourse ALPE"
+      • Instructions de découpe : "Découpez le long des lignes pointillées"
+      • Instructions de fixation : "Attachez solidement chaque étiquette à l'article correspondant (épingle à nourrice pour vêtements, ruban/ficelle pour objets)"
+      • Avertissement : "Vérifiez que le numéro d'article correspond bien à votre liste avant de fixer l'étiquette"
+      • Rappel : "Apportez vos articles dans l'ordre de votre liste lors du dépôt"
+      • Date et heure de votre créneau de dépôt
+      • Numéro de téléphone en cas de problème
+
+  # AC-6 : Réimpression possible
+  - GIVEN j'ai déjà généré mes étiquettes
+    AND la date limite de déclaration n'est pas dépassée
+    WHEN je clique à nouveau sur "Générer mes étiquettes"
+    THEN le système :
+      • Affiche une modale de confirmation :
+        "Vous avez déjà généré vos étiquettes le [DATE] à [HEURE]. Voulez-vous les régénérer ?"
+        "⚠️ Les codes QR resteront identiques mais si vous avez modifié vos articles, les nouvelles informations seront prises en compte."
+      • Propose deux boutons : "Annuler" et "Régénérer"
+    AND si je confirme
+    THEN génère un nouveau PDF avec les informations à jour
+
+  # AC-7 : Blocage après date limite
+  - GIVEN la date limite de déclaration est dépassée
+    AND je n'ai pas encore généré mes étiquettes
+    WHEN j'accède à mon espace déposant
+    THEN le système :
+      • Affiche un bandeau d'alerte rouge :
+        "Date limite dépassée. Vos étiquettes ont été automatiquement générées par le système."
+      • Met automatiquement à disposition un PDF d'étiquettes basé sur l'état final de mes listes
+      • Affiche un bouton "Télécharger mes étiquettes" (pas "Générer")
+
+  # AC-8 : Gestion des listes multiples
+  - GIVEN j'ai validé 2 listes (Liste 245 avec 18 articles, Liste 246 avec 12 articles)
+    WHEN j'accède à mon espace
+    THEN je vois :
+      • Deux boutons distincts : "Générer étiquettes Liste 245" et "Générer étiquettes Liste 246"
+      • Un compteur pour chaque : "18 étiquettes" et "12 étiquettes"
+      • Un bouton global : "Générer toutes mes étiquettes" qui produit un seul PDF contenant les deux listes
+
+  # AC-9 : Vérification de cohérence
+  - GIVEN j'ai généré mes étiquettes
+    WHEN le système crée le PDF
+    THEN il effectue les vérifications suivantes :
+      • Chaque article de la liste a bien une étiquette correspondante
+      • Les numéros d'articles sont séquentiels (1, 2, 3... jusqu'à N)
+      • Aucun code unique n'est dupliqué au sein de l'édition
+      • Les prix affichés correspondent bien aux prix saisis dans la liste
+      • La couleur de fond correspond bien au numéro de liste
+    AND si une incohérence est détectée
+    THEN affiche une erreur : "Impossible de générer les étiquettes. Veuillez contacter un administrateur (code erreur : [CODE])"
+
+  # AC-10 : Aperçu avant impression
+  - GIVEN je viens de cliquer sur "Générer mes étiquettes"
+    WHEN le PDF se télécharge
+    THEN le système :
+      • Ouvre automatiquement une fenêtre de prévisualisation du PDF dans le navigateur
+      • Affiche un message d'aide :
+        "💡 Astuce : Vérifiez votre PDF avant impression. Utilisez du papier blanc A4 standard 80g."
+      • Propose un bouton "Imprimer directement" qui ouvre le dialogue d'impression du navigateur
+      • Enregistre la date/heure de génération dans l'historique du déposant
+
+  # AC-11 : Accessibilité du PDF
+  - GIVEN un déposant malvoyant génère ses étiquettes
+    WHEN le PDF est créé
+    THEN il respecte les normes d'accessibilité :
+      • Texte sélectionnable (pas d'image texte)
+      • Contraste minimum 4.5:1 entre texte et fond
+      • Police sans-serif lisible (Arial, Helvetica)
+      • Taille de police minimum 10pt
+      • Codes QR de taille suffisante pour scan fiable (25×25mm)
+
+  # AC-12 : Traçabilité génération
+  - GIVEN je génère mes étiquettes
+    WHEN le système crée le PDF
+    THEN il enregistre dans l'historique :
+      • Date et heure de génération
+      • Nombre d'étiquettes générées
+      • Numéro(s) de liste(s) concernée(s)
+      • Statut : "Étiquettes générées"
+    AND ces informations sont visibles dans mon espace déposant :
+      "Dernière génération : [DATE] à [HEURE] - [N] étiquettes"
+
+dependencies:
+  - US-002  # Déclaration articles (listes validées requises)
+  - US-008  # Import Billetweb (pour avoir le créneau de dépôt)
+
+links:
+  - rel: requirement
+    id: REQ-F-003  # Génération étiquettes scannables
+  - rel: source
+    href: docs/Reglement_interne.md
+    title: Règlement intérieur ALPE (couleurs étiquettes)
+
+# Règles métier complémentaires
+business_rules:
+  - Code unique format : EDI-[ID_EDITION]-L[NUMERO_LISTE]-A[NUMERO_ARTICLE]
+  - QR code scannable contenant le code unique
+  - Une étiquette par article déclaré
+  - Couleur de fond selon numéro de liste (100=bleu ciel, 200=jaune, 300=fushia, 400=lilas, 500=vert menthe, 600=clémentine, 1000=blanc, 2000=groseille)
+  - Format étiquette : 105×74mm (8 par page A4)
+  - Génération possible jusqu'à la date limite de déclaration
+  - Après date limite : génération automatique figée
+  - PDF téléchargeable indéfiniment (stocké côté serveur)
+  - Première page du PDF : instructions d'utilisation obligatoires
+  - Codes uniques au sein de l'édition (pas de duplication possible)
+
+# Spécifications techniques du QR code
+qr_code_specs:
+  - Type : QR Code version 3 minimum (capacité 35 caractères alphanumériques)
+  - Format de données : Texte brut contenant le code unique
+  - Niveau de correction d'erreur : M (15% de redondance)
+  - Taille minimale : 25×25mm pour scan fiable à 20cm
+  - Couleur : Noir sur fond blanc (zone QR détourée en blanc si fond coloré)
+  - Marges blanches : minimum 4 modules autour du QR code
+
+# Cas de test suggérés
+test_scenarios:
+  - T-US003-01 : Génération PDF pour liste de 10 articles (OK, 2 pages A4)
+  - T-US003-02 : Génération PDF pour liste de 24 articles (OK, 3 pages A4)
+  - T-US003-03 : Vérification codes uniques (pas de doublon sur 100 listes)
+  - T-US003-04 : Vérification couleur fond selon numéro liste (100=bleu, 200=jaune, etc.)
+  - T-US003-05 : Impression test et scan QR code avec lecteur smartphone (OK)
+  - T-US003-06 : Réimpression après modification prix d'un article (nouveau prix affiché)
+  - T-US003-07 : Tentative génération après date limite (PDF auto-généré disponible)
+  - T-US003-08 : Génération unique pour 2 listes (OK, PDF unique multi-listes)
+  - T-US003-09 : Aperçu PDF dans navigateur avant téléchargement (OK)
+  - T-US003-10 : Vérification accessibilité PDF (texte sélectionnable, contraste OK)
+  - T-US003-11 : Téléchargement PDF sur mobile (format adapté)
+  - T-US003-12 : Traçabilité génération visible dans historique déposant
+  - T-US003-13 : Instructions première page présentes avec créneau de dépôt
+  - T-US003-14 : Format étiquette 105×74mm vérifié après impression
+  - T-US003-15 : Description longue tronquée à 50 caractères (pas de débordement)
+```
 
 # User Stories bénévoles (à détailler)
 
