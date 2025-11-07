@@ -821,7 +821,298 @@ test_scenarios:
 
 # User Stories bénévoles (à détailler)
 
-- US-004 — En tant que bénévole, je veux scanner un article et enregistrer la vente.
+## US-004 — Scanner un article et enregistrer la vente
+
+```yaml
+id: US-004
+title: Scanner un article et enregistrer la vente
+actor: benevole
+benefit: "...pour enregistrer rapidement les ventes en caisse et assurer la traçabilité"
+as_a: "En tant que bénévole en caisse pendant la bourse"
+i_want: "Je veux scanner les QR codes des étiquettes et enregistrer les ventes avec le moyen de paiement"
+so_that: "Afin de tracer toutes les ventes, calculer les reversements et fournir des statistiques en temps réel"
+
+# Contexte métier
+notes: |
+  - Cette US s'appuie sur US-003 (étiquettes avec QR codes contenant codes uniques)
+  - Les bénévoles en caisse scannent les étiquettes des articles vendus
+  - Plusieurs caisses en parallèle pendant la bourse (3-5 caisses typiquement)
+  - Volume : ~3000 articles à scanner sur un week-end
+  - Performance critique : scan + enregistrement < 3 secondes par article (REQ-F-004)
+  - Moyens de paiement : Espèces, Chèque, Carte Bancaire
+  - Vente privée écoles/ALAE : vendredi 17h-18h avant vente publique (REQ-F-017)
+  - Vente publique : samedi et dimanche
+  - Commission ALPE : 20% du montant des ventes (prélevée automatiquement)
+  - Les bénévoles doivent pouvoir travailler même si le réseau est instable
+  - Traçabilité complète : qui a vendu quoi, quand, pour quel montant
+
+acceptance_criteria:
+  # AC-1 : Interface caisse bénévole - accès et connexion
+  - GIVEN je suis un bénévole affecté à la caisse
+    AND j'ai mes identifiants
+    WHEN je me connecte à l'application sur la tablette/PC de caisse
+    THEN je vois l'interface "Caisse - Bourse [NOM_EDITION]" avec :
+      • Mon nom en haut : "Bénévole : Jean Dupont"
+      • Le nom de l'édition : "Bourse Automne 2024"
+      • Le statut de connexion : "En ligne ●" ou "Mode offline ○"
+      • Un bouton "Scanner un article" (principal, gros bouton central)
+      • Un compteur : "Articles vendus aujourd'hui : [N]"
+      • Un montant total : "Total ventes : [MONTANT]€"
+      • Un bouton "Historique de mes ventes"
+      • Un bouton "Statistiques temps réel"
+      • Un bouton "Déconnexion"
+
+  # AC-2 : Scan QR code - cas nominal
+  - GIVEN je suis connecté à l'interface caisse
+    AND un client me présente un article avec son étiquette
+    WHEN je clique sur "Scanner un article"
+    THEN le système active la caméra de la tablette ou attend le scan du douchette USB
+    AND j'approche l'étiquette du scanner
+    AND le QR code est lu (code unique : "EDI-2024-11-L245-A03")
+    THEN le système :
+      • Émet un bip sonore de confirmation
+      • Affiche les infos de l'article en < 1 seconde :
+        - Photo de l'article (si disponible)
+        - Description : "Pull rayé bleu marine"
+        - Catégorie : "Vêtements - Garçon - 4 ans"
+        - Prix : "5.00€" (en gros caractères)
+        - Liste : "Liste 245"
+        - Déposant : "Marie Dupont"
+        - Statut : "✓ Disponible"
+
+  # AC-3 : Confirmation de la vente - sélection moyen de paiement
+  - GIVEN le système a affiché les infos de l'article scanné
+    AND le statut est "Disponible"
+    WHEN je sélectionne le moyen de paiement :
+      • Bouton "💵 Espèces"
+      • Bouton "🏦 Chèque"
+      • Bouton "💳 Carte Bancaire"
+    AND je clique sur un des boutons
+    THEN le système :
+      • Affiche une confirmation : "Vente de [DESCRIPTION] pour [PRIX]€ en [MOYEN_PAIEMENT] ?"
+      • Propose deux boutons : "✓ Confirmer la vente" (vert) et "✗ Annuler" (gris)
+
+  # AC-4 : Enregistrement de la vente - confirmation
+  - GIVEN j'ai scanné un article et sélectionné le moyen de paiement
+    WHEN je clique sur "✓ Confirmer la vente"
+    THEN le système :
+      • Enregistre la vente en base de données avec :
+        - Code unique article : EDI-2024-11-L245-A03
+        - Prix de vente : 5.00€
+        - Moyen de paiement : Espèces
+        - Date et heure : 2024-11-09 14:35:22
+        - Bénévole vendeur : Jean Dupont (ID du bénévole connecté)
+        - Déposant : Marie Dupont (Liste 245)
+      • Marque l'article comme "Vendu"
+      • Affiche une confirmation : "✓ Vente enregistrée - 5.00€"
+      • Incrémente le compteur "Articles vendus aujourd'hui"
+      • Met à jour le total des ventes
+      • Revient automatiquement à l'écran "Scanner un article" après 2 secondes
+      • Temps total du scan à la confirmation : < 3 secondes
+
+  # AC-5 : Gestion des erreurs - article déjà vendu
+  - GIVEN un article a déjà été vendu précédemment
+    WHEN je scanne son QR code
+    THEN le système :
+      • Émet un bip d'erreur (double bip)
+      • Affiche un message d'alerte rouge :
+        "⚠️ ARTICLE DÉJÀ VENDU"
+        "Cet article a été vendu le [DATE] à [HEURE] par [BENEVOLE]"
+        "Prix : [PRIX]€ - Moyen : [MOYEN_PAIEMENT]"
+      • Affiche les infos de l'article (description, liste, déposant)
+      • Propose un bouton "OK" pour revenir au scan
+      • Ne permet PAS de vendre à nouveau l'article
+      • Suggère : "Si l'étiquette est en double, contactez un gestionnaire"
+
+  # AC-6 : Gestion des erreurs - article non trouvé
+  - GIVEN je scanne un QR code qui ne correspond à aucun article de l'édition
+    WHEN le scan est effectué
+    THEN le système :
+      • Émet un bip d'erreur
+      • Affiche : "⚠️ ARTICLE NON TROUVÉ"
+      • Affiche le code scanné : "Code : [CODE_SCANNE]"
+      • Propose : "Vérifier que l'étiquette appartient bien à cette édition"
+      • Bouton "Réessayer le scan"
+      • Bouton "Signaler un problème" (ouvre un formulaire)
+
+  # AC-7 : Gestion des erreurs - QR code illisible
+  - GIVEN j'essaie de scanner un QR code abîmé ou illisible
+    WHEN le scanner n'arrive pas à lire le code après 5 secondes
+    THEN le système :
+      • Affiche : "⚠️ QR CODE ILLISIBLE"
+      • Propose : "Saisie manuelle du code"
+      • Affiche un champ texte pour saisir : "EDI-2024-11-L245-A03"
+      • Bouton "Valider" pour lancer la recherche manuelle
+      • Si le code saisi existe, continue le flux normal (AC-2)
+
+  # AC-8 : Annulation d'une vente - erreur de scan
+  - GIVEN j'ai scanné un article par erreur (mauvais article présenté)
+    AND je n'ai pas encore confirmé la vente
+    WHEN je clique sur "✗ Annuler"
+    THEN le système :
+      • Revient à l'écran "Scanner un article"
+      • N'enregistre aucune vente
+      • Affiche brièvement : "Scan annulé"
+
+  # AC-9 : Annulation d'une vente après confirmation (cas exceptionnel)
+  - GIVEN j'ai confirmé une vente par erreur il y a moins de 5 minutes
+    AND je réalise l'erreur (client n'achète finalement pas)
+    WHEN j'accède à "Historique de mes ventes"
+    AND je sélectionne la vente erronée
+    THEN je vois un bouton "Annuler cette vente" (seulement si < 5 minutes)
+    AND je clique sur "Annuler cette vente"
+    AND je confirme avec un motif : "Client n'a pas acheté", "Erreur de scan", "Autre"
+    THEN le système :
+      • Marque la vente comme "Annulée" (ne la supprime pas, pour traçabilité)
+      • Remet l'article en statut "Disponible"
+      • Décrémente les compteurs
+      • Enregistre l'annulation avec : qui, quand, motif
+      • Affiche : "✓ Vente annulée - Article à nouveau disponible"
+
+  # AC-10 : Historique des ventes du bénévole
+  - GIVEN je suis connecté en caisse
+    WHEN je clique sur "Historique de mes ventes"
+    THEN je vois la liste de toutes mes ventes du jour avec :
+      • Colonne Heure : "14:35:22"
+      • Colonne Article : "Pull rayé bleu... - Liste 245"
+      • Colonne Prix : "5.00€"
+      • Colonne Paiement : "Espèces"
+      • Colonne Statut : "✓ Vendu" ou "✗ Annulé"
+      • Filtre par statut : "Toutes / Vendues / Annulées"
+      • Total en bas : "[N] ventes pour [MONTANT]€"
+      • Possibilité d'annuler une vente < 5 minutes
+
+  # AC-11 : Statistiques temps réel pour le bénévole
+  - GIVEN je clique sur "Statistiques temps réel"
+    THEN je vois un tableau de bord avec :
+      • Mes ventes : "[N] articles - [MONTANT]€"
+      • Répartition par moyen de paiement :
+        - Espèces : [N] articles ([MONTANT]€)
+        - Chèque : [N] articles ([MONTANT]€)
+        - CB : [N] articles ([MONTANT]€)
+      • Ventes totales de toutes les caisses : "[N] articles - [MONTANT]€"
+      • Top 5 déposants avec le plus de ventes :
+        - Liste 245 (Marie Dupont) : 12 articles vendus / 18
+      • Graphique évolution ventes par heure
+      • Taux de vente global : "[X]% des articles déposés"
+
+  # AC-12 : Mode offline - fonctionnement sans connexion
+  - GIVEN je suis en train de scanner des articles
+    AND la connexion réseau est perdue
+    WHEN le système détecte la perte de connexion
+    THEN :
+      • Le statut passe à "Mode offline ○" avec bandeau orange
+      • Je peux continuer à scanner et enregistrer des ventes
+      • Les ventes sont stockées localement (IndexedDB/LocalStorage)
+      • Affiche : "⚠️ Mode offline - Les ventes seront synchronisées dès le retour de la connexion"
+    AND quand la connexion revient
+    THEN le système :
+      • Synchronise automatiquement toutes les ventes offline
+      • Affiche : "✓ [N] ventes synchronisées"
+      • Passe le statut à "En ligne ●"
+      • Détecte les éventuels conflits (même article vendu sur 2 caisses) et affiche une alerte
+
+  # AC-13 : Gestion des conflits - même article vendu 2 fois (offline)
+  - GIVEN deux bénévoles ont vendu le même article en mode offline
+    WHEN le système synchronise les ventes
+    THEN il détecte le conflit et :
+      • Garde la vente la plus ancienne (première dans le temps)
+      • Marque la seconde vente comme "En conflit"
+      • Envoie une notification au gestionnaire :
+        "⚠️ Conflit détecté : Article EDI-2024-11-L245-A03 vendu 2 fois"
+        "Vente 1 : Jean Dupont à 14:35 (conservée)"
+        "Vente 2 : Marie Martin à 14:36 (annulée)"
+      • Le bénévole concerné voit l'alerte dans son historique
+      • Le gestionnaire doit résoudre manuellement (rembourser le client, etc.)
+
+  # AC-14 : Performance - scan rapide
+  - GIVEN je scanne un article
+    WHEN le QR code est lu
+    THEN le système :
+      • Affiche les infos de l'article en < 1 seconde
+      • Permet de confirmer la vente
+      • Enregistre la vente en < 500ms
+      • Revient à l'écran scan en < 500ms
+      • Temps total scan → confirmation → prêt pour le suivant : < 3 secondes
+    AND cette performance est maintenue même avec 5 caisses en parallèle
+
+  # AC-15 : Traçabilité complète
+  - GIVEN n'importe quelle vente enregistrée
+    WHEN un gestionnaire consulte les détails de la vente
+    THEN il voit :
+      • Code unique article complet
+      • Description, catégorie, taille
+      • Prix de vente
+      • Moyen de paiement
+      • Date et heure exacte (à la seconde)
+      • Nom du bénévole vendeur
+      • Nom du déposant et numéro de liste
+      • Si annulée : date/heure annulation, motif, qui a annulé
+      • Si conflit : détails du conflit et résolution
+      • Logs complets pour audit
+
+dependencies:
+  - US-003  # Génération étiquettes avec QR codes
+  - US-008  # Import Billetweb (édition active)
+
+links:
+  - rel: requirement
+    id: REQ-F-004  # Scannage/encaissement rapide ventes
+  - rel: requirement
+    id: REQ-F-005  # Calcul reversements (consomme les données de ventes)
+
+# Règles métier complémentaires
+business_rules:
+  - Un article ne peut être vendu qu'une seule fois
+  - Scan + enregistrement < 3 secondes (performance critique)
+  - Moyens de paiement : Espèces, Chèque, Carte Bancaire
+  - Traçabilité complète : qui a vendu, quand, moyen de paiement
+  - Mode offline obligatoire (coupures réseau fréquentes dans les gymnases)
+  - Synchronisation automatique quand connexion revient
+  - Annulation possible < 5 minutes après vente (avec motif)
+  - Gestion des conflits automatique (première vente conservée)
+  - Statistiques temps réel pour motivation bénévoles
+  - Commission 20% calculée automatiquement (pour reversements US-005)
+  - Vente privée écoles/ALAE vendredi 17h-18h (REQ-F-017)
+  - Plusieurs caisses en parallèle (3-5 typiquement)
+  - Volume : ~3000 articles sur un week-end
+
+# Spécifications techniques scan
+scan_specs:
+  - Scanner : Caméra tablette/smartphone ou douchette USB code-barres
+  - Formats supportés : QR Code (priorité), Code-barres EAN-13 si QR illisible
+  - Librairie scan : ZXing ou QuaggaJS pour navigateur
+  - Résolution minimale : 640×480 pour scan fiable
+  - Distance scan : 10-30 cm optimal
+  - Temps scan QR : < 500ms typique
+  - Mode offline : IndexedDB pour stockage local
+  - Synchronisation : WebSocket ou polling 5s pour détection conflit
+  - Performance base : requête SQL avec index sur code_unique (< 50ms)
+
+# Cas de test suggérés
+test_scenarios:
+  - T-US004-01 : Connexion bénévole et accès interface caisse (OK, infos affichées)
+  - T-US004-02 : Scan QR code article disponible (OK, infos < 1s, confirmation vente)
+  - T-US004-03 : Vente avec paiement Espèces (OK, enregistrée, compteurs mis à jour)
+  - T-US004-04 : Vente avec paiement Chèque (OK)
+  - T-US004-05 : Vente avec paiement CB (OK)
+  - T-US004-06 : Scan article déjà vendu (erreur, message clair, pas de double vente)
+  - T-US004-07 : Scan article non trouvé (erreur, proposition saisie manuelle)
+  - T-US004-08 : Scan QR illisible (saisie manuelle OK, recherche fonctionne)
+  - T-US004-09 : Annulation avant confirmation (OK, rien enregistré)
+  - T-US004-10 : Annulation après confirmation < 5 min (OK, article redevient disponible)
+  - T-US004-11 : Tentative annulation > 5 min (bloqué, bouton absent)
+  - T-US004-12 : Historique ventes bénévole (OK, liste complète, filtres fonctionnent)
+  - T-US004-13 : Statistiques temps réel (OK, chiffres cohérents, toutes caisses)
+  - T-US004-14 : Mode offline activé (OK, ventes enregistrées localement)
+  - T-US004-15 : Synchronisation après offline (OK, [N] ventes synchronisées)
+  - T-US004-16 : Conflit même article 2 caisses (détecté, première vente conservée, alerte gestionnaire)
+  - T-US004-17 : Performance scan 100 articles (OK, moyenne < 3s par article)
+  - T-US004-18 : Performance 5 caisses parallèles (OK, pas de ralentissement)
+  - T-US004-19 : Traçabilité vente consultée par gestionnaire (OK, tous les détails présents)
+  - T-US004-20 : Vente privée écoles/ALAE vendredi 17h (OK, accessible seulement ce créneau)
+```
+
 - US-005 — En tant que bénévole, je veux générer les reversements en fin d'édition.
 ## US-006 — Créer une nouvelle édition de bourse
 
