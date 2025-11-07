@@ -28,6 +28,7 @@ Organiser la production et la validation des spécifications de l’application 
 | Personas (DOC-020) | 4 personas cibles | ✅ Complétés (v0.2.0) - 4 personas détaillés (Déposant, Bénévole, Gestionnaire, Admin) | UX | 2025-11-05 |
 | User Stories (DOC-030) | US complètes + critères | ✅ Complétées (v0.4.0) - US-001 à US-010 détaillées (9/9 US : 100%) | Produit | 2025-11-07 |
 | Exigences (DOC-040) | REQ fonctionnelles & NF traçables | ✅ Enrichies (v0.4.0) - REQ-F-001 à F-017 avec règlements déposant/intérieur | Produit | 2025-11-06 |
+| Traçabilité (DOC-100) | Matrice US ↔ REQ ↔ Tests | ✅ Créée (v1.0.0) - 860 lignes, 82% couverture complète, 1 REQ manquante | Produit | 2025-11-07 |
 | Architecture (DOC-050) | C4 niv. 1-3 + contraintes | À compléter (diagrammes, ADR) | Tech Lead | 2025-11-22 |
 | Modèle de domaine (DOC-060) | Diagramme + règles métiers | ✅ Enrichi (v0.4.0) - 8 entités (Creneau ajouté) + types listes + 23 invariants | Produit + Tech | 2025-11-06 |
 | Catégories articles (DOC-011) | Guide bénévoles | ✅ Créé (v1.0.0) - 317 lignes, acceptés/refusés, prix indicatifs, checklist | Produit | 2025-11-06 |
@@ -61,7 +62,7 @@ Organiser la production et la validation des spécifications de l’application 
 - [x] ✅ Créer US-010 (émission invitations en masse) : 15 AC avec CSV, tokens, relances, traçabilité, 20 tests
 
 ### Traçabilité
-- [ ] Mettre en place traçabilité croisée US ↔ REQ ↔ tests
+- [x] ✅ Mettre en place traçabilité croisée US ↔ REQ ↔ tests (DOC-100 créé : 860 lignes, 82% couverture)
 
 ## DOC-040 — Exigences
 - [x] ✅ Restructurer par domaine fonctionnel (éditions, utilisateurs, articles/ventes)
@@ -76,8 +77,23 @@ Organiser la production et la validation des spécifications de l’application 
 - [x] ✅ Créer REQ-F-016 (horaires restitution différenciés standard/1000/2000)
 - [x] ✅ Créer REQ-F-017 (vente privée écoles/ALAE)
 - [ ] Compléter REQ-F-002 à REQ-F-005 (articles, étiquettes, ventes, reversements)
+- [ ] Créer REQ-F-018 (émission invitations manuelles pour US-010)
 - [ ] Introduire exigences non-fonctionnelles supplémentaires (sécurité, scalabilité)
-- [ ] Lier chaque REQ aux futurs cas de test
+
+## DOC-100 — Traçabilité
+- [x] ✅ Créer document de traçabilité croisée US ↔ REQ ↔ Tests (860 lignes)
+- [x] ✅ Établir matrice globale : 9 US × 21 REQ × 134+ tests
+- [x] ✅ Vue détaillée par User Story (10 sections avec REQ et tests)
+- [x] ✅ Vue détaillée par Exigence (21 sections avec couverture US)
+- [x] ✅ Analyse de couverture (89% US→REQ, 57% REQ→Tests complète, 38% partielle)
+- [x] ✅ Graphique de dépendances Mermaid (relations visuelles)
+- [x] ✅ Actions prioritaires court/moyen/long terme
+- [ ] Créer REQ-F-018 pour US-010 (identifiée comme manquante)
+- [ ] Ajouter tests manquants pour REQ partiellement testées (REQ-F-012, F-013, F-015, F-016)
+- [ ] Créer tests de charge pour REQ-NF-001 (disponibilité 99.5%)
+- [ ] Faire audit accessibilité WCAG 2.1 AA complet (REQ-NF-004)
+- [ ] Tester exhaustivement droits RGPD (REQ-NF-003)
+- [ ] Atteindre objectif 95% de couverture complète avant développement
 
 ## DOC-060 — Modèle de domaine
 - [x] ✅ Refonte complète avec entité Edition comme pivot central
