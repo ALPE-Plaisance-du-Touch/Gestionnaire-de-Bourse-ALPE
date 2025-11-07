@@ -2,7 +2,23 @@
 
 **Fichier source** : `docs/ListeALPEAvecMacro_Aut 25.xlsm`
 
-Ce document décrit la structure du fichier Excel actuelle utilisé par ALPE pour générer les listes et étiquettes des déposants.
+> ⚠️ **IMPORTANT** : Ce document est une **documentation de référence uniquement**.
+>
+> **Objectif de l'application** : **Remplacer** le processus actuel Google Form + Excel + macros VBA.
+>
+> Ce fichier Excel représente le **format actuel** que les bénévoles connaissent.
+> L'application va :
+> - **Remplacer** le Google Form par une saisie directe (US-002)
+> - **Remplacer** la génération Excel par une génération PDF (US-003)
+> - **S'inspirer** de la mise en page actuelle pour que le PDF soit familier
+> - **Améliorer** en ajoutant : QR codes, codes uniques, génération en masse, traçabilité
+>
+> **Cette documentation sert à** :
+> - Comprendre le format visuel actuel (pour le reproduire dans les PDFs)
+> - Identifier les informations affichées (pour ne rien oublier)
+> - Connaître les limitations du processus actuel (pour les corriger)
+
+Ce document décrit la structure du fichier Excel actuellement utilisé par ALPE pour générer les listes et étiquettes des déposants.
 
 ## Structure générale
 
@@ -165,32 +181,34 @@ Le fichier contient des macros VBA (`xl/vbaProject.bin`) qui automatisent probab
 - **Pas de génération en masse** par créneau
 - **Format étiquette simple** : pas de prix, pas de description article, pas de catégorie
 
-## Recommandations pour l'application
+## Ce que l'application va faire (en remplacement)
 
-L'application devrait :
+L'application va **remplacer complètement** le processus Excel en :
 
-1. **Remplacer le Google Form** par une saisie directe dans l'application (US-002)
-2. **Générer des fichiers Excel** conformes au template actuel (transition en douceur)
-3. **Ajouter des QR codes** sur les étiquettes pour le scan en caisse (US-003)
-4. **Permettre génération en masse** pour tous les déposants d'un créneau
-5. **Offrir export PDF** en complément/alternative à Excel
-6. **Enrichir les étiquettes** : numéro article, prix, description courte, catégorie
-7. **Maintenir compatibilité** : permettre export format Excel actuel pour les bénévoles habitués
+1. **Remplaçant le Google Form** par une saisie directe dans l'application web (US-002)
+2. **Générant des PDFs** au lieu d'Excel (US-003)
+3. **S'inspirant de la mise en page actuelle** pour que les PDFs soient familiers aux bénévoles
+4. **Ajoutant des QR codes** sur les étiquettes pour le scan en caisse
+5. **Permettant génération en masse** pour tous les déposants d'un créneau
+6. **Enrichissant les étiquettes** : numéro article, prix, description courte, catégorie, QR code
+7. **Ajoutant la traçabilité numérique** : qui a généré quoi, quand, statut impression
 
-## Format cible pour la nouvelle application
+## Format cible pour les PDFs générés (US-003)
 
-### Liste d'articles (PDF/Excel)
-- Conserver la mise en page actuelle (familière)
-- Ajouter : code unique par article (EDI-xxx-Lyyy-Azz)
+### Liste d'articles (PDF)
+- **S'inspirer de** la mise en page Excel actuelle (familière pour les bénévoles)
+- Conserver : en-tête "BOURSE DE VETEMENTS ET DE JOUETS", infos déposant, tableau articles
+- Ajouter : code unique par article (EDI-xxx-Lyyy-Azz) - caché ou en petit
 - Ajouter : total des articles, total montant
-- Option : génération groupée (toutes les listes d'un créneau)
+- Ajouter : page de séparation par déposant (pour génération en masse)
+- Format : A4 portrait, 1 page par liste
 
-### Étiquettes (PDF/Excel)
-- Conserver : numéro liste, info restitution
-- Ajouter : **QR code** contenant code unique article
-- Ajouter : numéro article (ex: 3/24)
-- Ajouter : prix de vente
-- Ajouter : description courte (30-50 car)
-- Ajouter : catégorie (icône + texte)
+### Étiquettes (PDF)
+- Conserver : numéro liste, info restitution (pour familiarité)
+- Ajouter : **QR code** contenant code unique article (nouveau, essentiel)
+- Ajouter : numéro article (ex: "Article 3/24")
+- Ajouter : prix de vente en gros
+- Ajouter : description courte (30-50 caractères)
+- Ajouter : catégorie avec icône
 - Ajouter : couleur de fond selon numéro liste
-- Format : 105×74mm (8 par page A4) comme spécifié dans US-003
+- Format : 105×74mm, 8 par page A4 (comme spécifié dans US-003)
