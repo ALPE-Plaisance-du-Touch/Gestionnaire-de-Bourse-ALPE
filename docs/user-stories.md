@@ -1693,10 +1693,14 @@ so_that: "Afin d'associer les comptes existants à cette édition et d'émettre 
 
 # Contexte métier
 notes: |
-  - Les inscriptions se font sur Billetweb (plateforme externe)
-  - Un fichier CSV/Excel est exporté depuis Billetweb et importé dans l'application
+  - Les inscriptions se font sur Billetweb (plateforme externe de billetterie)
+  - Un fichier Excel (.xlsx) est exporté depuis Billetweb et importé dans l'application
+  - Le fichier contient 35 colonnes (A à AI), dont 13 sont utiles pour l'application
   - L'import doit gérer les déposants existants et les nouveaux
-  - Format du fichier sera fourni ultérieurement (colonnes : nom, prénom, email, téléphone, etc.)
+  - Seuls les billets avec Payé="Oui" ET Valide="Oui" sont importés
+  - Le créneau (colonne Séance) doit correspondre aux créneaux configurés dans l'édition (US-007)
+  - Le tarif (colonne Tarif) indique le type de liste : standard, 1000, ou 2000
+  - Volume attendu : 200-300 inscriptions par édition
 
 acceptance_criteria:
   # AC-1 : Accès à l'import
@@ -1710,21 +1714,25 @@ acceptance_criteria:
   - GIVEN je clique sur "Importer les inscriptions Billetweb"
     WHEN la modale d'import s'affiche
     THEN je vois :
-      • Un champ de sélection de fichier (formats acceptés : .csv, .xlsx, .xls)
-      • Des instructions sur le format attendu avec lien vers documentation
+      • Un champ de sélection de fichier (formats acceptés : .xlsx, .xls)
+      • Des instructions : "Exportez le fichier depuis Billetweb et importez-le tel quel. Seuls les billets payés et valides seront traités."
+      • Une liste des colonnes requises : Nom, Prénom, Email, Séance, Tarif, Payé, Valide, Téléphone, Code postal, Ville
       • Un bouton "Prévisualiser" et un bouton "Importer"
-      • Un bouton "Télécharger un exemple de fichier"
 
   # AC-3 : Prévisualisation avant import
   - GIVEN j'ai sélectionné un fichier valide
     WHEN je clique sur "Prévisualiser"
     THEN le système analyse le fichier
     AND affiche un tableau récapitulatif :
-      • Nombre total d'inscriptions dans le fichier
-      • Nombre de déposants existants (email déjà en base)
-      • Nombre de nouveaux déposants (email inconnu)
-      • Nombre de lignes en erreur (format invalide, doublons)
-      • Détail des erreurs s'il y en a
+      • Nombre total de lignes dans le fichier : 287
+      • Billets non payés ou non valides (ignorés) : 12
+      • Billets payés et valides à traiter : 275
+      • Nombre de déposants existants (email déjà en base) : 123
+      • Nombre de nouveaux déposants (email inconnu) : 142
+      • Doublons dans le fichier (même email, seule 1ère occurrence gardée) : 8
+      • Créneaux non reconnus (erreur bloquante) : 2
+      • Emails invalides (erreur bloquante) : 1
+      • Détail des erreurs ligne par ligne s'il y en a
 
   # AC-4 : Import réussi
   - GIVEN la prévisualisation ne montre aucune erreur bloquante
@@ -1751,12 +1759,20 @@ acceptance_criteria:
     AND affiche dans le résumé : "[Z] déposants déjà inscrits à cette édition (ignorés)"
 
   # AC-7 : Erreur - format de fichier invalide
-  - GIVEN le fichier ne respecte pas le format attendu (colonnes manquantes, encodage incorrect)
+  - GIVEN le fichier ne respecte pas le format attendu (colonnes manquantes)
     WHEN je lance la prévisualisation
-    THEN le système affiche une erreur explicite : "Format de fichier invalide. Colonnes requises : [liste]. Vérifiez le format ou téléchargez le fichier exemple."
+    THEN le système affiche une erreur explicite : "Format de fichier invalide. Colonnes requises manquantes : [liste des colonnes manquantes parmi : J, K, L, F, G, Y, Z, AE, AG, AH]. Utilisez le fichier d'export Billetweb sans modification."
     AND bloque l'import
 
-  # AC-8 : Erreur - données invalides
+  # AC-8 : Erreur - créneaux non reconnus
+  - GIVEN certaines lignes contiennent des créneaux (colonne F : Séance) qui ne correspondent pas aux créneaux configurés dans l'édition
+    WHEN je lance la prévisualisation
+    THEN le système affiche un tableau des erreurs :
+      Ligne 45 : Créneau "Samedi 14h" non reconnu. Créneaux disponibles : [liste des créneaux configurés]
+      Ligne 78 : Créneau "Dimanche 10h" non reconnu
+    AND bloque l'import avec le message : "3 créneaux non reconnus. Vérifiez la configuration des créneaux (US-007) ou corrigez le fichier."
+
+  # AC-10 : Erreur - données invalides
   - GIVEN certaines lignes contiennent des emails invalides ou téléphones mal formatés
     WHEN je lance la prévisualisation
     THEN le système affiche un tableau des erreurs ligne par ligne
@@ -1764,18 +1780,18 @@ acceptance_criteria:
       • Corriger le fichier et réessayer
       • Ignorer les lignes en erreur et importer le reste (avec confirmation)
 
-  # AC-9 : Notification aux déposants existants
+  # AC-11 : Notification aux déposants existants
   - GIVEN des déposants existants sont associés à la nouvelle édition
     WHEN l'import est terminé
     THEN le système leur envoie un email de notification :
       "Bonjour [Prénom], vous êtes inscrit(e) à l'édition [Nom édition]. Connectez-vous pour déclarer vos articles."
 
-  # AC-10 : Limitation de taille de fichier
+  # AC-12 : Limitation de taille de fichier
   - GIVEN le fichier uploadé dépasse 5 Mo ou contient plus de 1000 lignes
     WHEN je tente de l'importer
     THEN le système affiche : "Fichier trop volumineux. Maximum 5 Mo ou 1000 inscriptions par import."
 
-  # AC-11 : Contrôle d'accès
+  # AC-13 : Contrôle d'accès
   - GIVEN je suis connecté en tant que bénévole ou déposant
     WHEN j'essaie d'accéder à l'import Billetweb
     THEN le système refuse l'accès
@@ -1796,40 +1812,63 @@ links:
 # Règles métier complémentaires
 business_rules:
   - L'import n'est possible que si l'édition est en statut "Configurée"
+  - Seuls les billets avec Payé="Oui" ET Valide="Oui" sont importés
   - Un email ne peut être associé qu'une seule fois à une édition donnée
+  - Les créneaux (colonne Séance) doivent correspondre exactement aux créneaux configurés (US-007)
+  - Le tarif indique le type de liste : mapping à définir (ex: "Adhérent" → liste 1000, "Standard" → standard)
   - Les déposants existants sont associés automatiquement (via email)
-  - Les nouveaux reçoivent une invitation (token 7 jours comme US-001)
-  - L'import est traçé pour audit (qui, quand, nombre d'inscriptions)
+  - Les nouveaux reçoivent une invitation (token 7 jours comme US-001 ou US-010)
+  - L'import est traçé pour audit (qui, quand, nombre d'inscriptions, fichier source)
   - Maximum 1000 inscriptions par fichier
-  - Formats acceptés : CSV (UTF-8), Excel (.xlsx, .xls)
+  - Format accepté : Excel (.xlsx, .xls) - export direct de Billetweb
 
-# Format du fichier Billetweb (à confirmer)
+# Format du fichier Billetweb (export direct)
 file_format:
-  required_columns:
-    - email (string, validé format email)
-    - nom (string)
-    - prenom (string)
-    - telephone (string, format français)
-  optional_columns:
-    - adresse (string)
-    - code_postal (string)
-    - ville (string)
-  encodage: UTF-8
-  separateur_csv: ";" ou ","
+  source: "Export Billetweb (35 colonnes A à AI)"
+  format: "Excel (.xlsx ou .xls)"
+
+  colonnes_utilisees:
+    D: "Date de création (datetime, info)"
+    F: "Séance (string, obligatoire) - Créneau de dépôt, doit matcher créneaux configurés"
+    G: "Tarif (string, obligatoire) - Type de billet, détermine type de liste (standard/1000/2000)"
+    J: "Nom (string, obligatoire)"
+    K: "Prénom (string, obligatoire)"
+    L: "Email (string, obligatoire, format email validé)"
+    P: "Commande (string, info) - Référence commande Billetweb pour traçabilité"
+    Y: "Payé (string, obligatoire) - Valeurs : 'Oui' ou 'Non', seuls 'Oui' importés"
+    Z: "Valide (string, obligatoire) - Valeurs : 'Oui' ou 'Non', seuls 'Oui' importés"
+    AE: "Téléphone (string, obligatoire) - Format français"
+    AF: "Adresse (string, optionnel) - Numéro et nom de rue"
+    AG: "Code postal (string, obligatoire) - Pour identifier Plaisançois (31830)"
+    AH: "Ville (string, obligatoire)"
+
+  colonnes_ignorees: "B, C, E, H, I, M, N, O, Q, R, S, T, U, V, W, X, AA, AB, AC, AD, AI (22 colonnes non utilisées)"
+
+  validations:
+    - "Colonne Y (Payé) = 'Oui' ET Colonne Z (Valide) = 'Oui' (sinon ligne ignorée)"
+    - "Colonne L (Email) : format email RFC 5322"
+    - "Colonne F (Séance) : doit exister dans les créneaux configurés de l'édition"
+    - "Colonne G (Tarif) : mapping vers type de liste (à définir selon tarifs Billetweb)"
+    - "Colonne AE (Téléphone) : format français (10 chiffres commençant par 0)"
+    - "Doublons email : seule la première occurrence est gardée"
 
 # Cas de test suggérés
 test_scenarios:
-  - T-US008-01 : Import nominal avec 10 déposants (5 nouveaux, 5 existants)
-  - T-US008-02 : Fichier avec doublons (même email)
-  - T-US008-03 : Fichier avec emails invalides
-  - T-US008-04 : Fichier format invalide (colonnes manquantes)
-  - T-US008-05 : Fichier trop volumineux (> 5 Mo)
-  - T-US008-06 : Import sur édition non configurée (erreur)
-  - T-US008-07 : Déposants déjà associés à l'édition (ignorés)
-  - T-US008-08 : Accès refusé pour bénévole/déposant
-  - T-US008-09 : Vérification emails d'invitation envoyés aux nouveaux
-  - T-US008-10 : Vérification emails de notification envoyés aux existants
-  - T-US008-11 : Traçabilité de l'import dans les logs
+  - T-US008-01 : Import nominal avec 10 déposants payés et valides (5 nouveaux, 5 existants)
+  - T-US008-02 : Fichier avec billets non payés ou non valides (ignorés, pas d'erreur)
+  - T-US008-03 : Fichier avec créneaux non reconnus (erreur bloquante, liste des créneaux disponibles)
+  - T-US008-04 : Fichier avec doublons email (seule 1ère occurrence gardée, warning)
+  - T-US008-05 : Fichier avec emails invalides (erreur, tableau ligne par ligne)
+  - T-US008-06 : Fichier format invalide (colonnes manquantes J, K, L, F, etc.)
+  - T-US008-07 : Fichier trop volumineux (> 5 Mo ou > 1000 lignes)
+  - T-US008-08 : Import sur édition non configurée (bouton absent ou erreur)
+  - T-US008-09 : Déposants déjà associés à l'édition (ignorés)
+  - T-US008-10 : Accès refusé pour bénévole/déposant
+  - T-US008-11 : Vérification emails d'invitation envoyés aux nouveaux (avec créneau et type liste)
+  - T-US008-12 : Vérification emails de notification envoyés aux existants
+  - T-US008-13 : Traçabilité de l'import dans les logs (fichier, nombre, date, gestionnaire)
+  - T-US008-14 : Mapping tarif Billetweb vers type de liste (standard/1000/2000)
+  - T-US008-15 : Identification Plaisançois via code postal 31830
 ```
 
 ## US-009 — Clôturer une édition de bourse
