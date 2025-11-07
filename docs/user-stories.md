@@ -1114,6 +1114,288 @@ test_scenarios:
 ```
 
 - US-005 — En tant que bénévole, je veux générer les reversements en fin d'édition.
+
+```yaml
+id: US-005
+title: Générer les reversements en fin d'édition
+actor: gestionnaire
+benefit: "...pour calculer et verser aux déposants leur part des ventes et clôturer l'édition"
+as_a: "En tant que gestionnaire responsable des reversements"
+i_want: "Je veux générer les bordereaux de reversement pour tous les déposants à la fin de l'édition"
+so_that: "Afin de reverser à chaque déposant 80% du montant de ses ventes, de tracer les paiements et de clôturer l'édition"
+
+# Contexte métier
+notes: |
+  - Commission ALPE : 20% du montant des ventes
+  - Reversement déposant : 80% du montant des ventes
+  - Les déposants viennent récupérer leurs invendus + leur reversement lors des créneaux de restitution
+  - Un bordereau signé est nécessaire pour la traçabilité (preuve de paiement)
+  - Modes de reversement possibles : Espèces, Chèque, Virement (à préciser lors du paiement)
+  - Si aucune vente : pas de reversement, juste récupération des invendus
+  - Si tout vendu : reversement sans invendus
+  - Volume : ~250 déposants à traiter en 2-3 jours de restitution
+
+acceptance_criteria:
+  # AC-1 : Accès à la génération des reversements
+  - GIVEN je suis connecté en tant que gestionnaire
+    AND l'édition en cours est en phase de restitution (ventes terminées)
+    WHEN j'accède à la section "Reversements"
+    THEN je vois :
+      • Un tableau listant tous les déposants avec leurs statistiques :
+        - Nom, Prénom, N° déposant
+        - Nombre d'articles déposés
+        - Nombre d'articles vendus / invendus
+        - Montant total des ventes
+        - Commission ALPE (20%)
+        - Montant à reverser (80%)
+        - Statut : "À générer" / "Bordereau prêt" / "Payé" / "Clôturé"
+      • Des filtres : par statut, par créneau de restitution, par montant
+      • Un bouton "Générer tous les bordereaux"
+      • Un bouton "Exporter Excel récapitulatif"
+      • Des statistiques globales en haut de page :
+        - Total ventes édition : "15 234,50€"
+        - Commission ALPE : "3 046,90€ (20%)"
+        - Reversements déposants : "12 187,60€ (80%)"
+        - Taux de vente global : "65% (1 823 vendus / 2 805 déposés)"
+
+  # AC-2 : Calcul automatique des reversements
+  - GIVEN un déposant a vendu des articles
+    WHEN le système calcule son reversement
+    THEN :
+      • Le système récupère toutes les ventes associées à ce déposant
+      • Calcule le total des ventes (somme des prix de vente)
+      • Calcule la commission ALPE : montant_total × 0,20
+      • Calcule le reversement : montant_total × 0,80
+      • Arrondit les montants à 2 décimales (comptabilité)
+    EXEMPLE :
+      • 12 articles vendus : 3€ + 5€ + 2€ + 8€ + 4€ + 6€ + 7€ + 3€ + 10€ + 5€ + 4€ + 2€ = 59,00€
+      • Commission ALPE : 59,00 × 0,20 = 11,80€
+      • Reversement déposant : 59,00 × 0,80 = 47,20€
+
+  # AC-3 : Génération du bordereau de reversement (PDF)
+  - GIVEN je clique sur "Générer le bordereau" pour un déposant
+    WHEN le PDF est généré
+    THEN il contient :
+      • En-tête : Logo ALPE, "BORDEREAU DE REVERSEMENT"
+      • Édition : "Bourse Automne 2024"
+      • Date de génération : "Généré le 07/11/2024 à 14:23"
+      • Informations déposant :
+        - N° déposant : "EDI-2024-11-D245"
+        - Nom : "MARTIN Sophie"
+        - Téléphone : "06 12 34 56 78"
+      • Tableau récapitulatif articles VENDUS :
+        Colonnes : N° article | Description | Catégorie | Prix vente
+        Exemple :
+          EDI-2024-11-L245-A01 | Pull rayé bleu | Vêtements | 5,00€
+          EDI-2024-11-L245-A03 | Pantalon jean | Vêtements | 8,00€
+          ...
+        TOTAL VENTES : 59,00€
+      • Tableau récapitulatif articles INVENDUS :
+        Colonnes : N° article | Description | Catégorie | Prix demandé
+        (idem, liste des invendus)
+        TOTAL INVENDUS : 18 articles (valeur demandée : 78,00€)
+      • Calculs :
+        - Montant total des ventes : 59,00€
+        - Commission ALPE (20%) : 11,80€
+        - Montant à reverser (80%) : 47,20€
+      • Section paiement (à remplir lors de la restitution) :
+        □ Espèces  □ Chèque  □ Virement
+        Date de paiement : ___ / ___ / ______
+        Signature bénévole : ____________
+        Signature déposant : ____________
+      • Mention légale : "Je soussigné(e) reconnais avoir reçu la somme de 47,20€ et récupéré mes articles invendus."
+
+  # AC-4 : Génération en masse des bordereaux
+  - GIVEN je clique sur "Générer tous les bordereaux"
+    WHEN la génération démarre
+    THEN :
+      • Le système affiche une barre de progression : "Génération en cours... 45/245 déposants"
+      • Génère un PDF unique par déposant (stocké avec nom : "Reversement_EDI-2024-11-D245_MARTIN.pdf")
+      • OU génère un PDF global avec tous les bordereaux (séparés par saut de page)
+      • Marque tous les déposants en statut "Bordereau prêt"
+      • Affiche : "✓ 245 bordereaux générés avec succès"
+      • Propose : "Télécharger l'archive ZIP" (tous les PDFs) ou "Télécharger le PDF global"
+
+  # AC-5 : Enregistrement du paiement effectif
+  - GIVEN un déposant se présente pour récupérer ses invendus et son reversement
+    AND j'ai son bordereau imprimé
+    WHEN je coche son article dans le tableau et clique "Enregistrer le paiement"
+    THEN un formulaire modal s'affiche :
+      • Déposant : "MARTIN Sophie (EDI-2024-11-D245)"
+      • Montant à reverser : "47,20€" (en gros caractères)
+      • Mode de paiement : ● Espèces  ○ Chèque  ○ Virement (boutons radio)
+      • Si Chèque : champ "N° de chèque" (obligatoire)
+      • Si Virement : champ "Date virement prévu" (obligatoire)
+      • Articles invendus récupérés : ☑ Oui (case à cocher obligatoire)
+      • Commentaire optionnel (ex: "Absent, viendra jeudi")
+      • Boutons : "Annuler" / "Confirmer le paiement"
+    AND quand je confirme :
+      • Le statut passe à "Payé"
+      • L'horodatage est enregistré : "Payé le 07/11/2024 à 15:42 par Bénévole Clara D."
+      • Un email de confirmation est envoyé au déposant (optionnel selon config)
+
+  # AC-6 : Cas particulier - Aucune vente
+  - GIVEN un déposant n'a vendu aucun article (0 vente)
+    WHEN je consulte son bordereau
+    THEN :
+      • Montant total des ventes : 0,00€
+      • Commission ALPE : 0,00€
+      • Montant à reverser : 0,00€
+      • Message : "ℹ️ Aucun article vendu. Seuls les invendus sont à récupérer."
+      • La section "paiement" est remplacée par :
+        Articles invendus récupérés : ☑ Oui
+        Date de restitution : ___ / ___ / ______
+        Signature déposant : ____________
+
+  # AC-7 : Cas particulier - Tout vendu
+  - GIVEN un déposant a vendu TOUS ses articles (100% vendus)
+    WHEN je consulte son bordereau
+    THEN :
+      • Tableau "Articles INVENDUS" : vide ou message "✓ Tous les articles ont été vendus !"
+      • Montant à reverser : [montant calculé]
+      • Message encourageant : "🎉 Félicitations, tous vos articles ont trouvé preneur !"
+
+  # AC-8 : Statistiques globales et export
+  - GIVEN je veux analyser les résultats de l'édition
+    WHEN je clique sur "Statistiques détaillées"
+    THEN j'accède à un dashboard avec :
+      • Résultats financiers :
+        - Total ventes : 15 234,50€
+        - Commission ALPE : 3 046,90€
+        - Reversements : 12 187,60€
+      • Résultats articles :
+        - Articles déposés : 2 805
+        - Articles vendus : 1 823 (65%)
+        - Articles invendus : 982 (35%)
+      • Répartition par catégorie (graphique) :
+        - Vêtements : 75% de taux de vente
+        - Chaussures : 60%
+        - Livres : 80%
+        - Jeux et jouets : 70%
+        - Etc.
+      • Top déposants (plus de ventes) : tableau top 10
+      • Répartition des prix de vente (histogramme : combien d'articles entre 0-5€, 5-10€, etc.)
+    AND je peux cliquer sur "Exporter Excel complet" pour obtenir :
+      • Feuille 1 : Récapitulatif par déposant (1 ligne = 1 déposant)
+      • Feuille 2 : Détail des ventes (1 ligne = 1 vente)
+      • Feuille 3 : Détail des invendus (1 ligne = 1 article invendu)
+      • Feuille 4 : Statistiques globales
+
+  # AC-9 : Suivi des paiements en temps réel
+  - GIVEN la phase de restitution est en cours (plusieurs bénévoles traitent les déposants)
+    WHEN je consulte le tableau des reversements
+    THEN :
+      • Les statuts sont actualisés en temps réel (WebSocket ou polling)
+      • Un compteur affiche : "142 / 245 déposants traités (58%)"
+      • Filtres rapides : "À traiter" / "Payés aujourd'hui" / "En attente"
+      • Indication visuelle : ligne verte si "Payé", orange si "Bordereau prêt", blanche si "À générer"
+
+  # AC-10 : Clôture définitive de l'édition
+  - GIVEN tous les déposants ont été traités (ou deadline de restitution dépassée)
+    WHEN je clique sur "Clôturer l'édition"
+    THEN :
+      • Le système vérifie : "243 déposants traités, 2 absents (n'ont pas récupéré)"
+      • Affiche un message de confirmation : "⚠️ Clôture définitive : les données seront archivées et les bordereaux ne seront plus modifiables. Continuer ?"
+      • Si je confirme :
+        - Le statut de l'édition passe à "Clôturée"
+        - Les bordereaux passent en lecture seule
+        - Un rapport final est généré automatiquement (PDF + Excel)
+        - Une sauvegarde complète est créée
+        - Message : "✓ Édition clôturée. Rapport final disponible en téléchargement."
+
+  # AC-11 : Gestion des déposants absents
+  - GIVEN un déposant ne s'est pas présenté pour récupérer ses invendus et son reversement
+    WHEN je consulte son dossier
+    THEN je peux :
+      • Marquer comme "Absent - À recontacter"
+      • Ajouter un commentaire : "Appelé le 08/11, viendra samedi prochain"
+      • Envoyer un email de relance automatique : "Rappel : vos invendus et votre reversement de 47,20€ sont disponibles"
+      • Si déposant revient plus tard : enregistrer le paiement normalement (même après clôture, avec dérogation)
+
+  # AC-12 : Traçabilité complète
+  - GIVEN je consulte l'historique d'un reversement
+    WHEN j'accède aux détails du déposant
+    THEN je vois :
+      • Date génération bordereau : "07/11/2024 14:23 par Bénévole Alice M."
+      • Date impression : "07/11/2024 14:45"
+      • Date paiement : "08/11/2024 10:15 par Bénévole Clara D."
+      • Mode de paiement : "Espèces"
+      • Articles récupérés : "Oui, 18 invendus rendus"
+      • Commentaires éventuels
+      • PDF bordereau signé (si scanné) : lien de téléchargement
+
+  # AC-13 : Corrections et ajustements
+  - GIVEN je détecte une erreur sur un reversement (article mal scanné, vente non enregistrée, etc.)
+    AND le reversement n'est pas encore payé
+    WHEN je clique sur "Recalculer"
+    THEN :
+      • Le système recalcule le total des ventes en temps réel
+      • Met à jour les montants (commission, reversement)
+      • Régénère le bordereau PDF
+      • Affiche un warning : "⚠️ Montant modifié : 47,20€ → 52,20€ (article ajouté)"
+      • Log l'ajustement pour traçabilité : "Modifié le 08/11/2024 par Bénévole Alice M. : +5€ (article EDI-2024-11-L245-A12 ajouté)"
+
+business_rules:
+  - Commission ALPE fixe : 20% du montant des ventes
+  - Reversement déposant fixe : 80% du montant des ventes
+  - Arrondis comptables : 2 décimales, arrondi au centime le plus proche
+  - Modes de paiement acceptés : Espèces (priorité), Chèque, Virement
+  - Un bordereau signé = preuve de paiement (obligation légale de traçabilité)
+  - Articles invendus DOIVENT être récupérés (ne pas rester chez ALPE)
+  - Délai de récupération : généralement 2-3 jours après la bourse (créneaux définis)
+  - Si déposant absent : relance, puis don à association si pas de réponse après 2 mois
+  - Clôture édition : possible uniquement si >95% des déposants traités
+  - Performance : génération de 250 bordereaux en < 2 minutes
+
+technical_specs:
+  pdf_generation:
+    - Librairie : PDFKit (Node.js) ou jsPDF (navigateur) ou pdfmake
+    - Format : A4 portrait
+    - Polices : Roboto ou Arial pour lisibilité
+    - Tableaux : bordures, alternance de couleurs pour lignes
+    - Logo ALPE : en-tête, résolution 300 DPI minimum
+    - Signature : zones dédiées (cadres pointillés)
+
+  calculs:
+    - Requête SQL JOIN entre articles, listes, ventes pour récupérer toutes les infos
+    - Agrégation : SUM(prix_vente) GROUP BY deposant_id
+    - Index sur deposant_id et edition_id pour performance
+    - Calcul en backend (pas frontend) pour sécurité et cohérence
+
+  export_excel:
+    - Librairie : ExcelJS ou xlsx (Node.js)
+    - Format : .xlsx (Excel 2007+)
+    - Formatage : en-têtes en gras, colonnes auto-dimensionnées, filtres activés
+    - Formules Excel : totaux calculés avec formules pour vérification
+
+  temps_reel:
+    - WebSocket pour mise à jour statuts en temps réel (plusieurs bénévoles)
+    - Ou polling toutes les 5 secondes si WebSocket non dispo
+    - Verrouillage optimiste : si 2 bénévoles traitent même déposant, alerte conflit
+
+test_scenarios:
+  - T-US005-01 : Accès section Reversements (OK, tableau 245 déposants, statistiques globales)
+  - T-US005-02 : Calcul reversement déposant avec 12 ventes (OK, 59€ ventes → 11,80€ ALPE + 47,20€ déposant)
+  - T-US005-03 : Génération bordereau PDF déposant standard (OK, PDF conforme, toutes sections présentes)
+  - T-US005-04 : Génération en masse 245 bordereaux (OK, < 2 min, ZIP téléchargeable)
+  - T-US005-05 : Enregistrement paiement espèces (OK, statut "Payé", horodatage correct)
+  - T-US005-06 : Enregistrement paiement chèque avec n° (OK, n° chèque enregistré)
+  - T-US005-07 : Cas 0 vente (OK, bordereau avec message "aucune vente", seulement section invendus)
+  - T-US005-08 : Cas 100% vendu (OK, message félicitations, pas de tableau invendus)
+  - T-US005-09 : Statistiques globales (OK, dashboard complet, graphiques, top 10)
+  - T-US005-10 : Export Excel complet (OK, 4 feuilles, données cohérentes avec BDD)
+  - T-US005-11 : Suivi temps réel 2 bénévoles (OK, compteur actualisé, pas de conflit)
+  - T-US005-12 : Clôture édition (OK, passage "Clôturée", lecture seule, rapport final généré)
+  - T-US005-13 : Déposant absent marqué (OK, statut "Absent", email relance envoyé)
+  - T-US005-14 : Traçabilité reversement (OK, historique complet, qui/quand/comment)
+  - T-US005-15 : Correction montant avant paiement (OK, recalcul, PDF régénéré, log ajustement)
+  - T-US005-16 : Tentative clôture avec <90% traités (bloqué, message erreur)
+  - T-US005-17 : Filtres tableau (OK, filtrage par statut, créneau, montant fonctionne)
+  - T-US005-18 : Performance 245 bordereaux (OK, génération < 2 min, pas d'erreur mémoire)
+  - T-US005-19 : Déposant revient après clôture (OK, paiement avec dérogation possible)
+  - T-US005-20 : Vérification cohérence (OK, somme reversements + commissions = total ventes)
+```
+
 ## US-006 — Créer une nouvelle édition de bourse
 
 ```yaml
