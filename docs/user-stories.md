@@ -26,6 +26,8 @@ links:
     id: REQ-F-001
 ``` 
 
+# Liste des User stories
+
 ## US-001 — Activer un compte déposant invité
 
 ```yaml
@@ -818,8 +820,6 @@ test_scenarios:
   - T-US003-16 : Gestion erreur sur incohérence (rapport d'erreur lisible, génération partielle possible)
   - T-US003-17 : Historique édition avec toutes les générations tracées (date, heure, gestionnaire, nombre)
 ```
-
-# User Stories bénévoles (à détailler)
 
 ## US-004 — Scanner un article et enregistrer la vente
 
