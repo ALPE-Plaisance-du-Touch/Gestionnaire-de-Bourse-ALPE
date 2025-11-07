@@ -2,7 +2,7 @@
 id: DOC-005-PLAN
 title: Plan de rédaction des spécifications
 status: draft
-version: 0.4.0
+version: 0.5.0
 updated: 2025-11-07
 owner: ALPE Plaisance du Touch
 links:
@@ -23,10 +23,10 @@ Organiser la production et la validation des spécifications de l’application 
 | Document | Livrable de référence | Statut actuel | Responsable | Échéance cible |
 |---|---|---|---|---|
 | README (DOC-000) | Vision, conventions | Ossature initiale à enrichir (exemples, FAQ) | Produit | 2025-11-10 |
-| Plan (DOC-005) | Pilotage & suivi | ✅ Mis à jour (v0.4.0) | Produit | 2025-11-07 |
+| Plan (DOC-005) | Pilotage & suivi | ✅ Mis à jour (v0.5.0) | Produit | 2025-11-07 |
 | Glossaire (DOC-010) | Table complète des termes | ✅ Enrichi (v0.4.0) - Listes 1000/2000, créneaux capacités, couleurs étiquettes | UX | 2025-11-06 |
 | Personas (DOC-020) | 4 personas cibles | ✅ Complétés (v0.2.0) - 4 personas détaillés (Déposant, Bénévole, Gestionnaire, Admin) | UX | 2025-11-05 |
-| User Stories (DOC-030) | US complètes + critères | 🔄 En cours (v0.4.0) - US-001 à US-009 détaillées (8/9 US : 89%) | Produit | 2025-11-15 |
+| User Stories (DOC-030) | US complètes + critères | ✅ Complétées (v0.4.0) - US-001 à US-010 détaillées (9/9 US : 100%) | Produit | 2025-11-07 |
 | Exigences (DOC-040) | REQ fonctionnelles & NF traçables | ✅ Enrichies (v0.4.0) - REQ-F-001 à F-017 avec règlements déposant/intérieur | Produit | 2025-11-06 |
 | Architecture (DOC-050) | C4 niv. 1-3 + contraintes | À compléter (diagrammes, ADR) | Tech Lead | 2025-11-22 |
 | Modèle de domaine (DOC-060) | Diagramme + règles métiers | ✅ Enrichi (v0.4.0) - 8 entités (Creneau ajouté) + types listes + 23 invariants | Produit + Tech | 2025-11-06 |
@@ -56,7 +56,9 @@ Organiser la production et la validation des spécifications de l’application 
 ### Gestion des bénévoles
 - [x] ✅ Détailler US-004 (scannage vente) : 15 AC avec offline-first, conflits, performance <3s, 20 tests
 - [x] ✅ Détailler US-005 (génération reversements) : 13 AC avec bordereaux PDF, 80/20, clôture édition, 20 tests
-- [ ] Créer US pour émission manuelle d'invitations (bénévole/gestionnaire)
+
+### Gestion des invitations
+- [x] ✅ Créer US-010 (émission invitations en masse) : 15 AC avec CSV, tokens, relances, traçabilité, 20 tests
 
 ### Traçabilité
 - [ ] Mettre en place traçabilité croisée US ↔ REQ ↔ tests
@@ -157,7 +159,7 @@ Organiser la production et la validation des spécifications de l’application 
 
 # Bilan d'avancement (au 2025-11-07)
 
-## ✅ Réalisations clés (version 0.6.0)
+## ✅ Réalisations clés (version 0.7.0)
 
 ### Fondations conceptuelles établies
 - **Concept central : Gestion des Éditions** introduit et documenté
@@ -168,30 +170,32 @@ Organiser la production et la validation des spécifications de l’application 
 - **Gestion des créneaux** : Capacités configurables, créneaux réservés Plaisançois
 - **Architecture offline-first** : Mode déconnecté pour scannage ventes, synchronisation automatique
 - **Workflow reversements** : Commission 20%/80%, bordereaux PDF signés, clôture édition
+- **Gestion des invitations** : Tokens sécurisés 7 jours, import CSV masse, relances automatiques
 
 ### Livrables complétés
 | Livrable | Statut | Détails |
 |----------|--------|---------|
 | Glossaire (v0.4.0) | ✅ | 30+ termes incluant listes 1000/2000, créneaux, couleurs étiquettes |
 | Personas (v0.2.0) | ✅ | 4 personas détaillés avec profils complets |
-| User Stories (v0.4.0) | 🔄 89% | US-001 à US-009 détaillées (8/9 US), reste US-010 (admin bulk invitations) |
+| User Stories (v0.4.0) | ✅ 100% | US-001 à US-010 détaillées (9/9 US complètes) |
 | Exigences (v0.4.0) | ✅ | REQ-F-001 à F-017 avec règlements déposant + intérieur |
 | Modèle domaine (v0.4.0) | ✅ | 8 entités + 23 invariants + types listes + créneaux |
 | Catégories articles (v1.0.0) | ✅ | Guide bénévoles complet (317 lignes) |
 
 ### Métriques
-- **User Stories détaillées** : 8 (US-001 à US-009, manque US-010)
+- **User Stories détaillées** : 9 (US-001 à US-010 — 100% complètes)
   - US-001 : Activer compte déposant (14 AC, 16 tests)
   - US-002 : Déclarer articles (16 AC, 15 tests)
   - US-003 : Générer étiquettes par gestionnaire (15 AC, 18 tests)
-  - US-004 : Scanner article et enregistrer vente (15 AC, 20 tests) — ✨ Nouveau
-  - US-005 : Générer reversements fin édition (13 AC, 20 tests) — ✨ Nouveau
+  - US-004 : Scanner article et enregistrer vente (15 AC, 20 tests)
+  - US-005 : Générer reversements fin édition (13 AC, 20 tests)
   - US-006 : Créer édition (9 AC, 9 tests)
   - US-007 : Configurer dates clés (6 AC, 8 tests)
   - US-008 : Importer inscriptions Billetweb (11 AC, 11 tests)
   - US-009 : Clôturer édition (8 AC, 9 tests)
-- **Critères d'acceptation** : 88 (répartis sur 8 US avec règles métier complexes)
-- **Scénarios de test** : 110+ (couvrant parcours nominaux, alternatifs, offline, performance)
+  - US-010 : Émettre invitations en masse (15 AC, 20 tests) — ✨ Nouveau
+- **Critères d'acceptation** : 103 (répartis sur 9 US avec règles métier complexes)
+- **Scénarios de test** : 130+ (couvrant parcours nominaux, alternatifs, offline, sécurité, performance)
 - **Exigences fonctionnelles** : 17 (REQ-F-001 à F-017)
 - **Exigences non-fonctionnelles** : 4 (disponibilité, performance, RGPD, accessibilité)
 - **Entités du domaine** : 8 (Edition, User, Deposant, Creneau, Liste, Article, Vente, Reversement, Invitation)
@@ -203,9 +207,10 @@ Organiser la production et la validation des spécifications de l’application 
 1. ✅ **US-003** : Génération d'étiquettes en masse par gestionnaire (COMPLÉTÉ)
 2. ✅ **US-004** : Scannage article et enregistrement vente avec offline-first (COMPLÉTÉ)
 3. ✅ **US-005** : Génération reversements avec bordereaux PDF et clôture édition (COMPLÉTÉ)
-4. **US-010** : Émission manuelle d'invitations en masse (gestionnaire/administrateur)
+4. ✅ **US-010** : Émission manuelle d'invitations en masse avec CSV et tokens (COMPLÉTÉ)
 5. **REQ-F-004** : Compléter exigence performance scans (< 3s par article)
 6. **DOC-060** : Ajouter diagrammes séquence pour parcours dépôt et vente
+7. **Traçabilité** : Établir matrice de traçabilité US ↔ REQ ↔ tests
 
 ### Moyen terme (2 semaines)
 1. **Architecture** : Diagrammes C4 (Conteneur + Composant) + ADR choix technologiques
