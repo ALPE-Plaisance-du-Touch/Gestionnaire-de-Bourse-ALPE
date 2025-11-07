@@ -458,6 +458,22 @@ acceptance_criteria:
         ✗ 1 manteau max (vous en avez 2 dans liste 2)
       • Bouton "Valider" grisé tant que toutes les contraintes ne sont pas respectées
 
+  # AC-16 : Aperçu de mes listes pour consultation
+  - GIVEN j'ai validé mes listes
+    WHEN j'accède à mon espace déposant
+    THEN je vois un bouton "Consulter l'aperçu de mes listes" pour chaque liste validée
+    AND je clique sur ce bouton
+    THEN le système :
+      • Affiche un aperçu visuel de ma liste dans une modale ou nouvelle page
+      • Contenu de l'aperçu :
+        - Titre : "Aperçu Liste [NUMERO] - [MON_NOM]"
+        - Tableau des articles triés par catégorie avec : N° | Catégorie | Description | Taille | Prix
+        - Total : "[N] articles - [MONTANT]€"
+        - Note informative : "ℹ️ Les étiquettes et une copie de cette liste vous seront remises dans une pochette transparente lors de votre créneau de dépôt. Impression et découpage effectués par ALPE."
+      • Propose un bouton "Télécharger en PDF" pour avoir une copie personnelle (sans étiquettes)
+      • Propose un bouton "Imprimer" pour impression personnelle (optionnel)
+    AND cette fonctionnalité reste accessible même après validation, jusqu'au jour du dépôt
+
 dependencies:
   - US-001  # Activation compte déposant
   - US-008  # Import Billetweb (pour inscription à édition)
@@ -561,22 +577,24 @@ test_scenarios:
   - T-US002-20 : Compteur visuel progression 24 articles et 12 vêtements
 ```
 
-## US-003 — Générer et imprimer mes étiquettes
+## US-003 — Générer et imprimer les étiquettes des déposants
 
 ```yaml
 id: US-003
-title: Générer et imprimer mes étiquettes
-actor: deposant
-benefit: "...pour identifier mes articles au moment du dépôt et permettre leur scannage en caisse"
-as_a: "En tant que déposant ayant validé mes listes"
-i_want: "Je veux générer et imprimer des étiquettes avec code-barres/QR pour chacun de mes articles"
-so_that: "Afin de préparer mon dépôt et permettre le scannage rapide en caisse le jour de la vente"
+title: Générer et imprimer les étiquettes des déposants
+actor: gestionnaire
+benefit: "...pour préparer les pochettes de dépôt et permettre le scannage en caisse"
+as_a: "En tant que gestionnaire responsable de l'impression"
+i_want: "Je veux générer et imprimer en masse les étiquettes et listes de tous les déposants"
+so_that: "Afin de préparer les pochettes transparentes qui seront remises aux déposants lors de leur créneau (règlement intérieur : impression et découpage à la charge d'ALPE)"
 
 # Contexte métier
 notes: |
-  - Cette US s'appuie sur la US-002 (déclaration des articles validée)
-  - Les étiquettes sont générées après validation finale des listes
-  - Chaque étiquette contient un code unique scannable (QR code ou code-barres)
+  - Cette US s'appuie sur la US-002 (déclaration des articles validée par les déposants)
+  - **Selon le règlement intérieur** : "L'impression de la liste et des étiquettes ainsi que le découpage auront été faits en amont par ALPE"
+  - Les déposants doivent valider leurs listes **3 semaines avant le début de la collecte** pour permettre l'impression par ALPE
+  - Le gestionnaire génère les étiquettes pour tous les déposants d'un créneau ou d'une édition complète
+  - Chaque étiquette contient un code unique scannable (QR code)
   - La couleur de l'étiquette dépend du numéro de liste (règlement intérieur) :
     • Liste 100 : étiquette bleu ciel
     • Liste 200 : étiquette jaune soleil
@@ -586,28 +604,38 @@ notes: |
     • Liste 600 : étiquette clémentine
     • Liste 1000 : étiquette blanche
     • Liste 2000 : étiquette groseille
-  - Le déposant imprime ses étiquettes chez lui et les découpe avant le dépôt
-  - Les étiquettes doivent être solidement attachées aux articles (épingle à nourrice, ruban, etc.)
-  - Les étiquettes sont présentées lors du dépôt physique pour vérification par les bénévoles
+  - Le jour du dépôt, chaque déposant reçoit une pochette transparente contenant :
+    • Un exemplaire de sa liste imprimée
+    • Ses étiquettes imprimées et découpées
+  - Les bénévoles utilisent ces étiquettes pour étiqueter les articles à la table d'enregistrement
 
 acceptance_criteria:
-  # AC-1 : Accès à la génération d'étiquettes
-  - GIVEN j'ai validé mes listes (statut "Validée")
-    AND la date limite de déclaration n'est pas dépassée
-    WHEN j'accède à mon espace déposant
-    THEN je vois un bouton "Générer mes étiquettes" pour chaque liste validée
-    AND un message informatif :
-      "Vos étiquettes sont prêtes à être imprimées. Téléchargez le PDF et imprimez-les sur papier blanc A4 standard."
+  # AC-1 : Accès à la génération en masse
+  - GIVEN je suis connecté en tant que gestionnaire
+    AND une édition est en statut "Inscriptions ouvertes" ou "En cours"
+    WHEN j'accède à la section "Gestion des étiquettes"
+    THEN je vois :
+      • Un tableau listant tous les déposants avec leurs listes validées
+      • Pour chaque déposant : nom, créneau de dépôt, nombre de listes, nombre total d'articles, statut étiquettes
+      • Des filtres : par créneau, par statut étiquettes (non générées / générées / imprimées)
+      • Un bouton "Générer toutes les étiquettes" (pour tous les déposants)
+      • Un bouton "Générer par créneau" (pour un créneau spécifique)
+      • Un compteur global : "245 listes à générer - 1823 étiquettes au total"
 
-  # AC-2 : Génération du fichier PDF - cas nominal
-  - GIVEN j'ai une liste validée avec 15 articles
-    WHEN je clique sur "Générer mes étiquettes" pour cette liste
+  # AC-2 : Génération en masse par créneau - cas nominal
+  - GIVEN j'ai sélectionné le créneau "Mercredi 9h30-11h30" qui contient 20 déposants avec 35 listes
+    WHEN je clique sur "Générer étiquettes pour ce créneau"
     THEN le système :
-      • Génère un code unique par article (format : EDI-[ID_EDITION]-L[NUMERO_LISTE]-A[NUMERO_ARTICLE])
-      • Crée un QR code scannable pour chaque article contenant ce code unique
-      • Produit un fichier PDF nommé "Etiquettes_Liste_[NUMERO]_[NOM_DEPOSANT].pdf"
+      • Génère un code unique par article pour tous les déposants du créneau (format : EDI-[ID_EDITION]-L[NUMERO_LISTE]-A[NUMERO_ARTICLE])
+      • Crée un QR code scannable pour chaque article
+      • Produit un fichier PDF nommé "Etiquettes_Creneau_Mercredi_9h30_[DATE].pdf" contenant :
+        - Page de garde avec liste des déposants et créneau
+        - Pour chaque déposant : une page de séparation avec nom + numéro(s) de liste(s)
+        - Les étiquettes de toutes ses listes
+        - Une copie de sa liste d'articles (pour pochette transparente)
       • Lance automatiquement le téléchargement du PDF
-      • Affiche un message de confirmation : "PDF généré avec succès ! Téléchargement en cours..."
+      • Affiche un message : "PDF généré avec succès ! 35 listes - 287 étiquettes pour 20 déposants"
+      • Marque toutes les listes comme "Étiquettes générées" avec date/heure
 
   # AC-3 : Contenu d'une étiquette
   - GIVEN une étiquette générée pour un article
@@ -633,89 +661,105 @@ acceptance_criteria:
       • Police lisible (Arial ou équivalent, taille 10-14pt selon l'élément)
       • Compatible impression couleur ou noir & blanc (la couleur de fond reste visible en noir & blanc)
 
-  # AC-5 : Instructions d'utilisation incluses
-  - GIVEN je télécharge le PDF d'étiquettes
-    THEN la première page du PDF contient :
-      • Titre : "Guide d'utilisation de vos étiquettes - Bourse ALPE"
-      • Instructions de découpe : "Découpez le long des lignes pointillées"
-      • Instructions de fixation : "Attachez solidement chaque étiquette à l'article correspondant (épingle à nourrice pour vêtements, ruban/ficelle pour objets)"
-      • Avertissement : "Vérifiez que le numéro d'article correspond bien à votre liste avant de fixer l'étiquette"
-      • Rappel : "Apportez vos articles dans l'ordre de votre liste lors du dépôt"
-      • Date et heure de votre créneau de dépôt
-      • Numéro de téléphone en cas de problème
+  # AC-5 : Page de garde par déposant dans le PDF
+  - GIVEN je génère les étiquettes d'un créneau
+    THEN pour chaque déposant le PDF contient une page de séparation avec :
+      • Nom complet du déposant en gros caractères
+      • Numéro(s) de liste(s) (ex: "Liste 245 - Liste 246")
+      • Créneau de dépôt : "Mercredi 9h30-11h30"
+      • Nombre total d'articles : "30 articles (dont 18 vêtements)"
+      • Instructions pour les bénévoles :
+        "📋 Pochette transparente à remettre au déposant contenant :"
+        "1. Cette liste d'articles imprimée"
+        "2. Les étiquettes découpées ci-après"
+        "3. Diriger vers la table d'enregistrement"
+      • Case à cocher : "☐ Pochette préparée par : ________ le __/__/____"
 
-  # AC-6 : Réimpression possible
-  - GIVEN j'ai déjà généré mes étiquettes
-    AND la date limite de déclaration n'est pas dépassée
-    WHEN je clique à nouveau sur "Générer mes étiquettes"
+  # AC-6 : Régénération possible avec avertissement
+  - GIVEN j'ai déjà généré les étiquettes du créneau "Mercredi 9h30-11h30" le 05/11/2024
+    WHEN je clique à nouveau sur "Générer étiquettes pour ce créneau"
     THEN le système :
       • Affiche une modale de confirmation :
-        "Vous avez déjà généré vos étiquettes le [DATE] à [HEURE]. Voulez-vous les régénérer ?"
-        "⚠️ Les codes QR resteront identiques mais si vous avez modifié vos articles, les nouvelles informations seront prises en compte."
+        "⚠️ Les étiquettes de ce créneau ont déjà été générées le 05/11/2024 à 14h23."
+        "Voulez-vous régénérer ? Les codes QR resteront identiques."
+        "Si des déposants ont modifié leurs listes depuis, les nouvelles informations seront prises en compte."
       • Propose deux boutons : "Annuler" et "Régénérer"
     AND si je confirme
     THEN génère un nouveau PDF avec les informations à jour
+    AND enregistre cette régénération dans l'historique
 
-  # AC-7 : Blocage après date limite
-  - GIVEN la date limite de déclaration est dépassée
-    AND je n'ai pas encore généré mes étiquettes
-    WHEN j'accède à mon espace déposant
+  # AC-7 : Génération individuelle pour un déposant
+  - GIVEN je veux générer les étiquettes d'un seul déposant (ex: Marie Dupont)
+    WHEN je coche la case à côté de son nom dans le tableau
+    AND je clique sur "Générer pour la sélection"
     THEN le système :
-      • Affiche un bandeau d'alerte rouge :
-        "Date limite dépassée. Vos étiquettes ont été automatiquement générées par le système."
-      • Met automatiquement à disposition un PDF d'étiquettes basé sur l'état final de mes listes
-      • Affiche un bouton "Télécharger mes étiquettes" (pas "Générer")
+      • Génère un PDF contenant uniquement les étiquettes et listes de Marie Dupont
+      • Nom de fichier : "Etiquettes_Marie_Dupont_[DATE].pdf"
+      • Marque ses listes comme "Étiquettes générées"
 
-  # AC-8 : Gestion des listes multiples
-  - GIVEN j'ai validé 2 listes (Liste 245 avec 18 articles, Liste 246 avec 12 articles)
-    WHEN j'accède à mon espace
-    THEN je vois :
-      • Deux boutons distincts : "Générer étiquettes Liste 245" et "Générer étiquettes Liste 246"
-      • Un compteur pour chaque : "18 étiquettes" et "12 étiquettes"
-      • Un bouton global : "Générer toutes mes étiquettes" qui produit un seul PDF contenant les deux listes
+  # AC-8 : Statut d'impression et traçabilité
+  - GIVEN j'ai généré les étiquettes d'un créneau
+    WHEN je reviens sur la page "Gestion des étiquettes"
+    THEN je vois pour chaque déposant :
+      • Statut : "Étiquettes générées le 05/11/2024 à 14h23 par Sophie Martin"
+      • Un bouton "Marquer comme imprimé" qui change le statut en "Imprimé le [DATE] par [NOM]"
+      • Un bouton "Télécharger à nouveau" pour récupérer le PDF déjà généré
+    AND dans l'historique de l'édition :
+      • "05/11/2024 14h23 - Sophie Martin : Génération 35 listes (287 étiquettes) pour créneau Mercredi 9h30"
+      • "05/11/2024 16h45 - Jean Durand : Marqué comme imprimé - créneau Mercredi 9h30"
 
-  # AC-9 : Vérification de cohérence
-  - GIVEN j'ai généré mes étiquettes
+  # AC-9 : Vérification de cohérence en masse
+  - GIVEN je génère les étiquettes pour un créneau de 20 déposants
     WHEN le système crée le PDF
-    THEN il effectue les vérifications suivantes :
-      • Chaque article de la liste a bien une étiquette correspondante
-      • Les numéros d'articles sont séquentiels (1, 2, 3... jusqu'à N)
-      • Aucun code unique n'est dupliqué au sein de l'édition
-      • Les prix affichés correspondent bien aux prix saisis dans la liste
+    THEN il effectue les vérifications suivantes pour chaque déposant :
+      • Chaque article de chaque liste a bien une étiquette correspondante
+      • Les numéros d'articles sont séquentiels (1, 2, 3... jusqu'à N) pour chaque liste
+      • Aucun code unique n'est dupliqué au sein de l'édition (vérification sur les 1823 codes)
+      • Les prix affichés correspondent bien aux prix saisis
       • La couleur de fond correspond bien au numéro de liste
-    AND si une incohérence est détectée
-    THEN affiche une erreur : "Impossible de générer les étiquettes. Veuillez contacter un administrateur (code erreur : [CODE])"
+    AND si une incohérence est détectée pour un déposant
+    THEN affiche un rapport d'erreur :
+      "⚠️ Erreurs détectées sur 2 déposants :"
+      "- Marie Dupont (Liste 245) : Code dupliqué détecté"
+      "- Jean Martin (Liste 387) : Article 15 manquant"
+      "Les autres déposants (18/20) peuvent être générés. Voulez-vous continuer ?"
 
-  # AC-10 : Aperçu avant impression
-  - GIVEN je viens de cliquer sur "Générer mes étiquettes"
-    WHEN le PDF se télécharge
+  # AC-10 : Génération de la liste d'articles imprimable
+  - GIVEN je génère les étiquettes pour un déposant
+    THEN le PDF contient également une copie de sa liste d'articles formatée pour impression :
+      • En-tête : "Liste des articles - [NOM DEPOSANT] - Liste [NUMERO]"
+      • Tableau avec colonnes : N° | Catégorie | Description | Taille | Prix
+      • Articles triés automatiquement par catégorie (Vêtements, Chaussures, etc.)
+      • Total en bas : "Total : [N] articles - [MONTANT]€"
+      • Note en bas : "À remettre au déposant dans la pochette transparente"
+    AND cette liste est insérée juste avant les étiquettes du déposant dans le PDF
+
+  # AC-11 : Aperçu et instructions d'impression
+  - GIVEN je viens de générer un PDF de 287 étiquettes pour un créneau
+    WHEN le téléchargement démarre
     THEN le système :
       • Ouvre automatiquement une fenêtre de prévisualisation du PDF dans le navigateur
-      • Affiche un message d'aide :
-        "💡 Astuce : Vérifiez votre PDF avant impression. Utilisez du papier blanc A4 standard 80g."
-      • Propose un bouton "Imprimer directement" qui ouvre le dialogue d'impression du navigateur
-      • Enregistre la date/heure de génération dans l'historique du déposant
+      • Affiche un message d'instructions :
+        "📋 Instructions d'impression :"
+        "1. Papier blanc A4 standard 80g ou papier couleur selon numéro liste"
+        "2. Imprimer en couleur si possible (sinon les fonds grisés restent visibles)"
+        "3. Découper les étiquettes le long des lignes pointillées"
+        "4. Préparer les pochettes transparentes avec liste + étiquettes découpées"
+      • Propose un bouton "Imprimer directement"
+      • Propose un bouton "Télécharger le guide de découpe" (PDF avec instructions visuelles)
 
-  # AC-11 : Accessibilité du PDF
-  - GIVEN un déposant malvoyant génère ses étiquettes
-    WHEN le PDF est créé
-    THEN il respecte les normes d'accessibilité :
-      • Texte sélectionnable (pas d'image texte)
-      • Contraste minimum 4.5:1 entre texte et fond
-      • Police sans-serif lisible (Arial, Helvetica)
-      • Taille de police minimum 10pt
-      • Codes QR de taille suffisante pour scan fiable (25×25mm)
-
-  # AC-12 : Traçabilité génération
-  - GIVEN je génère mes étiquettes
-    WHEN le système crée le PDF
-    THEN il enregistre dans l'historique :
-      • Date et heure de génération
-      • Nombre d'étiquettes générées
-      • Numéro(s) de liste(s) concernée(s)
-      • Statut : "Étiquettes générées"
-    AND ces informations sont visibles dans mon espace déposant :
-      "Dernière génération : [DATE] à [HEURE] - [N] étiquettes"
+  # AC-12 : Export et statistiques
+  - GIVEN j'ai terminé la génération pour tous les créneaux
+    WHEN j'accède à la page "Gestion des étiquettes"
+    THEN je peux :
+      • Exporter un tableau Excel récapitulatif :
+        - Colonnes : Déposant | Créneau | Nb listes | Nb articles | Statut | Généré le | Imprimé le
+      • Voir les statistiques globales :
+        "245 déposants - 412 listes - 3246 étiquettes"
+        "✅ Générées : 350 listes (85%)"
+        "🖨️ Imprimées : 280 listes (68%)"
+        "⏳ En attente : 62 listes (15%)"
+      • Filtrer par statut pour relancer les déposants n'ayant pas validé leurs listes
 
 dependencies:
   - US-002  # Déclaration articles (listes validées requises)
@@ -730,16 +774,20 @@ links:
 
 # Règles métier complémentaires
 business_rules:
+  - Génération en masse par le gestionnaire (pas par les déposants individuellement)
+  - Impression et découpage à la charge d'ALPE (règlement intérieur)
+  - Génération possible par créneau, par sélection, ou pour toute l'édition
   - Code unique format : EDI-[ID_EDITION]-L[NUMERO_LISTE]-A[NUMERO_ARTICLE]
   - QR code scannable contenant le code unique
   - Une étiquette par article déclaré
   - Couleur de fond selon numéro de liste (100=bleu ciel, 200=jaune, 300=fushia, 400=lilas, 500=vert menthe, 600=clémentine, 1000=blanc, 2000=groseille)
   - Format étiquette : 105×74mm (8 par page A4)
-  - Génération possible jusqu'à la date limite de déclaration
-  - Après date limite : génération automatique figée
+  - PDF contient pour chaque déposant : page de séparation + liste d'articles imprimable + étiquettes
+  - Traçabilité complète : qui a généré, quand, qui a imprimé, quand
+  - Statuts : Non générées / Générées / Imprimées
   - PDF téléchargeable indéfiniment (stocké côté serveur)
-  - Première page du PDF : instructions d'utilisation obligatoires
   - Codes uniques au sein de l'édition (pas de duplication possible)
+  - Pochette transparente remise au déposant le jour du dépôt contenant : liste imprimée + étiquettes découpées
 
 # Spécifications techniques du QR code
 qr_code_specs:
@@ -752,21 +800,23 @@ qr_code_specs:
 
 # Cas de test suggérés
 test_scenarios:
-  - T-US003-01 : Génération PDF pour liste de 10 articles (OK, 2 pages A4)
-  - T-US003-02 : Génération PDF pour liste de 24 articles (OK, 3 pages A4)
-  - T-US003-03 : Vérification codes uniques (pas de doublon sur 100 listes)
-  - T-US003-04 : Vérification couleur fond selon numéro liste (100=bleu, 200=jaune, etc.)
+  - T-US003-01 : Génération en masse pour créneau de 20 déposants (OK, PDF 287 étiquettes)
+  - T-US003-02 : Génération individuelle pour 1 déposant avec 2 listes (OK, page séparation + 2 listes articles + étiquettes)
+  - T-US003-03 : Vérification codes uniques sur 412 listes édition complète (pas de doublon)
+  - T-US003-04 : Vérification couleur fond pour listes 100, 200, 1000, 2000 (couleurs correctes)
   - T-US003-05 : Impression test et scan QR code avec lecteur smartphone (OK)
-  - T-US003-06 : Réimpression après modification prix d'un article (nouveau prix affiché)
-  - T-US003-07 : Tentative génération après date limite (PDF auto-généré disponible)
-  - T-US003-08 : Génération unique pour 2 listes (OK, PDF unique multi-listes)
-  - T-US003-09 : Aperçu PDF dans navigateur avant téléchargement (OK)
-  - T-US003-10 : Vérification accessibilité PDF (texte sélectionnable, contraste OK)
-  - T-US003-11 : Téléchargement PDF sur mobile (format adapté)
-  - T-US003-12 : Traçabilité génération visible dans historique déposant
-  - T-US003-13 : Instructions première page présentes avec créneau de dépôt
-  - T-US003-14 : Format étiquette 105×74mm vérifié après impression
-  - T-US003-15 : Description longue tronquée à 50 caractères (pas de débordement)
+  - T-US003-06 : Régénération après modification d'articles par déposant (nouvelles infos affichées, QR identiques)
+  - T-US003-07 : Génération pour toute l'édition 245 déposants (OK, PDF organisé par créneau)
+  - T-US003-08 : Filtrage par créneau puis génération (OK, seulement le créneau sélectionné)
+  - T-US003-09 : Aperçu PDF dans navigateur avec instructions d'impression (OK)
+  - T-US003-10 : Marquage statut "Imprimé" avec traçabilité (date + nom gestionnaire enregistrés)
+  - T-US003-11 : Export Excel récapitulatif avec tous les statuts (OK, 412 lignes)
+  - T-US003-12 : Vérification liste d'articles imprimable dans PDF (tableau complet, total correct)
+  - T-US003-13 : Vérification page de séparation avec instructions pochette (case à cocher présente)
+  - T-US003-14 : Format étiquette 105×74mm vérifié après impression et découpage (OK)
+  - T-US003-15 : Statistiques globales affichées (pourcentages générées/imprimées corrects)
+  - T-US003-16 : Gestion erreur sur incohérence (rapport d'erreur lisible, génération partielle possible)
+  - T-US003-17 : Historique édition avec toutes les générations tracées (date, heure, gestionnaire, nombre)
 ```
 
 # User Stories bénévoles (à détailler)

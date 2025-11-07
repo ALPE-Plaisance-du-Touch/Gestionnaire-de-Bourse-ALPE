@@ -180,20 +180,23 @@ links:
   - **Priorité :** Must have
   - **Responsable validation :** Bénévole (vérification physique lors du dépôt)
 
-- REQ-F-003 — Le système DOIT générer des étiquettes scannables uniques par article au sein d'une édition. (US-003)
+- REQ-F-003 — Le système DOIT permettre la génération et l'impression en masse des étiquettes par les gestionnaires (règlement intérieur : impression à la charge d'ALPE). (US-003)
   - **Critères d'acceptation :**
+    - Génération en masse par gestionnaire (par créneau, par sélection, ou édition complète)
     - Code unique format : EDI-[ID_EDITION]-L[NUMERO_LISTE]-A[NUMERO_ARTICLE]
     - QR code version 3 minimum, niveau correction erreur M (15%), taille 25×25mm minimum
     - Génération PDF téléchargeable : format A4, 8 étiquettes par page (105×74mm chacune)
     - Contenu étiquette : QR code, numéro liste, numéro article, prix, description (50 car. max), catégorie, code unique
     - Couleur de fond selon numéro liste (100=bleu ciel, 200=jaune, 300=fushia, 400=lilas, 500=vert menthe, 600=clémentine, 1000=blanc, 2000=groseille)
-    - Première page PDF : instructions découpe/fixation, rappel créneau dépôt, numéro contact
-    - Réimpression possible jusqu'à date limite déclaration (codes QR identiques, infos articles mises à jour)
-    - Après date limite : génération automatique figée, téléchargement uniquement
-    - Traçabilité : enregistrement date/heure génération, nombre étiquettes, numéros listes
-    - Accessibilité : texte sélectionnable, contraste 4.5:1, police sans-serif ≥10pt
+    - PDF organisé par déposant avec : page de séparation + liste d'articles imprimable + étiquettes
+    - Instructions pour bénévoles : préparation pochettes transparentes (liste imprimée + étiquettes découpées)
+    - Statuts de suivi : Non générées / Générées / Imprimées avec traçabilité (qui, quand)
+    - Export Excel récapitulatif avec statistiques globales
+    - Régénération possible avec conservation des codes QR
+    - Vérification cohérence en masse (codes uniques, pas de doublons sur toute l'édition)
+    - Déposants peuvent consulter aperçu de leurs listes (sans impression) dans leur espace
   - **Priorité :** Must have
-  - **Responsable validation :** Déposant + Bénévole
+  - **Responsable validation :** Gestionnaire + Bénévole
 
 - REQ-F-004 — Le système DOIT permettre le scannage/encaissement rapide des ventes en caisse. (US-004)
   - **Critères d'acceptation :** Scan étiquette < 3s, enregistrement vente avec moyen paiement, traçabilité bénévole vendeur
