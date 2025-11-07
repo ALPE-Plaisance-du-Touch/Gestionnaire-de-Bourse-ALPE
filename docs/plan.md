@@ -2,7 +2,7 @@
 id: DOC-005-PLAN
 title: Plan de rédaction des spécifications
 status: draft
-version: 0.5.0
+version: 0.6.0
 updated: 2025-11-07
 owner: ALPE Plaisance du Touch
 links:
@@ -23,7 +23,7 @@ Organiser la production et la validation des spécifications de l’application 
 | Document | Livrable de référence | Statut actuel | Responsable | Échéance cible |
 |---|---|---|---|---|
 | README (DOC-000) | Vision, conventions | Ossature initiale à enrichir (exemples, FAQ) | Produit | 2025-11-10 |
-| Plan (DOC-005) | Pilotage & suivi | ✅ Mis à jour (v0.5.0) | Produit | 2025-11-07 |
+| Plan (DOC-005) | Pilotage & suivi | ✅ Mis à jour (v0.6.0) | Produit | 2025-11-07 |
 | Glossaire (DOC-010) | Table complète des termes | ✅ Enrichi (v0.4.0) - Listes 1000/2000, créneaux capacités, couleurs étiquettes | UX | 2025-11-06 |
 | Personas (DOC-020) | 4 personas cibles | ✅ Complétés (v0.2.0) - 4 personas détaillés (Déposant, Bénévole, Gestionnaire, Admin) | UX | 2025-11-05 |
 | User Stories (DOC-030) | US complètes + critères | ✅ Complétées (v0.4.0) - US-001 à US-010 détaillées (9/9 US : 100%) | Produit | 2025-11-07 |
@@ -175,7 +175,7 @@ Organiser la production et la validation des spécifications de l’application 
 
 # Bilan d'avancement (au 2025-11-07)
 
-## ✅ Réalisations clés (version 0.7.0)
+## ✅ Réalisations clés (version 0.8.0)
 
 ### Fondations conceptuelles établies
 - **Concept central : Gestion des Éditions** introduit et documenté
@@ -187,6 +187,7 @@ Organiser la production et la validation des spécifications de l’application 
 - **Architecture offline-first** : Mode déconnecté pour scannage ventes, synchronisation automatique
 - **Workflow reversements** : Commission 20%/80%, bordereaux PDF signés, clôture édition
 - **Gestion des invitations** : Tokens sécurisés 7 jours, import CSV masse, relances automatiques
+- **Traçabilité bidirectionnelle** : Matrice complète US ↔ REQ ↔ Tests (82% couverture, objectif 95%)
 
 ### Livrables complétés
 | Livrable | Statut | Détails |
@@ -197,6 +198,7 @@ Organiser la production et la validation des spécifications de l’application 
 | Exigences (v0.4.0) | ✅ | REQ-F-001 à F-017 avec règlements déposant + intérieur |
 | Modèle domaine (v0.4.0) | ✅ | 8 entités + 23 invariants + types listes + créneaux |
 | Catégories articles (v1.0.0) | ✅ | Guide bénévoles complet (317 lignes) |
+| Traçabilité (v1.0.0) | ✅ | Matrice US↔REQ↔Tests complète (860 lignes, 82% couverture) |
 
 ### Métriques
 - **User Stories détaillées** : 9 (US-001 à US-010 — 100% complètes)
