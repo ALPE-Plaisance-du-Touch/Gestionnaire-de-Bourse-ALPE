@@ -191,11 +191,11 @@ Organiser la production et la validation des spécifications de l’application 
   - US-005 : Générer reversements fin édition (13 AC, 20 tests)
   - US-006 : Créer édition (9 AC, 9 tests)
   - US-007 : Configurer dates clés (6 AC, 8 tests)
-  - US-008 : Importer inscriptions Billetweb (11 AC, 11 tests)
+  - US-008 : Importer inscriptions Billetweb (13 AC, 15 tests) — 🔄 Mise à jour format Billetweb
   - US-009 : Clôturer édition (8 AC, 9 tests)
-  - US-010 : Émettre invitations en masse (15 AC, 20 tests) — ✨ Nouveau
-- **Critères d'acceptation** : 103 (répartis sur 9 US avec règles métier complexes)
-- **Scénarios de test** : 130+ (couvrant parcours nominaux, alternatifs, offline, sécurité, performance)
+  - US-010 : Émettre invitations en masse (15 AC, 20 tests)
+- **Critères d'acceptation** : 105 (répartis sur 9 US avec règles métier complexes)
+- **Scénarios de test** : 134+ (couvrant parcours nominaux, alternatifs, offline, sécurité, performance)
 - **Exigences fonctionnelles** : 17 (REQ-F-001 à F-017)
 - **Exigences non-fonctionnelles** : 4 (disponibilité, performance, RGPD, accessibilité)
 - **Entités du domaine** : 8 (Edition, User, Deposant, Creneau, Liste, Article, Vente, Reversement, Invitation)
