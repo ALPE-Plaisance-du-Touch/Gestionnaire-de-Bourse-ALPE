@@ -129,6 +129,80 @@ links:
   - **Priorité :** Could have
   - **Responsable validation :** Gestionnaire
 
+- REQ-F-018 — Le système DOIT permettre à un gestionnaire d'émettre des invitations manuellement (uniques ou en masse via CSV) avec tokens sécurisés, relances et traçabilité complète. (US-010)
+  - **Critères d'acceptation :**
+    - **Invitation unique :**
+      - Formulaire de création : email (obligatoire), nom, prénom, type de liste (standard/1000/2000), commentaire interne
+      - Génération automatique d'un token unique sécurisé (UUID v4 ou JWT signé, hashé SHA-256 en base)
+      - Validité du token : 7 jours calendaires
+      - Envoi immédiat ou différé de l'email d'invitation
+      - Validation unicité : 1 email = 1 invitation active par édition (détection doublons avec options : annuler l'ancienne ou relancer)
+    - **Import en masse CSV :**
+      - Format CSV UTF-8, séparateur virgule
+      - Colonnes : email (obligatoire), nom, prénom, type_liste (standard/1000/2000), commentaire
+      - Limite : 500 lignes par import
+      - Validation côté serveur : format CSV, emails valides (RFC 5322), détection doublons dans fichier et en base
+      - Rapport de validation détaillé : nombre valides, doublons, erreurs ligne par ligne
+      - Traitement asynchrone si >50 lignes (job en background avec barre de progression)
+      - Génération tokens uniques pour toutes les invitations valides
+      - Envoi emails en masse avec rapport final (succès, échecs avec raisons)
+    - **Relance d'invitation :**
+      - Relance possible pour invitations "En attente" (non activées)
+      - Génération d'un nouveau token (l'ancien est invalidé)
+      - Prolongation de validité : nouveau délai de 7 jours à partir de la relance
+      - Email de relance automatique envoyé
+      - Traçabilité : qui a relancé, quand
+    - **Annulation d'invitation :**
+      - Annulation possible pour invitations "En attente"
+      - Invalidation immédiate du token
+      - Passage statut "Annulée"
+      - Message d'erreur si déposant tente d'activer : "Cette invitation a été annulée. Contactez l'organisation."
+      - Traçabilité : qui a annulé, quand, motif optionnel
+    - **Expiration automatique :**
+      - Tâche cron quotidienne (1h du matin) vérifie les invitations
+      - Passage automatique en statut "Expirée" après 7 jours sans activation
+      - Token devient invalide
+      - Message d'erreur : "Ce lien d'invitation a expiré (7 jours dépassés). Demandez une nouvelle invitation."
+      - Action disponible pour gestionnaire : "Relancer" (crée une nouvelle invitation)
+    - **Notification gestionnaires :**
+      - Email récapitulatif quotidien : invitations expirant dans 3 jours
+      - Contenu : liste des emails non activés, bouton "Relancer en masse", lien vers tableau de bord
+      - Alerte dans interface : badge avec nombre d'invitations à risque
+    - **Détection anciens déposants :**
+      - Lors de saisie email, détection automatique si déposant existant en base
+      - Affichage info : "Déposant existant : Nom Prénom (dernière participation : Édition précédente)"
+      - Pré-remplissage automatique : nom, prénom, type de liste suggéré
+      - Affichage historique : nombre d'éditions, articles vendus, taux de vente
+    - **Statistiques et export :**
+      - Dashboard : graphique évolution invitations envoyées vs activées, taux d'activation global, délai moyen d'activation, taux d'expiration, nombre de relances
+      - Répartition par type de liste (standard/1000/2000)
+      - Export Excel : feuille invitations complètes, feuille statistiques, feuille invitations non activées
+    - **Sécurité :**
+      - Tokens hashés en base de données (SHA-256), non lisibles en clair
+      - Rate limiting : 100 invitations/heure par gestionnaire (anti-spam)
+      - CSRF protection sur formulaires
+      - Email validation : format RFC 5322 + vérification MX record optionnelle
+      - Logs d'audit : toutes actions tracées (création, relance, annulation) avec IP + user agent
+      - Isolation : gestionnaire voit seulement ses invitations (sauf admin qui voit tout)
+    - **Contenu email d'invitation :**
+      - Objet : "Bourse [Nom Édition] ALPE - Activez votre compte déposant"
+      - Corps HTML responsive (mobile-friendly) :
+        - Logo ALPE
+        - Personnalisation : "Bonjour [Prénom]," ou "Bonjour," si prénom inconnu
+        - Texte explicatif sur la bourse
+        - Si liste 1000/2000 : mention "Vous bénéficiez d'une liste adhérent [type] avec restitution prioritaire"
+        - Bouton CTA : "Activer mon compte" (lien avec token)
+        - Informations importantes : date limite déclaration articles, dates de la bourse, validité lien (7 jours)
+        - Lien vers règlement déposant
+        - Footer : contact ALPE, mentions légales
+      - Expéditeur : "ALPE Plaisance du Touch <noreply@alpe-bourse.fr>"
+      - Reply-To : "contact@alpe-bourse.fr"
+      - Tracking optionnel : ouverture, clic
+      - Retry automatique en cas d'échec (max 3 tentatives)
+      - Bounce management : détection emails invalides
+  - **Priorité :** Must have
+  - **Responsable validation :** Gestionnaire
+
 - REQ-F-012 — Le système DOIT afficher les rappels réglementaires pour le jour du dépôt.
   - **Critères d'acceptation :**
     - Dans l'espace déposant, afficher les rappels :
