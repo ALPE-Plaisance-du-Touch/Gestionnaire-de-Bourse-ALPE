@@ -2,8 +2,8 @@
 id: DOC-100-TRACE
 title: Matrice de traçabilité US ↔ REQ ↔ Tests
 status: draft
-version: 1.0.0
-updated: 2025-11-07
+version: 1.1.0
+updated: 2025-11-25
 owner: ALPE Plaisance du Touch
 links:
   - rel: source
@@ -42,8 +42,8 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 | US-007 | Configurer dates clés | REQ-F-007, REQ-F-011, REQ-F-014 | 6 | 8 | ✅ 100% |
 | US-008 | Importer Billetweb | REQ-F-008, REQ-F-013, REQ-F-014 | 13 | 15 | ✅ 100% |
 | US-009 | Clôturer édition | REQ-F-009 | 8 | 9 | ✅ 100% |
-| US-010 | Émettre invitations | ⚠️ REQ-F-018 (à créer) | 15 | 20 | ⚠️ REQ manquante |
-| **TOTAL** | **9 US** | **17 REQ-F + 4 REQ-NF** | **105** | **134+** | **89% (1 REQ à créer)** |
+| US-010 | Émettre invitations | REQ-F-018 | 15 | 20 | ✅ 100% |
+| **TOTAL** | **9 US** | **18 REQ-F + 4 REQ-NF** | **105** | **134+** | **100%** |
 
 **Légende** :
 - ✅ 100% : US complète avec REQ et tests
@@ -360,12 +360,16 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 
 **Actor** : gestionnaire
 **Exigences couvertes** :
-- ⚠️ **REQ-F-018** : Émission invitations manuelles (À CRÉER)
-  - Invitation unique ou en masse (CSV)
-  - Token unique 7 jours
-  - Relance avec nouveau token
+- **REQ-F-018** : Émission invitations manuelles
+  - Invitation unique ou en masse (CSV max 500 lignes)
+  - Token unique sécurisé (UUID v4/JWT, SHA-256 hashé), validité 7 jours
+  - Relance avec nouveau token (invalidation ancien)
+  - Annulation et expiration automatique
   - Validation unicité email par édition
-  - Rate limiting 100 invitations/heure
+  - Rate limiting 100 invitations/heure par gestionnaire
+  - Notification gestionnaires 3 jours avant expiration
+  - Détection anciens déposants avec auto-remplissage
+  - Statistiques dashboard et export Excel
   - Traçabilité complète
 
 **Tests associés** : T-US010-01 à T-US010-20 (20 tests)
@@ -390,7 +394,7 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 - T-US010-19 : Type liste 1000/2000 dans email (OK, mention priorité affichée)
 - T-US010-20 : Gestionnaire ne voit que ses invitations (OK, isolation données)
 
-**Couverture** : ⚠️ Exigence REQ-F-018 à créer
+**Couverture** : ✅ Complète
 
 ---
 
@@ -564,28 +568,12 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 
 ---
 
-## ⚠️ REQ-F-018 — Émission invitations manuelles (À CRÉER)
+## REQ-F-018 — Émission invitations manuelles
 
 **User Stories couvertes** : US-010
 **Tests associés** : T-US010-01 à T-US010-20
-**Priorité** : Must have (suggestion)
-**Statut** : ❌ **EXIGENCE MANQUANTE**
-
-**Proposition de contenu** :
-```
-REQ-F-018 — Le système DOIT permettre à un gestionnaire d'émettre des invitations manuellement (uniques ou en masse via CSV) avec tokens sécurisés, relances, et traçabilité complète. (US-010)
-
-Critères d'acceptation :
-- Invitation unique ou import CSV (max 500 lignes)
-- Token unique hashé, validité 7 jours
-- Relance = nouveau token, invalidation ancien
-- Validation unicité email par édition
-- Rate limiting : 100 invitations/heure par gestionnaire
-- Notification gestionnaires 3 jours avant expiration
-- Traçabilité : qui a invité, quand, pour quelle édition
-- Export Excel invitations avec statistiques
-- Détection anciens déposants avec auto-remplissage
-```
+**Priorité** : Must have
+**Statut** : ✅ Spécifiée et testée
 
 ---
 
@@ -631,13 +619,13 @@ Critères d'acceptation :
 
 | Statut | Nombre | Pourcentage |
 |--------|--------|-------------|
-| ✅ US avec REQ complètes | 8 | 89% |
-| ⚠️ US avec REQ manquantes | 1 (US-010) | 11% |
+| ✅ US avec REQ complètes | 9 | 100% |
+| ⚠️ US avec REQ manquantes | 0 | 0% |
 | ❌ US sans REQ | 0 | 0% |
 | **TOTAL** | **9 US** | **100%** |
 
 **Actions requises** :
-1. **Créer REQ-F-018** pour US-010 (émission invitations manuelles)
+1. ✅ **REQ-F-018 créée** pour US-010 (émission invitations manuelles) — Terminé
 
 ---
 
@@ -645,10 +633,10 @@ Critères d'acceptation :
 
 | Statut | Nombre | Pourcentage |
 |--------|--------|-------------|
-| ✅ REQ testées complètement | 12 | 57% |
-| ⚠️ REQ testées partiellement | 8 | 38% |
-| ❌ REQ non testées | 1 (REQ-F-018 manquante) | 5% |
-| **TOTAL** | **21 REQ (17 F + 4 NF)** | **100%** |
+| ✅ REQ testées complètement | 13 | 59% |
+| ⚠️ REQ testées partiellement | 8 | 36% |
+| ❌ REQ non testées | 0 | 0% |
+| **TOTAL** | **22 REQ (18 F + 4 NF)** | **100%** |
 
 **REQ testées partiellement** :
 - **REQ-F-012** : Rappels réglementaires (tests à ajouter)
@@ -674,10 +662,10 @@ Critères d'acceptation :
 | **User Stories spécifiées** | 9/9 (100%) |
 | **Critères d'acceptation** | 105 |
 | **Scénarios de test** | 134+ |
-| **Exigences fonctionnelles** | 17 (+ 1 à créer) |
+| **Exigences fonctionnelles** | 18 |
 | **Exigences non-fonctionnelles** | 4 |
-| **Taux de couverture US → REQ** | 89% (8/9) |
-| **Taux de couverture REQ → Tests** | 57% complet, 38% partiel |
+| **Taux de couverture US → REQ** | 100% (9/9) |
+| **Taux de couverture REQ → Tests** | 59% complet, 36% partiel |
 | **Moyenne tests par US** | 14,9 tests/US |
 
 ---
@@ -717,7 +705,7 @@ graph TD
         REQ015[REQ-F-015: Listes 1000/2000]
         REQ016[REQ-F-016: Restitution]
         REQ017[REQ-F-017: Vente privée]
-        REQ018[REQ-F-018: Invitations]:::missing
+        REQ018[REQ-F-018: Invitations]
     end
 
     subgraph "Exigences Non-Fonctionnelles"
@@ -759,7 +747,7 @@ graph TD
 
     US009 --> REQ009
 
-    US010 -.-> REQ018
+    US010 --> REQ018
 
     %% Dépendances entre US
     US002 -.-> US001
@@ -796,10 +784,11 @@ graph TD
 
 ## Court terme (cette semaine)
 
-1. ✅ **Créer REQ-F-018** pour US-010 (émission invitations manuelles)
-   - Critères d'acceptation
-   - Priorité Must have
-   - Responsable validation : Gestionnaire
+1. ✅ **~~Créer REQ-F-018~~** pour US-010 (émission invitations manuelles) — **TERMINÉ** (2025-11-25)
+   - ✅ Critères d'acceptation complets
+   - ✅ Priorité Must have
+   - ✅ Responsable validation : Gestionnaire
+   - ✅ Traçabilité mise à jour
 
 2. **Ajouter tests manquants** :
    - REQ-F-012 : Tests rappels réglementaires dans US-002
@@ -836,14 +825,15 @@ graph TD
 - **9 User Stories** complètement spécifiées avec AC et tests
 - **105 critères d'acceptation** détaillés
 - **134+ scénarios de test** couvrant les parcours nominaux et alternatifs
-- **Bonne couverture fonctionnelle** : 89% des US ont leurs REQ
+- **✅ Couverture fonctionnelle complète** : 100% des US ont leurs REQ (18 REQ-F)
+- **REQ-F-018 créée** : Émission invitations manuelles (2025-11-25)
 - **Tests offline-first** bien spécifiés (US-004)
 - **Format Billetweb** détaillé avec colonnes exactes (US-008)
+- **Traçabilité bidirectionnelle** établie US ↔ REQ ↔ Tests
 
 ## Points d'attention ⚠️
 
-- **1 REQ manquante** : REQ-F-018 pour US-010 (invitations manuelles)
-- **8 REQ partiellement testées** (38%) nécessitent des tests complémentaires
+- **8 REQ partiellement testées** (36%) nécessitent des tests complémentaires
 - **Tests non-fonctionnels** à renforcer (charge, accessibilité, RGPD exhaustif)
 - **REQ transverses** (REQ-F-010 rôles, REQ-F-015 listes 1000/2000) nécessitent des tests dédiés
 
@@ -852,9 +842,10 @@ graph TD
 | Dimension | Complétude |
 |-----------|------------|
 | Spécification US | 100% |
-| Couverture US → REQ | 89% |
-| Couverture REQ → Tests (complet) | 57% |
-| Couverture REQ → Tests (partiel) | 38% |
-| **Score global** | **82%** |
+| Couverture US → REQ | ✅ **100%** |
+| Couverture REQ → Tests (complet) | 59% |
+| Couverture REQ → Tests (partiel) | 36% |
+| **Score global** | **86%** |
 
 **Objectif** : Atteindre 95% de couverture complète avant le début du développement.
+**Progression** : +4% depuis dernière mise à jour (REQ-F-018 créée)
