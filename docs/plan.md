@@ -81,7 +81,7 @@ Organiser la production et la validation des spécifications de l’application 
 - [x] ✅ Compléter REQ-F-003 (génération étiquettes : interface gestionnaire, QR code, couleurs listes, PDF async 1min/300 étiquettes, stockage serveur)
 - [x] ✅ Compléter REQ-F-005 (reversements : calcul commission 20%, bordereaux PDF, paiement espèces/chèque/virement, email confirmation, invendus stock ALPE)
 - [x] ✅ Créer REQ-F-018 (émission invitations manuelles pour US-010)
-- [ ] Introduire exigences non-fonctionnelles supplémentaires (sécurité, scalabilité)
+- [x] ✅ Compléter exigences non-fonctionnelles (REQ-NF-001 à REQ-NF-012 : performance, sécurité, RGPD, accessibilité, scalabilité)
 
 ## DOC-100 — Traçabilité
 - [x] ✅ Créer document de traçabilité croisée US ↔ REQ ↔ Tests (860 lignes)

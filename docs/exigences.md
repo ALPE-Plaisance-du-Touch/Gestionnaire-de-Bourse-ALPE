@@ -2,7 +2,7 @@
 id: DOC-040-REQS
 title: Exigences (fonctionnelles et non-fonctionnelles)
 status: draft
-version: 0.8.0
+version: 0.9.0
 updated: 2025-12-23
 owner: ALPE Plaisance du Touch
 links:
@@ -563,8 +563,213 @@ links:
 
 # Exigences non-fonctionnelles
 
-- REQ-NF-001 — Disponibilité pendant la bourse ≥ 99.5%.
-- REQ-NF-002 — Temps moyen de scannage → encaissement ≤ 3 secondes.
-- REQ-NF-003 — Conformité RGPD: consentement, droit d’accès, suppression.
-- REQ-NF-004 — Accessibilité: respect WCAG 2.1 AA pour les écrans publics.
+## Performance et disponibilité
+
+- REQ-NF-001 — Le système DOIT garantir une disponibilité ≥ 99.5% pendant les jours de vente (samedi-dimanche).
+  - **Critères d'acceptation :**
+    - Uptime mesuré sur les créneaux de vente (9h-19h samedi, 9h-18h dimanche)
+    - Temps d'indisponibilité maximum toléré : 30 minutes cumulées par week-end de vente
+    - Monitoring automatique avec alertes en cas de dégradation
+    - Plan de continuité : bascule offline automatique des caisses si serveur indisponible
+    - Objectif de disponibilité hors vente : 95% (maintenance possible en semaine)
+  - **Priorité :** Must have
+  - **Métrique :** Uptime mesuré par monitoring externe (ex: UptimeRobot)
+
+- REQ-NF-002 — Le temps moyen de scannage → encaissement DOIT être ≤ 3 secondes.
+  - **Critères d'acceptation :**
+    - Temps mesuré depuis le scan QR code jusqu'à l'affichage "Vente enregistrée"
+    - 95ème percentile ≤ 3 secondes (95% des ventes en moins de 3s)
+    - Temps de reconnaissance QR code : < 1 seconde
+    - Temps de requête serveur : < 500ms (hors latence réseau)
+    - Dégradation acceptable en mode offline : temps local < 1 seconde
+    - Tests de charge : 5 caisses simultanées, 10 scans/minute chacune
+  - **Priorité :** Must have
+  - **Métrique :** Logs de temps de réponse, APM (Application Performance Monitoring)
+
+- REQ-NF-005 — Le système DOIT supporter la charge de 5 caisses simultanées pendant la vente.
+  - **Critères d'acceptation :**
+    - 5 utilisateurs bénévoles connectés simultanément en caisse
+    - 10 transactions/minute par caisse (50 transactions/minute total)
+    - Pas de dégradation des temps de réponse avec la montée en charge
+    - Base de données optimisée : index sur code_unique, déposant_id
+    - Tests de charge automatisés avant chaque édition
+  - **Priorité :** Must have
+  - **Métrique :** Tests JMeter/k6, monitoring CPU/RAM serveur
+
+- REQ-NF-006 — Le système DOIT générer les PDF d'étiquettes en moins de 1 minute pour 300 étiquettes.
+  - **Critères d'acceptation :**
+    - Génération asynchrone (job en arrière-plan)
+    - Barre de progression visible pour l'utilisateur
+    - Notification dans l'interface quand le PDF est prêt
+    - Génération pour une édition complète (~3000 étiquettes) : < 10 minutes
+    - Timeout : annulation automatique après 15 minutes avec message d'erreur
+  - **Priorité :** Should have
+  - **Métrique :** Temps de génération logué par job
+
+## Sécurité
+
+- REQ-NF-007 — Le système DOIT implémenter une authentification sécurisée.
+  - **Critères d'acceptation :**
+    - **Mots de passe :**
+      - Longueur minimale : 8 caractères
+      - Complexité : au moins 1 lettre, 1 chiffre, 1 caractère spécial
+      - Stockage : hashage bcrypt (coût ≥ 10) ou Argon2
+      - Pas de stockage en clair, ni MD5/SHA1
+    - **Sessions :**
+      - Tokens JWT signés (RS256 ou HS256 avec secret ≥ 256 bits)
+      - Expiration : 24 heures pour déposants, 8 heures pour bénévoles/gestionnaires
+      - Refresh token : 7 jours maximum
+      - Invalidation des tokens à la déconnexion
+    - **Protection contre les attaques :**
+      - Rate limiting : 5 tentatives de connexion échouées → blocage 15 minutes
+      - Protection CSRF sur tous les formulaires
+      - Headers de sécurité : X-Frame-Options, X-Content-Type-Options, CSP
+    - **Invitations :**
+      - Tokens d'invitation hashés en base (SHA-256)
+      - Validité : 7 jours, usage unique
+  - **Priorité :** Must have
+  - **Responsable validation :** SecOps + Administrateur
+
+- REQ-NF-008 — Le système DOIT implémenter un contrôle d'accès basé sur les rôles (RBAC).
+  - **Critères d'acceptation :**
+    - **Matrice d'autorisations :**
+      | Action | Déposant | Bénévole | Gestionnaire | Admin |
+      |--------|----------|----------|--------------|-------|
+      | Voir ses propres listes | ✓ | - | ✓ | ✓ |
+      | Modifier ses propres listes | ✓ | - | - | - |
+      | Scanner/vendre articles | - | ✓ | ✓ | ✓ |
+      | Annuler une vente | - | - | ✓ | ✓ |
+      | Générer étiquettes | - | - | ✓ | ✓ |
+      | Gérer les invitations | - | - | ✓ | ✓ |
+      | Configurer une édition | - | - | ✓ | ✓ |
+      | Créer/clôturer une édition | - | - | - | ✓ |
+      | Gérer les utilisateurs | - | - | - | ✓ |
+    - Vérification des permissions à chaque requête API
+    - Journalisation des accès refusés
+    - Principe du moindre privilège : pas d'escalade de rôle sans validation admin
+  - **Priorité :** Must have
+  - **Responsable validation :** SecOps + Administrateur
+
+- REQ-NF-009 — Le système DOIT journaliser les actions sensibles (audit trail).
+  - **Critères d'acceptation :**
+    - **Actions journalisées :**
+      - Connexion/déconnexion (succès et échecs)
+      - Création/modification/suppression de comptes
+      - Modifications de listes d'articles
+      - Ventes et annulations de ventes
+      - Génération et paiement des reversements
+      - Création/clôture d'éditions
+      - Modifications de configuration
+    - **Données enregistrées par log :**
+      - Horodatage (timestamp UTC)
+      - ID utilisateur et rôle
+      - Adresse IP
+      - User-Agent
+      - Action effectuée
+      - Entité concernée (ID)
+      - Résultat (succès/échec)
+    - Conservation des logs : 2 ans minimum (RGPD)
+    - Logs non modifiables (append-only)
+    - Accès aux logs réservé aux administrateurs
+  - **Priorité :** Must have
+  - **Responsable validation :** Administrateur
+
+- REQ-NF-010 — Le système DOIT protéger les données en transit et au repos.
+  - **Critères d'acceptation :**
+    - **En transit :**
+      - HTTPS obligatoire (TLS 1.2 minimum, TLS 1.3 recommandé)
+      - Certificat SSL valide (Let's Encrypt ou équivalent)
+      - Redirection automatique HTTP → HTTPS
+      - HSTS activé (max-age ≥ 1 an)
+    - **Au repos :**
+      - Base de données sur serveur sécurisé (accès restreint)
+      - Sauvegardes chiffrées (AES-256)
+      - Pas de données sensibles dans les logs (mots de passe, tokens)
+    - **Données sensibles :**
+      - Mots de passe : hashés (jamais en clair)
+      - Tokens d'invitation : hashés
+      - Emails : stockés en clair (nécessaire pour envoi)
+      - Téléphones : stockés en clair (nécessaire pour contact)
+  - **Priorité :** Must have
+  - **Responsable validation :** SecOps
+
+## Conformité et accessibilité
+
+- REQ-NF-003 — Le système DOIT être conforme au RGPD.
+  - **Critères d'acceptation :**
+    - **Consentement :**
+      - Case à cocher explicite pour CGU et politique de confidentialité lors de l'inscription
+      - Consentement séparé pour les communications marketing (optionnel)
+      - Preuve de consentement conservée (horodatage, IP)
+    - **Droits des utilisateurs :**
+      - Droit d'accès : export des données personnelles en JSON/PDF
+      - Droit de rectification : modification des informations personnelles
+      - Droit à l'effacement : suppression du compte et anonymisation des données historiques
+      - Droit à la portabilité : export format standard (JSON)
+    - **Conservation des données :**
+      - Comptes inactifs > 3 ans : notification de suppression, puis anonymisation
+      - Données de vente : conservation 5 ans (comptabilité)
+      - Logs d'audit : conservation 2 ans
+    - **Mentions légales :**
+      - Politique de confidentialité accessible depuis toutes les pages
+      - Coordonnées du DPO ou responsable RGPD
+      - Base légale du traitement : exécution du contrat (dépôt-vente)
+  - **Priorité :** Must have
+  - **Responsable validation :** DPO / Responsable ALPE
+
+- REQ-NF-004 — Le système DOIT respecter les normes d'accessibilité WCAG 2.1 niveau AA.
+  - **Critères d'acceptation :**
+    - **Perception :**
+      - Contraste texte/fond ≥ 4.5:1 (texte normal), ≥ 3:1 (grand texte)
+      - Alternatives textuelles pour les images (attribut alt)
+      - Sous-titres si contenus vidéo (non prévu actuellement)
+    - **Utilisation :**
+      - Navigation au clavier complète (Tab, Entrée, Échap)
+      - Focus visible sur tous les éléments interactifs
+      - Pas de piège au clavier
+      - Délai suffisant pour les actions (pas de timeout < 20 secondes)
+    - **Compréhension :**
+      - Labels explicites sur tous les champs de formulaire
+      - Messages d'erreur clairs et associés aux champs concernés
+      - Langue de la page déclarée (lang="fr")
+    - **Robustesse :**
+      - HTML valide (W3C validator)
+      - Compatible avec les lecteurs d'écran (NVDA, VoiceOver)
+      - ARIA landmarks pour la navigation
+    - **Écrans prioritaires :**
+      - Interface déposant (inscription, déclaration articles)
+      - Interface caisse (scan, vente) - taille de police ≥ 16px
+  - **Priorité :** Should have
+  - **Responsable validation :** Audit accessibilité externe
+
+## Scalabilité et maintenance
+
+- REQ-NF-011 — Le système DOIT supporter une montée en charge progressive.
+  - **Critères d'acceptation :**
+    - **Capacité actuelle :**
+      - 300 déposants par édition
+      - 3000 articles par édition
+      - 5 caisses simultanées
+    - **Capacité cible (scalabilité x3) :**
+      - 1000 déposants par édition
+      - 10000 articles par édition
+      - 15 caisses simultanées
+    - Architecture permettant le scaling horizontal (conteneurs Docker)
+    - Base de données : PostgreSQL avec réplication possible
+    - Cache : Redis pour les sessions et données fréquemment accédées
+    - CDN : pour les assets statiques (CSS, JS, images)
+  - **Priorité :** Could have
+  - **Responsable validation :** Équipe technique
+
+- REQ-NF-012 — Le système DOIT permettre les sauvegardes et restaurations.
+  - **Critères d'acceptation :**
+    - Sauvegarde automatique quotidienne de la base de données
+    - Sauvegarde avant chaque édition (snapshot)
+    - Rétention : 30 jours glissants + 1 sauvegarde par mois pendant 1 an
+    - Procédure de restauration documentée et testée
+    - RTO (Recovery Time Objective) : < 4 heures
+    - RPO (Recovery Point Objective) : < 24 heures (perte de données max)
+    - Test de restauration : 1 fois par an minimum
+  - **Priorité :** Must have
+  - **Responsable validation :** Administrateur système
 
