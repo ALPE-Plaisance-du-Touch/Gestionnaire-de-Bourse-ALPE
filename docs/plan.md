@@ -2,7 +2,7 @@
 id: DOC-005-PLAN
 title: Plan de rédaction des spécifications
 status: draft
-version: 0.7.0
+version: 0.8.0
 updated: 2025-12-23
 owner: ALPE Plaisance du Touch
 links:
@@ -29,7 +29,7 @@ Organiser la production et la validation des spécifications de l’application 
 | User Stories (DOC-030) | US complètes + critères | ✅ Complétées (v0.4.0) - US-001 à US-010 détaillées (9/9 US : 100%) | Produit | 2025-11-07 |
 | Exigences (DOC-040) | REQ fonctionnelles & NF traçables | ✅ Enrichies (v0.4.0) - REQ-F-001 à F-017 avec règlements déposant/intérieur | Produit | 2025-11-06 |
 | Traçabilité (DOC-100) | Matrice US ↔ REQ ↔ Tests | ✅ Créée (v1.0.0) - 860 lignes, 82% couverture complète, 1 REQ manquante | Produit | 2025-11-07 |
-| Architecture (DOC-050) | C4 niv. 1-3 + contraintes | À compléter (diagrammes, ADR) | Tech Lead | 2025-11-22 |
+| Architecture (DOC-050) | C4 niv. 1-3 + contraintes | ✅ Complétée (v0.5.0) - C4 Contexte/Container/Component, 5 ADRs, mode offline, schéma données | Tech Lead | 2025-11-22 |
 | Modèle de domaine (DOC-060) | Diagramme + règles métiers | ✅ Enrichi (v0.4.0) - 8 entités (Creneau ajouté) + types listes + 23 invariants | Produit + Tech | 2025-11-06 |
 | Catégories articles (DOC-011) | Guide bénévoles | ✅ Créé (v1.0.0) - 317 lignes, acceptés/refusés, prix indicatifs, checklist | Produit | 2025-11-06 |
 | UI (DOC-070) | Parcours + wireframes clés | À produire (écrans détaillés) | UX | 2025-11-25 |
@@ -135,9 +135,14 @@ Organiser la production et la validation des spécifications de l’application 
 - [ ] Documenter émotions/frustrations par phase de la bourse
 
 ## DOC-050 — Architecture & ADR
-- [ ] Produire diagrammes C4 niveau Conteneur et Composant
-- [ ] Documenter hypothèses d'hébergement et modes offline
-- [ ] Rédiger ADR pour choix techno front/back, base de données, gestion étiquettes
+- [x] ✅ Produire diagrammes C4 niveau Contexte, Conteneur et Composant (3 diagrammes Mermaid)
+- [x] ✅ Documenter hypothèses d'hébergement (mutualisé OVH/o2switch) et modes offline (fallback PWA)
+- [x] ✅ Rédiger 5 ADRs : React+TS frontend, FastAPI backend, MySQL/MariaDB, stratégie offline, hébergement mutualisé
+- [x] ✅ Documenter stack technique (frontend, backend, base de données, infrastructure)
+- [x] ✅ Créer schéma de données simplifié (ERD avec 7 entités principales)
+- [x] ✅ Documenter flux d'authentification JWT et matrice rôles/permissions
+- [x] ✅ Analyser risques et mitigations (6 risques identifiés)
+- [x] ✅ Lister évolutions futures (mobile native, paiement en ligne, multi-tenant)
 
 ## DOC-070 — UI & Flux
 - [ ] Concevoir wireframes basse fidélité pour parcours déposant & bénévole.
@@ -234,7 +239,7 @@ Organiser la production et la validation des spécifications de l’application 
 7. **Traçabilité** : Établir matrice de traçabilité US ↔ REQ ↔ tests
 
 ### Moyen terme (2 semaines)
-1. **Architecture** : Diagrammes C4 (Conteneur + Composant) + ADR choix technologiques
+1. ✅ **Architecture** : Diagrammes C4 (Conteneur + Composant) + 5 ADR choix technologiques (COMPLÉTÉ)
 2. **API** : Définition endpoints éditions, créneaux, listes, articles, ventes, reversements
 3. **Sécurité** : Matrice d'autorisations détaillée par rôle (CRUD par entité)
 4. **UI/UX** : Wireframes basse fidélité pour parcours déposant, bénévole, gestionnaire
