@@ -2,7 +2,7 @@
 id: DOC-040-REQS
 title: Exigences (fonctionnelles et non-fonctionnelles)
 status: draft
-version: 0.6.0
+version: 0.7.0
 updated: 2025-12-23
 owner: ALPE Plaisance du Touch
 links:
@@ -322,19 +322,103 @@ links:
 
 - REQ-F-003 — Le système DOIT permettre la génération et l'impression en masse des étiquettes par les gestionnaires (règlement intérieur : impression à la charge d'ALPE). (US-003)
   - **Critères d'acceptation :**
-    - Génération en masse par gestionnaire (par créneau, par sélection, ou édition complète)
-    - Code unique format : EDI-[ID_EDITION]-L[NUMERO_LISTE]-A[NUMERO_ARTICLE]
-    - QR code version 3 minimum, niveau correction erreur M (15%), taille 25×25mm minimum
-    - Génération PDF téléchargeable : format A4, 8 étiquettes par page (105×74mm chacune)
-    - Contenu étiquette : QR code, numéro liste, numéro article, prix, description (50 car. max), catégorie, code unique
-    - Couleur de fond selon numéro liste (100=bleu ciel, 200=jaune, 300=fushia, 400=lilas, 500=vert menthe, 600=clémentine, 1000=blanc, 2000=groseille)
-    - PDF organisé par déposant avec : page de séparation + liste d'articles imprimable + étiquettes
-    - Instructions pour bénévoles : préparation pochettes transparentes (liste imprimée + étiquettes découpées)
-    - Statuts de suivi : Non générées / Générées / Imprimées avec traçabilité (qui, quand)
-    - Export Excel récapitulatif avec statistiques globales
-    - Régénération possible avec conservation des codes QR
-    - Vérification cohérence en masse (codes uniques, pas de doublons sur toute l'édition)
-    - Déposants peuvent consulter aperçu de leurs listes (sans impression) dans leur espace
+    - **Interface de gestion des étiquettes :**
+      - Accès réservé aux gestionnaires (pas aux déposants)
+      - Tableau listant tous les déposants avec listes validées
+      - Colonnes : nom déposant, créneau de dépôt, nombre de listes, nombre d'articles, statut étiquettes
+      - Filtres : par créneau, par statut (Non générées / Générées / Imprimées)
+      - Compteur global : "X déposants - Y listes - Z étiquettes au total"
+    - **Modes de génération :**
+      - Génération par créneau : tous les déposants d'un créneau de dépôt
+      - Génération par sélection : cocher les déposants souhaités
+      - Génération individuelle : un seul déposant
+      - Génération complète : toute l'édition (tous les créneaux)
+    - **Code unique par article :**
+      - Format : EDI-[ID_EDITION]-L[NUMERO_LISTE]-A[NUMERO_ARTICLE]
+      - Exemple : EDI-2024-11-L245-A03
+      - Unicité garantie sur toute l'édition (pas de doublons)
+      - Code conservé en cas de régénération
+    - **Spécifications QR code :**
+      - QR code version 3 minimum (capacité 35 caractères alphanumériques)
+      - Niveau de correction d'erreur : M (15% de redondance)
+      - Taille minimale : 25×25mm pour scan fiable à 20cm
+      - Couleur : noir sur fond blanc (zone QR détourée si fond coloré)
+      - Marges blanches : minimum 4 modules autour du QR code
+    - **Contenu d'une étiquette :**
+      - QR code scannable (25×25mm)
+      - Numéro de liste en gros caractères (ex: "Liste 245")
+      - Numéro d'article dans la liste (ex: "Article 3/15")
+      - Prix de vente en gros (ex: "5.00€")
+      - Description tronquée à 50 caractères (ex: "Pull rayé bleu marine - 4 ans")
+      - Catégorie avec icône (Vêtements, Jouets, etc.)
+      - Code unique en petit en bas
+    - **Couleurs d'étiquettes par numéro de liste :**
+      - Liste 100 : fond bleu ciel
+      - Liste 200 : fond jaune soleil
+      - Liste 300 : fond fushia
+      - Liste 400 : fond lilas
+      - Liste 500 : fond vert menthe
+      - Liste 600 : fond clémentine
+      - Liste 1000 : fond blanc (adhérents ALPE)
+      - Liste 2000 : fond groseille (famille/amis adhérents)
+    - **Format PDF d'impression :**
+      - Format A4 portrait
+      - 8 étiquettes par page (2 colonnes × 4 lignes)
+      - Dimension étiquette : 105mm × 74mm
+      - Lignes pointillées pour découpe
+      - Marges de 10mm tout autour
+      - Police lisible : Arial ou équivalent, taille 10-14pt
+      - Compatible impression couleur ou noir & blanc
+    - **Structure du PDF par créneau :**
+      - Page de garde : liste des déposants du créneau, date/heure génération
+      - Pour chaque déposant :
+        - Page de séparation : nom, numéro(s) de liste(s), créneau, nombre d'articles
+        - Instructions bénévoles : "Pochette transparente à remettre au déposant"
+        - Case à cocher : "☐ Pochette préparée par : ________ le __/__/____"
+        - Liste d'articles imprimable (tableau N° | Catégorie | Description | Taille | Prix)
+        - Étiquettes découpables
+      - Nommage fichier : "Etiquettes_Creneau_[NOM_CRENEAU]_[DATE].pdf"
+    - **Génération asynchrone et performance :**
+      - Génération en arrière-plan (job asynchrone) si > 50 étiquettes
+      - Barre de progression affichée pendant la génération
+      - Temps maximum : 1 minute pour 300 étiquettes (1 créneau)
+      - Notification dans l'interface quand le PDF est prêt
+      - Pas d'email automatique au déposant
+    - **Stockage et re-téléchargement :**
+      - PDF stocké côté serveur après génération
+      - Re-téléchargeable indéfiniment via bouton "Télécharger à nouveau"
+      - Conservation jusqu'à archivage de l'édition (1 an après clôture)
+    - **Statuts et traçabilité :**
+      - Statuts : Non générées → Générées → Imprimées
+      - Traçabilité : qui a généré, quand (horodatage)
+      - Bouton "Marquer comme imprimé" pour passer au statut Imprimé
+      - Historique visible : "Généré le 05/11/2024 à 14h23 par Sophie Martin"
+    - **Régénération avec avertissement :**
+      - Modale de confirmation si étiquettes déjà générées
+      - Message : "Les étiquettes ont déjà été générées le [DATE]. Voulez-vous régénérer ?"
+      - Les codes QR restent identiques (pas de nouveau code)
+      - Prise en compte des modifications de listes depuis la dernière génération
+      - Enregistrement de la régénération dans l'historique
+    - **Vérification de cohérence :**
+      - Avant génération : vérification que chaque article a bien une étiquette
+      - Contrôle : numéros d'articles séquentiels (1, 2, 3... N) par liste
+      - Contrôle : aucun code unique dupliqué sur toute l'édition
+      - Contrôle : prix affichés = prix saisis
+      - Contrôle : couleur de fond = numéro de liste
+      - Si erreur détectée : rapport d'erreurs avec détails par déposant
+      - Option : générer quand même les déposants sans erreur
+    - **Export et statistiques :**
+      - Export Excel récapitulatif : Déposant | Créneau | Nb listes | Nb articles | Statut | Généré le | Imprimé le
+      - Statistiques globales affichées :
+        - Total : X déposants - Y listes - Z étiquettes
+        - Générées : N listes (X%)
+        - Imprimées : N listes (X%)
+        - En attente : N listes (X%)
+      - Filtre par statut pour identifier les retardataires
+    - **Aperçu déposant (lecture seule) :**
+      - Dans l'espace déposant : bouton "Consulter l'aperçu de mes listes"
+      - Affichage visuel des listes (sans possibilité d'imprimer)
+      - Pas de téléchargement PDF pour le déposant (impression réservée à ALPE)
   - **Priorité :** Must have
   - **Responsable validation :** Gestionnaire + Bénévole
 
