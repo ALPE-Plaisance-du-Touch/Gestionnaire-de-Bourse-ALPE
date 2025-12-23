@@ -2,7 +2,7 @@
 id: DOC-040-REQS
 title: Exigences (fonctionnelles et non-fonctionnelles)
 status: draft
-version: 0.7.0
+version: 0.8.0
 updated: 2025-12-23
 owner: ALPE Plaisance du Touch
 links:
@@ -475,13 +475,89 @@ links:
 
 - REQ-F-005 — Le système DOIT calculer commissions et reversements par déposant en fin d'édition selon la tarification réglementaire. (US-005)
   - **Critères d'acceptation :**
-    - Frais d'inscription : 5€ par déposant pour 2 listes (payé via Billetweb, non remboursable)
-    - Commission ALPE : 20% du montant total des ventes du déposant
-    - Formule reversement : montant_net = total_ventes − (20% × total_ventes)
-    - Note : Les frais d'inscription sont gérés en dehors du système (Billetweb), seule la commission est calculée par l'application
-    - Calcul édition par édition (un déposant peut avoir plusieurs éditions)
-    - Export liste reversements en CSV/PDF pour édition de chèques
-    - Statuts reversement : en_attente, calculé, payé, annulé
+    - **Interface de gestion des reversements :**
+      - Accès réservé aux gestionnaires et administrateurs
+      - Tableau listant tous les déposants avec statistiques :
+        - Nom, prénom, N° déposant
+        - Articles déposés / vendus / invendus
+        - Montant total des ventes
+        - Commission ALPE (20%)
+        - Montant à reverser (80%)
+        - Statut reversement
+      - Filtres : par statut, par créneau de restitution, par montant
+      - Statistiques globales en haut de page
+    - **Calcul des commissions et reversements :**
+      - Frais d'inscription : 5€ par déposant pour 2 listes (payé via Billetweb, hors système)
+      - Commission ALPE : 20% du montant total des ventes du déposant
+      - Formule reversement : montant_net = total_ventes × 0,80
+      - Déduction automatique des frais listes spéciales :
+        - Liste 1000 : 1€/liste déduit du reversement
+        - Liste 2000 : 5€ pour 2 listes déduit du reversement
+      - Arrondi à 2 décimales (comptabilité)
+      - Calcul édition par édition (un déposant peut avoir plusieurs éditions)
+      - Exemple : 59€ de ventes → Commission 11,80€ → Reversement 47,20€
+    - **Statuts de reversement :**
+      - À générer : bordereau non créé
+      - Bordereau prêt : PDF généré, en attente de paiement
+      - Payé : reversement effectué, tracé
+      - Clôturé : édition terminée, lecture seule
+    - **Génération du bordereau de reversement (PDF) :**
+      - Un PDF par déposant ou PDF global avec tous les bordereaux
+      - Contenu du bordereau :
+        - En-tête : Logo ALPE, "BORDEREAU DE REVERSEMENT", nom édition
+        - Informations déposant : N°, nom, téléphone
+        - Tableau articles vendus : N° article | Description | Catégorie | Prix vente
+        - Tableau articles invendus : N° article | Description | Catégorie | Prix demandé
+        - Total ventes, commission ALPE (20%), montant à reverser (80%)
+        - Section paiement à remplir : mode, date, signatures bénévole + déposant
+        - Mention légale : "Je soussigné(e) reconnais avoir reçu la somme de X€ et récupéré mes articles invendus."
+      - Nommage fichier : "Reversement_[N°_DEPOSANT]_[NOM].pdf"
+    - **Génération en masse :**
+      - Bouton "Générer tous les bordereaux"
+      - Barre de progression : "Génération en cours... X/Y déposants"
+      - Option : télécharger archive ZIP ou PDF global
+      - Passage automatique au statut "Bordereau prêt"
+    - **Enregistrement du paiement :**
+      - Formulaire modal lors de la restitution
+      - Modes de paiement : Espèces, Chèque (N° obligatoire), Virement (date prévue obligatoire)
+      - Case à cocher obligatoire : "Articles invendus récupérés"
+      - Commentaire optionnel
+      - Horodatage : "Payé le [DATE] à [HEURE] par [BÉNÉVOLE]"
+    - **Email de confirmation automatique :**
+      - Envoyé au déposant après enregistrement du paiement
+      - Contenu : récapitulatif des ventes, montant reversé, mode de paiement
+      - Objet : "Bourse ALPE [Édition] - Confirmation de votre reversement de X€"
+    - **Cas particuliers :**
+      - Aucune vente (0€) : pas de reversement, uniquement récupération invendus
+      - Tout vendu (100%) : message "Tous vos articles ont été vendus !", pas d'invendus à récupérer
+      - Déposant absent : statut "Absent - À recontacter", email de relance possible
+    - **Gestion des invendus non récupérés :**
+      - Après date limite de restitution : marquage "Non récupéré"
+      - Articles non récupérés conservés en stock ALPE pour éditions futures
+      - Traçabilité : date limite dépassée, notification au déposant
+    - **Statistiques et export :**
+      - Dashboard avec résultats financiers :
+        - Total ventes édition
+        - Commission ALPE totale
+        - Reversements totaux
+      - Résultats articles : déposés / vendus / invendus avec pourcentages
+      - Répartition par catégorie (graphique)
+      - Top 10 déposants (plus de ventes)
+      - Histogramme répartition des prix
+      - Export Excel complet :
+        - Feuille 1 : Récapitulatif par déposant
+        - Feuille 2 : Détail des ventes
+        - Feuille 3 : Détail des invendus
+        - Feuille 4 : Statistiques globales
+    - **Suivi temps réel :**
+      - Actualisation automatique des statuts (WebSocket ou polling)
+      - Compteur : "X / Y déposants traités (Z%)"
+      - Filtres rapides : À traiter / Payés aujourd'hui / En attente
+      - Code couleur : vert (Payé), orange (Bordereau prêt), blanc (À générer)
+    - **Traçabilité complète :**
+      - Historique par reversement : génération, paiement, modifications
+      - Qui a fait quoi, quand (horodatage complet)
+      - Logs consultables par les administrateurs
   - **Priorité :** Must have
   - **Responsable validation :** Gestionnaire + Administrateur
 

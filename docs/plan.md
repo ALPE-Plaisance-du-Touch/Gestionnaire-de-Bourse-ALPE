@@ -79,7 +79,7 @@ Organiser la production et la validation des spécifications de l’application 
 - [x] ✅ Compléter REQ-F-004 (scannage/encaissement : interface caisse, scan caméra, mode offline fallback, annulation gestionnaire, 5 caisses max)
 - [x] ✅ Compléter REQ-F-002 (enregistrement articles : sauvegarde auto, duplication, pas de photos, lots, liste noire, validation finale)
 - [x] ✅ Compléter REQ-F-003 (génération étiquettes : interface gestionnaire, QR code, couleurs listes, PDF async 1min/300 étiquettes, stockage serveur)
-- [ ] Compléter REQ-F-005 (reversements)
+- [x] ✅ Compléter REQ-F-005 (reversements : calcul commission 20%, bordereaux PDF, paiement espèces/chèque/virement, email confirmation, invendus stock ALPE)
 - [x] ✅ Créer REQ-F-018 (émission invitations manuelles pour US-010)
 - [ ] Introduire exigences non-fonctionnelles supplémentaires (sécurité, scalabilité)
 
