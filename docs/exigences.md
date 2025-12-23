@@ -2,8 +2,8 @@
 id: DOC-040-REQS
 title: Exigences (fonctionnelles et non-fonctionnelles)
 status: draft
-version: 0.4.0
-updated: 2025-11-06
+version: 0.5.0
+updated: 2025-12-23
 owner: ALPE Plaisance du Touch
 links:
   - rel: source
@@ -273,9 +273,55 @@ links:
   - **Responsable validation :** Gestionnaire + Bénévole
 
 - REQ-F-004 — Le système DOIT permettre le scannage/encaissement rapide des ventes en caisse. (US-004)
-  - **Critères d'acceptation :** Scan étiquette < 3s, enregistrement vente avec moyen paiement, traçabilité bénévole vendeur
+  - **Critères d'acceptation :**
+    - **Interface caisse bénévole :**
+      - Accès via authentification bénévole sur tablette/smartphone
+      - Affichage du nom du bénévole connecté, de l'édition en cours et du statut réseau (En ligne / Mode offline)
+      - Compteurs temps réel : articles vendus aujourd'hui, montant total des ventes
+      - Accès à l'historique des ventes personnelles et aux statistiques globales
+    - **Scan des étiquettes :**
+      - Scan via caméra intégrée tablette/smartphone (lecture QR code)
+      - Temps de reconnaissance QR code : < 1 seconde
+      - Feedback sonore : bip de confirmation (succès) ou double bip (erreur)
+      - Affichage immédiat des informations article : description, catégorie, prix, numéro liste, nom déposant, statut
+    - **Enregistrement de la vente :**
+      - Sélection du moyen de paiement : Espèces, Chèque, Carte Bancaire
+      - Confirmation en 2 étapes : sélection moyen de paiement → validation finale
+      - Temps total scan → confirmation : < 3 secondes (conforme REQ-NF-002)
+      - Données enregistrées : code article, prix, moyen paiement, horodatage, ID bénévole vendeur, ID déposant
+      - Passage automatique de l'article au statut "Vendu"
+    - **Gestion des erreurs :**
+      - Article déjà vendu : message d'alerte avec détails de la vente précédente (date, heure, bénévole, montant)
+      - Article non trouvé : message d'erreur avec suggestion de vérifier l'étiquette ou contacter un gestionnaire
+      - QR code illisible : possibilité de saisie manuelle du code unique (EDI-xxx-Lxxx-Axx)
+      - Blocage des ventes si l'édition n'est pas en statut "En cours"
+    - **Mode offline (fallback) :**
+      - Fonctionnement online par défaut
+      - Bascule automatique en mode offline si perte de connexion réseau
+      - Stockage local des ventes en attente (IndexedDB ou équivalent)
+      - Indicateur visuel clair du mode offline (pastille orange "○ Mode offline")
+      - Synchronisation automatique à la reconnexion
+      - Gestion des conflits : si article vendu en doublon (2 caisses offline), alerte au gestionnaire pour arbitrage
+      - Données offline conservées jusqu'à synchronisation réussie (pas de perte)
+    - **Annulation de vente :**
+      - Annulation possible uniquement par un gestionnaire (pas par le bénévole caisse)
+      - Interface gestionnaire : recherche de vente par code article ou par bénévole/date
+      - Motif d'annulation obligatoire (erreur de scan, remboursement client, etc.)
+      - Passage de l'article au statut "Disponible" (remis en vente)
+      - Traçabilité complète : qui a annulé, quand, motif
+    - **Capacité et performance :**
+      - Support de 5 caisses simultanées maximum pendant la vente
+      - Latence réseau tolérée : jusqu'à 500ms sans dégradation de l'expérience
+      - Volume estimé : ~3000 articles sur un week-end (samedi + dimanche)
+    - **Vente privée écoles/ALAE :**
+      - Marquage automatique des ventes effectuées pendant le créneau vente privée (vendredi 17h-18h)
+      - Statistiques séparées : ventes privées vs ventes publiques
+    - **Statistiques temps réel :**
+      - Dashboard accessible aux gestionnaires pendant la vente
+      - Métriques affichées : nombre d'articles vendus, montant total, répartition par moyen de paiement, top 5 déposants, articles/heure
+      - Rafraîchissement automatique toutes les 30 secondes
   - **Priorité :** Must have
-  - **Responsable validation :** Bénévole caisse
+  - **Responsable validation :** Bénévole caisse + Gestionnaire
 
 - REQ-F-005 — Le système DOIT calculer commissions et reversements par déposant en fin d'édition selon la tarification réglementaire. (US-005)
   - **Critères d'acceptation :**

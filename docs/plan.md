@@ -2,8 +2,8 @@
 id: DOC-005-PLAN
 title: Plan de rédaction des spécifications
 status: draft
-version: 0.6.0
-updated: 2025-11-07
+version: 0.7.0
+updated: 2025-12-23
 owner: ALPE Plaisance du Touch
 links:
   - rel: overview
@@ -76,8 +76,9 @@ Organiser la production et la validation des spécifications de l’application 
 - [x] ✅ Créer REQ-F-015 (listes spéciales 1000/2000 adhérents ALPE)
 - [x] ✅ Créer REQ-F-016 (horaires restitution différenciés standard/1000/2000)
 - [x] ✅ Créer REQ-F-017 (vente privée écoles/ALAE)
-- [ ] Compléter REQ-F-002 à REQ-F-005 (articles, étiquettes, ventes, reversements)
-- [ ] Créer REQ-F-018 (émission invitations manuelles pour US-010)
+- [x] ✅ Compléter REQ-F-004 (scannage/encaissement : interface caisse, scan caméra, mode offline fallback, annulation gestionnaire, 5 caisses max)
+- [ ] Compléter REQ-F-002, REQ-F-003, REQ-F-005 (articles, étiquettes, reversements)
+- [x] ✅ Créer REQ-F-018 (émission invitations manuelles pour US-010)
 - [ ] Introduire exigences non-fonctionnelles supplémentaires (sécurité, scalabilité)
 
 ## DOC-100 — Traçabilité
