@@ -2,7 +2,7 @@
 id: DOC-040-REQS
 title: Exigences (fonctionnelles et non-fonctionnelles)
 status: draft
-version: 0.5.0
+version: 0.6.0
 updated: 2025-12-23
 owner: ALPE Plaisance du Touch
 links:
@@ -221,24 +221,90 @@ links:
 
 - REQ-F-002 — Le système DOIT permettre l'enregistrement d'articles organisés en listes avec contraintes réglementaires. (US-002)
   - **Critères d'acceptation :**
-    - Un déposant peut créer maximum 2 listes par édition
-    - Chaque liste contient maximum 24 articles dont 12 vêtements maximum
-    - Les articles sont automatiquement triés par catégorie dans l'ordre : Vêtements, Chaussures, Puériculture, Jeux et jouets, Livres, Accessoires, Autres
-    - Interface : bouton "Nouvel article" ouvre un formulaire avec sélection catégorie, puis insertion automatique à la bonne position
-    - Validation en temps réel : si 12 vêtements déjà saisis et catégorie "Vêtements" sélectionnée, bouton "Ajouter l'article" grisé avec message "Vous avez déjà ajouté vos 12 vêtements sur cette liste"
-    - Prix article : minimum 1€, maximum 150€ (uniquement pour poussettes/landaus)
-    - Catégories obligatoires : Vêtements, Chaussures, Jouets, Livres, Puériculture, Accessoires
-    - Attributs article : catégorie, genre (optionnel), taille (optionnel), description, prix
-    - Contraintes par catégorie (selon règlement déposant) :
+    - **Accès et création de listes :**
+      - Déposant connecté à une édition active (statut "Inscriptions ouvertes" ou "En cours")
+      - Date limite de déclaration non dépassée (sinon lecture seule)
+      - Maximum 2 listes par déposant par édition
+      - Affichage du créneau de dépôt réservé (via Billetweb)
+      - Compteur visible : "Listes créées : X / 2"
+    - **Structure d'une liste :**
+      - Maximum 24 articles par liste dont 12 vêtements maximum
+      - Articles automatiquement triés par catégorie dans l'ordre : Vêtements, Chaussures, Puériculture, Jeux et jouets, Livres, Accessoires, Autres
+      - Renumérotation automatique des lignes (1 à N) après chaque ajout/suppression
+      - Statuts de liste : Brouillon (< 3 articles) / Complète (≥ 3 articles) / Validée
+    - **Ajout d'un article :**
+      - Bouton "Nouvel article" ouvre un formulaire avec sélection catégorie
+      - Attributs : catégorie (obligatoire), genre (optionnel), taille (optionnel), description (obligatoire, max 100 caractères), prix (obligatoire)
+      - Pas de photo (description textuelle uniquement)
+      - Insertion automatique à la bonne position selon le tri par catégorie
+      - Catégories disponibles : Vêtements, Chaussures, Puériculture, Jeux et jouets, Livres, Accessoires, Autres
+    - **Duplication d'article :**
+      - Bouton "Dupliquer" sur chaque article existant
+      - Pré-remplissage du formulaire avec les valeurs de l'article source
+      - Le déposant peut modifier avant validation
+      - Facilite la saisie d'articles similaires (ex: plusieurs pulls)
+    - **Validation des contraintes en temps réel :**
+      - Prix minimum : 1€ pour tout article
+      - Prix maximum : 150€ uniquement pour poussettes/landaus
+      - Si 12 vêtements atteints : bouton "Ajouter" grisé avec message "Vous avez déjà ajouté vos 12 vêtements sur cette liste"
+      - Si 24 articles atteints : bouton "Ajouter" grisé avec message "Liste complète (24 articles maximum)"
+      - Indicateurs visuels ✓/✗ pour chaque contrainte respectée/non respectée
+    - **Contraintes par catégorie (selon règlement déposant) :**
       - 1 seul manteau ou blouson par liste
       - 1 seul sac à main par liste
       - Maximum 2 foulards par liste
       - 1 seul tour de lit par liste
       - 1 peluche par liste
       - 5 livres adultes maximum par liste
-    - Lots autorisés : vêtements enfant (pyjama/bodys) en lot de 3 articles max, taille et marque identiques, acceptés jusqu'à 36 mois
-    - Un lot compte comme 1 article dans la limite des 24
-    - Articles refusés automatiquement si catégorie dans la liste noire (sièges-autos, biberons, CD/DVD, etc.)
+      - Message d'erreur explicite si contrainte dépassée
+    - **Gestion des lots (vêtements enfant) :**
+      - Option "Créer un lot" dans le formulaire
+      - Types autorisés : Bodys, Pyjamas/Grenouillères
+      - Taille jusqu'à 36 mois maximum
+      - Nombre d'articles : 1 à 3 par lot
+      - Marque identique obligatoire
+      - Un lot compte comme 1 article dans la limite des 24
+      - Affichage : "LOT x3 - Bodys 18 mois Petit Bateau - 4€"
+    - **Articles refusés (liste noire) :**
+      - Blocage automatique si catégorie dans la liste noire :
+        - Sièges-autos, rehausseurs
+        - Biberons, pots, vaisselle bébé
+        - CD/DVD/Vinyles
+        - Casques (vélo, ski, équitation)
+        - Consoles de jeu, jeux PC/Mac
+        - Meubles, luminaires, décoration
+        - Literie (matelas, oreillers)
+        - Livres jaunis/abîmés, encyclopédies
+        - Vêtements adultes > 14 ans (pyjamas, chemises de nuit, peignoirs)
+        - Sous-vêtements adultes / enfants > 2 ans
+        - Chaussettes (sauf ski), collants, chaussons enfants
+        - Costumes hommes, cravates, kimono
+      - Modale explicative avec lien vers le règlement complet
+    - **Sauvegarde automatique :**
+      - Enregistrement automatique à chaque modification (ajout, suppression, modification)
+      - Pas de bouton "Sauvegarder" explicite
+      - Indicateur visuel de synchronisation (icône de sauvegarde)
+      - Protection contre la perte de données en cas de fermeture accidentelle
+    - **Modification et suppression :**
+      - Bouton "Modifier" sur chaque article (réouvre le formulaire pré-rempli)
+      - Bouton "Supprimer" avec confirmation
+      - Modifications possibles tant que la date limite n'est pas dépassée
+    - **Validation finale de la liste :**
+      - Bouton "Valider mes listes pour cette édition"
+      - Récapitulatif modal avant confirmation : nombre d'articles, répartition par catégorie
+      - Case à cocher obligatoire : "J'ai lu et j'accepte les conditions de dépôt"
+      - Passage au statut "Validée"
+      - Envoi d'un email de confirmation avec récapitulatif PDF
+      - Après validation : lecture seule (modifications impossibles)
+    - **Blocage après date limite :**
+      - Listes en lecture seule après la date limite de déclaration
+      - Boutons "Ajouter", "Modifier", "Supprimer" désactivés
+      - Bandeau rouge : "Date limite dépassée. Vous ne pouvez plus modifier vos listes."
+      - Si listes incomplètes (< 3 articles) : notification "Votre dépôt ne sera pas pris en compte"
+    - **Aide contextuelle :**
+      - Bulle d'aide avec prix indicatifs par catégorie (selon règlement)
+      - Lien vers le règlement déposant complet
+      - FAQ intégrée pour les questions fréquentes
   - **Priorité :** Must have
   - **Responsable validation :** Déposant test + Gestionnaire
 

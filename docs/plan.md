@@ -77,7 +77,8 @@ Organiser la production et la validation des spécifications de l’application 
 - [x] ✅ Créer REQ-F-016 (horaires restitution différenciés standard/1000/2000)
 - [x] ✅ Créer REQ-F-017 (vente privée écoles/ALAE)
 - [x] ✅ Compléter REQ-F-004 (scannage/encaissement : interface caisse, scan caméra, mode offline fallback, annulation gestionnaire, 5 caisses max)
-- [ ] Compléter REQ-F-002, REQ-F-003, REQ-F-005 (articles, étiquettes, reversements)
+- [x] ✅ Compléter REQ-F-002 (enregistrement articles : sauvegarde auto, duplication, pas de photos, lots, liste noire, validation finale)
+- [ ] Compléter REQ-F-003, REQ-F-005 (étiquettes, reversements)
 - [x] ✅ Créer REQ-F-018 (émission invitations manuelles pour US-010)
 - [ ] Introduire exigences non-fonctionnelles supplémentaires (sécurité, scalabilité)
 
