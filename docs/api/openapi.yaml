@@ -1,32 +1,2388 @@
 openapi: 3.1.0
 info:
-  title: API — Gestionnaire de Bourse ALPE
-  version: 0.0.0-draft
+  title: API Gestionnaire de Bourse ALPE
+  version: 1.0.0
   description: |
-    Squelette d’API pour l’application de gestion de bourse ALPE.
-    À compléter au fil des exigences et des US.
+    API REST pour l'application de gestion des bourses aux vêtements et jouets
+    organisées par l'association ALPE Plaisance du Touch.
+
+    ## Authentification
+    L'API utilise des tokens JWT (Bearer). Après connexion, incluez le token
+    dans l'en-tête `Authorization: Bearer <token>`.
+
+    ## Rôles
+    - **deposant** : Gère ses propres listes et articles
+    - **benevole** : Scanne et encaisse les ventes
+    - **gestionnaire** : Configure les éditions, génère les étiquettes
+    - **admin** : Gestion complète (utilisateurs, éditions)
+
+    ## Codes d'erreur
+    - 400 : Requête invalide (validation)
+    - 401 : Non authentifié
+    - 403 : Accès refusé (permissions)
+    - 404 : Ressource non trouvée
+    - 409 : Conflit (doublon, état invalide)
+    - 422 : Entité non traitable (règle métier violée)
+    - 429 : Trop de requêtes (rate limiting)
+  contact:
+    name: ALPE Plaisance du Touch
+    email: contact@alpe-plaisance.fr
+  license:
+    name: Propriétaire
+    url: https://alpe-plaisance.fr
+
 servers:
-  - url: https://api.example.com
-    description: Brouillon
-paths: {}
+  - url: https://api.bourse-alpe.fr/v1
+    description: Production
+  - url: https://staging-api.bourse-alpe.fr/v1
+    description: Staging
+  - url: http://localhost:8000/v1
+    description: Développement local
+
+tags:
+  - name: Auth
+    description: Authentification et gestion des sessions
+  - name: Editions
+    description: Gestion des éditions de bourse
+  - name: Creneaux
+    description: Gestion des créneaux de dépôt
+  - name: Users
+    description: Gestion des utilisateurs
+  - name: Invitations
+    description: Gestion des invitations déposants
+  - name: Listes
+    description: Gestion des listes d'articles
+  - name: Articles
+    description: Gestion des articles
+  - name: Etiquettes
+    description: Génération des étiquettes PDF
+  - name: Ventes
+    description: Opérations de caisse (scan/vente)
+  - name: Reversements
+    description: Calcul et paiement des reversements
+  - name: Stats
+    description: Statistiques et tableaux de bord
+
+paths:
+  # ============================================================================
+  # AUTHENTIFICATION
+  # ============================================================================
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Connexion utilisateur
+      description: Authentifie un utilisateur et retourne les tokens JWT.
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: marie.dupont@email.fr
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+      responses:
+        '200':
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokens'
+        '401':
+          description: Identifiants invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Trop de tentatives (blocage 15 min)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Rafraîchir le token d'accès
+      operationId: refreshToken
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Nouveau token généré
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokens'
+        '401':
+          description: Refresh token invalide ou expiré
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Déconnexion
+      description: Invalide les tokens de l'utilisateur.
+      operationId: logout
+      responses:
+        '204':
+          description: Déconnexion réussie
+
+  /auth/activate:
+    post:
+      tags: [Auth]
+      summary: Activer un compte via invitation
+      description: |
+        Active un compte déposant à partir d'un token d'invitation.
+        Le token est à usage unique et expire après 7 jours.
+      operationId: activateAccount
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              properties:
+                token:
+                  type: string
+                  description: Token d'invitation reçu par email
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  description: "Min 8 car., 1 lettre, 1 chiffre, 1 spécial"
+                nom:
+                  type: string
+                prenom:
+                  type: string
+                telephone:
+                  type: string
+      responses:
+        '201':
+          description: Compte activé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Token invalide ou expiré
+        '409':
+          description: Compte déjà activé
+
+  /auth/password/reset-request:
+    post:
+      tags: [Auth]
+      summary: Demander réinitialisation mot de passe
+      operationId: requestPasswordReset
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '202':
+          description: Email envoyé si le compte existe
+
+  /auth/password/reset:
+    post:
+      tags: [Auth]
+      summary: Réinitialiser le mot de passe
+      operationId: resetPassword
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+      responses:
+        '200':
+          description: Mot de passe réinitialisé
+        '400':
+          description: Token invalide ou expiré
+
+  # ============================================================================
+  # ÉDITIONS
+  # ============================================================================
+  /editions:
+    get:
+      tags: [Editions]
+      summary: Lister les éditions
+      description: Retourne la liste des éditions accessibles à l'utilisateur.
+      operationId: listEditions
+      parameters:
+        - name: statut
+          in: query
+          schema:
+            $ref: '#/components/schemas/EditionStatut'
+        - name: annee
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Liste des éditions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EditionSummary'
+
+    post:
+      tags: [Editions]
+      summary: Créer une édition
+      description: |
+        Crée une nouvelle édition en statut "brouillon".
+        Réservé aux administrateurs.
+      operationId: createEdition
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditionCreate'
+      responses:
+        '201':
+          description: Édition créée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Edition'
+        '403':
+          description: Réservé aux administrateurs
+        '409':
+          description: Nom d'édition déjà utilisé
+
+  /editions/{editionId}:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    get:
+      tags: [Editions]
+      summary: Détails d'une édition
+      operationId: getEdition
+      responses:
+        '200':
+          description: Détails de l'édition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Edition'
+        '404':
+          description: Édition non trouvée
+
+    patch:
+      tags: [Editions]
+      summary: Modifier une édition
+      description: |
+        Modifie les paramètres d'une édition.
+        Non autorisé si l'édition est clôturée.
+      operationId: updateEdition
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditionUpdate'
+      responses:
+        '200':
+          description: Édition mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Edition'
+        '403':
+          description: Permissions insuffisantes
+        '409':
+          description: Édition clôturée, modification impossible
+
+  /editions/{editionId}/configure:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    post:
+      tags: [Editions]
+      summary: Configurer les dates d'une édition
+      description: |
+        Configure les dates clés et passe l'édition en statut "configurée".
+        Correspond à US-007.
+      operationId: configureEdition
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditionConfiguration'
+      responses:
+        '200':
+          description: Édition configurée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Edition'
+        '422':
+          description: Dates incohérentes
+
+  /editions/{editionId}/import-inscriptions:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    post:
+      tags: [Editions]
+      summary: Importer les inscriptions Billetweb
+      description: |
+        Importe un fichier CSV d'inscriptions Billetweb.
+        Génère les invitations et passe l'édition en "inscriptions_ouvertes".
+        Correspond à US-008.
+      operationId: importInscriptions
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Fichier CSV Billetweb
+                send_invitations:
+                  type: boolean
+                  default: true
+                  description: Envoyer les emails d'invitation
+      responses:
+        '200':
+          description: Import réussi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportResult'
+        '400':
+          description: Format de fichier invalide
+        '422':
+          description: Erreurs dans les données
+
+  /editions/{editionId}/cloturer:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    post:
+      tags: [Editions]
+      summary: Clôturer une édition
+      description: |
+        Clôture définitivement une édition.
+        Calcule les reversements finaux. Action irréversible.
+        Correspond à US-009.
+      operationId: clotureEdition
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Édition clôturée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Edition'
+        '403':
+          description: Réservé aux administrateurs
+        '422':
+          description: Pré-conditions non remplies
+
+  # ============================================================================
+  # CRÉNEAUX
+  # ============================================================================
+  /editions/{editionId}/creneaux:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    get:
+      tags: [Creneaux]
+      summary: Lister les créneaux de dépôt
+      operationId: listCreneaux
+      responses:
+        '200':
+          description: Liste des créneaux
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Creneau'
+
+    post:
+      tags: [Creneaux]
+      summary: Créer un créneau de dépôt
+      operationId: createCreneau
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreneauCreate'
+      responses:
+        '201':
+          description: Créneau créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Creneau'
+
+  /editions/{editionId}/creneaux/{creneauId}:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+      - $ref: '#/components/parameters/creneauId'
+    patch:
+      tags: [Creneaux]
+      summary: Modifier un créneau
+      operationId: updateCreneau
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreneauUpdate'
+      responses:
+        '200':
+          description: Créneau mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Creneau'
+
+    delete:
+      tags: [Creneaux]
+      summary: Supprimer un créneau
+      operationId: deleteCreneau
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Créneau supprimé
+        '409':
+          description: Créneau avec réservations
+
+  # ============================================================================
+  # UTILISATEURS
+  # ============================================================================
+  /users:
+    get:
+      tags: [Users]
+      summary: Lister les utilisateurs
+      description: Réservé aux administrateurs.
+      operationId: listUsers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: role
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserRole'
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Recherche par nom ou email
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Liste paginée des utilisateurs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUsers'
+
+    post:
+      tags: [Users]
+      summary: Créer un utilisateur
+      description: Crée un utilisateur (bénévole, gestionnaire). Réservé aux administrateurs.
+      operationId: createUser
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '201':
+          description: Utilisateur créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '409':
+          description: Email déjà utilisé
+
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Profil utilisateur courant
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: Profil de l'utilisateur connecté
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+    patch:
+      tags: [Users]
+      summary: Modifier son profil
+      operationId: updateCurrentUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSelfUpdate'
+      responses:
+        '200':
+          description: Profil mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /users/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/userId'
+    get:
+      tags: [Users]
+      summary: Détails d'un utilisateur
+      operationId: getUser
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Détails de l'utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+    patch:
+      tags: [Users]
+      summary: Modifier un utilisateur
+      description: Réservé aux administrateurs.
+      operationId: updateUser
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: Utilisateur mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+    delete:
+      tags: [Users]
+      summary: Supprimer un utilisateur
+      description: Anonymise les données (RGPD). Réservé aux administrateurs.
+      operationId: deleteUser
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Utilisateur supprimé/anonymisé
+
+  # ============================================================================
+  # INVITATIONS
+  # ============================================================================
+  /editions/{editionId}/invitations:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    get:
+      tags: [Invitations]
+      summary: Lister les invitations d'une édition
+      operationId: listInvitations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: statut
+          in: query
+          schema:
+            $ref: '#/components/schemas/InvitationStatut'
+      responses:
+        '200':
+          description: Liste des invitations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Invitation'
+
+    post:
+      tags: [Invitations]
+      summary: Créer une invitation manuellement
+      description: |
+        Crée et envoie une invitation pour un déposant.
+        Correspond à US-010.
+      operationId: createInvitation
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitationCreate'
+      responses:
+        '201':
+          description: Invitation créée et envoyée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+        '409':
+          description: Email déjà invité pour cette édition
+
+  /editions/{editionId}/invitations/bulk:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    post:
+      tags: [Invitations]
+      summary: Créer des invitations en masse
+      description: Importe un fichier CSV pour créer plusieurs invitations.
+      operationId: bulkCreateInvitations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Import traité
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkInvitationResult'
+
+  /editions/{editionId}/invitations/{invitationId}/resend:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+      - $ref: '#/components/parameters/invitationId'
+    post:
+      tags: [Invitations]
+      summary: Renvoyer une invitation
+      operationId: resendInvitation
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Invitation renvoyée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+        '409':
+          description: Invitation déjà utilisée
+
+  # ============================================================================
+  # LISTES
+  # ============================================================================
+  /editions/{editionId}/listes:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    get:
+      tags: [Listes]
+      summary: Lister les listes d'une édition
+      description: |
+        - Déposant : voit uniquement ses propres listes
+        - Gestionnaire/Admin : voit toutes les listes
+      operationId: listListes
+      parameters:
+        - name: deposant_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: statut
+          in: query
+          schema:
+            $ref: '#/components/schemas/ListeStatut'
+        - name: type
+          in: query
+          schema:
+            $ref: '#/components/schemas/ListeType'
+      responses:
+        '200':
+          description: Liste des listes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ListeSummary'
+
+    post:
+      tags: [Listes]
+      summary: Créer une liste
+      description: |
+        Crée une nouvelle liste pour le déposant connecté.
+        Maximum 2 listes standard par édition.
+      operationId: createListe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListeCreate'
+      responses:
+        '201':
+          description: Liste créée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Liste'
+        '422':
+          description: Limite de listes atteinte
+
+  /editions/{editionId}/listes/{listeId}:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+      - $ref: '#/components/parameters/listeId'
+    get:
+      tags: [Listes]
+      summary: Détails d'une liste
+      operationId: getListe
+      responses:
+        '200':
+          description: Détails de la liste avec ses articles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Liste'
+
+    delete:
+      tags: [Listes]
+      summary: Supprimer une liste
+      description: Possible uniquement si la liste est vide et non validée.
+      operationId: deleteListe
+      responses:
+        '204':
+          description: Liste supprimée
+        '409':
+          description: Liste non vide ou déjà validée
+
+  /editions/{editionId}/listes/{listeId}/valider:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+      - $ref: '#/components/parameters/listeId'
+    post:
+      tags: [Listes]
+      summary: Valider une liste
+      description: |
+        Valide définitivement la liste. Envoie un email de confirmation.
+        Après validation, la liste passe en lecture seule.
+      operationId: validerListe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [accepte_conditions]
+              properties:
+                accepte_conditions:
+                  type: boolean
+                  description: Acceptation des conditions de dépôt
+      responses:
+        '200':
+          description: Liste validée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Liste'
+        '422':
+          description: Conditions non acceptées ou liste incomplète
+
+  # ============================================================================
+  # ARTICLES
+  # ============================================================================
+  /editions/{editionId}/listes/{listeId}/articles:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+      - $ref: '#/components/parameters/listeId'
+    get:
+      tags: [Articles]
+      summary: Lister les articles d'une liste
+      operationId: listArticles
+      responses:
+        '200':
+          description: Articles de la liste
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Article'
+
+    post:
+      tags: [Articles]
+      summary: Ajouter un article
+      description: |
+        Ajoute un article à la liste. Sauvegarde automatique.
+        Vérifie les contraintes (max 24 articles, 12 vêtements, etc.).
+      operationId: createArticle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArticleCreate'
+      responses:
+        '201':
+          description: Article ajouté
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
+        '422':
+          description: Contrainte violée (limite atteinte, article interdit, etc.)
+
+  /editions/{editionId}/listes/{listeId}/articles/{articleId}:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+      - $ref: '#/components/parameters/listeId'
+      - $ref: '#/components/parameters/articleId'
+    get:
+      tags: [Articles]
+      summary: Détails d'un article
+      operationId: getArticle
+      responses:
+        '200':
+          description: Détails de l'article
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
+
+    patch:
+      tags: [Articles]
+      summary: Modifier un article
+      operationId: updateArticle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArticleUpdate'
+      responses:
+        '200':
+          description: Article mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
+        '409':
+          description: Liste validée, modification impossible
+
+    delete:
+      tags: [Articles]
+      summary: Supprimer un article
+      operationId: deleteArticle
+      responses:
+        '204':
+          description: Article supprimé
+        '409':
+          description: Liste validée ou article déjà vendu
+
+  /editions/{editionId}/listes/{listeId}/articles/{articleId}/dupliquer:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+      - $ref: '#/components/parameters/listeId'
+      - $ref: '#/components/parameters/articleId'
+    post:
+      tags: [Articles]
+      summary: Dupliquer un article
+      description: Crée une copie de l'article avec les mêmes attributs.
+      operationId: duplicateArticle
+      responses:
+        '201':
+          description: Article dupliqué
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
+        '422':
+          description: Limite d'articles atteinte
+
+  # ============================================================================
+  # ÉTIQUETTES
+  # ============================================================================
+  /editions/{editionId}/etiquettes/generer:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    post:
+      tags: [Etiquettes]
+      summary: Générer les étiquettes
+      description: |
+        Lance la génération asynchrone des étiquettes PDF.
+        Retourne un ID de job pour suivre la progression.
+      operationId: genererEtiquettes
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mode:
+                  type: string
+                  enum: [creneau, selection, individuel, complet]
+                  default: complet
+                creneau_id:
+                  type: string
+                  format: uuid
+                  description: Requis si mode=creneau
+                deposant_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  description: Requis si mode=selection ou individuel
+      responses:
+        '202':
+          description: Génération lancée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+
+  /editions/{editionId}/etiquettes/jobs/{jobId}:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+      - name: jobId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Etiquettes]
+      summary: Statut de génération
+      operationId: getEtiquettesJobStatus
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Statut du job
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+
+  /editions/{editionId}/etiquettes/download/{jobId}:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+      - name: jobId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Etiquettes]
+      summary: Télécharger le PDF d'étiquettes
+      operationId: downloadEtiquettes
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Fichier PDF
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Job non trouvé ou PDF non prêt
+
+  /editions/{editionId}/etiquettes/stats:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    get:
+      tags: [Etiquettes]
+      summary: Statistiques des étiquettes
+      operationId: getEtiquettesStats
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Statistiques
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EtiquettesStats'
+
+  # ============================================================================
+  # VENTES (CAISSE)
+  # ============================================================================
+  /editions/{editionId}/ventes/scan:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    post:
+      tags: [Ventes]
+      summary: Scanner un article (lookup)
+      description: |
+        Recherche un article par son code QR/étiquette.
+        Ne crée pas de vente, retourne juste les informations.
+      operationId: scanArticle
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  description: Code QR ou code étiquette
+                  example: EDI-2024-11-L245-A03
+      responses:
+        '200':
+          description: Article trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticleScanResult'
+        '404':
+          description: Article non trouvé
+        '409':
+          description: Article déjà vendu
+
+  /editions/{editionId}/ventes:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    get:
+      tags: [Ventes]
+      summary: Lister les ventes
+      operationId: listVentes
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: caisse
+          in: query
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Liste des ventes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVentes'
+
+    post:
+      tags: [Ventes]
+      summary: Enregistrer une vente
+      description: |
+        Enregistre la vente d'un article.
+        Temps de réponse cible : < 500ms.
+      operationId: createVente
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VenteCreate'
+      responses:
+        '201':
+          description: Vente enregistrée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vente'
+        '409':
+          description: Article déjà vendu
+        '422':
+          description: Article non trouvé ou non vendable
+
+  /editions/{editionId}/ventes/{venteId}/annuler:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+      - $ref: '#/components/parameters/venteId'
+    post:
+      tags: [Ventes]
+      summary: Annuler une vente
+      description: |
+        Annule une vente. Réservé aux gestionnaires.
+        L'article redevient disponible à la vente.
+      operationId: annulerVente
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [motif]
+              properties:
+                motif:
+                  type: string
+                  description: Motif de l'annulation
+      responses:
+        '200':
+          description: Vente annulée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vente'
+        '403':
+          description: Réservé aux gestionnaires
+
+  /editions/{editionId}/ventes/sync:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    post:
+      tags: [Ventes]
+      summary: Synchroniser les ventes offline
+      description: |
+        Synchronise un lot de ventes effectuées en mode offline.
+        Gère les conflits (article déjà vendu par une autre caisse).
+      operationId: syncVentes
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ventes]
+              properties:
+                ventes:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/VenteOffline'
+                caisse_id:
+                  type: integer
+      responses:
+        '200':
+          description: Résultat de la synchronisation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncResult'
+
+  # ============================================================================
+  # REVERSEMENTS
+  # ============================================================================
+  /editions/{editionId}/reversements:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    get:
+      tags: [Reversements]
+      summary: Lister les reversements
+      operationId: listReversements
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: statut
+          in: query
+          schema:
+            $ref: '#/components/schemas/ReversementStatut'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Liste des reversements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReversements'
+
+  /editions/{editionId}/reversements/calculer:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    post:
+      tags: [Reversements]
+      summary: Calculer tous les reversements
+      description: |
+        Lance le calcul des reversements pour tous les déposants.
+        Commission ALPE : 20% des ventes.
+      operationId: calculerReversements
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Calcul effectué
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_deposants:
+                    type: integer
+                  total_ventes:
+                    type: number
+                  total_commission:
+                    type: number
+                  total_reversements:
+                    type: number
+
+  /editions/{editionId}/reversements/{reversementId}:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+      - $ref: '#/components/parameters/reversementId'
+    get:
+      tags: [Reversements]
+      summary: Détails d'un reversement
+      operationId: getReversement
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Détails du reversement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reversement'
+
+  /editions/{editionId}/reversements/{reversementId}/bordereau:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+      - $ref: '#/components/parameters/reversementId'
+    get:
+      tags: [Reversements]
+      summary: Télécharger le bordereau PDF
+      operationId: downloadBordereau
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Bordereau PDF
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /editions/{editionId}/reversements/{reversementId}/payer:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+      - $ref: '#/components/parameters/reversementId'
+    post:
+      tags: [Reversements]
+      summary: Enregistrer le paiement
+      operationId: payerReversement
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaiementReversement'
+      responses:
+        '200':
+          description: Paiement enregistré
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reversement'
+
+  /editions/{editionId}/reversements/bordereaux:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    post:
+      tags: [Reversements]
+      summary: Générer tous les bordereaux
+      description: Génère un ZIP avec tous les bordereaux PDF.
+      operationId: genererBordereaux
+      security:
+        - bearerAuth: []
+      responses:
+        '202':
+          description: Génération lancée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+
+  # ============================================================================
+  # STATISTIQUES
+  # ============================================================================
+  /editions/{editionId}/stats:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    get:
+      tags: [Stats]
+      summary: Statistiques d'une édition
+      operationId: getEditionStats
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Statistiques complètes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditionStats'
+
+  /editions/{editionId}/stats/ventes-live:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    get:
+      tags: [Stats]
+      summary: Statistiques de vente en temps réel
+      description: Dashboard gestionnaire pendant la vente.
+      operationId: getVentesLiveStats
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Statistiques live
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VentesLiveStats'
+
+# ==============================================================================
+# COMPOSANTS
+# ==============================================================================
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    editionId:
+      name: editionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    creneauId:
+      name: creneauId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    userId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    invitationId:
+      name: invitationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    listeId:
+      name: listeId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    articleId:
+      name: articleId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    venteId:
+      name: venteId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    reversementId:
+      name: reversementId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
   schemas:
+    # --------------------------------------------------------------------------
+    # ENUMS
+    # --------------------------------------------------------------------------
+    EditionStatut:
+      type: string
+      enum: [brouillon, configuree, inscriptions_ouvertes, en_cours, cloturee, archivee]
+
+    UserRole:
+      type: string
+      enum: [deposant, benevole, gestionnaire, admin]
+
+    ListeStatut:
+      type: string
+      enum: [brouillon, validee]
+
+    ListeType:
+      type: string
+      enum: [standard, liste_1000, liste_2000]
+
+    ArticleCategorie:
+      type: string
+      enum: [vetements, chaussures, puericulture, jeux_jouets, livres, accessoires, autres]
+
+    ArticleEtat:
+      type: string
+      enum: [brouillon, depose, en_vente, vendu, invendu, recupere]
+
+    MoyenPaiement:
+      type: string
+      enum: [especes, carte_bancaire, cheque]
+
+    InvitationStatut:
+      type: string
+      enum: [envoyee, utilisee, expiree]
+
+    ReversementStatut:
+      type: string
+      enum: [a_generer, bordereau_pret, paye, cloture]
+
+    # --------------------------------------------------------------------------
+    # AUTH
+    # --------------------------------------------------------------------------
+    AuthTokens:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          default: bearer
+        expires_in:
+          type: integer
+          description: Durée de validité en secondes
+        user:
+          $ref: '#/components/schemas/User'
+
+    # --------------------------------------------------------------------------
+    # UTILISATEURS
+    # --------------------------------------------------------------------------
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        nom:
+          type: string
+        prenom:
+          type: string
+        telephone:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        created_at:
+          type: string
+          format: date-time
+
+    UserCreate:
+      type: object
+      required: [email, nom, prenom, role]
+      properties:
+        email:
+          type: string
+          format: email
+        nom:
+          type: string
+        prenom:
+          type: string
+        telephone:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        password:
+          type: string
+          format: password
+
+    UserUpdate:
+      type: object
+      properties:
+        nom:
+          type: string
+        prenom:
+          type: string
+        telephone:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+
+    UserSelfUpdate:
+      type: object
+      properties:
+        nom:
+          type: string
+        prenom:
+          type: string
+        telephone:
+          type: string
+        password:
+          type: string
+          format: password
+
+    PaginatedUsers:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        pages:
+          type: integer
+
+    # --------------------------------------------------------------------------
+    # ÉDITIONS
+    # --------------------------------------------------------------------------
+    Edition:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nom:
+          type: string
+        statut:
+          $ref: '#/components/schemas/EditionStatut'
+        datetime_debut:
+          type: string
+          format: date-time
+        datetime_fin:
+          type: string
+          format: date-time
+        lieu:
+          type: string
+        description:
+          type: string
+        dates_depot:
+          type: array
+          items:
+            type: string
+            format: date
+        dates_vente:
+          type: array
+          items:
+            type: string
+            format: date
+        date_retour_invendus:
+          type: string
+          format: date
+        date_limite_declaration:
+          type: string
+          format: date
+        taux_commission:
+          type: number
+          minimum: 0
+          maximum: 100
+          default: 20
+        created_at:
+          type: string
+          format: date-time
+        created_by:
+          $ref: '#/components/schemas/User'
+
+    EditionSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nom:
+          type: string
+        statut:
+          $ref: '#/components/schemas/EditionStatut'
+        datetime_debut:
+          type: string
+          format: date-time
+        datetime_fin:
+          type: string
+          format: date-time
+        nb_deposants:
+          type: integer
+        nb_articles:
+          type: integer
+
+    EditionCreate:
+      type: object
+      required: [nom, datetime_debut, datetime_fin]
+      properties:
+        nom:
+          type: string
+          example: Bourse Printemps 2025
+        datetime_debut:
+          type: string
+          format: date-time
+        datetime_fin:
+          type: string
+          format: date-time
+        lieu:
+          type: string
+        description:
+          type: string
+
+    EditionUpdate:
+      type: object
+      properties:
+        nom:
+          type: string
+        lieu:
+          type: string
+        description:
+          type: string
+
+    EditionConfiguration:
+      type: object
+      required: [dates_depot, dates_vente, date_retour_invendus]
+      properties:
+        dates_depot:
+          type: array
+          items:
+            type: string
+            format: date
+        dates_vente:
+          type: array
+          items:
+            type: string
+            format: date
+        date_retour_invendus:
+          type: string
+          format: date
+        date_limite_declaration:
+          type: string
+          format: date
+        taux_commission:
+          type: number
+          minimum: 0
+          maximum: 100
+          default: 20
+
+    # --------------------------------------------------------------------------
+    # CRÉNEAUX
+    # --------------------------------------------------------------------------
+    Creneau:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        heure_debut:
+          type: string
+          format: time
+        heure_fin:
+          type: string
+          format: time
+        capacite_max:
+          type: integer
+        places_reservees:
+          type: integer
+        places_disponibles:
+          type: integer
+        reserve_plaisancois:
+          type: boolean
+        description:
+          type: string
+
+    CreneauCreate:
+      type: object
+      required: [date, heure_debut, heure_fin, capacite_max]
+      properties:
+        date:
+          type: string
+          format: date
+        heure_debut:
+          type: string
+          format: time
+        heure_fin:
+          type: string
+          format: time
+        capacite_max:
+          type: integer
+          minimum: 1
+        reserve_plaisancois:
+          type: boolean
+          default: false
+        description:
+          type: string
+
+    CreneauUpdate:
+      type: object
+      properties:
+        capacite_max:
+          type: integer
+        reserve_plaisancois:
+          type: boolean
+        description:
+          type: string
+
+    # --------------------------------------------------------------------------
+    # INVITATIONS
+    # --------------------------------------------------------------------------
+    Invitation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        nom:
+          type: string
+        prenom:
+          type: string
+        statut:
+          $ref: '#/components/schemas/InvitationStatut'
+        creneau:
+          $ref: '#/components/schemas/Creneau'
+        created_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        used_at:
+          type: string
+          format: date-time
+
+    InvitationCreate:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+        nom:
+          type: string
+        prenom:
+          type: string
+        creneau_id:
+          type: string
+          format: uuid
+
+    BulkInvitationResult:
+      type: object
+      properties:
+        total:
+          type: integer
+        created:
+          type: integer
+        duplicates:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              line:
+                type: integer
+              email:
+                type: string
+              error:
+                type: string
+
+    ImportResult:
+      type: object
+      properties:
+        total_lignes:
+          type: integer
+        inscriptions_creees:
+          type: integer
+        invitations_envoyees:
+          type: integer
+        erreurs:
+          type: array
+          items:
+            type: object
+            properties:
+              ligne:
+                type: integer
+              message:
+                type: string
+
+    # --------------------------------------------------------------------------
+    # LISTES
+    # --------------------------------------------------------------------------
+    Liste:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        numero:
+          type: integer
+        type:
+          $ref: '#/components/schemas/ListeType'
+        statut:
+          $ref: '#/components/schemas/ListeStatut'
+        couleur_etiquette:
+          type: string
+        nombre_articles:
+          type: integer
+        nombre_vetements:
+          type: integer
+        frais:
+          type: number
+        deposant:
+          $ref: '#/components/schemas/User'
+        articles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Article'
+        created_at:
+          type: string
+          format: date-time
+        validated_at:
+          type: string
+          format: date-time
+
+    ListeSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        numero:
+          type: integer
+        type:
+          $ref: '#/components/schemas/ListeType'
+        statut:
+          $ref: '#/components/schemas/ListeStatut'
+        nombre_articles:
+          type: integer
+        deposant_nom:
+          type: string
+        creneau_depot:
+          type: string
+
+    ListeCreate:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ListeType'
+          default: standard
+
+    # --------------------------------------------------------------------------
+    # ARTICLES
+    # --------------------------------------------------------------------------
     Article:
       type: object
       properties:
-        id: { type: string }
-        libelle: { type: string }
-        categorie: { type: string }
-        taille: { type: string, nullable: true }
-        prixPropose: { type: number }
-      required: [id, libelle, prixPropose]
-    Deposant:
+        id:
+          type: string
+          format: uuid
+        numero_ligne:
+          type: integer
+          minimum: 1
+          maximum: 24
+        categorie:
+          $ref: '#/components/schemas/ArticleCategorie'
+        genre:
+          type: string
+          enum: [mixte, fille, garcon]
+        taille:
+          type: string
+        description:
+          type: string
+          maxLength: 100
+        prix_propose:
+          type: number
+          minimum: 1
+        is_lot:
+          type: boolean
+          default: false
+        lot_quantity:
+          type: integer
+          minimum: 1
+          maximum: 3
+        lot_marque:
+          type: string
+        etat:
+          $ref: '#/components/schemas/ArticleEtat'
+        code_etiquette:
+          type: string
+        conformite_certifiee:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    ArticleCreate:
+      type: object
+      required: [categorie, description, prix_propose, conformite_certifiee]
+      properties:
+        categorie:
+          $ref: '#/components/schemas/ArticleCategorie'
+        genre:
+          type: string
+          enum: [mixte, fille, garcon]
+        taille:
+          type: string
+        description:
+          type: string
+          maxLength: 100
+        prix_propose:
+          type: number
+          minimum: 1
+        is_lot:
+          type: boolean
+          default: false
+        lot_quantity:
+          type: integer
+          minimum: 1
+          maximum: 3
+        lot_marque:
+          type: string
+        conformite_certifiee:
+          type: boolean
+          description: Certification que l'article respecte les critères de qualité
+
+    ArticleUpdate:
       type: object
       properties:
-        id: { type: string }
-        nom: { type: string }
-        contact: { type: string }
-        iban: { type: string, nullable: true }
-      required: [id, nom, contact]
-security: []
+        genre:
+          type: string
+          enum: [mixte, fille, garcon]
+        taille:
+          type: string
+        description:
+          type: string
+          maxLength: 100
+        prix_propose:
+          type: number
+          minimum: 1
 
+    ArticleScanResult:
+      type: object
+      properties:
+        article:
+          $ref: '#/components/schemas/Article'
+        liste:
+          $ref: '#/components/schemas/ListeSummary'
+        deposant_nom:
+          type: string
+        deja_vendu:
+          type: boolean
+        prix:
+          type: number
+
+    # --------------------------------------------------------------------------
+    # ÉTIQUETTES
+    # --------------------------------------------------------------------------
+    EtiquettesStats:
+      type: object
+      properties:
+        total_deposants:
+          type: integer
+        total_listes:
+          type: integer
+        total_etiquettes:
+          type: integer
+        generees:
+          type: integer
+        imprimees:
+          type: integer
+        en_attente:
+          type: integer
+        pourcentage_genere:
+          type: number
+        pourcentage_imprime:
+          type: number
+
+    # --------------------------------------------------------------------------
+    # VENTES
+    # --------------------------------------------------------------------------
+    Vente:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        article:
+          $ref: '#/components/schemas/Article'
+        prix_vente:
+          type: number
+        moyen_paiement:
+          $ref: '#/components/schemas/MoyenPaiement'
+        date_heure:
+          type: string
+          format: date-time
+        vendeur:
+          $ref: '#/components/schemas/User'
+        caisse_numero:
+          type: integer
+        annulee:
+          type: boolean
+        motif_annulation:
+          type: string
+
+    VenteCreate:
+      type: object
+      required: [article_id, moyen_paiement]
+      properties:
+        article_id:
+          type: string
+          format: uuid
+        code_etiquette:
+          type: string
+          description: Alternative à article_id
+        moyen_paiement:
+          $ref: '#/components/schemas/MoyenPaiement'
+        caisse_numero:
+          type: integer
+          minimum: 1
+          maximum: 5
+
+    VenteOffline:
+      type: object
+      required: [code_etiquette, moyen_paiement, timestamp_local]
+      properties:
+        code_etiquette:
+          type: string
+        moyen_paiement:
+          $ref: '#/components/schemas/MoyenPaiement'
+        timestamp_local:
+          type: string
+          format: date-time
+          description: Horodatage local de la vente offline
+        offline_id:
+          type: string
+          description: ID unique généré côté client
+
+    SyncResult:
+      type: object
+      properties:
+        total:
+          type: integer
+        synchronized:
+          type: integer
+        conflicts:
+          type: array
+          items:
+            type: object
+            properties:
+              offline_id:
+                type: string
+              code_etiquette:
+                type: string
+              error:
+                type: string
+                enum: [already_sold, not_found, invalid_code]
+              sold_by:
+                type: string
+              sold_at:
+                type: string
+                format: date-time
+
+    PaginatedVentes:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vente'
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    # --------------------------------------------------------------------------
+    # REVERSEMENTS
+    # --------------------------------------------------------------------------
+    Reversement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        deposant:
+          $ref: '#/components/schemas/User'
+        montant_ventes:
+          type: number
+        montant_commission:
+          type: number
+        frais_listes:
+          type: number
+        montant_net:
+          type: number
+        statut:
+          $ref: '#/components/schemas/ReversementStatut'
+        nb_articles_vendus:
+          type: integer
+        nb_articles_invendus:
+          type: integer
+        date_calcul:
+          type: string
+          format: date-time
+        date_paiement:
+          type: string
+          format: date-time
+        mode_paiement:
+          $ref: '#/components/schemas/MoyenPaiement'
+        paye_par:
+          $ref: '#/components/schemas/User'
+
+    PaiementReversement:
+      type: object
+      required: [mode_paiement, invendus_recuperes]
+      properties:
+        mode_paiement:
+          $ref: '#/components/schemas/MoyenPaiement'
+        numero_cheque:
+          type: string
+          description: Obligatoire si mode_paiement=cheque
+        date_virement:
+          type: string
+          format: date
+          description: Obligatoire si mode_paiement=virement
+        invendus_recuperes:
+          type: boolean
+        commentaire:
+          type: string
+
+    PaginatedReversements:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reversement'
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    # --------------------------------------------------------------------------
+    # STATISTIQUES
+    # --------------------------------------------------------------------------
+    EditionStats:
+      type: object
+      properties:
+        deposants:
+          type: object
+          properties:
+            total:
+              type: integer
+            avec_ventes:
+              type: integer
+        articles:
+          type: object
+          properties:
+            deposes:
+              type: integer
+            vendus:
+              type: integer
+            invendus:
+              type: integer
+            taux_vente:
+              type: number
+        ventes:
+          type: object
+          properties:
+            total_montant:
+              type: number
+            commission_alpe:
+              type: number
+            reversements:
+              type: number
+        par_categorie:
+          type: array
+          items:
+            type: object
+            properties:
+              categorie:
+                type: string
+              vendus:
+                type: integer
+              montant:
+                type: number
+
+    VentesLiveStats:
+      type: object
+      properties:
+        articles_vendus:
+          type: integer
+        montant_total:
+          type: number
+        articles_par_heure:
+          type: number
+        par_moyen_paiement:
+          type: object
+          properties:
+            especes:
+              type: number
+            carte_bancaire:
+              type: number
+            cheque:
+              type: number
+        top_deposants:
+          type: array
+          items:
+            type: object
+            properties:
+              nom:
+                type: string
+              montant:
+                type: number
+        last_updated:
+          type: string
+          format: date-time
+
+    # --------------------------------------------------------------------------
+    # JOBS & ERREURS
+    # --------------------------------------------------------------------------
+    JobStatus:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, running, completed, failed]
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        message:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        result_url:
+          type: string
+          format: uri
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+security:
+  - bearerAuth: []

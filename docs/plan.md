@@ -2,8 +2,8 @@
 id: DOC-005-PLAN
 title: Plan de rédaction des spécifications
 status: draft
-version: 0.8.0
-updated: 2025-12-23
+version: 0.9.0
+updated: 2025-12-24
 owner: ALPE Plaisance du Touch
 links:
   - rel: overview
@@ -35,7 +35,7 @@ Organiser la production et la validation des spécifications de l’application 
 | UI (DOC-070) | Parcours + wireframes clés | À produire (écrans détaillés) | UX | 2025-11-25 |
 | Sécurité (DOC-080) | Politique sécurité/RGPD | À consolider (contrôles techniques) | SecOps | 2025-11-22 |
 | Opérations (DOC-090) | SLO, observabilité, runbooks | À compléter (process run + alerte) | Ops | 2025-11-25 |
-| API (API-OPENAPI) | Contrat REST initial | Squelette sans endpoints | Tech Lead | 2025-11-22 |
+| API (API-OPENAPI) | Contrat REST initial | ✅ Complétée (v1.0.0) - 50+ endpoints, 11 tags, 40+ schémas, auth JWT | Tech Lead | 2025-11-22 |
 | ADR (DEC-000+) | Décisions validées | Modèle uniquement | Tech Lead | 2025-11-22 |
 
 # Backlog détaillé
@@ -160,9 +160,19 @@ Organiser la production et la validation des spécifications de l’application 
 - [ ] Définir alerting (seuils, responsables d’astreinte).
 
 ## API — OpenAPI
-- [ ] Documenter endpoints invitations (création, relance, activation).
-- [ ] Ajouter endpoints articles, ventes, reversements.
-- [ ] Définir schémas d’erreur normalisés et sécurité (JWT/OAuth).
+- [x] ✅ Documenter endpoints Auth (login, logout, refresh, activate, password reset)
+- [x] ✅ Documenter endpoints Éditions (CRUD, configure, import-inscriptions, clôturer)
+- [x] ✅ Documenter endpoints Créneaux (CRUD par édition)
+- [x] ✅ Documenter endpoints Utilisateurs (CRUD, profil, recherche)
+- [x] ✅ Documenter endpoints Invitations (création, bulk, resend)
+- [x] ✅ Documenter endpoints Listes (CRUD, validation)
+- [x] ✅ Documenter endpoints Articles (CRUD, duplication)
+- [x] ✅ Documenter endpoints Étiquettes (génération async, téléchargement, stats)
+- [x] ✅ Documenter endpoints Ventes (scan, création, annulation, sync offline)
+- [x] ✅ Documenter endpoints Reversements (calcul, bordereaux, paiement)
+- [x] ✅ Documenter endpoints Stats (édition, ventes live)
+- [x] ✅ Définir 40+ schémas de données (enums, entités, requêtes/réponses)
+- [x] ✅ Définir schémas d'erreur normalisés et sécurité (JWT Bearer)
 
 ## Gouvernance & communication
 - [ ] Organiser rituel hebdomadaire de revue des spécifications.
@@ -240,7 +250,7 @@ Organiser la production et la validation des spécifications de l’application 
 
 ### Moyen terme (2 semaines)
 1. ✅ **Architecture** : Diagrammes C4 (Conteneur + Composant) + 5 ADR choix technologiques (COMPLÉTÉ)
-2. **API** : Définition endpoints éditions, créneaux, listes, articles, ventes, reversements
+2. ✅ **API** : Spécification OpenAPI complète - 50+ endpoints, 11 tags, 40+ schémas (COMPLÉTÉ)
 3. **Sécurité** : Matrice d'autorisations détaillée par rôle (CRUD par entité)
 4. **UI/UX** : Wireframes basse fidélité pour parcours déposant, bénévole, gestionnaire
 5. **Tests** : Stratégie de test (unitaires, intégration, E2E) et critères couverture
