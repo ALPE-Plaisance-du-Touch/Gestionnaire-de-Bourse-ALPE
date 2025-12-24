@@ -32,7 +32,7 @@ Organiser la production et la validation des spécifications de l’application 
 | Architecture (DOC-050) | C4 niv. 1-3 + contraintes | ✅ Complétée (v0.5.0) - C4 Contexte/Container/Component, 5 ADRs, mode offline, schéma données | Tech Lead | 2025-11-22 |
 | Modèle de domaine (DOC-060) | Diagramme + règles métiers | ✅ Enrichi (v0.4.0) - 8 entités (Creneau ajouté) + types listes + 23 invariants | Produit + Tech | 2025-11-06 |
 | Catégories articles (DOC-011) | Guide bénévoles | ✅ Créé (v1.0.0) - 317 lignes, acceptés/refusés, prix indicatifs, checklist | Produit | 2025-11-06 |
-| UI (DOC-070) | Parcours + wireframes clés | À produire (écrans détaillés) | UX | 2025-11-25 |
+| UI (DOC-070) | Parcours + wireframes clés | ✅ Complétée (v0.5.0) - Parcours 3 rôles, 15+ wireframes, états erreur, accessibilité WCAG AA | UX | 2025-11-25 |
 | Sécurité (DOC-080) | Politique sécurité/RGPD | ✅ Complétée (v0.5.0) - Matrice CRUD 4 rôles × 10 ressources, endpoints par rôle, RGPD, audit | SecOps | 2025-11-22 |
 | Opérations (DOC-090) | SLO, observabilité, runbooks | À compléter (process run + alerte) | Ops | 2025-11-25 |
 | API (API-OPENAPI) | Contrat REST initial | ✅ Complétée (v1.0.0) - 50+ endpoints, 11 tags, 40+ schémas, auth JWT | Tech Lead | 2025-11-22 |
@@ -145,9 +145,12 @@ Organiser la production et la validation des spécifications de l’application 
 - [x] ✅ Lister évolutions futures (mobile native, paiement en ligne, multi-tenant)
 
 ## DOC-070 — UI & Flux
-- [ ] Concevoir wireframes basse fidélité pour parcours déposant & bénévole.
-- [ ] Décrire états d’erreur/notifs (invitation expirée, scan KO).
-- [ ] Proposer guidelines accessibilité (WCAG AA).
+- [x] ✅ Concevoir wireframes basse fidélité pour parcours déposant (accueil, listes, articles, ventes, validation)
+- [x] ✅ Concevoir wireframes basse fidélité pour parcours bénévole/caisse (scan, vente, modes online/offline)
+- [x] ✅ Concevoir wireframes basse fidélité pour parcours gestionnaire (dashboard, import, étiquettes, stats live)
+- [x] ✅ Décrire états d'erreur et notifications (12 types : succès, erreur, warning, info avec exemples)
+- [x] ✅ Proposer guidelines accessibilité WCAG 2.1 AA (contraste, tailles, navigation clavier, ARIA)
+- [x] ✅ Définir charte graphique (couleurs par type liste, typographie Inter, espacements, composants)
 
 ## DOC-080 — Sécurité
 - [x] ✅ Détailler matrice d'autorisations CRUD par rôle (4 rôles × 10 ressources)
@@ -265,7 +268,7 @@ Organiser la production et la validation des spécifications de l’application 
 1. ✅ **Architecture** : Diagrammes C4 (Conteneur + Composant) + 5 ADR choix technologiques (COMPLÉTÉ)
 2. ✅ **API** : Spécification OpenAPI complète - 50+ endpoints, 11 tags, 40+ schémas (COMPLÉTÉ)
 3. ✅ **Sécurité** : Matrice d'autorisations CRUD 4 rôles × 10 ressources, RGPD, audit, anti-fraude (COMPLÉTÉ)
-4. **UI/UX** : Wireframes basse fidélité pour parcours déposant, bénévole, gestionnaire
+4. ✅ **UI/UX** : Wireframes basse fidélité pour parcours déposant, bénévole, gestionnaire (COMPLÉTÉ)
 5. **Tests** : Stratégie de test (unitaires, intégration, E2E) et critères couverture
 
 # Prochain check-in
