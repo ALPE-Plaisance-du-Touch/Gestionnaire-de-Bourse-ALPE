@@ -34,7 +34,7 @@ Organiser la production et la validation des spécifications de l’application 
 | Catégories articles (DOC-011) | Guide bénévoles | ✅ Créé (v1.0.0) - 317 lignes, acceptés/refusés, prix indicatifs, checklist | Produit | 2025-11-06 |
 | UI (DOC-070) | Parcours + wireframes clés | ✅ Complétée (v0.5.0) - Parcours 3 rôles, 15+ wireframes, états erreur, accessibilité WCAG AA | UX | 2025-11-25 |
 | Sécurité (DOC-080) | Politique sécurité/RGPD | ✅ Complétée (v0.5.0) - Matrice CRUD 4 rôles × 10 ressources, endpoints par rôle, RGPD, audit | SecOps | 2025-11-22 |
-| Opérations (DOC-090) | SLO, observabilité, runbooks | À compléter (process run + alerte) | Ops | 2025-11-25 |
+| Opérations (DOC-090) | SLO, observabilité, runbooks | ✅ Complétée (v0.5.0) - SLOs, checklists ouverture/fermeture, mode offline, alerting, 6 runbooks | Ops | 2025-11-25 |
 | API (API-OPENAPI) | Contrat REST initial | ✅ Complétée (v1.0.0) - 50+ endpoints, 11 tags, 40+ schémas, auth JWT | Tech Lead | 2025-11-22 |
 | ADR (DEC-000+) | Décisions validées | Modèle uniquement | Tech Lead | 2025-11-22 |
 
@@ -171,9 +171,17 @@ Organiser la production et la validation des spécifications de l’application 
 - [ ] Définir exigences MFA pour bénévoles/administrateurs (optionnel v2)
 
 ## DOC-090 — Opérations
-- [ ] Formaliser procédures d’ouverture/fermeture bourse.
-- [ ] Décrire plan de continuité en mode offline + resynchronisation.
-- [ ] Définir alerting (seuils, responsables d’astreinte).
+- [x] ✅ Définir SLOs (disponibilité 99.5% bourse, latence scan ≤1.5s, encaissement ≤3s)
+- [x] ✅ Formaliser procédures d'ouverture bourse (checklists J-7, J-1, Jour J)
+- [x] ✅ Formaliser procédures de fermeture bourse (fin journée, clôture édition J+7)
+- [x] ✅ Décrire plan de continuité mode offline (architecture, données sync, fallback manuel)
+- [x] ✅ Documenter procédure de resynchronisation (détection, conflits, validation)
+- [x] ✅ Définir métriques business et techniques avec seuils d'alerte
+- [x] ✅ Créer dashboard temps réel gestionnaire (wireframe ASCII)
+- [x] ✅ Définir alerting P1-P4 avec règles et escalade
+- [x] ✅ Créer 6 runbooks : réseau offline, étiquette, conflit sync, panne caisse, reversement, panne serveur
+- [x] ✅ Définir maintenance planifiée (quotidienne, hebdomadaire, pré-bourse)
+- [x] ✅ Créer annexes : checklist équipement, modèle rapport incident, glossaire ops
 
 ## API — OpenAPI
 - [x] ✅ Documenter endpoints Auth (login, logout, refresh, activate, password reset)
