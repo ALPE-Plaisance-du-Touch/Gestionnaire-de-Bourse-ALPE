@@ -33,7 +33,7 @@ Organiser la production et la validation des spécifications de l’application 
 | Modèle de domaine (DOC-060) | Diagramme + règles métiers | ✅ Enrichi (v0.4.0) - 8 entités (Creneau ajouté) + types listes + 23 invariants | Produit + Tech | 2025-11-06 |
 | Catégories articles (DOC-011) | Guide bénévoles | ✅ Créé (v1.0.0) - 317 lignes, acceptés/refusés, prix indicatifs, checklist | Produit | 2025-11-06 |
 | UI (DOC-070) | Parcours + wireframes clés | À produire (écrans détaillés) | UX | 2025-11-25 |
-| Sécurité (DOC-080) | Politique sécurité/RGPD | À consolider (contrôles techniques) | SecOps | 2025-11-22 |
+| Sécurité (DOC-080) | Politique sécurité/RGPD | ✅ Complétée (v0.5.0) - Matrice CRUD 4 rôles × 10 ressources, endpoints par rôle, RGPD, audit | SecOps | 2025-11-22 |
 | Opérations (DOC-090) | SLO, observabilité, runbooks | À compléter (process run + alerte) | Ops | 2025-11-25 |
 | API (API-OPENAPI) | Contrat REST initial | ✅ Complétée (v1.0.0) - 50+ endpoints, 11 tags, 40+ schémas, auth JWT | Tech Lead | 2025-11-22 |
 | ADR (DEC-000+) | Décisions validées | Modèle uniquement | Tech Lead | 2025-11-22 |
@@ -150,9 +150,22 @@ Organiser la production et la validation des spécifications de l’application 
 - [ ] Proposer guidelines accessibilité (WCAG AA).
 
 ## DOC-080 — Sécurité
-- [ ] Détailler matrice d’autorisations par rôle.
-- [ ] Spécifier politique de conservation et anonymisation données.
-- [ ] Définir exigences MFA pour bénévoles/administrateurs.
+- [x] ✅ Détailler matrice d'autorisations CRUD par rôle (4 rôles × 10 ressources)
+- [x] ✅ Documenter hiérarchie des rôles (Déposant → Bénévole → Gestionnaire → Admin)
+- [x] ✅ Lister endpoints autorisés par niveau de rôle
+- [x] ✅ Définir règles de propriété des données (isolation déposant)
+- [x] ✅ Spécifier mécanisme JWT (access/refresh tokens, payload, TTL)
+- [x] ✅ Documenter politique de mot de passe (complexité, blocage)
+- [x] ✅ Spécifier politique de conservation et anonymisation données (RGPD)
+- [x] ✅ Documenter droits utilisateurs (accès, rectification, effacement, portabilité)
+- [x] ✅ Définir chiffrement (bcrypt/Argon2, AES-256, TLS 1.3)
+- [x] ✅ Documenter journalisation et audit (événements, format, rétention)
+- [x] ✅ Lister protections contre attaques (SQL injection, XSS, CSRF, brute force)
+- [x] ✅ Définir headers de sécurité et rate limiting
+- [x] ✅ Documenter sécurité caisses offline (signature HMAC, verrouillage)
+- [x] ✅ Définir anti-fraude étiquettes (codes uniques, QR sécurisé)
+- [x] ✅ Créer plan de réponse aux incidents (classification, contacts, procédure)
+- [ ] Définir exigences MFA pour bénévoles/administrateurs (optionnel v2)
 
 ## DOC-090 — Opérations
 - [ ] Formaliser procédures d’ouverture/fermeture bourse.
@@ -251,7 +264,7 @@ Organiser la production et la validation des spécifications de l’application 
 ### Moyen terme (2 semaines)
 1. ✅ **Architecture** : Diagrammes C4 (Conteneur + Composant) + 5 ADR choix technologiques (COMPLÉTÉ)
 2. ✅ **API** : Spécification OpenAPI complète - 50+ endpoints, 11 tags, 40+ schémas (COMPLÉTÉ)
-3. **Sécurité** : Matrice d'autorisations détaillée par rôle (CRUD par entité)
+3. ✅ **Sécurité** : Matrice d'autorisations CRUD 4 rôles × 10 ressources, RGPD, audit, anti-fraude (COMPLÉTÉ)
 4. **UI/UX** : Wireframes basse fidélité pour parcours déposant, bénévole, gestionnaire
 5. **Tests** : Stratégie de test (unitaires, intégration, E2E) et critères couverture
 
