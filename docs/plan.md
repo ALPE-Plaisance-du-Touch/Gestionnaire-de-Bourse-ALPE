@@ -36,6 +36,7 @@ Organiser la production et la validation des spécifications de l’application 
 | Sécurité (DOC-080) | Politique sécurité/RGPD | ✅ Complétée (v0.5.0) - Matrice CRUD 4 rôles × 10 ressources, endpoints par rôle, RGPD, audit | SecOps | 2025-11-22 |
 | Opérations (DOC-090) | SLO, observabilité, runbooks | ✅ Complétée (v0.5.0) - SLOs, checklists ouverture/fermeture, mode offline, alerting, 6 runbooks | Ops | 2025-11-25 |
 | API (API-OPENAPI) | Contrat REST initial | ✅ Complétée (v1.0.0) - 50+ endpoints, 11 tags, 40+ schémas, auth JWT | Tech Lead | 2025-11-22 |
+| Tests (DOC-110) | Stratégie de tests | ✅ Complétée (v0.5.0) - Pyramide tests, unitaires/intégration/E2E, couverture 80%, CI/CD | QA | 2025-11-25 |
 | ADR (DEC-000+) | Décisions validées | Modèle uniquement | Tech Lead | 2025-11-22 |
 
 # Backlog détaillé
@@ -183,6 +184,23 @@ Organiser la production et la validation des spécifications de l’application 
 - [x] ✅ Définir maintenance planifiée (quotidienne, hebdomadaire, pré-bourse)
 - [x] ✅ Créer annexes : checklist équipement, modèle rapport incident, glossaire ops
 
+## DOC-110 — Stratégie de Tests
+- [x] ✅ Définir pyramide de tests (unitaires 55-65%, intégration 25-30%, E2E 10-15%)
+- [x] ✅ Documenter stack de tests frontend (Vitest, React Testing Library, MSW, Cypress)
+- [x] ✅ Documenter stack de tests backend (pytest, pytest-asyncio, httpx, factory_boy)
+- [x] ✅ Créer exemples tests unitaires composants React (ArticleForm, ScannerView)
+- [x] ✅ Créer exemples tests unitaires services Python (VenteService, ReversementService)
+- [x] ✅ Documenter tests d'intégration API (endpoints critiques, sync offline)
+- [x] ✅ Créer 4 scénarios E2E complets (déposant, caisse offline, gestionnaire, reversements)
+- [x] ✅ Définir tests de performance (k6, seuils latence, charge)
+- [x] ✅ Définir tests d'accessibilité (axe-core, WCAG 2.1 AA)
+- [x] ✅ Définir tests de sécurité (injection SQL, XSS, authentification)
+- [x] ✅ Définir objectifs de couverture (80% global, 90% services critiques)
+- [x] ✅ Créer pipeline CI/CD GitHub Actions (tests, sécurité, déploiement)
+- [x] ✅ Définir gates de qualité bloquants (tests, couverture, vulnérabilités)
+- [x] ✅ Créer fixtures et jeux de données de test
+- [x] ✅ Créer checklist avant release
+
 ## API — OpenAPI
 - [x] ✅ Documenter endpoints Auth (login, logout, refresh, activate, password reset)
 - [x] ✅ Documenter endpoints Éditions (CRUD, configure, import-inscriptions, clôturer)
@@ -277,7 +295,7 @@ Organiser la production et la validation des spécifications de l’application 
 2. ✅ **API** : Spécification OpenAPI complète - 50+ endpoints, 11 tags, 40+ schémas (COMPLÉTÉ)
 3. ✅ **Sécurité** : Matrice d'autorisations CRUD 4 rôles × 10 ressources, RGPD, audit, anti-fraude (COMPLÉTÉ)
 4. ✅ **UI/UX** : Wireframes basse fidélité pour parcours déposant, bénévole, gestionnaire (COMPLÉTÉ)
-5. **Tests** : Stratégie de test (unitaires, intégration, E2E) et critères couverture
+5. ✅ **Tests** : Stratégie de test (unitaires, intégration, E2E) et critères couverture (COMPLÉTÉ)
 
 # Prochain check-in
 
