@@ -2,8 +2,8 @@
 id: DOC-060-DOMAIN
 title: Modèle de domaine
 status: draft
-version: 0.4.0
-updated: 2025-11-06
+version: 0.5.0
+updated: 2025-12-24
 owner: ALPE Plaisance du Touch
 links:
   - rel: source
@@ -12,6 +12,9 @@ links:
   - rel: source
     href: Reglement_interne.md
     title: Règlement intérieur
+  - rel: api
+    href: api/openapi.yaml
+    title: Spécification API
 ---
 
 # Entités principales
@@ -291,4 +294,522 @@ stateDiagram-v2
 - **Liste après date limite** : Aucune modification de liste possible après date_limite_declaration
 - **Invitation expirée** : Un token expiré ne peut plus être utilisé
 - **Numérotation 1000/2000** : Les numéros 2000 correspondent aux numéros 1000 (ex: 1100 → 2100)
+
+---
+
+# Diagrammes séquence
+
+## Parcours dépôt d'articles (Déposant)
+
+Ce diagramme illustre le parcours complet d'un déposant depuis l'activation de son compte jusqu'à la validation de sa liste.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant D as Déposant (Marie)
+    participant UI as Frontend PWA
+    participant API as Backend API
+    participant DB as Base de données
+    participant Email as Service Email
+
+    Note over D,Email: Phase 1 - Activation du compte
+
+    D->>UI: Clique lien invitation (email)
+    UI->>API: GET /auth/activate?token=xxx
+    API->>DB: Vérifie token (validité, expiration)
+    DB-->>API: Token valide, invitation trouvée
+
+    D->>UI: Remplit formulaire (mot de passe, CGU)
+    UI->>API: POST /auth/activate {password, accept_cgu}
+    API->>DB: Crée compte User + Deposant
+    API->>DB: Marque invitation "utilisée"
+    API->>Email: Envoie confirmation activation
+    API-->>UI: {access_token, refresh_token}
+    UI-->>D: Redirection vers dashboard
+
+    Note over D,Email: Phase 2 - Création de liste
+
+    D->>UI: Clique "Nouvelle liste"
+    UI->>API: POST /listes {edition_id}
+    API->>DB: Vérifie quota listes (max 2 standard)
+    API->>DB: Crée Liste (statut: brouillon)
+    DB-->>API: Liste créée (id, numéro attribué)
+    API-->>UI: {liste_id, numero, couleur_etiquette}
+    UI-->>D: Affiche éditeur de liste
+
+    Note over D,Email: Phase 3 - Ajout d'articles
+
+    loop Pour chaque article (max 24)
+        D->>UI: Remplit formulaire article
+        UI->>UI: Validation locale (prix, catégorie)
+        UI->>API: POST /listes/{id}/articles
+        API->>DB: Vérifie contraintes métier
+        Note right of API: Max 12 vêtements<br/>Lignes 1-12 = vêtements<br/>Prix 1€-150€<br/>Catégories limitées
+        alt Contraintes OK
+            API->>DB: Crée Article (etat: brouillon)
+            API-->>UI: {article_id, numero_ligne}
+            UI-->>D: Article ajouté ✓
+        else Contrainte violée
+            API-->>UI: 422 {error: "limite_vetements"}
+            UI-->>D: Message d'erreur explicite
+        end
+    end
+
+    Note over D,Email: Phase 4 - Validation de la liste
+
+    D->>UI: Clique "Valider ma liste"
+    UI->>API: POST /listes/{id}/validate
+    API->>DB: Vérifie date limite non dépassée
+    API->>DB: Vérifie au moins 1 article
+    API->>DB: Met à jour statut → "validée"
+    API->>DB: Met à jour articles → "déposé"
+    API->>Email: Génère et envoie récapitulatif PDF
+    API-->>UI: {statut: "validée", pdf_url}
+    UI-->>D: Confirmation + lien PDF
+
+    Note over D,Email: Phase 5 - Suivi des ventes (pendant bourse)
+
+    D->>UI: Consulte "Mes ventes"
+    UI->>API: GET /deposants/me/ventes?edition_id=xxx
+    API->>DB: Agrège ventes par article
+    DB-->>API: Liste ventes + totaux
+    API-->>UI: {ventes[], total_brut, commission, net}
+    UI-->>D: Affiche tableau de bord ventes
+```
+
+## Parcours vente en caisse (Bénévole)
+
+Ce diagramme illustre le processus de vente d'un article en caisse, incluant le mode offline.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant B as Bénévole (Jean)
+    participant Scan as Scanner/Douchette
+    participant UI as PWA Caisse
+    participant IDB as IndexedDB (local)
+    participant API as Backend API
+    participant DB as Base de données
+
+    Note over B,DB: Scénario A - Mode Online
+
+    B->>Scan: Scanne QR code étiquette
+    Scan-->>UI: Code article: "E2025-L142-A07"
+    UI->>API: GET /articles/by-code/{code}
+    API->>DB: Recherche article + statut
+    DB-->>API: Article trouvé
+
+    alt Article disponible
+        API-->>UI: {article, prix, deposant, statut: "en_vente"}
+        UI-->>B: Affiche détails article
+        Note right of UI: Description<br/>Prix: 8,00€<br/>Déposant: #142
+
+        B->>UI: Confirme la vente
+        UI->>API: POST /ventes {article_id, caisse_id}
+        API->>DB: Vérifie article non vendu (double-check)
+        API->>DB: Crée Vente + MAJ article → "vendu"
+        API-->>UI: {vente_id, horodatage}
+        UI-->>B: ✓ Vente enregistrée - 8,00€
+        UI->>UI: Ajoute au panier caisse
+
+    else Article déjà vendu
+        API-->>UI: 409 {error: "article_deja_vendu"}
+        UI-->>B: ⚠️ Article déjà vendu !
+        Note right of UI: Vendu le 15/03 à 14:32<br/>Caisse C2
+    end
+
+    Note over B,DB: Scénario B - Mode Offline (perte réseau)
+
+    UI->>UI: Détecte perte réseau (timeout)
+    UI-->>B: 🟠 MODE OFFLINE activé
+
+    B->>Scan: Scanne QR code étiquette
+    Scan-->>UI: Code article: "E2025-L089-A15"
+    UI->>IDB: Recherche article (cache local)
+    IDB-->>UI: Article trouvé (pré-chargé)
+    UI-->>B: Affiche détails article
+
+    B->>UI: Confirme la vente
+    UI->>IDB: Stocke vente locale
+    Note right of IDB: {article_id, timestamp,<br/>caisse_id, signature_hmac}
+    UI->>UI: Incrémente compteur "en attente"
+    UI-->>B: ✓ Vente enregistrée localement
+    UI-->>B: 📤 1 vente en attente de sync
+
+    Note over B,DB: Scénario C - Resynchronisation
+
+    UI->>UI: Détecte retour réseau
+    UI-->>B: 🟢 Réseau rétabli - Sync en cours...
+
+    UI->>IDB: Récupère ventes en attente
+    IDB-->>UI: [{vente1}, {vente2}, ...]
+
+    loop Pour chaque vente locale
+        UI->>API: POST /ventes/sync {vente, signature}
+        API->>API: Vérifie signature HMAC
+        API->>DB: Vérifie article non vendu
+        alt Sync OK
+            API->>DB: Crée Vente
+            API-->>UI: {sync: "ok", vente_id}
+        else Conflit détecté
+            API-->>UI: {sync: "conflict", raison}
+            UI-->>B: ⚠️ Conflit: Article déjà vendu
+        end
+    end
+
+    UI->>IDB: Purge ventes synchronisées
+    UI-->>B: ✓ Synchronisation terminée
+```
+
+## Parcours import Billetweb (Gestionnaire)
+
+Ce diagramme illustre le processus d'import des inscriptions depuis Billetweb.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant G as Gestionnaire (Sophie)
+    participant UI as Frontend
+    participant API as Backend API
+    participant DB as Base de données
+    participant Job as Job Async
+    participant Email as Service Email
+
+    Note over G,Email: Phase 1 - Upload du fichier
+
+    G->>UI: Sélectionne fichier CSV Billetweb
+    UI->>UI: Validation format (UTF-8, colonnes)
+    UI->>API: POST /editions/{id}/import/preview
+    Note right of UI: Multipart: fichier CSV
+
+    API->>API: Parse CSV (500 lignes max)
+    API->>DB: Recherche emails existants
+    DB-->>API: Emails trouvés en base
+
+    API-->>UI: Prévisualisation import
+    Note right of API: {<br/>  total: 150,<br/>  nouveaux: 120,<br/>  existants: 27,<br/>  doublons_fichier: 3,<br/>  erreurs: [{ligne, raison}]<br/>}
+
+    UI-->>G: Affiche rapport prévisualisation
+    Note right of UI: 150 inscriptions<br/>✓ 120 nouvelles invitations<br/>✓ 27 comptes existants<br/>⚠️ 3 doublons ignorés
+
+    Note over G,Email: Phase 2 - Confirmation et traitement
+
+    G->>UI: Confirme l'import
+    UI->>API: POST /editions/{id}/import/execute
+
+    API->>DB: Crée job async (statut: pending)
+    API-->>UI: {job_id, status: "processing"}
+    UI-->>G: Import en cours... (barre progression)
+
+    API->>Job: Démarre traitement async
+
+    loop Pour chaque inscription valide
+        Job->>DB: Vérifie email existant
+        alt Email existant
+            Job->>DB: Associe user à édition
+            Job->>DB: Crée Liste pour déposant
+        else Nouveau déposant
+            Job->>DB: Crée Invitation (token 7j)
+            Job->>Email: Envoie email invitation
+        end
+        Job->>DB: MAJ progression job
+    end
+
+    Job->>DB: Finalise job (statut: completed)
+
+    Note over G,Email: Phase 3 - Résultat final
+
+    UI->>API: GET /jobs/{job_id} (polling)
+    API->>DB: Récupère statut job
+    API-->>UI: {status: "completed", results}
+
+    UI-->>G: Import terminé !
+    Note right of UI: ✓ 120 invitations envoyées<br/>✓ 27 comptes associés<br/>✓ 147 listes créées
+```
+
+## Parcours calcul reversements (Fin d'édition)
+
+Ce diagramme illustre le processus de calcul des reversements après la bourse.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant G as Gestionnaire (Sophie)
+    participant UI as Frontend
+    participant API as Backend API
+    participant DB as Base de données
+    participant Job as Job Async
+    participant PDF as Service PDF
+
+    Note over G,PDF: Phase 1 - Lancement du calcul
+
+    G->>UI: Accède aux reversements édition
+    UI->>API: GET /editions/{id}/reversements/status
+    API->>DB: Compte ventes, déposants
+    API-->>UI: {pret_calcul: true, nb_deposants: 150}
+    UI-->>G: 150 déposants avec ventes
+
+    G->>UI: Lance le calcul
+    UI->>API: POST /editions/{id}/reversements/calculate
+    API->>DB: Vérifie édition non clôturée
+    API->>DB: Crée job calcul (pending)
+    API-->>UI: {job_id, status: "processing"}
+
+    API->>Job: Démarre calcul async
+
+    Note over G,PDF: Phase 2 - Calcul par déposant
+
+    loop Pour chaque déposant
+        Job->>DB: Récupère ventes du déposant
+        DB-->>Job: Liste ventes [{article, prix}, ...]
+
+        Job->>Job: Calcul montants
+        Note right of Job: montant_brut = Σ prix_vente<br/>commission = brut × 0.20<br/>frais = selon type liste<br/>net = brut - commission - frais
+
+        Job->>DB: Crée/MAJ Reversement
+        Note right of DB: {deposant_id,<br/>montant_brut,<br/>commission,<br/>frais_liste,<br/>montant_net,<br/>statut: "calculé"}
+
+        Job->>DB: MAJ progression
+    end
+
+    Job->>DB: Finalise job
+    Job-->>API: Calcul terminé
+
+    Note over G,PDF: Phase 3 - Génération bordereaux
+
+    UI->>API: GET /jobs/{job_id}
+    API-->>UI: {status: "completed"}
+    UI-->>G: Calcul terminé !
+
+    G->>UI: Génère tous les bordereaux
+    UI->>API: POST /reversements/bordereaux/generate-all
+
+    API->>Job: Job génération PDF
+
+    loop Pour chaque reversement
+        Job->>DB: Récupère détails reversement
+        Job->>PDF: Génère bordereau PDF
+        Note right of PDF: Bordereau de reversement<br/>─────────────────<br/>Déposant: Marie Dupont<br/>Liste: #142<br/>─────────────────<br/>Articles vendus: 12<br/>Total brut: 85,00€<br/>Commission (20%): 17,00€<br/>Montant net: 68,00€
+        PDF-->>Job: PDF généré
+        Job->>DB: Stocke URL PDF
+    end
+
+    Job-->>API: Génération terminée
+    API-->>UI: {pdf_archive_url}
+    UI-->>G: Bordereaux prêts ✓
+
+    Note over G,PDF: Phase 4 - Validation et paiement
+
+    G->>UI: Consulte reversement individuel
+    UI->>API: GET /reversements/{id}
+    API-->>UI: Détail complet
+    UI-->>G: Affiche bordereau + détails
+
+    G->>UI: Marque comme payé
+    UI->>API: PATCH /reversements/{id} {statut: "payé"}
+    API->>DB: MAJ statut
+    API-->>UI: OK
+    UI-->>G: ✓ Reversement payé
+```
+
+## Parcours génération étiquettes (Gestionnaire)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant G as Gestionnaire
+    participant UI as Frontend
+    participant API as Backend API
+    participant DB as Base de données
+    participant Job as Job Async
+    participant PDF as Service PDF
+    participant QR as Générateur QR
+
+    Note over G,QR: Génération en masse des étiquettes
+
+    G->>UI: Sélectionne listes validées
+    UI->>API: GET /listes?edition_id=xxx&statut=validee
+    API->>DB: Récupère listes validées
+    API-->>UI: {listes: [...], total: 150}
+    UI-->>G: 150 listes, 2847 articles
+
+    G->>UI: Lance génération
+    UI->>API: POST /etiquettes/generate {liste_ids: [...]}
+    API->>DB: Crée job génération
+    API-->>UI: {job_id}
+
+    API->>Job: Démarre génération async
+
+    loop Pour chaque liste
+        Job->>DB: Récupère articles de la liste
+        loop Pour chaque article
+            Job->>QR: Génère QR code unique
+            Note right of QR: Code: E2025-L142-A07<br/>Contient: edition_id,<br/>liste_numero, article_ligne
+            QR-->>Job: Image QR
+            Job->>Job: Prépare données étiquette
+        end
+    end
+
+    Job->>PDF: Génère PDF A4 (24 étiquettes/page)
+    Note right of PDF: Format étiquette:<br/>┌──────────────┐<br/>│ [QR] #142-07 │<br/>│ Pantalon bleu│<br/>│ T8 - 8,00€   │<br/>│ ══════ BLEU  │<br/>└──────────────┘
+
+    PDF-->>Job: PDF généré (150 pages)
+    Job->>DB: Stocke PDF + stats
+    Job->>DB: MAJ job completed
+
+    UI->>API: GET /jobs/{job_id}
+    API-->>UI: {status: "completed", pdf_url, stats}
+    UI-->>G: Génération terminée !
+    Note right of UI: 2847 étiquettes<br/>150 pages PDF<br/>Durée: 45s
+
+    G->>UI: Télécharge PDF
+    UI->>API: GET /etiquettes/download/{job_id}
+    API-->>UI: Fichier PDF
+    UI-->>G: Téléchargement...
+```
+
+---
+
+# Cycle de vie des entités
+
+## Cycle de vie d'un Article
+
+```mermaid
+stateDiagram-v2
+    [*] --> Brouillon : Création par déposant
+
+    Brouillon --> Brouillon : Modification (prix, description)
+    Brouillon --> Supprimé : Suppression par déposant
+    Brouillon --> Déposé : Validation liste
+
+    Déposé --> En_vente : Début période vente
+    Déposé --> Déposé : Attente vente
+
+    En_vente --> Vendu : Scan + vente caisse
+    En_vente --> Invendu : Fin période vente (non vendu)
+
+    Vendu --> [*] : État final
+
+    Invendu --> Récupéré : Retrait par déposant
+    Invendu --> Stock_ALPE : Non récupéré (don)
+
+    Récupéré --> [*] : État final
+    Stock_ALPE --> [*] : État final
+    Supprimé --> [*] : État final
+
+    note right of Brouillon
+        Modifiable tant que
+        date_limite non atteinte
+    end note
+
+    note right of Vendu
+        Immutable
+        Horodaté + traçé
+    end note
+
+    note right of Stock_ALPE
+        Invendus non récupérés
+        après délai (3 semaines)
+    end note
+```
+
+### Transitions détaillées
+
+| État initial | Événement | État final | Conditions | Actions |
+|--------------|-----------|------------|------------|---------|
+| — | Création article | Brouillon | Liste en brouillon, contraintes OK | Assigne numéro ligne |
+| Brouillon | Modification | Brouillon | Date limite non atteinte | MAJ champs |
+| Brouillon | Suppression | Supprimé | Date limite non atteinte | Soft delete |
+| Brouillon | Validation liste | Déposé | Liste validée | Génère code étiquette |
+| Déposé | Début vente | En_vente | Édition en cours | — |
+| En_vente | Vente | Vendu | Article non vendu | Crée Vente, horodate |
+| En_vente | Fin vente | Invendu | Période vente terminée | — |
+| Invendu | Récupération | Récupéré | Déposant présent | Trace récupération |
+| Invendu | Délai dépassé | Stock_ALPE | +3 semaines sans récup | Don automatique |
+
+## Cycle de vie d'une Liste
+
+```mermaid
+stateDiagram-v2
+    [*] --> Brouillon : Création
+
+    Brouillon --> Brouillon : Ajout/Modif articles
+    Brouillon --> Validée : Validation déposant
+    Brouillon --> Supprimée : Suppression (0 articles)
+
+    Validée --> Validée : Lecture seule
+    Validée --> Déposée : Check-in dépôt physique
+
+    Déposée --> Clôturée : Fin édition
+
+    Clôturée --> [*] : État final
+    Supprimée --> [*] : État final
+
+    note right of Validée
+        Génère récapitulatif PDF
+        Email au déposant
+    end note
+
+    note right of Déposée
+        Articles physiquement
+        déposés et étiquetés
+    end note
+```
+
+## Cycle de vie d'une Invitation
+
+```mermaid
+stateDiagram-v2
+    [*] --> Créée : Génération token
+
+    Créée --> Envoyée : Email envoyé
+    Envoyée --> Envoyée : Relance (max 3)
+    Envoyée --> Utilisée : Activation compte
+    Envoyée --> Expirée : Délai 7 jours
+
+    Utilisée --> [*] : État final
+    Expirée --> Renouvelée : Nouvelle invitation
+    Renouvelée --> Envoyée : Email envoyé
+
+    note right of Envoyée
+        Token valide 7 jours
+        Max 3 relances
+    end note
+
+    note right of Utilisée
+        Token invalidé
+        Compte créé
+    end note
+```
+
+---
+
+# Matrice des transitions d'état
+
+## Article : Actions autorisées par état
+
+| Action | Brouillon | Déposé | En_vente | Vendu | Invendu | Récupéré |
+|--------|-----------|--------|----------|-------|---------|----------|
+| Modifier | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Supprimer | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Valider (via liste) | ✅ | — | — | — | — | — |
+| Vendre | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| Annuler vente | ❌ | ❌ | ❌ | ✅* | ❌ | ❌ |
+| Récupérer | ❌ | ❌ | ❌ | ❌ | ✅ | — |
+
+*Annulation vente : uniquement par Gestionnaire/Admin
+
+## Liste : Actions autorisées par état
+
+| Action | Brouillon | Validée | Déposée | Clôturée |
+|--------|-----------|---------|---------|----------|
+| Ajouter article | ✅ | ❌ | ❌ | ❌ |
+| Modifier article | ✅ | ❌ | ❌ | ❌ |
+| Supprimer article | ✅ | ❌ | ❌ | ❌ |
+| Valider | ✅ | — | — | — |
+| Invalider | ❌ | ✅* | ❌ | ❌ |
+| Check-in dépôt | ❌ | ✅ | — | — |
+| Consulter | ✅ | ✅ | ✅ | ✅ |
+
+*Invalidation : uniquement par Gestionnaire (cas exceptionnel)
 

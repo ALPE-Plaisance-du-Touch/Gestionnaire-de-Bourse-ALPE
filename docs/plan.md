@@ -30,7 +30,7 @@ Organiser la production et la validation des spécifications de l’application 
 | Exigences (DOC-040) | REQ fonctionnelles & NF traçables | ✅ Enrichies (v0.4.0) - REQ-F-001 à F-017 avec règlements déposant/intérieur | Produit | 2025-11-06 |
 | Traçabilité (DOC-100) | Matrice US ↔ REQ ↔ Tests | ✅ Créée (v1.0.0) - 860 lignes, 82% couverture complète, 1 REQ manquante | Produit | 2025-11-07 |
 | Architecture (DOC-050) | C4 niv. 1-3 + contraintes | ✅ Complétée (v0.5.0) - C4 Contexte/Container/Component, 5 ADRs, mode offline, schéma données | Tech Lead | 2025-11-22 |
-| Modèle de domaine (DOC-060) | Diagramme + règles métiers | ✅ Enrichi (v0.4.0) - 8 entités (Creneau ajouté) + types listes + 23 invariants | Produit + Tech | 2025-11-06 |
+| Modèle de domaine (DOC-060) | Diagramme + règles métiers | ✅ Complété (v0.5.0) - 8 entités, 23 invariants, 5 diagrammes séquence, cycles de vie Article/Liste/Invitation | Produit + Tech | 2025-11-06 |
 | Catégories articles (DOC-011) | Guide bénévoles | ✅ Créé (v1.0.0) - 317 lignes, acceptés/refusés, prix indicatifs, checklist | Produit | 2025-11-06 |
 | UI (DOC-070) | Parcours + wireframes clés | ✅ Complétée (v0.5.0) - Parcours 3 rôles, 15+ wireframes, états erreur, accessibilité WCAG AA | UX | 2025-11-25 |
 | Sécurité (DOC-080) | Politique sécurité/RGPD | ✅ Complétée (v0.5.0) - Matrice CRUD 4 rôles × 10 ressources, endpoints par rôle, RGPD, audit | SecOps | 2025-11-22 |
@@ -108,8 +108,16 @@ Organiser la production et la validation des spécifications de l’application 
 - [x] ✅ Détailler attributs et types pour Edition (dates, commission, statut, etc.)
 - [x] ✅ Ajouter entité Creneau avec capacités et réservations Plaisançois
 - [x] ✅ Enrichir entité Liste avec types (standard/1000/2000), couleurs, frais
-- [ ] Ajouter diagrammes séquence pour dépôts et ventes
-- [ ] Détailler états et transitions des Articles (brouillon → récupéré)
+- [x] ✅ Ajouter diagramme séquence parcours dépôt articles (activation → validation liste)
+- [x] ✅ Ajouter diagramme séquence vente en caisse (online + offline + resync)
+- [x] ✅ Ajouter diagramme séquence import Billetweb (preview → exécution → résultat)
+- [x] ✅ Ajouter diagramme séquence calcul reversements (calcul → bordereaux → paiement)
+- [x] ✅ Ajouter diagramme séquence génération étiquettes (sélection → QR → PDF)
+- [x] ✅ Détailler cycle de vie Article (brouillon → déposé → en_vente → vendu/invendu → récupéré/stock)
+- [x] ✅ Détailler cycle de vie Liste (brouillon → validée → déposée → clôturée)
+- [x] ✅ Détailler cycle de vie Invitation (créée → envoyée → utilisée/expirée)
+- [x] ✅ Créer matrice transitions d'état Article (actions par état)
+- [x] ✅ Créer matrice transitions d'état Liste (actions par état)
 
 ## DOC-010 — Glossaire
 - [x] ✅ Enrichir avec 20+ nouveaux termes organisés par catégories
