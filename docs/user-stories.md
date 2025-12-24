@@ -414,7 +414,7 @@ acceptance_criteria:
       • Enregistre tous les articles saisis
       • M'affiche un résumé : "Liste 1 : [X] articles saisis (Y vêtements)"
       • Me permet de revenir modifier tant que la date limite n'est pas atteinte
-      • Affiche un statut : "Brouillon" (si < 5 articles) ou "Complète" (si ≥ 5 articles)
+      • Affiche un statut : "Brouillon" (si 0 article) ou "Complète" (si ≥ 1 article)
 
   # AC-12 : Blocage après date limite
   - GIVEN la date limite de déclaration est dépassée
@@ -423,8 +423,8 @@ acceptance_criteria:
       • Affiche mes listes en lecture seule
       • Désactive les boutons "Ajouter" et "Modifier"
       • Affiche un bandeau rouge : "Date limite dépassée. Vous ne pouvez plus modifier vos listes."
-      • Si mes listes sont vides ou incomplètes (< 3 articles), affiche :
-        "Vos listes sont incomplètes. Votre dépôt ne sera pas pris en compte. Contactez les bénévoles si nécessaire."
+      • Si mes listes sont vides (0 article), affiche :
+        "Vos listes sont vides. Votre dépôt ne sera pas pris en compte. Contactez les bénévoles si nécessaire."
 
   # AC-13 : Aide contextuelle avec prix indicatifs
   - GIVEN je remplis le champ prix
@@ -656,8 +656,8 @@ acceptance_criteria:
   - GIVEN je consulte le PDF généré
     THEN le document est optimisé pour impression :
       • Format A4 portrait
-      • 8 étiquettes par page (2 colonnes × 4 lignes)
-      • Dimension étiquette : 105mm × 74mm (format carte postale standard)
+      • 12 étiquettes par page (3 colonnes × 4 lignes)
+      • Dimension étiquette : 70mm × 74mm
       • Lignes pointillées pour découpe entre chaque étiquette
       • Marges de 10mm tout autour
       • Police lisible (Arial ou équivalent, taille 10-14pt selon l'élément)
@@ -783,7 +783,7 @@ business_rules:
   - QR code scannable contenant le code unique
   - Une étiquette par article déclaré
   - Couleur de fond selon numéro de liste (100=bleu ciel, 200=jaune, 300=fushia, 400=lilas, 500=vert menthe, 600=clémentine, 1000=blanc, 2000=groseille)
-  - Format étiquette : 105×74mm (8 par page A4)
+  - Format étiquette : 70×74mm (12 par page A4)
   - PDF contient pour chaque déposant : page de séparation + liste d'articles imprimable + étiquettes
   - Traçabilité complète : qui a généré, quand, qui a imprimé, quand
   - Statuts : Non générées / Générées / Imprimées
@@ -815,7 +815,7 @@ test_scenarios:
   - T-US003-11 : Export Excel récapitulatif avec tous les statuts (OK, 412 lignes)
   - T-US003-12 : Vérification liste d'articles imprimable dans PDF (tableau complet, total correct)
   - T-US003-13 : Vérification page de séparation avec instructions pochette (case à cocher présente)
-  - T-US003-14 : Format étiquette 105×74mm vérifié après impression et découpage (OK)
+  - T-US003-14 : Format étiquette 70×74mm vérifié après impression et découpage (OK)
   - T-US003-15 : Statistiques globales affichées (pourcentages générées/imprimées corrects)
   - T-US003-16 : Gestion erreur sur incohérence (rapport d'erreur lisible, génération partielle possible)
   - T-US003-17 : Historique édition avec toutes les générations tracées (date, heure, gestionnaire, nombre)
@@ -1113,7 +1113,7 @@ test_scenarios:
   - T-US004-20 : Vente privée écoles/ALAE vendredi 17h (OK, accessible seulement ce créneau)
 ```
 
-- US-005 — En tant que bénévole, je veux générer les reversements en fin d'édition.
+- US-005 — En tant que gestionnaire, je veux générer les reversements en fin d'édition.
 
 ```yaml
 id: US-005
@@ -1787,9 +1787,9 @@ acceptance_criteria:
       "Bonjour [Prénom], vous êtes inscrit(e) à l'édition [Nom édition]. Connectez-vous pour déclarer vos articles."
 
   # AC-12 : Limitation de taille de fichier
-  - GIVEN le fichier uploadé dépasse 5 Mo ou contient plus de 1000 lignes
+  - GIVEN le fichier uploadé dépasse 5 Mo ou contient plus de 500 lignes
     WHEN je tente de l'importer
-    THEN le système affiche : "Fichier trop volumineux. Maximum 5 Mo ou 1000 inscriptions par import."
+    THEN le système affiche : "Fichier trop volumineux. Maximum 5 Mo ou 500 inscriptions par import."
 
   # AC-13 : Contrôle d'accès
   - GIVEN je suis connecté en tant que bénévole ou déposant
@@ -1819,7 +1819,7 @@ business_rules:
   - Les déposants existants sont associés automatiquement (via email)
   - Les nouveaux reçoivent une invitation (token 7 jours comme US-001 ou US-010)
   - L'import est traçé pour audit (qui, quand, nombre d'inscriptions, fichier source)
-  - Maximum 1000 inscriptions par fichier
+  - Maximum 500 inscriptions par fichier
   - Format accepté : Excel (.xlsx, .xls) - export direct de Billetweb
 
 # Format du fichier Billetweb (export direct)
@@ -1860,7 +1860,7 @@ test_scenarios:
   - T-US008-04 : Fichier avec doublons email (seule 1ère occurrence gardée, warning)
   - T-US008-05 : Fichier avec emails invalides (erreur, tableau ligne par ligne)
   - T-US008-06 : Fichier format invalide (colonnes manquantes J, K, L, F, etc.)
-  - T-US008-07 : Fichier trop volumineux (> 5 Mo ou > 1000 lignes)
+  - T-US008-07 : Fichier trop volumineux (> 5 Mo ou > 500 lignes)
   - T-US008-08 : Import sur édition non configurée (bouton absent ou erreur)
   - T-US008-09 : Déposants déjà associés à l'édition (ignorés)
   - T-US008-10 : Accès refusé pour bénévole/déposant

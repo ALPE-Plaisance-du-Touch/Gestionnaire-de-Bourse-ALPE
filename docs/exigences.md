@@ -35,7 +35,7 @@ links:
   - **Responsable validation :** Gestionnaire
 
 - REQ-F-008 — Le système DOIT permettre à un gestionnaire d'importer un fichier d'inscriptions Billetweb (CSV/Excel) pour associer déposants existants et créer invitations pour nouveaux. (US-008)
-  - **Critères d'acceptation :** Prévisualisation avant import, gestion doublons, envoi invitations automatique, limite 1000 inscriptions/fichier
+  - **Critères d'acceptation :** Prévisualisation avant import, gestion doublons, envoi invitations automatique, limite 500 inscriptions/fichier
   - **Priorité :** Must have
   - **Responsable validation :** Gestionnaire
 
@@ -363,8 +363,8 @@ links:
       - Liste 2000 : fond groseille (famille/amis adhérents)
     - **Format PDF d'impression :**
       - Format A4 portrait
-      - 8 étiquettes par page (2 colonnes × 4 lignes)
-      - Dimension étiquette : 105mm × 74mm
+      - 12 étiquettes par page (3 colonnes × 4 lignes)
+      - Dimension étiquette : 70mm × 74mm
       - Lignes pointillées pour découpe
       - Marges de 10mm tout autour
       - Police lisible : Arial ou équivalent, taille 10-14pt
@@ -454,7 +454,8 @@ links:
       - Gestion des conflits : si article vendu en doublon (2 caisses offline), alerte au gestionnaire pour arbitrage
       - Données offline conservées jusqu'à synchronisation réussie (pas de perte)
     - **Annulation de vente :**
-      - Annulation possible uniquement par un gestionnaire (pas par le bénévole caisse)
+      - Annulation possible par le bénévole caisse dans les 5 minutes suivant la vente (erreur de scan, client change d'avis)
+      - Au-delà de 5 minutes, annulation uniquement par un gestionnaire
       - Interface gestionnaire : recherche de vente par code article ou par bénévole/date
       - Motif d'annulation obligatoire (erreur de scan, remboursement client, etc.)
       - Passage de l'article au statut "Disponible" (remis en vente)

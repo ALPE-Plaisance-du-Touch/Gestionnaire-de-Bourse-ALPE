@@ -650,7 +650,7 @@ sequenceDiagram
         end
     end
 
-    Job->>PDF: Génère PDF A4 (24 étiquettes/page)
+    Job->>PDF: Génère PDF A4 (12 étiquettes/page)
     Note right of PDF: Format étiquette:<br/>┌──────────────┐<br/>│ [QR] #142-07 │<br/>│ Pantalon bleu│<br/>│ T8 - 8,00€   │<br/>│ ══════ BLEU  │<br/>└──────────────┘
 
     PDF-->>Job: PDF généré (150 pages)
