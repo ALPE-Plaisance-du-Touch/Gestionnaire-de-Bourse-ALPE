@@ -1,17 +1,30 @@
 # Dependencies
 node_modules/
 vendor/
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.egg-info/
+.eggs/
 
 # Build outputs
 dist/
 build/
 .next/
 out/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
 
 # Environment files
 .env
 .env.local
 .env.*.local
+!.env.example
 
 # IDE
 .idea/
@@ -31,6 +44,17 @@ yarn-error.log*
 
 # Testing
 coverage/
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Docker
+.docker/
+
+# Uploads and generated files
+uploads/
+*.pdf
 
 # Claude Code local settings
 .claude/settings.local.json
