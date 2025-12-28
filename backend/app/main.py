@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.middleware import LoginRateLimitMiddleware, RateLimitMiddleware
 
 
 @asynccontextmanager
@@ -29,6 +30,10 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
     lifespan=lifespan,
 )
+
+# Rate limiting middleware (order matters: login rate limit before general)
+app.add_middleware(LoginRateLimitMiddleware, max_attempts=5, lockout_seconds=900)
+app.add_middleware(RateLimitMiddleware)
 
 # CORS middleware
 app.add_middleware(
@@ -56,12 +61,7 @@ async def api_root() -> dict[str, str]:
     }
 
 
-# Include routers
-# TODO: Add routers as they are implemented
-# from app.api import auth, editions, item_lists, articles, sales, payouts
-# app.include_router(auth.router, prefix="/api/v1")
-# app.include_router(editions.router, prefix="/api/v1")
-# app.include_router(item_lists.router, prefix="/api/v1")
-# app.include_router(articles.router, prefix="/api/v1")
-# app.include_router(sales.router, prefix="/api/v1")
-# app.include_router(payouts.router, prefix="/api/v1")
+# Include API routers
+from app.api.v1 import api_router
+
+app.include_router(api_router, prefix="/api/v1")
