@@ -16,6 +16,28 @@ links:
 
 # Historique des versions
 
+## [0.7.0] - 2025-12-28
+- **Guide de déploiement (nouveau)**
+  - **Document DOC-130** : `deploiement.md`
+  - **Deux modes de déploiement** :
+    - Mode manuel : hébergement mutualisé (OVH, o2switch) avec MariaDB mutualisée
+    - Mode Docker : développement local et production future (VPS/Cloud)
+  - **Mode manuel** :
+    - Structure des fichiers serveur
+    - Configuration Apache (.htaccess) avec routing SPA et proxy API
+    - Configuration Passenger (WSGI) pour Python
+    - Scripts de déploiement initial et mise à jour
+    - Configuration des backups automatiques (cron)
+  - **Mode Docker** :
+    - Dockerfiles multi-stage (backend, frontend, nginx)
+    - Docker Compose développement avec hot-reload
+    - Docker Compose production avec Gunicorn et SSL
+    - Makefile avec commandes simplifiées
+    - Configuration MailHog et phpMyAdmin pour debug
+  - **Configuration SSL** : Let's Encrypt via hébergeur ou Certbot
+  - **Monitoring et logs** : health checks, commandes de diagnostic
+  - **Troubleshooting** : problèmes courants et solutions
+
 ## [0.6.0] - 2025-12-28
 - **Bonnes pratiques de développement (nouveau)**
   - **Document DOC-120** : `bonnes-pratiques.md`
