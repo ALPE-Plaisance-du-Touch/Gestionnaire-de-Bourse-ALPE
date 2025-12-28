@@ -30,16 +30,13 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
 
-    # CORS
-    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    # CORS - stored as comma-separated string to avoid JSON parsing issues
+    cors_origins: str = "http://localhost:5173,http://localhost:3000"
 
-    @field_validator("cors_origins", mode="before")
-    @classmethod
-    def parse_cors_origins(cls, v: str | list[str]) -> list[str]:
-        """Parse CORS origins from comma-separated string or list."""
-        if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",") if origin.strip()]
-        return v
+    @property
+    def cors_origins_list(self) -> list[str]:
+        """Get CORS origins as a list."""
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
     # Email (SMTP)
     smtp_host: str = "localhost"

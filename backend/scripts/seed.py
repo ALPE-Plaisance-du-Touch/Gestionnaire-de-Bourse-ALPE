@@ -80,10 +80,11 @@ SAMPLE_EDITION = {
     "description": "Édition de test pour le développement",
     "start_datetime": datetime.now(timezone.utc) + timedelta(days=30),
     "end_datetime": datetime.now(timezone.utc) + timedelta(days=31),
-    "deposit_start_date": datetime.now(timezone.utc) + timedelta(days=1),
-    "deposit_end_date": datetime.now(timezone.utc) + timedelta(days=25),
+    "deposit_start_datetime": datetime.now(timezone.utc) + timedelta(days=1),
+    "deposit_end_datetime": datetime.now(timezone.utc) + timedelta(days=25),
+    "declaration_deadline": datetime.now(timezone.utc) + timedelta(days=20),
     "commission_rate": Decimal("0.20"),
-    "status": "inscriptions_ouvertes",
+    "status": "registrations_open",
 }
 
 # Sample articles for depositor
@@ -91,9 +92,9 @@ SAMPLE_ARTICLES = [
     {"description": "Pantalon bleu", "category": "clothing", "size": "8 ans", "price": Decimal("5.00")},
     {"description": "T-shirt rouge", "category": "clothing", "size": "6 ans", "price": Decimal("3.00")},
     {"description": "Robe fleurie", "category": "clothing", "size": "4 ans", "price": Decimal("8.00")},
-    {"description": "Puzzle 100 pièces", "category": "toy", "price": Decimal("4.00")},
-    {"description": "Livre Les Trois Mousquetaires", "category": "book", "price": Decimal("2.00")},
-    {"description": "Lot de 3 petites voitures", "category": "toy", "price": Decimal("3.00"), "is_lot": True, "lot_size": 3},
+    {"description": "Puzzle 100 pièces", "category": "toys", "price": Decimal("4.00")},
+    {"description": "Livre Les Trois Mousquetaires", "category": "books", "price": Decimal("2.00")},
+    {"description": "Lot de 3 petites voitures", "category": "toys", "price": Decimal("3.00"), "is_lot": True, "lot_quantity": 3},
 ]
 
 
@@ -146,7 +147,6 @@ async def seed_users(session: AsyncSession, roles: dict[str, Role]) -> dict[str,
                 password_hash=AuthService.hash_password(user_data["password"]),
                 is_active=True,
                 is_verified=True,
-                terms_accepted_at=datetime.now(timezone.utc),
             )
             session.add(user)
             print(f"  ✅ Created user: {user_data['email']} (password: {user_data['password']})")
@@ -193,7 +193,7 @@ async def seed_item_lists_and_articles(
     # Check if list already exists
     result = await session.execute(
         select(ItemList).where(
-            ItemList.user_id == depositor.id,
+            ItemList.depositor_id == depositor.id,
             ItemList.edition_id == edition.id,
         )
     )
@@ -205,15 +205,15 @@ async def seed_item_lists_and_articles(
 
     # Create item list
     item_list = ItemList(
-        user_id=depositor.id,
+        depositor_id=depositor.id,
         edition_id=edition.id,
-        list_number=101,
+        number=101,
         list_type="standard",
         status="draft",
     )
     session.add(item_list)
     await session.flush()
-    print(f"  ✅ Created item list #{item_list.list_number}")
+    print(f"  ✅ Created item list #{item_list.number}")
 
     # Create articles
     for i, article_data in enumerate(SAMPLE_ARTICLES, start=1):

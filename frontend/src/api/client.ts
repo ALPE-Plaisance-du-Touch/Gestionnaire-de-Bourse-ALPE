@@ -2,6 +2,62 @@ import axios, { type AxiosError, type AxiosInstance, type InternalAxiosRequestCo
 import type { ApiError } from '@/types';
 
 /**
+ * Convert camelCase to snake_case.
+ */
+function toSnakeCase(str: string): string {
+  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+}
+
+/**
+ * Convert snake_case to camelCase.
+ */
+function toCamelCase(str: string): string {
+  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
+/**
+ * Recursively convert object keys to snake_case.
+ */
+function keysToSnakeCase(obj: unknown): unknown {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(keysToSnakeCase);
+  }
+  if (typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj as Record<string, unknown>).map(([key, value]) => [
+        toSnakeCase(key),
+        keysToSnakeCase(value),
+      ])
+    );
+  }
+  return obj;
+}
+
+/**
+ * Recursively convert object keys to camelCase.
+ */
+function keysToCamelCase(obj: unknown): unknown {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(keysToCamelCase);
+  }
+  if (typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj as Record<string, unknown>).map(([key, value]) => [
+        toCamelCase(key),
+        keysToCamelCase(value),
+      ])
+    );
+  }
+  return obj;
+}
+
+/**
  * Custom API exception class.
  */
 export class ApiException extends Error {
@@ -73,21 +129,31 @@ function createApiClient(): AxiosInstance {
     },
   });
 
-  // Request interceptor - add auth token
+  // Request interceptor - add auth token and transform data to snake_case
   client.interceptors.request.use(
     (config) => {
       const token = localStorage.getItem('accessToken');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+      // Transform request data: camelCase -> snake_case
+      if (config.data && typeof config.data === 'object') {
+        config.data = keysToSnakeCase(config.data);
+      }
       return config;
     },
     (error) => Promise.reject(error)
   );
 
-  // Response interceptor - handle errors and token refresh
+  // Response interceptor - transform data to camelCase and handle errors
   client.interceptors.response.use(
-    (response) => response,
+    (response) => {
+      // Transform response data: snake_case -> camelCase
+      if (response.data && typeof response.data === 'object') {
+        response.data = keysToCamelCase(response.data);
+      }
+      return response;
+    },
     async (error: AxiosError<ApiError>) => {
       const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
