@@ -1,9 +1,9 @@
 ---
 id: DOC-060-DOMAIN
 title: Modèle de domaine
-status: draft
-version: 0.5.0
-updated: 2025-12-24
+status: validated
+version: 1.0.0
+updated: 2025-12-28
 owner: ALPE Plaisance du Touch
 links:
   - rel: source

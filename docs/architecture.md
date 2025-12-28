@@ -1,9 +1,9 @@
 ---
 id: DOC-050-ARCHI
 title: Architecture & Contexte
-status: draft
-version: 0.5.0
-updated: 2025-12-23
+status: validated
+version: 1.0.0
+updated: 2025-12-28
 owner: ALPE Plaisance du Touch
 links:
   - rel: requires

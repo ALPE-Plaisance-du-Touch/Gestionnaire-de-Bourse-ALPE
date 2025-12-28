@@ -1,9 +1,9 @@
 ---
 id: DOC-011-CATEGORIES
 title: Catégories d'articles - Référence rapide
-status: draft
+status: validated
 version: 1.0.0
-updated: 2025-11-06
+updated: 2025-12-28
 owner: ALPE Plaisance du Touch
 links:
   - rel: source

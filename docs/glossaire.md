@@ -1,9 +1,9 @@
 ---
 id: DOC-010-GLOSSAIRE
 title: Glossaire
-status: draft
-version: 0.4.0
-updated: 2025-11-06
+status: validated
+version: 1.0.0
+updated: 2025-12-28
 owner: ALPE Plaisance du Touch
 links:
   - rel: source

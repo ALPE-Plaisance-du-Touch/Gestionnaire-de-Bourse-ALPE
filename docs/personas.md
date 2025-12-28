@@ -1,9 +1,9 @@
 ---
 id: DOC-020-PERSONAS
 title: Personas
-status: draft
-version: 0.2.0
-updated: 2025-11-05
+status: validated
+version: 1.0.0
+updated: 2025-12-28
 owner: ALPE Plaisance du Touch
 links: []
 ---

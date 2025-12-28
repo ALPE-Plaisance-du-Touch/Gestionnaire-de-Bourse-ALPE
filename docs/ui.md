@@ -1,9 +1,9 @@
 ---
 id: DOC-070-UI
 title: UI & Flux Utilisateur
-status: draft
-version: 0.5.0
-updated: 2025-12-24
+status: validated
+version: 1.0.0
+updated: 2025-12-28
 owner: ALPE Plaisance du Touch
 links:
   - rel: personas

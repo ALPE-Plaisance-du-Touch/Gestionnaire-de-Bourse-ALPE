@@ -1,9 +1,9 @@
 ---
 id: DOC-000-README
 title: Spécifications — Gestionnaire de Bourse ALPE
-status: draft
-version: 0.1.0
-updated: 2025-11-03
+status: validated
+version: 1.0.0
+updated: 2025-12-28
 owner: ALPE Plaisance du Touch
 links:
   - rel: site

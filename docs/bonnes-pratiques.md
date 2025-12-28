@@ -1,8 +1,8 @@
 ---
 id: DOC-120-BONNES-PRATIQUES
 title: Bonnes Pratiques de Développement
-status: draft
-version: 0.1.0
+status: validated
+version: 1.0.0
 updated: 2025-12-28
 owner: ALPE Plaisance du Touch
 links:

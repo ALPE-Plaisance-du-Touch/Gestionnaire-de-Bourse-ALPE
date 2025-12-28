@@ -1,63 +1,123 @@
 meta:
   title: Manifest des spécifications — ALPE
-  version: 0.1.0
-  updated: 2025-11-03
+  version: 1.0.0
+  updated: 2025-12-28
   owner: ALPE Plaisance du Touch
   idScheme:
     requirement: REQ-xxx | REQ-F-xxx | REQ-NF-xxx
     userStory: US-xxx
-    decision: DEC-xxx
+    document: DOC-xxx
+
 documents:
+  # Vue d'ensemble
   - id: DOC-000-README
     path: docs/README.md
     type: overview
-    status: draft
+    status: validated
+
   - id: DOC-005-PLAN
     path: docs/plan.md
     type: planning
-    status: draft
+    status: validated
+
+  - id: DOC-099-CHANGELOG
+    path: docs/CHANGELOG.md
+    type: changelog
+    status: validated
+
+  # Fondations métier
   - id: DOC-010-GLOSSAIRE
     path: docs/glossaire.md
     type: glossary
-    status: draft
+    status: validated
+
   - id: DOC-020-PERSONAS
     path: docs/personas.md
     type: personas
-    status: draft
+    status: validated
+
+  # Spécifications fonctionnelles
   - id: DOC-030-US
     path: docs/user-stories.md
     type: user-stories
-    status: draft
+    status: validated
+
   - id: DOC-040-REQS
     path: docs/exigences.md
     type: requirements
-    status: draft
-  - id: DOC-050-ARCHI
-    path: docs/architecture.md
-    type: architecture
-    status: draft
+    status: validated
+
   - id: DOC-060-DOMAIN
     path: docs/domain-model.md
     type: domain-model
-    status: draft
-  - id: DOC-070-UI
-    path: docs/ui.md
-    type: ui
-    status: draft
-  - id: DOC-080-SECURITE
-    path: docs/securite.md
-    type: security
-    status: draft
-  - id: DOC-090-OPS
-    path: docs/operations.md
-    type: operations
-    status: draft
-  - id: DEC-000
-    path: docs/adr/DEC-000.md
-    type: adr
-    status: proposed
+    status: validated
+
+  - id: DOC-100-TRACE
+    path: docs/traceability.md
+    type: traceability
+    status: validated
+
+  # Documents de référence métier
+  - id: DOC-011-CATEGORIES
+    path: docs/categories-articles.md
+    type: reference
+    status: validated
+
+  - id: DOC-012-TEMPLATE-EXCEL
+    path: docs/template-excel-structure.md
+    type: reference
+    status: validated
+
+  - id: DOC-SRC-REGLEMENT-DEPOSANT
+    path: docs/Reglement_deposant.md
+    type: source
+    status: validated
+
+  - id: DOC-SRC-REGLEMENT-INTERNE
+    path: docs/Reglement_interne.md
+    type: source
+    status: validated
+
+  # Architecture et technique
+  - id: DOC-050-ARCHI
+    path: docs/architecture.md
+    type: architecture
+    status: validated
+
   - id: API-OPENAPI
     path: docs/api/openapi.yaml
     type: openapi
-    status: draft
+    status: validated
 
+  # UI/UX
+  - id: DOC-070-UI
+    path: docs/ui.md
+    type: ui
+    status: validated
+
+  # Sécurité et conformité
+  - id: DOC-080-SECURITE
+    path: docs/securite.md
+    type: security
+    status: validated
+
+  # Opérations et déploiement
+  - id: DOC-090-OPS
+    path: docs/operations.md
+    type: operations
+    status: validated
+
+  - id: DOC-110-TESTS
+    path: docs/tests.md
+    type: testing
+    status: validated
+
+  - id: DOC-120-BONNES-PRATIQUES
+    path: docs/bonnes-pratiques.md
+    type: development
+    status: validated
+
+  - id: DOC-130-DEPLOIEMENT
+    path: docs/deploiement.md
+    type: deployment
+    status: validated

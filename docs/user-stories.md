@@ -1,9 +1,9 @@
 ---
 id: DOC-030-US
 title: User Stories
-status: draft
-version: 0.4.0
-updated: 2025-11-07
+status: validated
+version: 1.0.0
+updated: 2025-12-28
 owner: ALPE Plaisance du Touch
 links: []
 ---

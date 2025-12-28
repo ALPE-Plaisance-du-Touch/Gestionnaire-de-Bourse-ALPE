@@ -1,9 +1,9 @@
 ---
 id: DOC-040-REQS
 title: Exigences (fonctionnelles et non-fonctionnelles)
-status: draft
-version: 0.9.0
-updated: 2025-12-23
+status: validated
+version: 1.0.0
+updated: 2025-12-28
 owner: ALPE Plaisance du Touch
 links:
   - rel: source

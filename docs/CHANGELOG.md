@@ -1,9 +1,9 @@
 ---
 id: DOC-099-CHANGELOG
 title: Changelog (SemVer)
-status: draft
-version: 0.5.0
-updated: 2025-11-06
+status: validated
+version: 1.0.0
+updated: 2025-12-28
 owner: ALPE Plaisance du Touch
 links:
   - rel: source
@@ -15,6 +15,43 @@ links:
 ---
 
 # Historique des versions
+
+## [1.0.0] - 2025-12-28
+- **Release officielle des spécifications v1.0.0**
+  - **Validation complète** de tous les documents de spécification
+  - **17 documents** passés en statut "validated"
+  - **Prêt pour le développement** de l'application
+
+### Documents validés
+
+| ID | Document | Description |
+|----|----------|-------------|
+| DOC-000 | README.md | Vision et navigation |
+| DOC-005 | plan.md | Plan de rédaction |
+| DOC-010 | glossaire.md | 30+ termes métier |
+| DOC-011 | categories-articles.md | Guide bénévoles |
+| DOC-020 | personas.md | 4 personas détaillés |
+| DOC-030 | user-stories.md | 10 US, 105 AC, 134+ tests |
+| DOC-040 | exigences.md | 18 REQ-F + 4 REQ-NF |
+| DOC-050 | architecture.md | C4, 5 ADRs, stack technique |
+| DOC-060 | domain-model.md | 8 entités, 23 invariants |
+| DOC-070 | ui.md | 15+ wireframes, accessibilité |
+| DOC-080 | securite.md | CRUD, RGPD, audit |
+| DOC-090 | operations.md | SLOs, 6 runbooks |
+| DOC-100 | traceability.md | Matrice US↔REQ↔Tests |
+| DOC-110 | tests.md | Pyramide, CI/CD |
+| DOC-120 | bonnes-pratiques.md | Code en anglais, conventions |
+| DOC-130 | deploiement.md | Manuel + Docker |
+| API | openapi.yaml | 50+ endpoints, 40+ schémas |
+
+### Métriques finales
+
+- **User Stories** : 10 (US-001 à US-010)
+- **Critères d'acceptation** : 105
+- **Scénarios de test** : 134+
+- **Exigences fonctionnelles** : 18
+- **Exigences non-fonctionnelles** : 4
+- **Couverture traçabilité** : 86%
 
 ## [0.7.0] - 2025-12-28
 - **Guide de déploiement (nouveau)**

@@ -1,9 +1,9 @@
 ---
 id: DOC-100-TRACE
 title: Matrice de traçabilité US ↔ REQ ↔ Tests
-status: draft
-version: 1.1.0
-updated: 2025-11-25
+status: validated
+version: 1.0.0
+updated: 2025-12-28
 owner: ALPE Plaisance du Touch
 links:
   - rel: source
