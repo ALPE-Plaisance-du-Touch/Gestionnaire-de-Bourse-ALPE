@@ -1,0 +1,110 @@
+version: "3.8"
+
+services:
+  # Backend API (FastAPI)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: bourse-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - backend-cache:/app/.cache
+    environment:
+      - APP_ENV=development
+      - DEBUG=true
+      - DATABASE_URL=mysql+aiomysql://bourse:bourse_dev@db:3306/bourse_dev
+      - JWT_SECRET_KEY=dev-secret-key-change-in-production
+      - SMTP_HOST=mailhog
+      - SMTP_PORT=1025
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - bourse-network
+    restart: unless-stopped
+
+  # Frontend (React + Vite)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: bourse-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+    depends_on:
+      - backend
+    networks:
+      - bourse-network
+    restart: unless-stopped
+
+  # Database (MariaDB)
+  db:
+    image: mariadb:10.11
+    container_name: bourse-db
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./docker/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=bourse_dev
+      - MYSQL_USER=bourse
+      - MYSQL_PASSWORD=bourse_dev
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - bourse-network
+    restart: unless-stopped
+
+  # phpMyAdmin (database admin UI)
+  phpmyadmin:
+    image: phpmyadmin:5
+    container_name: bourse-phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_USER=bourse
+      - PMA_PASSWORD=bourse_dev
+    depends_on:
+      - db
+    networks:
+      - bourse-network
+    profiles:
+      - tools
+
+  # MailHog (email testing)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: bourse-mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - bourse-network
+    profiles:
+      - tools
+
+networks:
+  bourse-network:
+    driver: bridge
+
+volumes:
+  db-data:
+  backend-cache:
