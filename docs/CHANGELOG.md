@@ -16,6 +16,30 @@ links:
 
 # Historique des versions
 
+## [0.6.0] - 2025-12-28
+- **Bonnes pratiques de développement (nouveau)**
+  - **Document DOC-120** : `bonnes-pratiques.md`
+  - **Langue du code** : tout le code en anglais (variables, fonctions, commentaires, commits)
+  - **Mapping terminologique** : correspondance français (métier) ↔ anglais (code)
+  - **Conventions de nommage** :
+    - Python : snake_case (fonctions, variables), PascalCase (classes), SCREAMING_SNAKE_CASE (constantes)
+    - TypeScript : camelCase (fonctions, variables), PascalCase (composants, types)
+    - Base de données : snake_case, pluriel pour les tables
+  - **Structure du code** :
+    - Backend : architecture en couches (API → Service → Repository → Model)
+    - Frontend : feature-based structure avec hooks et composants
+  - **Patterns architecturaux** détaillés avec exemples
+  - **Gestion des erreurs** : exceptions personnalisées, handlers, Error Boundaries
+  - **Commentaires et documentation** : quand et comment documenter (docstrings Google style, JSDoc)
+  - **Git et versioning** :
+    - Branches : feature/, fix/, hotfix/ avec convention de nommage
+    - Commits : Conventional Commits (feat, fix, docs, refactor, test, chore)
+    - Template de Pull Request
+  - **Sécurité du code** : validation des entrées (Pydantic, Zod), gestion des secrets
+  - **Performance** : éviter N+1, pagination, memoization React
+  - **Accessibilité (a11y)** : labels, ARIA, contraste
+  - **Checklist de code review**
+
 ## [0.5.0] - 2025-11-06
 - **Intégration du Règlement intérieur** (organisation bénévoles et processus opérationnels)
   - **Source** : docs/Reglement_interne.md (règlement interne ALPE septembre 2025, 879 lignes)
