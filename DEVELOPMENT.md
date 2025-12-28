@@ -2,22 +2,37 @@
 
 This file tracks the implementation progress of the Bourse ALPE application based on the [specifications v1.0.0](docs/README.md).
 
+## Versioning Strategy
+
+We follow [Semantic Versioning](https://semver.org/):
+- **0.x.y** - Development phase (pre-release)
+- **1.0.0** - First production release (full functional scope)
+
+Each functional milestone increments the minor version (0.1 → 0.2 → ... → 0.x → 1.0.0).
+
 ## Quick Status
 
-| Phase | Status | Progress |
-|-------|--------|----------|
-| Phase 0: Scaffolding | ✅ Done | 100% |
-| Phase 1: Core Infrastructure | 🔲 Not Started | 0% |
-| Phase 2: Depositor Features | 🔲 Not Started | 0% |
-| Phase 3: Volunteer Features | 🔲 Not Started | 0% |
-| Phase 4: Manager Features | 🔲 Not Started | 0% |
-| Phase 5: PWA & Offline | 🔲 Not Started | 0% |
+| Version | Milestone | Status | Progress |
+|---------|-----------|--------|----------|
+| 0.1 | Project Scaffolding | ✅ Done | 100% |
+| 0.2 | Authentication System | 🔲 Not Started | 0% |
+| 0.3 | Edition Management | 🔲 Not Started | 0% |
+| 0.4 | Billetweb Import | 🔲 Not Started | 0% |
+| 0.5 | Article Declaration | 🔲 Not Started | 0% |
+| 0.6 | Label Generation | 🔲 Not Started | 0% |
+| 0.7 | Sales & Checkout | 🔲 Not Started | 0% |
+| 0.8 | Payout Calculation | 🔲 Not Started | 0% |
+| 0.9 | Dashboard & Reports | 🔲 Not Started | 0% |
+| 0.10 | Edition Closure | 🔲 Not Started | 0% |
+| 0.11 | PWA & Offline Mode | 🔲 Not Started | 0% |
+| **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Task:** Phase 1.1 - Authentication system (US-001)
+**Current Version:** 0.1 (Scaffolding complete)
+**Next Target:** 0.2 - Authentication System (US-001, US-010)
 
 ---
 
-## Phase 0: Project Scaffolding ✅
+## v0.1 - Project Scaffolding ✅
 
 - [x] Backend structure (FastAPI, SQLAlchemy, Alembic)
 - [x] Frontend structure (React, Vite, TailwindCSS)
@@ -26,204 +41,227 @@ This file tracks the implementation progress of the Bourse ALPE application base
 
 ---
 
-## Phase 1: Core Infrastructure
+## v0.2 - Authentication System (US-001, US-010)
 
-### 1.1 Authentication System (US-001, US-010)
 **Branch:** `feature/us-001-invitation-activation`
 
-#### Backend Tasks
-- [ ] **1.1.1** Create initial Alembic migration for all models
-- [ ] **1.1.2** Implement auth schemas (Pydantic)
+### Backend Tasks
+- [ ] **0.2.1** Create initial Alembic migration for all models
+- [ ] **0.2.2** Implement auth schemas (Pydantic)
   - [ ] `LoginRequest`, `LoginResponse`
   - [ ] `ActivateAccountRequest`
   - [ ] `TokenResponse`, `RefreshTokenRequest`
-- [ ] **1.1.3** Implement auth service
+- [ ] **0.2.3** Implement auth service
   - [ ] Password hashing (bcrypt)
   - [ ] JWT token generation/validation
   - [ ] Token refresh logic
-- [ ] **1.1.4** Implement auth repository
+- [ ] **0.2.4** Implement auth repository
   - [ ] User CRUD operations
   - [ ] Token management
-- [ ] **1.1.5** Implement auth API endpoints
+- [ ] **0.2.5** Implement auth API endpoints
   - [ ] `POST /api/v1/auth/login`
   - [ ] `POST /api/v1/auth/logout`
   - [ ] `POST /api/v1/auth/refresh`
   - [ ] `POST /api/v1/auth/activate`
   - [ ] `GET /api/v1/auth/me`
-- [ ] **1.1.6** Implement invitation system
+- [ ] **0.2.6** Implement invitation system
   - [ ] `POST /api/v1/invitations` (create invitation)
   - [ ] `POST /api/v1/invitations/bulk` (bulk create)
   - [ ] Token generation and validation
   - [ ] Email sending (async)
-- [ ] **1.1.7** Rate limiting middleware
-- [ ] **1.1.8** Write unit tests for auth service
-- [ ] **1.1.9** Write integration tests for auth endpoints
+- [ ] **0.2.7** Rate limiting middleware
+- [ ] **0.2.8** Write unit tests for auth service
+- [ ] **0.2.9** Write integration tests for auth endpoints
 
-#### Frontend Tasks
-- [ ] **1.1.10** Create AuthContext for global auth state
-- [ ] **1.1.11** Implement LoginPage
+### Frontend Tasks
+- [ ] **0.2.10** Create AuthContext for global auth state
+- [ ] **0.2.11** Implement LoginPage
   - [ ] Login form with validation (Zod)
   - [ ] Error handling
   - [ ] Redirect after login
-- [ ] **1.1.12** Implement ActivatePage
+- [ ] **0.2.12** Implement ActivatePage
   - [ ] Activation form with password strength indicator
   - [ ] CGU/RGPD checkboxes
   - [ ] Phone validation (French format)
   - [ ] Error states (expired, invalid, already used)
-- [ ] **1.1.13** Implement ProtectedRoute component
-- [ ] **1.1.14** Update Header with auth state
-- [ ] **1.1.15** Add token refresh logic in API client
-- [ ] **1.1.16** Write component tests
-
-### 1.2 Edition Management (US-006, US-007)
-**Branch:** `feature/us-006-edition-management`
-
-#### Backend Tasks
-- [ ] **1.2.1** Implement edition schemas
-- [ ] **1.2.2** Implement edition service
-  - [ ] Lifecycle state machine
-  - [ ] Date validations
-- [ ] **1.2.3** Implement edition repository
-- [ ] **1.2.4** Implement edition API endpoints
-  - [ ] CRUD operations
-  - [ ] Status transitions
-- [ ] **1.2.5** Write tests
-
-#### Frontend Tasks
-- [ ] **1.2.6** Implement EditionListPage
-- [ ] **1.2.7** Implement EditionCreatePage
-- [ ] **1.2.8** Implement EditionDetailPage
-- [ ] **1.2.9** Implement EditionConfigPage (dates)
-- [ ] **1.2.10** Write tests
-
-### 1.3 Billetweb Import (US-008)
-**Branch:** `feature/us-008-billetweb-import`
-
-- [ ] **1.3.1** CSV parser service
-- [ ] **1.3.2** Import API endpoint
-- [ ] **1.3.3** Duplicate detection
-- [ ] **1.3.4** Import UI with preview
-- [ ] **1.3.5** Write tests
+- [ ] **0.2.13** Implement ProtectedRoute component
+- [ ] **0.2.14** Update Header with auth state
+- [ ] **0.2.15** Add token refresh logic in API client
+- [ ] **0.2.16** Write component tests
 
 ---
 
-## Phase 2: Depositor Features
+## v0.3 - Edition Management (US-006, US-007)
 
-### 2.1 Article Declaration (US-002)
+**Branch:** `feature/us-006-edition-management`
+
+### Backend Tasks
+- [ ] **0.3.1** Implement edition schemas
+- [ ] **0.3.2** Implement edition service
+  - [ ] Lifecycle state machine
+  - [ ] Date validations
+- [ ] **0.3.3** Implement edition repository
+- [ ] **0.3.4** Implement edition API endpoints
+  - [ ] CRUD operations
+  - [ ] Status transitions
+- [ ] **0.3.5** Write tests
+
+### Frontend Tasks
+- [ ] **0.3.6** Implement EditionListPage
+- [ ] **0.3.7** Implement EditionCreatePage
+- [ ] **0.3.8** Implement EditionDetailPage
+- [ ] **0.3.9** Implement EditionConfigPage (dates)
+- [ ] **0.3.10** Write tests
+
+---
+
+## v0.4 - Billetweb Import (US-008)
+
+**Branch:** `feature/us-008-billetweb-import`
+
+- [ ] **0.4.1** CSV parser service
+- [ ] **0.4.2** Import API endpoint
+- [ ] **0.4.3** Duplicate detection
+- [ ] **0.4.4** Import UI with preview
+- [ ] **0.4.5** Write tests
+
+---
+
+## v0.5 - Article Declaration (US-002)
+
 **Branch:** `feature/us-002-article-declaration`
 
-#### Backend Tasks
-- [ ] **2.1.1** Implement item_list schemas
-- [ ] **2.1.2** Implement article schemas
-- [ ] **2.1.3** Implement item_list service
+### Backend Tasks
+- [ ] **0.5.1** Implement item_list schemas
+- [ ] **0.5.2** Implement article schemas
+- [ ] **0.5.3** Implement item_list service
   - [ ] Max 2 lists per depositor
   - [ ] Max 24 articles per list (12 clothing)
-- [ ] **2.1.4** Implement article service
+- [ ] **0.5.4** Implement article service
   - [ ] Category validation
   - [ ] Price validation (1€-150€)
   - [ ] Lot handling
-- [ ] **2.1.5** Implement repositories
-- [ ] **2.1.6** Implement API endpoints
-- [ ] **2.1.7** Write tests
+- [ ] **0.5.5** Implement repositories
+- [ ] **0.5.6** Implement API endpoints
+- [ ] **0.5.7** Write tests
 
-#### Frontend Tasks
-- [ ] **2.1.8** Implement MyListsPage
-- [ ] **2.1.9** Implement ListDetailPage
-- [ ] **2.1.10** Implement ArticleForm
+### Frontend Tasks
+- [ ] **0.5.8** Implement MyListsPage
+- [ ] **0.5.9** Implement ListDetailPage
+- [ ] **0.5.10** Implement ArticleForm
   - [ ] Category select
   - [ ] Price input with validation
   - [ ] Size/brand/color fields
   - [ ] Lot toggle
-- [ ] **2.1.11** Implement article list with edit/delete
-- [ ] **2.1.12** Deadline warnings
-- [ ] **2.1.13** Write tests
-
-### 2.2 Label Generation (US-003)
-**Branch:** `feature/us-003-label-generation`
-
-- [ ] **2.2.1** PDF generation service (WeasyPrint)
-- [ ] **2.2.2** Barcode generation
-- [ ] **2.2.3** Label template (HTML/CSS)
-- [ ] **2.2.4** Batch generation endpoint
-- [ ] **2.2.5** Download UI
-- [ ] **2.2.6** Write tests
+- [ ] **0.5.11** Implement article list with edit/delete
+- [ ] **0.5.12** Deadline warnings
+- [ ] **0.5.13** Write tests
 
 ---
 
-## Phase 3: Volunteer Features
+## v0.6 - Label Generation (US-003)
 
-### 3.1 Sales & Checkout (US-004)
+**Branch:** `feature/us-003-label-generation`
+
+- [ ] **0.6.1** PDF generation service (WeasyPrint)
+- [ ] **0.6.2** Barcode generation
+- [ ] **0.6.3** Label template (HTML/CSS)
+- [ ] **0.6.4** Batch generation endpoint
+- [ ] **0.6.5** Download UI
+- [ ] **0.6.6** Write tests
+
+---
+
+## v0.7 - Sales & Checkout (US-004)
+
 **Branch:** `feature/us-004-sales-checkout`
 
-#### Backend Tasks
-- [ ] **3.1.1** Implement sale schemas
-- [ ] **3.1.2** Implement sale service
+### Backend Tasks
+- [ ] **0.7.1** Implement sale schemas
+- [ ] **0.7.2** Implement sale service
   - [ ] Barcode lookup
   - [ ] Double-sale prevention
   - [ ] Sale cancellation
-- [ ] **3.1.3** Implement sale repository
-- [ ] **3.1.4** Implement API endpoints
-- [ ] **3.1.5** Write tests
+- [ ] **0.7.3** Implement sale repository
+- [ ] **0.7.4** Implement API endpoints
+- [ ] **0.7.5** Write tests
 
-#### Frontend Tasks
-- [ ] **3.1.6** Implement ScanPage
+### Frontend Tasks
+- [ ] **0.7.6** Implement ScanPage
   - [ ] Camera barcode scanner
   - [ ] Manual barcode input
   - [ ] Article preview
-- [ ] **3.1.7** Implement CheckoutPage
+- [ ] **0.7.7** Implement CheckoutPage
   - [ ] Cart management
   - [ ] Payment method selection
   - [ ] Receipt generation
-- [ ] **3.1.8** Implement SaleHistoryPage
-- [ ] **3.1.9** Write tests
+- [ ] **0.7.8** Implement SaleHistoryPage
+- [ ] **0.7.9** Write tests
 
-### 3.2 Payout Calculation (US-005)
+---
+
+## v0.8 - Payout Calculation (US-005)
+
 **Branch:** `feature/us-005-payout`
 
-- [ ] **3.2.1** Payout calculation service
+- [ ] **0.8.1** Payout calculation service
   - [ ] Commission (20%)
   - [ ] List fees (1000/2000 types)
-- [ ] **3.2.2** Payout API endpoints
-- [ ] **3.2.3** Payout summary UI
-- [ ] **3.2.4** Export functionality
-- [ ] **3.2.5** Write tests
+- [ ] **0.8.2** Payout API endpoints
+- [ ] **0.8.3** Payout summary UI
+- [ ] **0.8.4** Export functionality
+- [ ] **0.8.5** Write tests
 
 ---
 
-## Phase 4: Manager Features
+## v0.9 - Dashboard & Reports
 
-### 4.1 Dashboard & Reports
 **Branch:** `feature/dashboard`
 
-- [ ] **4.1.1** Sales statistics API
-- [ ] **4.1.2** Dashboard UI with charts
-- [ ] **4.1.3** Export reports (CSV/PDF)
-
-### 4.2 Edition Closure (US-009)
-**Branch:** `feature/us-009-edition-closure`
-
-- [ ] **4.2.1** Closure validation service
-- [ ] **4.2.2** Final payout generation
-- [ ] **4.2.3** Archive functionality
-- [ ] **4.2.4** Closure UI
+- [ ] **0.9.1** Sales statistics API
+- [ ] **0.9.2** Dashboard UI with charts
+- [ ] **0.9.3** Export reports (CSV/PDF)
 
 ---
 
-## Phase 5: PWA & Offline Mode
+## v0.10 - Edition Closure (US-009)
 
-### 5.1 Service Worker Setup
+**Branch:** `feature/us-009-edition-closure`
+
+- [ ] **0.10.1** Closure validation service
+- [ ] **0.10.2** Final payout generation
+- [ ] **0.10.3** Archive functionality
+- [ ] **0.10.4** Closure UI
+
+---
+
+## v0.11 - PWA & Offline Mode
+
 **Branch:** `feature/pwa-offline`
 
-- [ ] **5.1.1** Workbox configuration
-- [ ] **5.1.2** App manifest
-- [ ] **5.1.3** Install prompt
+### Service Worker Setup
+- [ ] **0.11.1** Workbox configuration
+- [ ] **0.11.2** App manifest
+- [ ] **0.11.3** Install prompt
 
-### 5.2 Offline Sales
-- [ ] **5.2.1** IndexedDB setup
-- [ ] **5.2.2** Offline sale storage
-- [ ] **5.2.3** Sync service
-- [ ] **5.2.4** Conflict resolution
-- [ ] **5.2.5** Offline indicator UI
+### Offline Sales
+- [ ] **0.11.4** IndexedDB setup
+- [ ] **0.11.5** Offline sale storage
+- [ ] **0.11.6** Sync service
+- [ ] **0.11.7** Conflict resolution
+- [ ] **0.11.8** Offline indicator UI
+
+---
+
+## v1.0.0 - Production Release
+
+**Prerequisites:** All versions 0.1 through 0.11 completed and tested.
+
+- [ ] **1.0.1** Final integration testing
+- [ ] **1.0.2** Performance optimization
+- [ ] **1.0.3** Security audit
+- [ ] **1.0.4** Documentation review
+- [ ] **1.0.5** Production deployment configuration
 
 ---
 
@@ -242,10 +280,11 @@ This file tracks the implementation progress of the Bourse ALPE application base
 
 ## How to Use This File
 
-1. **Find current task:** Look for the "Current Task" at the top
+1. **Find current version:** Look for "Current Version" and "Next Target" at the top
 2. **Start work:** Create branch as specified, check off tasks as you complete them
-3. **Update progress:** After completing a section, update the Quick Status table
-4. **Commit this file:** Include DEVELOPMENT.md changes in your feature commits
+3. **Update progress:** After completing a milestone, update the Quick Status table
+4. **Tag releases:** When a version is complete, create a git tag (e.g., `v0.2`)
+5. **Commit this file:** Include DEVELOPMENT.md changes in your feature commits
 
 ---
 
