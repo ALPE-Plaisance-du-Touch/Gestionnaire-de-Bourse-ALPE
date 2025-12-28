@@ -7,6 +7,7 @@ import bcrypt
 import jwt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.config import settings
 from app.exceptions import (
@@ -125,9 +126,11 @@ class AuthService:
 
     async def login(self, request: LoginRequest) -> LoginResponse:
         """Authenticate a user and return tokens."""
-        # Find user by email
+        # Find user by email (eager load role to avoid lazy loading issues)
         result = await self.db.execute(
-            select(User).where(User.email == request.email.lower())
+            select(User)
+            .options(selectinload(User.role))
+            .where(User.email == request.email.lower())
         )
         user = result.scalar_one_or_none()
 
@@ -185,8 +188,12 @@ class AuthService:
         if not user_id:
             raise InvalidTokenError("Invalid token payload")
 
-        # Find user
-        result = await self.db.execute(select(User).where(User.id == user_id))
+        # Find user (eager load role)
+        result = await self.db.execute(
+            select(User)
+            .options(selectinload(User.role))
+            .where(User.id == user_id)
+        )
         user = result.scalar_one_or_none()
 
         if not user or not user.is_active:
@@ -197,7 +204,11 @@ class AuthService:
 
     async def get_current_user(self, user_id: str) -> User:
         """Get the current authenticated user."""
-        result = await self.db.execute(select(User).where(User.id == user_id))
+        result = await self.db.execute(
+            select(User)
+            .options(selectinload(User.role))
+            .where(User.id == user_id)
+        )
         user = result.scalar_one_or_none()
 
         if not user:

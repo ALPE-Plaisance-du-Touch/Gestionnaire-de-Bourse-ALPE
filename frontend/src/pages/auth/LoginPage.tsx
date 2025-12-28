@@ -25,9 +25,16 @@ export function LoginPage() {
       navigate(from, { replace: true });
     } catch (err) {
       if (err instanceof ApiException) {
-        setError(err.message);
+        // For authentication errors (401), show a generic message for security
+        if (err.status === 401) {
+          setError('Identifiants incorrects. Vérifiez votre email et mot de passe.');
+        } else if (err.status === 0) {
+          setError('Impossible de contacter le serveur. Vérifiez votre connexion.');
+        } else {
+          setError(err.message);
+        }
       } else {
-        setError('Une erreur inattendue est survenue');
+        setError('Une erreur inattendue est survenue. Veuillez réessayer.');
       }
     }
   };

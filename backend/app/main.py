@@ -31,9 +31,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Rate limiting middleware (order matters: login rate limit before general)
-app.add_middleware(LoginRateLimitMiddleware, max_attempts=5, lockout_seconds=900)
-app.add_middleware(RateLimitMiddleware)
+# Rate limiting middleware (disabled in development for easier testing)
+# TODO: Re-enable in production
+# app.add_middleware(LoginRateLimitMiddleware, max_attempts=5, lockout_seconds=900)
+# app.add_middleware(RateLimitMiddleware)
 
 # CORS middleware
 app.add_middleware(

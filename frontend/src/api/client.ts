@@ -209,9 +209,11 @@ function createApiClient(): AxiosInstance {
           }
         }
 
+        // FastAPI returns errors in 'detail' field, not 'message'
+        const errorMessage = data?.message || data?.detail || 'Une erreur est survenue';
         throw new ApiException(
           data?.code || 'UNKNOWN_ERROR',
-          data?.message || 'Une erreur est survenue',
+          typeof errorMessage === 'string' ? errorMessage : 'Une erreur est survenue',
           status,
           data?.field
         );

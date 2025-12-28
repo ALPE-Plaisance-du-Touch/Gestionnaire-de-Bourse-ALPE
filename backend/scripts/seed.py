@@ -29,10 +29,10 @@ from app.models.base import async_session_factory, engine, Base
 from app.services import AuthService
 
 
-# Test user credentials
+# Test user credentials (using example.com per RFC 2606)
 TEST_USERS = [
     {
-        "email": "admin@test.local",
+        "email": "admin@example.com",
         "first_name": "Admin",
         "last_name": "Test",
         "phone": "0600000001",
@@ -40,7 +40,7 @@ TEST_USERS = [
         "password": "Admin123!",
     },
     {
-        "email": "manager@test.local",
+        "email": "manager@example.com",
         "first_name": "Marie",
         "last_name": "Manager",
         "phone": "0600000002",
@@ -48,7 +48,7 @@ TEST_USERS = [
         "password": "Manager123!",
     },
     {
-        "email": "volunteer@test.local",
+        "email": "volunteer@example.com",
         "first_name": "Vincent",
         "last_name": "Volunteer",
         "phone": "0600000003",
@@ -56,7 +56,7 @@ TEST_USERS = [
         "password": "Volunteer123!",
     },
     {
-        "email": "depositor@test.local",
+        "email": "depositor@example.com",
         "first_name": "Denis",
         "last_name": "Depositor",
         "phone": "0600000004",
@@ -64,7 +64,7 @@ TEST_USERS = [
         "password": "Depositor123!",
     },
     {
-        "email": "depositor2@test.local",
+        "email": "depositor2@example.com",
         "first_name": "Danielle",
         "last_name": "Deuxieme",
         "phone": "0600000005",
@@ -185,7 +185,7 @@ async def seed_item_lists_and_articles(
     """Create sample item lists and articles for depositors."""
     print("\n📝 Seeding item lists and articles...")
 
-    depositor = users.get("depositor@test.local")
+    depositor = users.get("depositor@example.com")
     if not depositor:
         print("  ⚠️  Depositor user not found, skipping")
         return
