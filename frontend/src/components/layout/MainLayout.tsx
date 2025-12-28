@@ -6,22 +6,9 @@ interface MainLayoutProps {
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
-  // TODO: Get auth state from context
-  const isAuthenticated = false;
-  const userName = '';
-
-  const handleLogout = () => {
-    // TODO: Implement logout
-    console.log('Logout');
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
-      <Header
-        isAuthenticated={isAuthenticated}
-        userName={userName}
-        onLogout={handleLogout}
-      />
+      <Header />
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {children}

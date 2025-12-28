@@ -34,5 +34,28 @@ export interface LoginResponse {
 export interface ActivateAccountRequest {
   token: string;
   password: string;
-  passwordConfirmation: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  acceptTerms: boolean;
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+export interface TokenResponse {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
+}
+
+export interface PasswordResetRequest {
+  email: string;
+}
+
+export interface PasswordReset {
+  token: string;
+  password: string;
 }

@@ -1,12 +1,21 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth, useIsAuthenticated, useUser } from '@/contexts';
 
-interface HeaderProps {
-  isAuthenticated?: boolean;
-  userName?: string;
-  onLogout?: () => void;
-}
+export function Header() {
+  const navigate = useNavigate();
+  const isAuthenticated = useIsAuthenticated();
+  const user = useUser();
+  const { logout } = useAuth();
 
-export function Header({ isAuthenticated, userName, onLogout }: HeaderProps) {
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  const displayName = user
+    ? user.first_name || user.email.split('@')[0]
+    : '';
+
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -34,6 +43,14 @@ export function Header({ isAuthenticated, userName, onLogout }: HeaderProps) {
                 >
                   Mes listes
                 </Link>
+                {user && (user.role === 'administrator' || user.role === 'manager') && (
+                  <Link
+                    to="/admin"
+                    className="text-gray-600 hover:text-gray-900 font-medium"
+                  >
+                    Administration
+                  </Link>
+                )}
               </>
             ) : null}
           </nav>
@@ -43,10 +60,10 @@ export function Header({ isAuthenticated, userName, onLogout }: HeaderProps) {
             {isAuthenticated ? (
               <>
                 <span className="text-sm text-gray-600">
-                  Bonjour, <strong>{userName}</strong>
+                  Bonjour, <strong>{displayName}</strong>
                 </span>
                 <button
-                  onClick={onLogout}
+                  onClick={handleLogout}
                   className="text-sm text-gray-600 hover:text-gray-900"
                 >
                   Déconnexion

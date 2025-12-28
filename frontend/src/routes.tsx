@@ -1,10 +1,19 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import { MainLayout } from '@/components/layout';
+import { ProtectedRoute } from '@/components/auth';
+import { AuthProvider } from '@/contexts';
+import { LoginPage, ActivatePage } from '@/pages/auth';
 
-// Lazy load pages
-// import { lazy } from 'react';
-// const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
-// const EditionListPage = lazy(() => import('@/features/editions/EditionListPage'));
+/**
+ * Root layout that provides auth context to all routes.
+ */
+function RootLayout() {
+  return (
+    <AuthProvider>
+      <Outlet />
+    </AuthProvider>
+  );
+}
 
 /**
  * Placeholder pages (to be replaced with actual components).
@@ -24,17 +33,6 @@ function HomePage() {
   );
 }
 
-function LoginPage() {
-  return (
-    <MainLayout>
-      <div className="max-w-md mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Connexion</h1>
-        <p className="text-gray-600">Page de connexion à implémenter.</p>
-      </div>
-    </MainLayout>
-  );
-}
-
 function NotFoundPage() {
   return (
     <MainLayout>
@@ -49,44 +47,135 @@ function NotFoundPage() {
   );
 }
 
+function EditionsPage() {
+  return (
+    <MainLayout>
+      <div className="py-6">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">Éditions</h1>
+        <p className="text-gray-600">Liste des éditions à implémenter.</p>
+      </div>
+    </MainLayout>
+  );
+}
+
+function ListsPage() {
+  return (
+    <MainLayout>
+      <div className="py-6">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">Mes listes</h1>
+        <p className="text-gray-600">Mes listes d'articles à implémenter.</p>
+      </div>
+    </MainLayout>
+  );
+}
+
+function AdminPage() {
+  return (
+    <MainLayout>
+      <div className="py-6">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">Administration</h1>
+        <p className="text-gray-600">Page d'administration à implémenter.</p>
+      </div>
+    </MainLayout>
+  );
+}
+
 /**
  * Application router configuration.
  */
 export const router = createBrowserRouter([
   {
-    path: '/',
-    element: <HomePage />,
-  },
-  {
-    path: '/login',
-    element: <LoginPage />,
-  },
-  {
-    path: '/activate',
-    element: <div>Activation page</div>,
-  },
-  {
-    path: '/editions',
-    element: <div>Editions list</div>,
-  },
-  {
-    path: '/editions/:id',
-    element: <div>Edition detail</div>,
-  },
-  {
-    path: '/lists',
-    element: <div>My lists</div>,
-  },
-  {
-    path: '/lists/:id',
-    element: <div>List detail</div>,
-  },
-  {
-    path: '/404',
-    element: <NotFoundPage />,
-  },
-  {
-    path: '*',
-    element: <Navigate to="/404" replace />,
+    element: <RootLayout />,
+    children: [
+      // Public routes
+      {
+        path: '/login',
+        element: <LoginPage />,
+      },
+      {
+        path: '/activate',
+        element: <ActivatePage />,
+      },
+      {
+        path: '/forgot-password',
+        element: <div className="min-h-screen flex items-center justify-center">Récupération mot de passe (à implémenter)</div>,
+      },
+
+      // Protected routes - any authenticated user
+      {
+        path: '/',
+        element: (
+          <ProtectedRoute>
+            <HomePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/editions',
+        element: (
+          <ProtectedRoute>
+            <EditionsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/editions/:id',
+        element: (
+          <ProtectedRoute>
+            <MainLayout>
+              <div>Détail édition (à implémenter)</div>
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/lists',
+        element: (
+          <ProtectedRoute>
+            <ListsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/lists/:id',
+        element: (
+          <ProtectedRoute>
+            <MainLayout>
+              <div>Détail liste (à implémenter)</div>
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+
+      // Admin routes - manager or administrator only
+      {
+        path: '/admin',
+        element: (
+          <ProtectedRoute allowedRoles={['manager', 'administrator']}>
+            <AdminPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin/*',
+        element: (
+          <ProtectedRoute allowedRoles={['manager', 'administrator']}>
+            <MainLayout>
+              <div>Section admin (à implémenter)</div>
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+
+      // Error routes
+      {
+        path: '/404',
+        element: <NotFoundPage />,
+      },
+      {
+        path: '*',
+        element: <Navigate to="/404" replace />,
+      },
+    ],
   },
 ]);
