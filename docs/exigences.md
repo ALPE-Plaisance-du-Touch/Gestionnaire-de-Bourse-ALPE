@@ -1,0 +1,776 @@
+---
+id: DOC-040-REQS
+title: Exigences (fonctionnelles et non-fonctionnelles)
+status: validated
+version: 1.0.0
+updated: 2025-12-28
+owner: ALPE Plaisance du Touch
+links:
+  - rel: source
+    href: Reglement_deposant.md
+    title: Règlement déposant
+  - rel: source
+    href: Reglement_interne.md
+    title: Règlement intérieur
+---
+
+# Règles d’écriture
+
+- Atomicité, testabilité, traçabilité (REQ ↔ US ↔ tests).
+- Forme: « Le système DOIT … » ou « DEVRAIT … » (priorité).
+- Chaque REQ inclut critères d’acceptation et métriques si applicable.
+
+# Exigences fonctionnelles
+
+## Gestion des éditions
+
+- REQ-F-006 — Le système DOIT permettre à un administrateur de créer une nouvelle édition de bourse avec nom unique, saison, année, lieu. (US-006)
+  - **Critères d'acceptation :** Formulaire de création, validation unicité nom, statut initial "Brouillon"
+  - **Priorité :** Must have
+  - **Responsable validation :** Administrateur ALPE
+
+- REQ-F-007 — Le système DOIT permettre à un gestionnaire de configurer les dates clés d'une édition (dépôt, vente, récupération) et le taux de commission. (US-007)
+  - **Critères d'acceptation :** Validation cohérence chronologique des dates, taux commission 0-100%, passage statut "Configurée"
+  - **Priorité :** Must have
+  - **Responsable validation :** Gestionnaire
+
+- REQ-F-008 — Le système DOIT permettre à un gestionnaire d'importer un fichier d'inscriptions Billetweb (CSV/Excel) pour associer déposants existants et créer invitations pour nouveaux. (US-008)
+  - **Critères d'acceptation :** Prévisualisation avant import, gestion doublons, envoi invitations automatique, limite 500 inscriptions/fichier
+  - **Priorité :** Must have
+  - **Responsable validation :** Gestionnaire
+
+- REQ-F-009 — Le système DOIT permettre à un administrateur de clôturer une édition après vérification des pré-requis (reversements calculés, paiements finalisés). (US-009)
+  - **Critères d'acceptation :** Checklist pré-requis, génération rapport PDF, passage en lecture seule, traçabilité
+  - **Priorité :** Must have
+  - **Responsable validation :** Administrateur ALPE
+
+## Gestion des utilisateurs
+
+- REQ-F-001 — Le système DOIT permettre la création de compte déposant via activation d'invitation. (US-001)
+  - **Critères d'acceptation :** Token unique 7 jours, validation mot de passe (≥8 car., lettre, chiffre, symbole), acceptation CGU/RGPD
+  - **Priorité :** Must have
+  - **Responsable validation :** Déposant test
+
+- REQ-F-010 — Le système DOIT gérer 4 rôles utilisateurs avec permissions différenciées : déposant, bénévole, gestionnaire, administrateur.
+  - **Critères d'acceptation :** Matrice d'autorisation par rôle, contrôle d'accès sur chaque action sensible
+  - **Priorité :** Must have
+  - **Responsable validation :** Administrateur ALPE + SecOps
+
+- REQ-F-011 — Le système DOIT gérer une date limite de déclaration des articles par édition.
+  - **Critères d'acceptation :**
+    - La date limite est configurable par le gestionnaire (dans US-007)
+    - **Date limite recommandée : 3 semaines avant le début de la collecte** pour permettre l'impression des étiquettes par ALPE
+    - Après la date limite, le déposant ne peut plus ajouter/modifier ses articles
+    - Un message d'avertissement est affiché 3 jours avant la date limite
+    - Si les listes ne sont pas complétées avant la date limite, le dépôt n'est pas pris en compte (notification automatique au déposant)
+  - **Priorité :** Must have
+  - **Responsable validation :** Gestionnaire
+
+- REQ-F-013 — Le système DOIT restreindre les dépôts selon les règles du règlement intérieur.
+  - **Critères d'acceptation :**
+    - Un déposant (personne physique majeure) ne peut effectuer qu'un seul dépôt par semaine de collecte
+    - Vérification par pièce d'identité lors du dépôt physique (processus manuel)
+    - Le déposant ne peut pas déposer pour une autre personne
+    - Créneaux spécifiques réservés aux Plaisançois (mercredi 20h-22h et vendredi 9h30-12h) : vérification domicile sur justificatif
+  - **Priorité :** Must have
+  - **Responsable validation :** Gestionnaire
+
+- REQ-F-014 — Le système DOIT gérer les créneaux de dépôt avec limites de capacité.
+  - **Critères d'acceptation :**
+    - Chaque créneau de dépôt a une capacité maximum de déposants (configurée par édition)
+    - Exemples de capacités standard :
+      - Mercredi 9h30-11h30 : 20 déposants
+      - Mercredi 14h-18h : 40 déposants
+      - Mercredi 20h-22h : 20 déposants (réservé Plaisançois)
+      - Jeudi 9h30-12h : 15 déposants
+      - Jeudi 17h-21h : 32 déposants
+      - Vendredi 9h30-12h : 15 déposants (réservé Plaisançois)
+    - Blocage des inscriptions une fois la capacité atteinte
+    - Indication visuelle du nombre de places restantes
+    - Possibilité de liste d'attente (optionnel)
+  - **Priorité :** Must have
+  - **Responsable validation :** Gestionnaire
+
+- REQ-F-015 — Le système DOIT gérer les listes spéciales 1000 et 2000 pour adhérents ALPE.
+  - **Critères d'acceptation :**
+    - **Listes 1000** (étiquettes blanches) :
+      - Réservées aux adhérents ALPE participant minimum 8h à la bourse
+      - Numérotation fixe attribuée de façon définitive tant que l'adhérent participe
+      - Limite : 2 listes pour première bourse, puis 4 ensuite
+      - Coût : 1€ par liste, déduit du montant des ventes
+      - Créneaux de dépôt spéciaux : mardi jusqu'à 23h, mercredi 12h-14h et 18h-20h, jeudi 21h-22h
+      - Restitution : dimanche 17h-18h (au lieu de lundi pour les autres)
+    - **Listes 2000** (étiquettes groseille) :
+      - Pour famille/amis d'adhérents ALPE ne participant pas à la bourse
+      - Numérotation liée aux listes 1000 (ex: adhérent avec 1100/1101/1102/1103 peut déposer 2100/2101/2102/2103)
+      - Limite : 4 listes pour 2 personnes maximum
+      - Coût : 5€ pour 2 listes, déduit du montant des ventes
+      - Mêmes créneaux de dépôt et restitution que les listes 1000
+      - Doivent être étiquetées sous contrôle d'un membre ALPE
+    - Distinction visuelle par couleur d'étiquettes (1000=blanc, 2000=groseille)
+    - Les frais (1€ ou 5€) sont déduits automatiquement du reversement final
+  - **Priorité :** Should have
+  - **Responsable validation :** Administrateur ALPE
+
+- REQ-F-016 — Le système DOIT différencier les horaires de restitution selon le type de liste.
+  - **Critères d'acceptation :**
+    - Listes standard : lundi 18h30-19h30 après la vente
+    - Listes 1000 et 2000 : dimanche 17h-18h (jour de la vente)
+    - Notification automatique avec le bon horaire selon le type de liste du déposant
+  - **Priorité :** Should have
+  - **Responsable validation :** Gestionnaire
+
+- REQ-F-017 — Le système DOIT gérer une vente privée pour écoles/ALAE.
+  - **Critères d'acceptation :**
+    - Vente privée réservée aux écoles et ALAE de Plaisance-du-Touch
+    - Horaire : vendredi 17h-18h précédant la vente publique
+    - Liste des écoles/ALAE autorisées configurable par édition
+    - Marquage des ventes "vente privée" pour statistiques
+  - **Priorité :** Could have
+  - **Responsable validation :** Gestionnaire
+
+- REQ-F-018 — Le système DOIT permettre à un gestionnaire d'émettre des invitations manuellement (uniques ou en masse via CSV) avec tokens sécurisés, relances et traçabilité complète. (US-010)
+  - **Critères d'acceptation :**
+    - **Invitation unique :**
+      - Formulaire de création : email (obligatoire), nom, prénom, type de liste (standard/1000/2000), commentaire interne
+      - Génération automatique d'un token unique sécurisé (UUID v4 ou JWT signé, hashé SHA-256 en base)
+      - Validité du token : 7 jours calendaires
+      - Envoi immédiat ou différé de l'email d'invitation
+      - Validation unicité : 1 email = 1 invitation active par édition (détection doublons avec options : annuler l'ancienne ou relancer)
+    - **Import en masse CSV :**
+      - Format CSV UTF-8, séparateur virgule
+      - Colonnes : email (obligatoire), nom, prénom, type_liste (standard/1000/2000), commentaire
+      - Limite : 500 lignes par import
+      - Validation côté serveur : format CSV, emails valides (RFC 5322), détection doublons dans fichier et en base
+      - Rapport de validation détaillé : nombre valides, doublons, erreurs ligne par ligne
+      - Traitement asynchrone si >50 lignes (job en background avec barre de progression)
+      - Génération tokens uniques pour toutes les invitations valides
+      - Envoi emails en masse avec rapport final (succès, échecs avec raisons)
+    - **Relance d'invitation :**
+      - Relance possible pour invitations "En attente" (non activées)
+      - Génération d'un nouveau token (l'ancien est invalidé)
+      - Prolongation de validité : nouveau délai de 7 jours à partir de la relance
+      - Email de relance automatique envoyé
+      - Traçabilité : qui a relancé, quand
+    - **Annulation d'invitation :**
+      - Annulation possible pour invitations "En attente"
+      - Invalidation immédiate du token
+      - Passage statut "Annulée"
+      - Message d'erreur si déposant tente d'activer : "Cette invitation a été annulée. Contactez l'organisation."
+      - Traçabilité : qui a annulé, quand, motif optionnel
+    - **Expiration automatique :**
+      - Tâche cron quotidienne (1h du matin) vérifie les invitations
+      - Passage automatique en statut "Expirée" après 7 jours sans activation
+      - Token devient invalide
+      - Message d'erreur : "Ce lien d'invitation a expiré (7 jours dépassés). Demandez une nouvelle invitation."
+      - Action disponible pour gestionnaire : "Relancer" (crée une nouvelle invitation)
+    - **Notification gestionnaires :**
+      - Email récapitulatif quotidien : invitations expirant dans 3 jours
+      - Contenu : liste des emails non activés, bouton "Relancer en masse", lien vers tableau de bord
+      - Alerte dans interface : badge avec nombre d'invitations à risque
+    - **Détection anciens déposants :**
+      - Lors de saisie email, détection automatique si déposant existant en base
+      - Affichage info : "Déposant existant : Nom Prénom (dernière participation : Édition précédente)"
+      - Pré-remplissage automatique : nom, prénom, type de liste suggéré
+      - Affichage historique : nombre d'éditions, articles vendus, taux de vente
+    - **Statistiques et export :**
+      - Dashboard : graphique évolution invitations envoyées vs activées, taux d'activation global, délai moyen d'activation, taux d'expiration, nombre de relances
+      - Répartition par type de liste (standard/1000/2000)
+      - Export Excel : feuille invitations complètes, feuille statistiques, feuille invitations non activées
+    - **Sécurité :**
+      - Tokens hashés en base de données (SHA-256), non lisibles en clair
+      - Rate limiting : 100 invitations/heure par gestionnaire (anti-spam)
+      - CSRF protection sur formulaires
+      - Email validation : format RFC 5322 + vérification MX record optionnelle
+      - Logs d'audit : toutes actions tracées (création, relance, annulation) avec IP + user agent
+      - Isolation : gestionnaire voit seulement ses invitations (sauf admin qui voit tout)
+    - **Contenu email d'invitation :**
+      - Objet : "Bourse [Nom Édition] ALPE - Activez votre compte déposant"
+      - Corps HTML responsive (mobile-friendly) :
+        - Logo ALPE
+        - Personnalisation : "Bonjour [Prénom]," ou "Bonjour," si prénom inconnu
+        - Texte explicatif sur la bourse
+        - Si liste 1000/2000 : mention "Vous bénéficiez d'une liste adhérent [type] avec restitution prioritaire"
+        - Bouton CTA : "Activer mon compte" (lien avec token)
+        - Informations importantes : date limite déclaration articles, dates de la bourse, validité lien (7 jours)
+        - Lien vers règlement déposant
+        - Footer : contact ALPE, mentions légales
+      - Expéditeur : "ALPE Plaisance du Touch <noreply@alpe-bourse.fr>"
+      - Reply-To : "contact@alpe-bourse.fr"
+      - Tracking optionnel : ouverture, clic
+      - Retry automatique en cas d'échec (max 3 tentatives)
+      - Bounce management : détection emails invalides
+  - **Priorité :** Must have
+  - **Responsable validation :** Gestionnaire
+
+- REQ-F-012 — Le système DOIT afficher les rappels réglementaires pour le jour du dépôt.
+  - **Critères d'acceptation :**
+    - Dans l'espace déposant, afficher les rappels :
+      - "À apporter le jour du dépôt : pièce d'identité, articles propres et repassés dans l'ordre de votre liste, enveloppe timbrée à votre adresse"
+      - "Seuls les articles présents sur la liste seront acceptés (pas de remplacement possible)"
+      - "L'association se réserve le droit de refuser tout article taché, abîmé, incomplet, cassé ou non conforme"
+      - "Vous devez venir le jour et à l'heure indiqués (créneau réservé via Billetweb)"
+      - "Articles non récupérés en temps voulu seront donnés à des associations caritatives"
+      - "L'association décline toute responsabilité en cas de perte ou de vol"
+    - Affichage sur page de confirmation après déclaration des articles
+    - Email de rappel envoyé 2 jours avant le créneau de dépôt
+  - **Priorité :** Should have
+  - **Responsable validation :** Déposant test
+
+## Gestion des articles et ventes
+
+- REQ-F-002 — Le système DOIT permettre l'enregistrement d'articles organisés en listes avec contraintes réglementaires. (US-002)
+  - **Critères d'acceptation :**
+    - **Accès et création de listes :**
+      - Déposant connecté à une édition active (statut "Inscriptions ouvertes" ou "En cours")
+      - Date limite de déclaration non dépassée (sinon lecture seule)
+      - Maximum 2 listes par déposant par édition
+      - Affichage du créneau de dépôt réservé (via Billetweb)
+      - Compteur visible : "Listes créées : X / 2"
+    - **Structure d'une liste :**
+      - Maximum 24 articles par liste dont 12 vêtements maximum
+      - Articles automatiquement triés par catégorie dans l'ordre : Vêtements, Chaussures, Puériculture, Jeux et jouets, Livres, Accessoires, Autres
+      - Renumérotation automatique des lignes (1 à N) après chaque ajout/suppression
+      - Statuts de liste : Brouillon (< 3 articles) / Complète (≥ 3 articles) / Validée
+    - **Ajout d'un article :**
+      - Bouton "Nouvel article" ouvre un formulaire avec sélection catégorie
+      - Attributs : catégorie (obligatoire), genre (optionnel), taille (optionnel), description (obligatoire, max 100 caractères), prix (obligatoire)
+      - Pas de photo (description textuelle uniquement)
+      - Insertion automatique à la bonne position selon le tri par catégorie
+      - Catégories disponibles : Vêtements, Chaussures, Puériculture, Jeux et jouets, Livres, Accessoires, Autres
+    - **Duplication d'article :**
+      - Bouton "Dupliquer" sur chaque article existant
+      - Pré-remplissage du formulaire avec les valeurs de l'article source
+      - Le déposant peut modifier avant validation
+      - Facilite la saisie d'articles similaires (ex: plusieurs pulls)
+    - **Validation des contraintes en temps réel :**
+      - Prix minimum : 1€ pour tout article
+      - Prix maximum : 150€ uniquement pour poussettes/landaus
+      - Si 12 vêtements atteints : bouton "Ajouter" grisé avec message "Vous avez déjà ajouté vos 12 vêtements sur cette liste"
+      - Si 24 articles atteints : bouton "Ajouter" grisé avec message "Liste complète (24 articles maximum)"
+      - Indicateurs visuels ✓/✗ pour chaque contrainte respectée/non respectée
+    - **Contraintes par catégorie (selon règlement déposant) :**
+      - 1 seul manteau ou blouson par liste
+      - 1 seul sac à main par liste
+      - Maximum 2 foulards par liste
+      - 1 seul tour de lit par liste
+      - 1 peluche par liste
+      - 5 livres adultes maximum par liste
+      - Message d'erreur explicite si contrainte dépassée
+    - **Gestion des lots (vêtements enfant) :**
+      - Option "Créer un lot" dans le formulaire
+      - Types autorisés : Bodys, Pyjamas/Grenouillères
+      - Taille jusqu'à 36 mois maximum
+      - Nombre d'articles : 1 à 3 par lot
+      - Marque identique obligatoire
+      - Un lot compte comme 1 article dans la limite des 24
+      - Affichage : "LOT x3 - Bodys 18 mois Petit Bateau - 4€"
+    - **Articles refusés (liste noire) :**
+      - Blocage automatique si catégorie dans la liste noire :
+        - Sièges-autos, rehausseurs
+        - Biberons, pots, vaisselle bébé
+        - CD/DVD/Vinyles
+        - Casques (vélo, ski, équitation)
+        - Consoles de jeu, jeux PC/Mac
+        - Meubles, luminaires, décoration
+        - Literie (matelas, oreillers)
+        - Livres jaunis/abîmés, encyclopédies
+        - Vêtements adultes > 14 ans (pyjamas, chemises de nuit, peignoirs)
+        - Sous-vêtements adultes / enfants > 2 ans
+        - Chaussettes (sauf ski), collants, chaussons enfants
+        - Costumes hommes, cravates, kimono
+      - Modale explicative avec lien vers le règlement complet
+    - **Sauvegarde automatique :**
+      - Enregistrement automatique à chaque modification (ajout, suppression, modification)
+      - Pas de bouton "Sauvegarder" explicite
+      - Indicateur visuel de synchronisation (icône de sauvegarde)
+      - Protection contre la perte de données en cas de fermeture accidentelle
+    - **Modification et suppression :**
+      - Bouton "Modifier" sur chaque article (réouvre le formulaire pré-rempli)
+      - Bouton "Supprimer" avec confirmation
+      - Modifications possibles tant que la date limite n'est pas dépassée
+    - **Validation finale de la liste :**
+      - Bouton "Valider mes listes pour cette édition"
+      - Récapitulatif modal avant confirmation : nombre d'articles, répartition par catégorie
+      - Case à cocher obligatoire : "J'ai lu et j'accepte les conditions de dépôt"
+      - Passage au statut "Validée"
+      - Envoi d'un email de confirmation avec récapitulatif PDF
+      - Après validation : lecture seule (modifications impossibles)
+    - **Blocage après date limite :**
+      - Listes en lecture seule après la date limite de déclaration
+      - Boutons "Ajouter", "Modifier", "Supprimer" désactivés
+      - Bandeau rouge : "Date limite dépassée. Vous ne pouvez plus modifier vos listes."
+      - Si listes incomplètes (< 3 articles) : notification "Votre dépôt ne sera pas pris en compte"
+    - **Aide contextuelle :**
+      - Bulle d'aide avec prix indicatifs par catégorie (selon règlement)
+      - Lien vers le règlement déposant complet
+      - FAQ intégrée pour les questions fréquentes
+  - **Priorité :** Must have
+  - **Responsable validation :** Déposant test + Gestionnaire
+
+- REQ-F-002-BIS — Le système DOIT valider la qualité déclarée des articles selon le règlement. (US-002)
+  - **Critères d'acceptation :**
+    - Pour vêtements : déclaration "propre, repassé, non taché, non déchiré, boutons complets, de saison, non démodé"
+    - Pour puériculture : déclaration "très propre, parfait état"
+    - Pour chaussures : déclaration "propres, très bon état" (uniquement chaussures spécifiques à un sport, bottes pluie/neige)
+    - Pour jouets : déclaration "complets, sans pièce manquante"
+    - Pour puzzles > 104 pièces : déclaration "neuf sous emballage"
+    - Pour livres : déclaration "bon état, non jauni, non abîmé, prix en euros visible"
+    - Case à cocher obligatoire par article : "Je certifie que cet article respecte les critères de qualité du règlement"
+  - **Priorité :** Must have
+  - **Responsable validation :** Bénévole (vérification physique lors du dépôt)
+
+- REQ-F-003 — Le système DOIT permettre la génération et l'impression en masse des étiquettes par les gestionnaires (règlement intérieur : impression à la charge d'ALPE). (US-003)
+  - **Critères d'acceptation :**
+    - **Interface de gestion des étiquettes :**
+      - Accès réservé aux gestionnaires (pas aux déposants)
+      - Tableau listant tous les déposants avec listes validées
+      - Colonnes : nom déposant, créneau de dépôt, nombre de listes, nombre d'articles, statut étiquettes
+      - Filtres : par créneau, par statut (Non générées / Générées / Imprimées)
+      - Compteur global : "X déposants - Y listes - Z étiquettes au total"
+    - **Modes de génération :**
+      - Génération par créneau : tous les déposants d'un créneau de dépôt
+      - Génération par sélection : cocher les déposants souhaités
+      - Génération individuelle : un seul déposant
+      - Génération complète : toute l'édition (tous les créneaux)
+    - **Code unique par article :**
+      - Format : EDI-[ID_EDITION]-L[NUMERO_LISTE]-A[NUMERO_ARTICLE]
+      - Exemple : EDI-2024-11-L245-A03
+      - Unicité garantie sur toute l'édition (pas de doublons)
+      - Code conservé en cas de régénération
+    - **Spécifications QR code :**
+      - QR code version 3 minimum (capacité 35 caractères alphanumériques)
+      - Niveau de correction d'erreur : M (15% de redondance)
+      - Taille minimale : 25×25mm pour scan fiable à 20cm
+      - Couleur : noir sur fond blanc (zone QR détourée si fond coloré)
+      - Marges blanches : minimum 4 modules autour du QR code
+    - **Contenu d'une étiquette :**
+      - QR code scannable (25×25mm)
+      - Numéro de liste en gros caractères (ex: "Liste 245")
+      - Numéro d'article dans la liste (ex: "Article 3/15")
+      - Prix de vente en gros (ex: "5.00€")
+      - Description tronquée à 50 caractères (ex: "Pull rayé bleu marine - 4 ans")
+      - Catégorie avec icône (Vêtements, Jouets, etc.)
+      - Code unique en petit en bas
+    - **Couleurs d'étiquettes par numéro de liste :**
+      - Liste 100 : fond bleu ciel
+      - Liste 200 : fond jaune soleil
+      - Liste 300 : fond fushia
+      - Liste 400 : fond lilas
+      - Liste 500 : fond vert menthe
+      - Liste 600 : fond clémentine
+      - Liste 1000 : fond blanc (adhérents ALPE)
+      - Liste 2000 : fond groseille (famille/amis adhérents)
+    - **Format PDF d'impression :**
+      - Format A4 portrait
+      - 12 étiquettes par page (3 colonnes × 4 lignes)
+      - Dimension étiquette : 70mm × 74mm
+      - Lignes pointillées pour découpe
+      - Marges de 10mm tout autour
+      - Police lisible : Arial ou équivalent, taille 10-14pt
+      - Compatible impression couleur ou noir & blanc
+    - **Structure du PDF par créneau :**
+      - Page de garde : liste des déposants du créneau, date/heure génération
+      - Pour chaque déposant :
+        - Page de séparation : nom, numéro(s) de liste(s), créneau, nombre d'articles
+        - Instructions bénévoles : "Pochette transparente à remettre au déposant"
+        - Case à cocher : "☐ Pochette préparée par : ________ le __/__/____"
+        - Liste d'articles imprimable (tableau N° | Catégorie | Description | Taille | Prix)
+        - Étiquettes découpables
+      - Nommage fichier : "Etiquettes_Creneau_[NOM_CRENEAU]_[DATE].pdf"
+    - **Génération asynchrone et performance :**
+      - Génération en arrière-plan (job asynchrone) si > 50 étiquettes
+      - Barre de progression affichée pendant la génération
+      - Temps maximum : 1 minute pour 300 étiquettes (1 créneau)
+      - Notification dans l'interface quand le PDF est prêt
+      - Pas d'email automatique au déposant
+    - **Stockage et re-téléchargement :**
+      - PDF stocké côté serveur après génération
+      - Re-téléchargeable indéfiniment via bouton "Télécharger à nouveau"
+      - Conservation jusqu'à archivage de l'édition (1 an après clôture)
+    - **Statuts et traçabilité :**
+      - Statuts : Non générées → Générées → Imprimées
+      - Traçabilité : qui a généré, quand (horodatage)
+      - Bouton "Marquer comme imprimé" pour passer au statut Imprimé
+      - Historique visible : "Généré le 05/11/2024 à 14h23 par Sophie Martin"
+    - **Régénération avec avertissement :**
+      - Modale de confirmation si étiquettes déjà générées
+      - Message : "Les étiquettes ont déjà été générées le [DATE]. Voulez-vous régénérer ?"
+      - Les codes QR restent identiques (pas de nouveau code)
+      - Prise en compte des modifications de listes depuis la dernière génération
+      - Enregistrement de la régénération dans l'historique
+    - **Vérification de cohérence :**
+      - Avant génération : vérification que chaque article a bien une étiquette
+      - Contrôle : numéros d'articles séquentiels (1, 2, 3... N) par liste
+      - Contrôle : aucun code unique dupliqué sur toute l'édition
+      - Contrôle : prix affichés = prix saisis
+      - Contrôle : couleur de fond = numéro de liste
+      - Si erreur détectée : rapport d'erreurs avec détails par déposant
+      - Option : générer quand même les déposants sans erreur
+    - **Export et statistiques :**
+      - Export Excel récapitulatif : Déposant | Créneau | Nb listes | Nb articles | Statut | Généré le | Imprimé le
+      - Statistiques globales affichées :
+        - Total : X déposants - Y listes - Z étiquettes
+        - Générées : N listes (X%)
+        - Imprimées : N listes (X%)
+        - En attente : N listes (X%)
+      - Filtre par statut pour identifier les retardataires
+    - **Aperçu déposant (lecture seule) :**
+      - Dans l'espace déposant : bouton "Consulter l'aperçu de mes listes"
+      - Affichage visuel des listes (sans possibilité d'imprimer)
+      - Pas de téléchargement PDF pour le déposant (impression réservée à ALPE)
+  - **Priorité :** Must have
+  - **Responsable validation :** Gestionnaire + Bénévole
+
+- REQ-F-004 — Le système DOIT permettre le scannage/encaissement rapide des ventes en caisse. (US-004)
+  - **Critères d'acceptation :**
+    - **Interface caisse bénévole :**
+      - Accès via authentification bénévole sur tablette/smartphone
+      - Affichage du nom du bénévole connecté, de l'édition en cours et du statut réseau (En ligne / Mode offline)
+      - Compteurs temps réel : articles vendus aujourd'hui, montant total des ventes
+      - Accès à l'historique des ventes personnelles et aux statistiques globales
+    - **Scan des étiquettes :**
+      - Scan via caméra intégrée tablette/smartphone (lecture QR code)
+      - Temps de reconnaissance QR code : < 1 seconde
+      - Feedback sonore : bip de confirmation (succès) ou double bip (erreur)
+      - Affichage immédiat des informations article : description, catégorie, prix, numéro liste, nom déposant, statut
+    - **Enregistrement de la vente :**
+      - Sélection du moyen de paiement : Espèces, Chèque, Carte Bancaire
+      - Confirmation en 2 étapes : sélection moyen de paiement → validation finale
+      - Temps total scan → confirmation : < 3 secondes (conforme REQ-NF-002)
+      - Données enregistrées : code article, prix, moyen paiement, horodatage, ID bénévole vendeur, ID déposant
+      - Passage automatique de l'article au statut "Vendu"
+    - **Gestion des erreurs :**
+      - Article déjà vendu : message d'alerte avec détails de la vente précédente (date, heure, bénévole, montant)
+      - Article non trouvé : message d'erreur avec suggestion de vérifier l'étiquette ou contacter un gestionnaire
+      - QR code illisible : possibilité de saisie manuelle du code unique (EDI-xxx-Lxxx-Axx)
+      - Blocage des ventes si l'édition n'est pas en statut "En cours"
+    - **Mode offline (fallback) :**
+      - Fonctionnement online par défaut
+      - Bascule automatique en mode offline si perte de connexion réseau
+      - Stockage local des ventes en attente (IndexedDB ou équivalent)
+      - Indicateur visuel clair du mode offline (pastille orange "○ Mode offline")
+      - Synchronisation automatique à la reconnexion
+      - Gestion des conflits : si article vendu en doublon (2 caisses offline), alerte au gestionnaire pour arbitrage
+      - Données offline conservées jusqu'à synchronisation réussie (pas de perte)
+    - **Annulation de vente :**
+      - Annulation possible par le bénévole caisse dans les 5 minutes suivant la vente (erreur de scan, client change d'avis)
+      - Au-delà de 5 minutes, annulation uniquement par un gestionnaire
+      - Interface gestionnaire : recherche de vente par code article ou par bénévole/date
+      - Motif d'annulation obligatoire (erreur de scan, remboursement client, etc.)
+      - Passage de l'article au statut "Disponible" (remis en vente)
+      - Traçabilité complète : qui a annulé, quand, motif
+    - **Capacité et performance :**
+      - Support de 5 caisses simultanées maximum pendant la vente
+      - Latence réseau tolérée : jusqu'à 500ms sans dégradation de l'expérience
+      - Volume estimé : ~3000 articles sur un week-end (samedi + dimanche)
+    - **Vente privée écoles/ALAE :**
+      - Marquage automatique des ventes effectuées pendant le créneau vente privée (vendredi 17h-18h)
+      - Statistiques séparées : ventes privées vs ventes publiques
+    - **Statistiques temps réel :**
+      - Dashboard accessible aux gestionnaires pendant la vente
+      - Métriques affichées : nombre d'articles vendus, montant total, répartition par moyen de paiement, top 5 déposants, articles/heure
+      - Rafraîchissement automatique toutes les 30 secondes
+  - **Priorité :** Must have
+  - **Responsable validation :** Bénévole caisse + Gestionnaire
+
+- REQ-F-005 — Le système DOIT calculer commissions et reversements par déposant en fin d'édition selon la tarification réglementaire. (US-005)
+  - **Critères d'acceptation :**
+    - **Interface de gestion des reversements :**
+      - Accès réservé aux gestionnaires et administrateurs
+      - Tableau listant tous les déposants avec statistiques :
+        - Nom, prénom, N° déposant
+        - Articles déposés / vendus / invendus
+        - Montant total des ventes
+        - Commission ALPE (20%)
+        - Montant à reverser (80%)
+        - Statut reversement
+      - Filtres : par statut, par créneau de restitution, par montant
+      - Statistiques globales en haut de page
+    - **Calcul des commissions et reversements :**
+      - Frais d'inscription : 5€ par déposant pour 2 listes (payé via Billetweb, hors système)
+      - Commission ALPE : 20% du montant total des ventes du déposant
+      - Formule reversement : montant_net = total_ventes × 0,80
+      - Déduction automatique des frais listes spéciales :
+        - Liste 1000 : 1€/liste déduit du reversement
+        - Liste 2000 : 5€ pour 2 listes déduit du reversement
+      - Arrondi à 2 décimales (comptabilité)
+      - Calcul édition par édition (un déposant peut avoir plusieurs éditions)
+      - Exemple : 59€ de ventes → Commission 11,80€ → Reversement 47,20€
+    - **Statuts de reversement :**
+      - À générer : bordereau non créé
+      - Bordereau prêt : PDF généré, en attente de paiement
+      - Payé : reversement effectué, tracé
+      - Clôturé : édition terminée, lecture seule
+    - **Génération du bordereau de reversement (PDF) :**
+      - Un PDF par déposant ou PDF global avec tous les bordereaux
+      - Contenu du bordereau :
+        - En-tête : Logo ALPE, "BORDEREAU DE REVERSEMENT", nom édition
+        - Informations déposant : N°, nom, téléphone
+        - Tableau articles vendus : N° article | Description | Catégorie | Prix vente
+        - Tableau articles invendus : N° article | Description | Catégorie | Prix demandé
+        - Total ventes, commission ALPE (20%), montant à reverser (80%)
+        - Section paiement à remplir : mode, date, signatures bénévole + déposant
+        - Mention légale : "Je soussigné(e) reconnais avoir reçu la somme de X€ et récupéré mes articles invendus."
+      - Nommage fichier : "Reversement_[N°_DEPOSANT]_[NOM].pdf"
+    - **Génération en masse :**
+      - Bouton "Générer tous les bordereaux"
+      - Barre de progression : "Génération en cours... X/Y déposants"
+      - Option : télécharger archive ZIP ou PDF global
+      - Passage automatique au statut "Bordereau prêt"
+    - **Enregistrement du paiement :**
+      - Formulaire modal lors de la restitution
+      - Modes de paiement : Espèces, Chèque (N° obligatoire), Virement (date prévue obligatoire)
+      - Case à cocher obligatoire : "Articles invendus récupérés"
+      - Commentaire optionnel
+      - Horodatage : "Payé le [DATE] à [HEURE] par [BÉNÉVOLE]"
+    - **Email de confirmation automatique :**
+      - Envoyé au déposant après enregistrement du paiement
+      - Contenu : récapitulatif des ventes, montant reversé, mode de paiement
+      - Objet : "Bourse ALPE [Édition] - Confirmation de votre reversement de X€"
+    - **Cas particuliers :**
+      - Aucune vente (0€) : pas de reversement, uniquement récupération invendus
+      - Tout vendu (100%) : message "Tous vos articles ont été vendus !", pas d'invendus à récupérer
+      - Déposant absent : statut "Absent - À recontacter", email de relance possible
+    - **Gestion des invendus non récupérés :**
+      - Après date limite de restitution : marquage "Non récupéré"
+      - Articles non récupérés conservés en stock ALPE pour éditions futures
+      - Traçabilité : date limite dépassée, notification au déposant
+    - **Statistiques et export :**
+      - Dashboard avec résultats financiers :
+        - Total ventes édition
+        - Commission ALPE totale
+        - Reversements totaux
+      - Résultats articles : déposés / vendus / invendus avec pourcentages
+      - Répartition par catégorie (graphique)
+      - Top 10 déposants (plus de ventes)
+      - Histogramme répartition des prix
+      - Export Excel complet :
+        - Feuille 1 : Récapitulatif par déposant
+        - Feuille 2 : Détail des ventes
+        - Feuille 3 : Détail des invendus
+        - Feuille 4 : Statistiques globales
+    - **Suivi temps réel :**
+      - Actualisation automatique des statuts (WebSocket ou polling)
+      - Compteur : "X / Y déposants traités (Z%)"
+      - Filtres rapides : À traiter / Payés aujourd'hui / En attente
+      - Code couleur : vert (Payé), orange (Bordereau prêt), blanc (À générer)
+    - **Traçabilité complète :**
+      - Historique par reversement : génération, paiement, modifications
+      - Qui a fait quoi, quand (horodatage complet)
+      - Logs consultables par les administrateurs
+  - **Priorité :** Must have
+  - **Responsable validation :** Gestionnaire + Administrateur
+
+# Exigences non-fonctionnelles
+
+## Performance et disponibilité
+
+- REQ-NF-001 — Le système DOIT garantir une disponibilité ≥ 99.5% pendant les jours de vente (samedi-dimanche).
+  - **Critères d'acceptation :**
+    - Uptime mesuré sur les créneaux de vente (9h-19h samedi, 9h-18h dimanche)
+    - Temps d'indisponibilité maximum toléré : 30 minutes cumulées par week-end de vente
+    - Monitoring automatique avec alertes en cas de dégradation
+    - Plan de continuité : bascule offline automatique des caisses si serveur indisponible
+    - Objectif de disponibilité hors vente : 95% (maintenance possible en semaine)
+  - **Priorité :** Must have
+  - **Métrique :** Uptime mesuré par monitoring externe (ex: UptimeRobot)
+
+- REQ-NF-002 — Le temps moyen de scannage → encaissement DOIT être ≤ 3 secondes.
+  - **Critères d'acceptation :**
+    - Temps mesuré depuis le scan QR code jusqu'à l'affichage "Vente enregistrée"
+    - 95ème percentile ≤ 3 secondes (95% des ventes en moins de 3s)
+    - Temps de reconnaissance QR code : < 1 seconde
+    - Temps de requête serveur : < 500ms (hors latence réseau)
+    - Dégradation acceptable en mode offline : temps local < 1 seconde
+    - Tests de charge : 5 caisses simultanées, 10 scans/minute chacune
+  - **Priorité :** Must have
+  - **Métrique :** Logs de temps de réponse, APM (Application Performance Monitoring)
+
+- REQ-NF-005 — Le système DOIT supporter la charge de 5 caisses simultanées pendant la vente.
+  - **Critères d'acceptation :**
+    - 5 utilisateurs bénévoles connectés simultanément en caisse
+    - 10 transactions/minute par caisse (50 transactions/minute total)
+    - Pas de dégradation des temps de réponse avec la montée en charge
+    - Base de données optimisée : index sur code_unique, déposant_id
+    - Tests de charge automatisés avant chaque édition
+  - **Priorité :** Must have
+  - **Métrique :** Tests JMeter/k6, monitoring CPU/RAM serveur
+
+- REQ-NF-006 — Le système DOIT générer les PDF d'étiquettes en moins de 1 minute pour 300 étiquettes.
+  - **Critères d'acceptation :**
+    - Génération asynchrone (job en arrière-plan)
+    - Barre de progression visible pour l'utilisateur
+    - Notification dans l'interface quand le PDF est prêt
+    - Génération pour une édition complète (~3000 étiquettes) : < 10 minutes
+    - Timeout : annulation automatique après 15 minutes avec message d'erreur
+  - **Priorité :** Should have
+  - **Métrique :** Temps de génération logué par job
+
+## Sécurité
+
+- REQ-NF-007 — Le système DOIT implémenter une authentification sécurisée.
+  - **Critères d'acceptation :**
+    - **Mots de passe :**
+      - Longueur minimale : 8 caractères
+      - Complexité : au moins 1 lettre, 1 chiffre, 1 caractère spécial
+      - Stockage : hashage bcrypt (coût ≥ 10) ou Argon2
+      - Pas de stockage en clair, ni MD5/SHA1
+    - **Sessions :**
+      - Tokens JWT signés (RS256 ou HS256 avec secret ≥ 256 bits)
+      - Expiration : 24 heures pour déposants, 8 heures pour bénévoles/gestionnaires
+      - Refresh token : 7 jours maximum
+      - Invalidation des tokens à la déconnexion
+    - **Protection contre les attaques :**
+      - Rate limiting : 5 tentatives de connexion échouées → blocage 15 minutes
+      - Protection CSRF sur tous les formulaires
+      - Headers de sécurité : X-Frame-Options, X-Content-Type-Options, CSP
+    - **Invitations :**
+      - Tokens d'invitation hashés en base (SHA-256)
+      - Validité : 7 jours, usage unique
+  - **Priorité :** Must have
+  - **Responsable validation :** SecOps + Administrateur
+
+- REQ-NF-008 — Le système DOIT implémenter un contrôle d'accès basé sur les rôles (RBAC).
+  - **Critères d'acceptation :**
+    - **Matrice d'autorisations :**
+      | Action | Déposant | Bénévole | Gestionnaire | Admin |
+      |--------|----------|----------|--------------|-------|
+      | Voir ses propres listes | ✓ | - | ✓ | ✓ |
+      | Modifier ses propres listes | ✓ | - | - | - |
+      | Scanner/vendre articles | - | ✓ | ✓ | ✓ |
+      | Annuler une vente | - | - | ✓ | ✓ |
+      | Générer étiquettes | - | - | ✓ | ✓ |
+      | Gérer les invitations | - | - | ✓ | ✓ |
+      | Configurer une édition | - | - | ✓ | ✓ |
+      | Créer/clôturer une édition | - | - | - | ✓ |
+      | Gérer les utilisateurs | - | - | - | ✓ |
+    - Vérification des permissions à chaque requête API
+    - Journalisation des accès refusés
+    - Principe du moindre privilège : pas d'escalade de rôle sans validation admin
+  - **Priorité :** Must have
+  - **Responsable validation :** SecOps + Administrateur
+
+- REQ-NF-009 — Le système DOIT journaliser les actions sensibles (audit trail).
+  - **Critères d'acceptation :**
+    - **Actions journalisées :**
+      - Connexion/déconnexion (succès et échecs)
+      - Création/modification/suppression de comptes
+      - Modifications de listes d'articles
+      - Ventes et annulations de ventes
+      - Génération et paiement des reversements
+      - Création/clôture d'éditions
+      - Modifications de configuration
+    - **Données enregistrées par log :**
+      - Horodatage (timestamp UTC)
+      - ID utilisateur et rôle
+      - Adresse IP
+      - User-Agent
+      - Action effectuée
+      - Entité concernée (ID)
+      - Résultat (succès/échec)
+    - Conservation des logs : 2 ans minimum (RGPD)
+    - Logs non modifiables (append-only)
+    - Accès aux logs réservé aux administrateurs
+  - **Priorité :** Must have
+  - **Responsable validation :** Administrateur
+
+- REQ-NF-010 — Le système DOIT protéger les données en transit et au repos.
+  - **Critères d'acceptation :**
+    - **En transit :**
+      - HTTPS obligatoire (TLS 1.2 minimum, TLS 1.3 recommandé)
+      - Certificat SSL valide (Let's Encrypt ou équivalent)
+      - Redirection automatique HTTP → HTTPS
+      - HSTS activé (max-age ≥ 1 an)
+    - **Au repos :**
+      - Base de données sur serveur sécurisé (accès restreint)
+      - Sauvegardes chiffrées (AES-256)
+      - Pas de données sensibles dans les logs (mots de passe, tokens)
+    - **Données sensibles :**
+      - Mots de passe : hashés (jamais en clair)
+      - Tokens d'invitation : hashés
+      - Emails : stockés en clair (nécessaire pour envoi)
+      - Téléphones : stockés en clair (nécessaire pour contact)
+  - **Priorité :** Must have
+  - **Responsable validation :** SecOps
+
+## Conformité et accessibilité
+
+- REQ-NF-003 — Le système DOIT être conforme au RGPD.
+  - **Critères d'acceptation :**
+    - **Consentement :**
+      - Case à cocher explicite pour CGU et politique de confidentialité lors de l'inscription
+      - Consentement séparé pour les communications marketing (optionnel)
+      - Preuve de consentement conservée (horodatage, IP)
+    - **Droits des utilisateurs :**
+      - Droit d'accès : export des données personnelles en JSON/PDF
+      - Droit de rectification : modification des informations personnelles
+      - Droit à l'effacement : suppression du compte et anonymisation des données historiques
+      - Droit à la portabilité : export format standard (JSON)
+    - **Conservation des données :**
+      - Comptes inactifs > 3 ans : notification de suppression, puis anonymisation
+      - Données de vente : conservation 5 ans (comptabilité)
+      - Logs d'audit : conservation 2 ans
+    - **Mentions légales :**
+      - Politique de confidentialité accessible depuis toutes les pages
+      - Coordonnées du DPO ou responsable RGPD
+      - Base légale du traitement : exécution du contrat (dépôt-vente)
+  - **Priorité :** Must have
+  - **Responsable validation :** DPO / Responsable ALPE
+
+- REQ-NF-004 — Le système DOIT respecter les normes d'accessibilité WCAG 2.1 niveau AA.
+  - **Critères d'acceptation :**
+    - **Perception :**
+      - Contraste texte/fond ≥ 4.5:1 (texte normal), ≥ 3:1 (grand texte)
+      - Alternatives textuelles pour les images (attribut alt)
+      - Sous-titres si contenus vidéo (non prévu actuellement)
+    - **Utilisation :**
+      - Navigation au clavier complète (Tab, Entrée, Échap)
+      - Focus visible sur tous les éléments interactifs
+      - Pas de piège au clavier
+      - Délai suffisant pour les actions (pas de timeout < 20 secondes)
+    - **Compréhension :**
+      - Labels explicites sur tous les champs de formulaire
+      - Messages d'erreur clairs et associés aux champs concernés
+      - Langue de la page déclarée (lang="fr")
+    - **Robustesse :**
+      - HTML valide (W3C validator)
+      - Compatible avec les lecteurs d'écran (NVDA, VoiceOver)
+      - ARIA landmarks pour la navigation
+    - **Écrans prioritaires :**
+      - Interface déposant (inscription, déclaration articles)
+      - Interface caisse (scan, vente) - taille de police ≥ 16px
+  - **Priorité :** Should have
+  - **Responsable validation :** Audit accessibilité externe
+
+## Scalabilité et maintenance
+
+- REQ-NF-011 — Le système DOIT supporter une montée en charge progressive.
+  - **Critères d'acceptation :**
+    - **Capacité actuelle :**
+      - 300 déposants par édition
+      - 3000 articles par édition
+      - 5 caisses simultanées
+    - **Capacité cible (scalabilité x3) :**
+      - 1000 déposants par édition
+      - 10000 articles par édition
+      - 15 caisses simultanées
+    - Architecture permettant le scaling horizontal (conteneurs Docker)
+    - Base de données : PostgreSQL avec réplication possible
+    - Cache : Redis pour les sessions et données fréquemment accédées
+    - CDN : pour les assets statiques (CSS, JS, images)
+  - **Priorité :** Could have
+  - **Responsable validation :** Équipe technique
+
+- REQ-NF-012 — Le système DOIT permettre les sauvegardes et restaurations.
+  - **Critères d'acceptation :**
+    - Sauvegarde automatique quotidienne de la base de données
+    - Sauvegarde avant chaque édition (snapshot)
+    - Rétention : 30 jours glissants + 1 sauvegarde par mois pendant 1 an
+    - Procédure de restauration documentée et testée
+    - RTO (Recovery Time Objective) : < 4 heures
+    - RPO (Recovery Point Objective) : < 24 heures (perte de données max)
+    - Test de restauration : 1 fois par an minimum
+  - **Priorité :** Must have
+  - **Responsable validation :** Administrateur système
+
