@@ -30,7 +30,6 @@ Application web pour gérer les Bourses d’ALPE (inscriptions/dépôts, étique
 - Bonnes pratiques: `bonnes-pratiques.md`
 - Déploiement: `deploiement.md`
 - API (OpenAPI): `api/openapi.yaml`
-- Décisions (ADR): `adr/DEC-000.md`
 - Manifest: `index.yaml`
 - Changelog: `CHANGELOG.md`
 
