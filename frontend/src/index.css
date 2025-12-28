@@ -1,0 +1,21 @@
+@import 'tailwindcss';
+
+/* Custom CSS variables for ALPE branding */
+:root {
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-secondary: #64748b;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+}
+
+/* Base styles */
+body {
+  @apply min-h-screen bg-gray-50 text-gray-900 antialiased;
+}
+
+/* Focus visible styles for accessibility */
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-primary;
+}
