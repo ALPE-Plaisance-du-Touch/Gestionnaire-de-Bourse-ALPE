@@ -224,24 +224,33 @@ class InvitationService:
         )
 
         result = await self.db.execute(query)
-        users = list(result.scalars().all())
+        pending_users = list(result.scalars().all())
 
-        # Apply status filter
+        # Apply status filter for pending/expired
         now = datetime.now(timezone.utc)
         if status_filter == "pending":
             # Only non-expired
-            users = [
-                u for u in users
+            return [
+                u for u in pending_users
                 if u.invitation_expires_at and u.invitation_expires_at.replace(tzinfo=timezone.utc) > now
             ]
         elif status_filter == "expired":
             # Only expired
-            users = [
-                u for u in users
+            return [
+                u for u in pending_users
                 if u.invitation_expires_at and u.invitation_expires_at.replace(tzinfo=timezone.utc) <= now
             ]
 
-        return users
+        # status_filter is None (all) - include activated users too
+        activated_query = select(User).where(
+            User.is_active == True,  # noqa: E712
+            User.password_hash.isnot(None),
+            User.role_id == 1,  # depositor role
+        )
+        activated_result = await self.db.execute(activated_query)
+        activated_users = list(activated_result.scalars().all())
+
+        return pending_users + activated_users
 
     async def list_pending_invitations(
         self,

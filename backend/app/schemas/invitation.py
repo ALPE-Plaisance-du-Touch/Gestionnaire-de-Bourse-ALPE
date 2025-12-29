@@ -28,8 +28,8 @@ class InvitationResponse(BaseModel):
     last_name: str | None = None
     status: str
     created_at: datetime
-    expires_at: datetime
-    used_at: datetime | None = None
+    expires_at: datetime | None = None  # None for activated users
+    used_at: datetime | None = None  # Activation date for activated users
 
 
 class BulkInvitationResult(BaseModel):

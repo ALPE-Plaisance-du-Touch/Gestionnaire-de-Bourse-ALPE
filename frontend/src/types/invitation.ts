@@ -13,8 +13,8 @@ export interface Invitation {
   lastName: string | null;
   status: InvitationStatus;
   createdAt: string;
-  expiresAt: string;
-  usedAt: string | null;
+  expiresAt: string | null; // null for activated users
+  usedAt: string | null; // activation date for activated users
 }
 
 export interface InvitationCreateRequest {
