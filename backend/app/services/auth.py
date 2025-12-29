@@ -22,6 +22,7 @@ from app.schemas import (
     LoginRequest,
     LoginResponse,
     TokenResponse,
+    TokenValidationResponse,
 )
 from app.schemas.auth import UserResponse
 
@@ -261,6 +262,53 @@ class AuthService:
         await self.db.refresh(user)
 
         return user
+
+    async def validate_invitation_token(self, token: str) -> TokenValidationResponse:
+        """Validate an invitation token and return user info.
+
+        This method checks if the token is valid without consuming it.
+        Returns a response indicating validity and user info for form pre-fill.
+        """
+        # Find user by invitation token
+        result = await self.db.execute(
+            select(User).where(User.invitation_token == token)
+        )
+        user = result.scalar_one_or_none()
+
+        if not user:
+            return TokenValidationResponse(
+                valid=False,
+                error="INVALID_TOKEN",
+                message="Ce lien d'invitation n'est pas valide. Vérifiez que vous avez copié le lien complet depuis votre email.",
+            )
+
+        # Check if already activated
+        if user.is_active and user.password_hash:
+            return TokenValidationResponse(
+                valid=False,
+                error="ALREADY_ACTIVATED",
+                message="Ce compte a déjà été activé. Utilisez la page de connexion.",
+            )
+
+        # Check token expiration
+        if user.invitation_expires_at:
+            expires_at = user.invitation_expires_at
+            if expires_at.tzinfo is None:
+                expires_at = expires_at.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) > expires_at:
+                return TokenValidationResponse(
+                    valid=False,
+                    error="TOKEN_EXPIRED",
+                    message="Ce lien d'invitation a expiré. Contactez les bénévoles ALPE pour recevoir une nouvelle invitation.",
+                )
+
+        return TokenValidationResponse(
+            valid=True,
+            email=user.email,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            expires_at=user.invitation_expires_at,
+        )
 
     # -------------------------------------------------------------------------
     # Invitation Token Generation

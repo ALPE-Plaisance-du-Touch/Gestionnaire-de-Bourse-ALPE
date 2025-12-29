@@ -9,13 +9,14 @@
 
 ### Backend - Implémenté ✅
 - [x] Endpoint `POST /api/v1/auth/activate` - Activation de compte avec token
+- [x] Endpoint `GET /api/v1/auth/validate-token/{token}` - Validation du token (nouveau)
 - [x] Endpoint `POST /api/v1/invitations` - Création d'invitation + envoi email
 - [x] Endpoint `POST /api/v1/invitations/bulk` - Création en masse + envoi emails
 - [x] Endpoint `POST /api/v1/invitations/{id}/resend` - Renvoi d'invitation + email
 - [x] Endpoint `POST /api/v1/auth/password/reset-request` - Demande reset + email
 - [x] Endpoint `POST /api/v1/auth/password/reset` - Reset mot de passe
 - [x] Service invitation (génération token, expiration 7 jours)
-- [x] Service auth (activation compte, reset password)
+- [x] Service auth (activation compte, reset password, validation token)
 - [x] **Service email** (SMTP async avec aiosmtplib)
 - [x] **Templates email** (invitation + reset password, HTML + texte)
 - [x] Tests unitaires et intégration
@@ -23,6 +24,9 @@
 ### Frontend - Implémenté ✅
 - [x] Page de connexion (`/login`)
 - [x] Page d'activation (`/activate?token=xxx`)
+- [x] **Validation du token au chargement** (nouveau)
+- [x] **Pages d'erreur dédiées** : token invalide, expiré, compte déjà activé (nouveau)
+- [x] **Pré-remplissage du formulaire** avec email et nom (nouveau)
 - [x] Validation mot de passe (8 chars, lettre, chiffre, symbole)
 - [x] Gestion des erreurs (token invalide, expiré)
 - [x] Acceptation CGU
@@ -51,6 +55,13 @@
 ### 4. Tests ✅
 - [x] Tests unitaires du service email
 
+### 5. Validation Token (nouveau) ✅
+- [x] Endpoint `GET /api/v1/auth/validate-token/{token}`
+- [x] Schéma `TokenValidationResponse`
+- [x] Méthode `validate_invitation_token()` dans AuthService
+- [x] Frontend : validation au chargement de la page
+- [x] Pages d'erreur dédiées (invalide, expiré, déjà activé)
+
 ---
 
 ## Test manuel
@@ -62,6 +73,10 @@
    - Appeler `POST /api/v1/invitations` avec `{"email":"test@example.com"}`
 4. Vérifier email dans MailHog : http://localhost:8025
 5. Copier le lien d'activation et tester `/activate?token=xxx`
+6. Vérifier que :
+   - Le formulaire s'affiche avec l'email pré-affiché
+   - Les erreurs de validation n'invalident pas le token
+   - Un token invalide affiche la page d'erreur appropriée
 
 ---
 
@@ -74,6 +89,8 @@
 - [x] Validation mot de passe (8 chars, lettre, chiffre, symbole)
 - [x] Compte activé après soumission
 - [x] Redirection vers login avec message de succès
+- [x] **Token reste valide en cas d'erreur de validation** (tolérance aux erreurs)
+- [x] **Page d'erreur si token invalide/expiré** (pas de formulaire affiché)
 
 ---
 

@@ -8,6 +8,7 @@ from app.schemas.auth import (
     PasswordResetRequest,
     RefreshTokenRequest,
     TokenResponse,
+    TokenValidationResponse,
 )
 from app.schemas.common import ErrorResponse, MessageResponse, PaginatedResponse
 from app.schemas.invitation import (
@@ -29,6 +30,7 @@ __all__ = [
     "LoginRequest",
     "LoginResponse",
     "TokenResponse",
+    "TokenValidationResponse",
     "RefreshTokenRequest",
     "ActivateAccountRequest",
     "PasswordResetRequest",

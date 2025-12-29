@@ -19,6 +19,7 @@ from app.schemas import (
     PasswordResetRequest,
     RefreshTokenRequest,
     TokenResponse,
+    TokenValidationResponse,
     UserResponse,
 )
 from app.services.email import email_service
@@ -90,6 +91,25 @@ async def logout(
     # 1. Add the token to a blacklist (Redis)
     # 2. Clear the refresh token from the database
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get(
+    "/validate-token/{token}",
+    response_model=TokenValidationResponse,
+    summary="Validate invitation token",
+    description="Check if an invitation token is valid and return user info for pre-filling the form.",
+)
+async def validate_invitation_token(
+    token: str,
+    auth_service: AuthServiceDep,
+):
+    """Validate an invitation token before showing the activation form.
+
+    Returns user info (email, name) if token is valid, or error details if not.
+    This endpoint does NOT invalidate the token.
+    """
+    result = await auth_service.validate_invitation_token(token)
+    return result
 
 
 @router.post(

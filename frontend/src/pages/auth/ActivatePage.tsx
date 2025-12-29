@@ -1,14 +1,32 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts';
 import { Button, Input } from '@/components/ui';
-import { ApiException } from '@/api/client';
+import { ApiException, apiClient } from '@/api/client';
+
+interface TokenValidationResult {
+  valid: boolean;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  expiresAt?: string;
+  error?: string;
+  message?: string;
+}
+
+type TokenStatus = 'loading' | 'valid' | 'invalid' | 'expired' | 'already_activated';
 
 export function ActivatePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { activateAccount, isLoading } = useAuth();
 
+  // Token validation state
+  const [tokenStatus, setTokenStatus] = useState<TokenStatus>('loading');
+  const [tokenError, setTokenError] = useState<string>('');
+  const [userEmail, setUserEmail] = useState<string>('');
+
+  // Form state
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -20,6 +38,50 @@ export function ActivatePage() {
 
   // Get token from URL query params
   const token = searchParams.get('token') || '';
+
+  // Validate token on mount
+  useEffect(() => {
+    async function validateToken() {
+      if (!token) {
+        setTokenStatus('invalid');
+        setTokenError("Lien d'activation invalide. Veuillez utiliser le lien reçu par email.");
+        return;
+      }
+
+      try {
+        const response = await apiClient.get<TokenValidationResult>(
+          `/v1/auth/validate-token/${token}`
+        );
+        const data = response.data;
+
+        if (data.valid) {
+          setTokenStatus('valid');
+          setUserEmail(data.email || '');
+          // Pre-fill form with user data
+          if (data.firstName) setFirstName(data.firstName);
+          if (data.lastName) setLastName(data.lastName);
+        } else {
+          // Handle specific error types
+          switch (data.error) {
+            case 'TOKEN_EXPIRED':
+              setTokenStatus('expired');
+              break;
+            case 'ALREADY_ACTIVATED':
+              setTokenStatus('already_activated');
+              break;
+            default:
+              setTokenStatus('invalid');
+          }
+          setTokenError(data.message || "Ce lien d'invitation n'est pas valide.");
+        }
+      } catch (err) {
+        setTokenStatus('invalid');
+        setTokenError("Impossible de vérifier le lien d'activation. Veuillez réessayer.");
+      }
+    }
+
+    validateToken();
+  }, [token]);
 
   const validatePassword = (pwd: string): boolean => {
     // Min 8 chars, at least one letter, one number, one special char
@@ -41,12 +103,6 @@ export function ActivatePage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    // Validate token
-    if (!token) {
-      setError("Lien d'activation invalide. Veuillez utiliser le lien reçu par email.");
-      return;
-    }
 
     // Validate password match
     if (password !== confirmPassword) {
@@ -80,33 +136,151 @@ export function ActivatePage() {
       });
     } catch (err) {
       if (err instanceof ApiException) {
-        if (err.code === 'INVALID_TOKEN') {
-          setError("Le lien d'activation est invalide ou a expiré. Veuillez contacter l'association.");
+        // Handle specific errors
+        if (err.status === 400) {
+          const detail = err.message.toLowerCase();
+          if (detail.includes('expired')) {
+            setTokenStatus('expired');
+            setTokenError("Ce lien d'invitation a expiré. Contactez les bénévoles ALPE pour recevoir une nouvelle invitation.");
+          } else if (detail.includes('already activated')) {
+            setTokenStatus('already_activated');
+            setTokenError('Ce compte a déjà été activé. Utilisez la page de connexion.');
+          } else if (detail.includes('invalid')) {
+            setTokenStatus('invalid');
+            setTokenError("Ce lien d'invitation n'est pas valide.");
+          } else {
+            setError(err.message);
+          }
         } else {
           setError(err.message);
         }
       } else {
-        setError('Une erreur inattendue est survenue');
+        setError('Une erreur inattendue est survenue. Veuillez réessayer.');
       }
     }
   };
 
-  if (!token) {
+  // Loading state
+  if (tokenStatus === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Lien invalide</h1>
-          <p className="text-gray-600 mb-6">
-            Ce lien d'activation n'est pas valide. Veuillez utiliser le lien reçu par email lors de votre invitation.
-          </p>
-          <Link to="/login" className="text-blue-600 hover:text-blue-500">
-            Retour à la connexion
-          </Link>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Vérification du lien d'activation...</p>
         </div>
       </div>
     );
   }
 
+  // Invalid token
+  if (tokenStatus === 'invalid') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full text-center">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-6">
+            <svg className="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Lien invalide</h1>
+          <p className="text-gray-600 mb-6">{tokenError}</p>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">
+              Besoin d'aide ? Contactez les bénévoles ALPE :
+            </p>
+            <a
+              href="mailto:benevoles@alpe-plaisance.org"
+              className="text-blue-600 hover:text-blue-500 font-medium"
+            >
+              benevoles@alpe-plaisance.org
+            </a>
+            <div className="pt-4">
+              <Link
+                to="/"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Retour à l'accueil
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Token expired
+  if (tokenStatus === 'expired') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full text-center">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-amber-100 mb-6">
+            <svg className="h-8 w-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Lien expiré</h1>
+          <p className="text-gray-600 mb-2">{tokenError}</p>
+          <p className="text-sm text-gray-500 mb-6">
+            Les liens d'activation sont valides pendant 7 jours.
+          </p>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">
+              Pour recevoir une nouvelle invitation, contactez les bénévoles ALPE :
+            </p>
+            <a
+              href="mailto:benevoles@alpe-plaisance.org"
+              className="text-blue-600 hover:text-blue-500 font-medium"
+            >
+              benevoles@alpe-plaisance.org
+            </a>
+            <div className="pt-4">
+              <Link
+                to="/"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Retour à l'accueil
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Already activated
+  if (tokenStatus === 'already_activated') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full text-center">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
+            <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Compte déjà activé</h1>
+          <p className="text-gray-600 mb-6">
+            Ce compte a déjà été activé. Vous pouvez vous connecter avec votre email et mot de passe.
+          </p>
+          <div className="space-y-4">
+            <Link
+              to="/login"
+              className="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
+            >
+              Se connecter
+            </Link>
+            <p className="text-sm text-gray-500 pt-4">
+              Mot de passe oublié ?{' '}
+              <Link to="/forgot-password" className="text-blue-600 hover:text-blue-500">
+                Réinitialiser
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Valid token - show activation form
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -117,6 +291,11 @@ export function ActivatePage() {
           <h2 className="mt-2 text-center text-xl text-gray-600">
             Activation de votre compte
           </h2>
+          {userEmail && (
+            <p className="mt-2 text-center text-sm text-gray-500">
+              Compte : <span className="font-medium">{userEmail}</span>
+            </p>
+          )}
           <p className="mt-2 text-center text-sm text-gray-500">
             Complétez vos informations et choisissez votre mot de passe
           </p>

@@ -137,3 +137,15 @@ class LoginResponse(BaseModel):
     token_type: str = "bearer"
     expires_in: int
     user: UserResponse
+
+
+class TokenValidationResponse(BaseModel):
+    """Response schema for invitation token validation."""
+
+    valid: bool
+    email: EmailStr | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    expires_at: datetime | None = None
+    error: str | None = Field(None, description="Error code if token is invalid")
+    message: str | None = Field(None, description="Human-readable error message")
