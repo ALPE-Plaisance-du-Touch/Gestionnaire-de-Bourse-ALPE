@@ -60,4 +60,13 @@ export const invitationsApi = {
     );
     return response.data;
   },
+
+  /**
+   * Delete an invitation.
+   * For pending invitations: invalidates the token and deletes the user.
+   * For activated users: clears invitation data but preserves the user account.
+   */
+  deleteInvitation: async (invitationId: string): Promise<void> => {
+    await apiClient.delete(`/v1/invitations/${invitationId}`);
+  },
 };

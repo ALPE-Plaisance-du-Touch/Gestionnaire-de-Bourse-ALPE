@@ -205,3 +205,28 @@ async def resend_invitation(
             else status.HTTP_409_CONFLICT,
             detail=e.message,
         )
+
+
+@router.delete(
+    "/{invitation_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete invitation",
+    description="Delete an invitation regardless of its status. Requires manager or admin role.",
+)
+async def delete_invitation(
+    invitation_id: str,
+    invitation_service: InvitationServiceDep,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Delete an invitation.
+
+    For pending invitations, the token is invalidated.
+    For activated users, only the invitation record is cleared (user account is preserved).
+    """
+    deleted = await invitation_service.delete_invitation(invitation_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Invitation not found",
+        )
+    logger.info(f"Invitation {invitation_id} deleted by {current_user.email}")

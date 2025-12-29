@@ -46,6 +46,7 @@ interface InvitationsPageProps {
 
 export function InvitationsPage({ onCreateClick, onBulkCreateClick }: InvitationsPageProps) {
   const [statusFilter, setStatusFilter] = useState<FilterOption>('all');
+  const [invitationToDelete, setInvitationToDelete] = useState<Invitation | null>(null);
   const queryClient = useQueryClient();
 
   // Fetch invitations
@@ -66,6 +67,18 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
     mutationFn: invitationsApi.resendInvitation,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invitations'] });
+    },
+  });
+
+  // Delete invitation mutation
+  const deleteMutation = useMutation({
+    mutationFn: invitationsApi.deleteInvitation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invitations'] });
+      setInvitationToDelete(null);
+    },
+    onError: () => {
+      setInvitationToDelete(null);
     },
   });
 
@@ -90,6 +103,24 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
         // Error handled by mutation
       }
     }
+  };
+
+  const handleDeleteClick = (invitation: Invitation) => {
+    setInvitationToDelete(invitation);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (invitationToDelete) {
+      try {
+        await deleteMutation.mutateAsync(invitationToDelete.id);
+      } catch {
+        // Error handled by mutation
+      }
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setInvitationToDelete(null);
   };
 
   if (error) {
@@ -159,6 +190,16 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
       {resendMutation.isError && (
         <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
           Erreur lors de l'envoi de l'invitation. Veuillez réessayer.
+        </div>
+      )}
+      {deleteMutation.isSuccess && (
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          Invitation supprimée avec succès !
+        </div>
+      )}
+      {deleteMutation.isError && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          Erreur lors de la suppression de l'invitation. Veuillez réessayer.
         </div>
       )}
 
@@ -248,7 +289,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
                             ? formatShortDate(invitation.expiresAt)
                             : '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm space-x-2">
                         {canResend && (
                           <Button
                             variant="ghost"
@@ -259,6 +300,15 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
                             Relancer
                           </Button>
                         )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteClick(invitation)}
+                          disabled={deleteMutation.isPending}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          Supprimer
+                        </Button>
                       </td>
                     </tr>
                   );
@@ -275,6 +325,48 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
           {invitations.length} invitation{invitations.length > 1 ? 's' : ''} affichée
           {invitations.length > 1 ? 's' : ''}
         </p>
+      )}
+
+      {/* Delete confirmation modal */}
+      {invitationToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Confirmer la suppression
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Êtes-vous sûr de vouloir supprimer l'invitation pour{' '}
+              <span className="font-medium">{invitationToDelete.email}</span> ?
+            </p>
+            {invitationToDelete.status === 'activated' ? (
+              <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded mb-4">
+                Cette invitation a déjà été activée. L'utilisateur sera retiré de la liste
+                des invitations, mais son compte sera conservé.
+              </p>
+            ) : (
+              <p className="text-sm text-red-600 bg-red-50 p-3 rounded mb-4">
+                Cette action est irréversible. L'invitation sera définitivement supprimée.
+              </p>
+            )}
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={handleDeleteCancel}
+                disabled={deleteMutation.isPending}
+              >
+                Annuler
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleDeleteConfirm}
+                disabled={deleteMutation.isPending}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

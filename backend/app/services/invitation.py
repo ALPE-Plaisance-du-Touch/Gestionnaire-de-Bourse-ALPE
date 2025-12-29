@@ -213,6 +213,7 @@ class InvitationService:
                 User.is_active == True,  # noqa: E712
                 User.password_hash.isnot(None),
                 User.role_id == 1,  # depositor role
+                User.invitation_hidden == False,  # noqa: E712 - Not hidden from list
             )
             result = await self.db.execute(query)
             return list(result.scalars().all())
@@ -221,6 +222,7 @@ class InvitationService:
         query = select(User).where(
             User.invitation_token.isnot(None),
             User.is_active == False,  # noqa: E712
+            User.invitation_hidden == False,  # noqa: E712 - Not hidden from list
         )
 
         result = await self.db.execute(query)
@@ -246,6 +248,7 @@ class InvitationService:
             User.is_active == True,  # noqa: E712
             User.password_hash.isnot(None),
             User.role_id == 1,  # depositor role
+            User.invitation_hidden == False,  # noqa: E712 - Not hidden from list
         )
         activated_result = await self.db.execute(activated_query)
         activated_users = list(activated_result.scalars().all())
@@ -267,3 +270,34 @@ class InvitationService:
             List of users with pending invitations
         """
         return await self.list_invitations(status_filter)
+
+    async def delete_invitation(self, invitation_id: str) -> bool:
+        """Delete an invitation.
+
+        For pending invitations: deletes the user entirely.
+        For activated users: hides from invitation list but preserves the user account.
+
+        Args:
+            invitation_id: The user ID of the invitation to delete
+
+        Returns:
+            True if deleted, False if not found
+        """
+        user = await self.user_repo.get_by_id(invitation_id)
+        if not user:
+            return False
+
+        # Check if user is a depositor (role_id = 1)
+        if user.role_id != 1:
+            return False
+
+        if user.is_active and user.password_hash:
+            # User has activated their account - hide from invitation list
+            user.invitation_hidden = True
+            await self.db.commit()
+        else:
+            # Pending invitation - delete the user entirely
+            await self.db.delete(user)
+            await self.db.commit()
+
+        return True
