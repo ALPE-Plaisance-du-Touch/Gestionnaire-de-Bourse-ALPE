@@ -135,6 +135,7 @@ links:
       - Formulaire de création : email (obligatoire), nom, prénom, type de liste (standard/1000/2000), commentaire interne
       - Génération automatique d'un token unique sécurisé (UUID v4 ou JWT signé, hashé SHA-256 en base)
       - Validité du token : 7 jours calendaires
+      - Tolérance aux erreurs : le token reste valide en cas d'échec de validation du formulaire (erreur mot de passe, champ manquant, etc.). Il n'est invalidé qu'après une activation réussie.
       - Envoi immédiat ou différé de l'email d'invitation
       - Validation unicité : 1 email = 1 invitation active par édition (détection doublons avec options : annuler l'ancienne ou relancer)
     - **Import en masse CSV :**
@@ -773,4 +774,17 @@ links:
     - Test de restauration : 1 fois par an minimum
   - **Priorité :** Must have
   - **Responsable validation :** Administrateur système
+
+# Configuration système
+
+## Paramètres généraux
+
+- REQ-C-001 — Le système DOIT permettre à un administrateur de configurer l'email de support affiché aux utilisateurs.
+  - **Critères d'acceptation :**
+    - Paramètre `SUPPORT_EMAIL` configurable via la console d'administration ou variable d'environnement
+    - Valeur par défaut : `noreply@example.com`
+    - Validation du format email (RFC 5322)
+    - Cet email est affiché sur les pages d'erreur, dans les emails transactionnels et dans le pied de page
+  - **Priorité :** Must have
+  - **Responsable validation :** Administrateur ALPE
 

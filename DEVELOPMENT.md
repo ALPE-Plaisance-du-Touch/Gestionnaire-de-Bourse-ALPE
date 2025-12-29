@@ -15,7 +15,7 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | Version | Milestone | Status | Progress |
 |---------|-----------|--------|----------|
 | 0.1 | Project Scaffolding | ✅ Done | 100% |
-| 0.2 | Authentication System | 🔲 Not Started | 0% |
+| 0.2 | Authentication System | ✅ Done | 100% |
 | 0.3 | Edition Management | 🔲 Not Started | 0% |
 | 0.4 | Billetweb Import | 🔲 Not Started | 0% |
 | 0.5 | Article Declaration | 🔲 Not Started | 0% |
@@ -27,8 +27,8 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.11 | PWA & Offline Mode | 🔲 Not Started | 0% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.1 (Scaffolding complete)
-**Next Target:** 0.2 - Authentication System (US-001, US-010)
+**Current Version:** 0.2 (Authentication complete)
+**Next Target:** 0.3 - Edition Management (US-006, US-007)
 
 ---
 
@@ -41,53 +41,82 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
-## v0.2 - Authentication System (US-001, US-010)
+## v0.2 - Authentication System (US-001, US-010) ✅
 
 **Branch:** `feature/us-001-invitation-activation`
 
-### Backend Tasks
-- [ ] **0.2.1** Create initial Alembic migration for all models
-- [ ] **0.2.2** Implement auth schemas (Pydantic)
-  - [ ] `LoginRequest`, `LoginResponse`
-  - [ ] `ActivateAccountRequest`
-  - [ ] `TokenResponse`, `RefreshTokenRequest`
-- [ ] **0.2.3** Implement auth service
-  - [ ] Password hashing (bcrypt)
-  - [ ] JWT token generation/validation
-  - [ ] Token refresh logic
-- [ ] **0.2.4** Implement auth repository
-  - [ ] User CRUD operations
-  - [ ] Token management
-- [ ] **0.2.5** Implement auth API endpoints
-  - [ ] `POST /api/v1/auth/login`
-  - [ ] `POST /api/v1/auth/logout`
-  - [ ] `POST /api/v1/auth/refresh`
-  - [ ] `POST /api/v1/auth/activate`
-  - [ ] `GET /api/v1/auth/me`
-- [ ] **0.2.6** Implement invitation system
-  - [ ] `POST /api/v1/invitations` (create invitation)
-  - [ ] `POST /api/v1/invitations/bulk` (bulk create)
-  - [ ] Token generation and validation
-  - [ ] Email sending (async)
-- [ ] **0.2.7** Rate limiting middleware
-- [ ] **0.2.8** Write unit tests for auth service
-- [ ] **0.2.9** Write integration tests for auth endpoints
+### Backend Tasks ✅
+- [x] **0.2.1** Create initial Alembic migration for all models
+- [x] **0.2.2** Implement auth schemas (Pydantic)
+  - [x] `LoginRequest`, `LoginResponse`
+  - [x] `ActivateAccountRequest`
+  - [x] `TokenResponse`, `RefreshTokenRequest`
+- [x] **0.2.3** Implement auth service
+  - [x] Password hashing (bcrypt, 12 rounds)
+  - [x] JWT token generation/validation
+  - [x] Token refresh logic
+- [x] **0.2.4** Implement auth repository
+  - [x] User CRUD operations
+  - [x] Token management
+- [x] **0.2.5** Implement auth API endpoints
+  - [x] `POST /api/v1/auth/login`
+  - [x] `POST /api/v1/auth/logout`
+  - [x] `POST /api/v1/auth/refresh`
+  - [x] `POST /api/v1/auth/activate`
+  - [x] `GET /api/v1/auth/me`
+  - [x] `POST /api/v1/auth/password/reset-request`
+  - [x] `POST /api/v1/auth/password/reset`
+- [x] **0.2.6** Implement invitation system
+  - [x] `POST /api/v1/invitations` (create invitation)
+  - [x] `POST /api/v1/invitations/bulk` (bulk create)
+  - [x] `POST /api/v1/invitations/{id}/resend`
+  - [x] Token generation and validation
+- [x] **0.2.7** Rate limiting middleware
+  - [x] General rate limit (100 req/min)
+  - [x] Login-specific rate limit (5 attempts, 15 min lockout)
+- [x] **0.2.8** Write unit tests for auth service
+- [x] **0.2.9** Write integration tests for auth endpoints
 
-### Frontend Tasks
-- [ ] **0.2.10** Create AuthContext for global auth state
-- [ ] **0.2.11** Implement LoginPage
-  - [ ] Login form with validation (Zod)
-  - [ ] Error handling
-  - [ ] Redirect after login
-- [ ] **0.2.12** Implement ActivatePage
-  - [ ] Activation form with password strength indicator
-  - [ ] CGU/RGPD checkboxes
-  - [ ] Phone validation (French format)
-  - [ ] Error states (expired, invalid, already used)
-- [ ] **0.2.13** Implement ProtectedRoute component
-- [ ] **0.2.14** Update Header with auth state
-- [ ] **0.2.15** Add token refresh logic in API client
-- [ ] **0.2.16** Write component tests
+### Frontend Tasks ✅
+- [x] **0.2.10** Create AuthContext for global auth state
+  - [x] `AuthProvider`, `useAuth`, `useUser`, `useIsAuthenticated` hooks
+- [x] **0.2.11** Implement LoginPage
+  - [x] Login form with email/password
+  - [x] Error handling
+  - [x] Redirect after login
+- [x] **0.2.12** Implement ActivatePage
+  - [x] Activation form with password validation
+  - [x] Terms acceptance checkbox
+  - [x] Profile fields (name, phone)
+  - [x] Error states (expired, invalid)
+- [x] **0.2.13** Implement ProtectedRoute component
+  - [x] Role-based access control
+  - [x] Redirect to login if not authenticated
+- [x] **0.2.14** Update Header with auth state
+  - [x] Display user name
+  - [x] Logout button
+  - [x] Admin link for managers/admins
+- [x] **0.2.15** Add token refresh logic in API client
+  - [x] Automatic refresh on 401
+  - [x] Request queue during refresh
+- [x] **0.2.16** Write component tests
+  - [x] AuthContext tests
+  - [x] LoginPage tests
+  - [x] ProtectedRoute tests
+- [x] **0.2.17** Email service and templates
+  - [x] SMTP async service (aiosmtplib)
+  - [x] Invitation email template (HTML + text)
+  - [x] Password reset email template (HTML + text)
+  - [x] Configurable support email
+- [x] **0.2.18** Token validation and error handling
+  - [x] `GET /api/v1/auth/validate-token/{token}` endpoint
+  - [x] `GET /api/v1/invitations` endpoint (list pending)
+  - [x] `GET /api/v1/config/public` endpoint (public config)
+  - [x] Frontend token validation with error pages
+- [x] **0.2.19** Password reset frontend
+  - [x] ForgotPasswordPage (`/forgot-password`)
+  - [x] ResetPasswordPage (`/reset-password?token=xxx`)
+  - [x] useConfig hook for dynamic support email
 
 ---
 

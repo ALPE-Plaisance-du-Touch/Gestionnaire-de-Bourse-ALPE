@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # Backend API (FastAPI)
   backend:
@@ -20,6 +18,8 @@ services:
       - JWT_SECRET_KEY=dev-secret-key-change-in-production
       - SMTP_HOST=mailhog
       - SMTP_PORT=1025
+      - SMTP_USE_TLS=false
+      - FRONTEND_URL=http://localhost:5173
       - CORS_ORIGINS=http://localhost:5173,http://localhost:3000
     depends_on:
       db:
@@ -98,8 +98,7 @@ services:
       - "8025:8025"  # Web UI
     networks:
       - bourse-network
-    profiles:
-      - tools
+    restart: unless-stopped
 
 networks:
   bourse-network:

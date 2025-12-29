@@ -7,11 +7,14 @@ from typing import Any
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.config import settings
 from app.main import app
+from app.models import Role, User
 from app.models.base import Base, get_db_session
+from app.services import AuthService
 
 # Use SQLite for tests (in-memory)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -54,6 +57,17 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
     )
 
     async with async_session_factory() as session:
+        # Insert default roles
+        roles = [
+            Role(id=1, name="depositor", description="Déposant"),
+            Role(id=2, name="volunteer", description="Bénévole"),
+            Role(id=3, name="manager", description="Gestionnaire"),
+            Role(id=4, name="administrator", description="Administrateur"),
+        ]
+        for role in roles:
+            session.add(role)
+        await session.commit()
+
         yield session
         await session.rollback()
 
@@ -74,6 +88,87 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
         yield client
 
     app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture
+async def auth_service(db_session: AsyncSession) -> AuthService:
+    """Create an auth service instance for testing."""
+    return AuthService(db_session)
+
+
+@pytest_asyncio.fixture
+async def test_user(db_session: AsyncSession) -> User:
+    """Create a test user with password."""
+    from sqlalchemy import select
+
+    # Get depositor role
+    result = await db_session.execute(select(Role).where(Role.name == "depositor"))
+    role = result.scalar_one()
+
+    user = User(
+        email="test@example.com",
+        first_name="Jean",
+        last_name="Dupont",
+        role_id=role.id,
+        password_hash=AuthService.hash_password("TestPassword1!"),
+        is_active=True,
+        is_verified=True,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    # Load role relationship
+    result = await db_session.execute(
+        select(User).where(User.id == user.id)
+    )
+    return result.scalar_one()
+
+
+@pytest_asyncio.fixture
+async def inactive_user(db_session: AsyncSession) -> User:
+    """Create an inactive test user."""
+    from sqlalchemy import select
+
+    result = await db_session.execute(select(Role).where(Role.name == "depositor"))
+    role = result.scalar_one()
+
+    user = User(
+        email="inactive@example.com",
+        first_name="Marie",
+        last_name="Martin",
+        role_id=role.id,
+        invitation_token="test-invitation-token",
+        is_active=False,
+        is_verified=False,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    return user
+
+
+@pytest_asyncio.fixture
+async def admin_user(db_session: AsyncSession) -> User:
+    """Create an admin user."""
+    from sqlalchemy import select
+
+    result = await db_session.execute(select(Role).where(Role.name == "administrator"))
+    role = result.scalar_one()
+
+    user = User(
+        email="admin@example.com",
+        first_name="Admin",
+        last_name="User",
+        role_id=role.id,
+        password_hash=AuthService.hash_password("AdminPassword1!"),
+        is_active=True,
+        is_verified=True,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    return user
 
 
 @pytest.fixture

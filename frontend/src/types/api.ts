@@ -4,8 +4,9 @@
 
 /** API error response */
 export interface ApiError {
-  code: string;
-  message: string;
+  code?: string;
+  message?: string;
+  detail?: string; // FastAPI error format
   field?: string;
 }
 
