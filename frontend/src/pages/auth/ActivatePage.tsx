@@ -143,7 +143,7 @@ export function ActivatePage() {
           const detail = err.message.toLowerCase();
           if (detail.includes('expired')) {
             setTokenStatus('expired');
-            setTokenError("Ce lien d'invitation a expiré. Contactez les bénévoles ALPE pour recevoir une nouvelle invitation.");
+            setTokenError("Ce lien d'invitation a expiré.");
           } else if (detail.includes('already activated')) {
             setTokenStatus('already_activated');
             setTokenError('Ce compte a déjà été activé. Utilisez la page de connexion.');

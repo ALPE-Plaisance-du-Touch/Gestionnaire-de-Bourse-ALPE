@@ -22,9 +22,12 @@ export function useConfig() {
 
     async function fetchConfig() {
       try {
-        const response = await apiClient.get<PublicConfig>('/v1/config/public');
-        cachedConfig = response.data;
-        setConfig(response.data);
+        const response = await apiClient.get<{ support_email: string }>('/v1/config/public');
+        const mappedConfig: PublicConfig = {
+          supportEmail: response.data.support_email,
+        };
+        cachedConfig = mappedConfig;
+        setConfig(mappedConfig);
       } catch {
         // Use default config on error
         cachedConfig = DEFAULT_CONFIG;
