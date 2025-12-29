@@ -140,7 +140,7 @@ describe('LoginPage', () => {
     fireEvent.submit(screen.getByRole('button', { name: /se connecter/i }));
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent(/email ou mot de passe incorrect/i);
+      expect(screen.getByRole('alert')).toHaveTextContent(/identifiants incorrects/i);
     });
   });
 

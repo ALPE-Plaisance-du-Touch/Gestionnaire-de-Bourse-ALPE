@@ -49,7 +49,8 @@ describe('ProtectedRoute', () => {
 
     renderWithRoute();
 
-    expect(screen.getByRole('status', { hidden: true }) || document.querySelector('.animate-spin')).toBeTruthy();
+    // The spinner has class animate-spin
+    expect(document.querySelector('.animate-spin')).toBeTruthy();
   });
 
   it('redirects to login when not authenticated', async () => {

@@ -26,11 +26,21 @@ const localStorageMock = (() => {
 
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
-// Mock window.location
+// Mock window.location with full URL support
 Object.defineProperty(window, 'location', {
   value: {
-    href: '',
+    href: 'http://localhost:3000/',
+    origin: 'http://localhost:3000',
+    protocol: 'http:',
+    host: 'localhost:3000',
+    hostname: 'localhost',
+    port: '3000',
     pathname: '/',
+    search: '',
+    hash: '',
+    assign: vi.fn(),
+    reload: vi.fn(),
+    replace: vi.fn(),
   },
   writable: true,
 });
