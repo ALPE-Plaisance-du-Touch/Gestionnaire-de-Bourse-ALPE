@@ -19,12 +19,12 @@ Le backend est déjà implémenté (v0.2). Cette tâche concerne uniquement le *
 ## Tâches
 
 ### 1. API Client
-- [ ] **1.1** Créer les types TypeScript pour les invitations
-- [ ] **1.2** Créer les fonctions API dans `frontend/src/api/invitations.ts`
-  - [ ] `getInvitations(status?: 'pending' | 'expired')`
-  - [ ] `createInvitation(data)`
-  - [ ] `createBulkInvitations(data[])`
-  - [ ] `resendInvitation(id)`
+- [x] **1.1** Créer les types TypeScript pour les invitations
+- [x] **1.2** Créer les fonctions API dans `frontend/src/api/invitations.ts`
+  - [x] `getInvitations(status?: 'pending' | 'expired')`
+  - [x] `createInvitation(data)`
+  - [x] `createBulkInvitations(data[])`
+  - [x] `resendInvitation(id)`
 
 ### 2. Page de gestion des invitations
 - [ ] **2.1** Créer `InvitationsPage` (`/admin/invitations`)
