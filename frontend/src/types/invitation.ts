@@ -46,4 +46,4 @@ export interface InvitationResendResponse {
   message: string;
 }
 
-export type InvitationStatusFilter = 'pending' | 'expired';
+export type InvitationStatusFilter = 'pending' | 'expired' | 'activated';

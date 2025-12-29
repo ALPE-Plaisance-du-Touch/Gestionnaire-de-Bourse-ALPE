@@ -49,20 +49,20 @@ def compute_invitation_status(user: User) -> str:
 @router.get(
     "",
     response_model=list[InvitationResponse],
-    summary="List pending invitations",
-    description="List invitations that have not been activated yet. Requires manager or admin role.",
+    summary="List invitations",
+    description="List invitations with optional status filter. Requires manager or admin role.",
 )
 async def list_invitations(
     invitation_service: InvitationServiceDep,
     current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
-    status_filter: Literal["pending", "expired"] | None = Query(
+    status_filter: Literal["pending", "expired", "activated"] | None = Query(
         None,
         alias="status",
-        description="Filter by status: 'pending' (not expired), 'expired', or omit for all",
+        description="Filter by status: 'pending', 'expired', 'activated', or omit for all",
     ),
 ):
-    """List invitations that are pending (not yet activated)."""
-    users = await invitation_service.list_pending_invitations(status_filter)
+    """List invitations with optional status filter."""
+    users = await invitation_service.list_invitations(status_filter)
 
     return [
         InvitationResponse(
@@ -73,7 +73,8 @@ async def list_invitations(
             status=compute_invitation_status(user),
             created_at=user.created_at,
             expires_at=user.invitation_expires_at,
-            used_at=None,
+            # For activated users, use updated_at as activation date
+            used_at=user.updated_at if (user.is_active and user.password_hash) else None,
         )
         for user in users
     ]

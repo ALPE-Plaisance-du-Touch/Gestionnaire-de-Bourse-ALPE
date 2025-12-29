@@ -9,7 +9,8 @@ type FilterOption = 'all' | InvitationStatusFilter;
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Tous les statuts' },
   { value: 'pending', label: 'En attente' },
-  { value: 'expired', label: 'Expirés' },
+  { value: 'activated', label: 'Activées' },
+  { value: 'expired', label: 'Expirées' },
 ];
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
@@ -198,7 +199,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
                     Créée le
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Expire le
+                    {statusFilter === 'activated' ? 'Activée le' : 'Expire le'}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
@@ -241,7 +242,11 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
                         {formatShortDate(invitation.createdAt)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatShortDate(invitation.expiresAt)}
+                        {invitation.status === 'activated' && invitation.usedAt
+                          ? formatDate(invitation.usedAt)
+                          : invitation.expiresAt
+                            ? formatShortDate(invitation.expiresAt)
+                            : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                         {canResend && (

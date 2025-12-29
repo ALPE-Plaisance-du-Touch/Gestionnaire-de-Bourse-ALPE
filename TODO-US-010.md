@@ -83,10 +83,10 @@ Le backend est déjà implémenté (v0.2). Cette tâche concerne uniquement le *
 ## Phase 2 - Améliorations (À implémenter)
 
 ### 9. Affichage des invitations acceptées
-- [ ] **9.1** Backend: Modifier `GET /api/v1/invitations` pour supporter le filtre `activated`
-- [ ] **9.2** Frontend: Ajouter le filtre "Activées" dans le select de statut
-- [ ] **9.3** Frontend: Afficher la date d'activation dans une nouvelle colonne (si applicable)
-- [ ] **9.4** Frontend: Mettre à jour les statistiques pour inclure le compte des activées
+- [x] **9.1** Backend: Modifier `GET /api/v1/invitations` pour supporter le filtre `activated`
+- [x] **9.2** Frontend: Ajouter le filtre "Activées" dans le select de statut
+- [x] **9.3** Frontend: Afficher la date d'activation dans une nouvelle colonne (si applicable)
+- [x] **9.4** Frontend: Mettre à jour les statistiques pour inclure le compte des activées
 
 ### 10. Suppression d'invitations individuelles
 - [ ] **10.1** Backend: Créer endpoint `DELETE /api/v1/invitations/{id}`
@@ -116,7 +116,7 @@ Le backend est déjà implémenté (v0.2). Cette tâche concerne uniquement le *
 
 ## Nouveaux critères d'acceptation (Phase 2)
 
-- [ ] AC-9: Visualisation des invitations acceptées avec date d'activation
+- [x] AC-9: Visualisation des invitations acceptées avec date d'activation
 - [ ] AC-10: Suppression d'une invitation individuelle avec confirmation
 - [ ] AC-11: Sélection multiple d'invitations
 - [ ] AC-12: Suppression en masse des invitations sélectionnées

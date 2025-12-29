@@ -192,18 +192,31 @@ class InvitationService:
 
         return user
 
-    async def list_pending_invitations(
+    async def list_invitations(
         self,
         status_filter: str | None = None,
     ) -> list[User]:
-        """List invitations that are pending (not yet activated).
+        """List invitations with optional status filter.
 
         Args:
-            status_filter: Optional filter - 'pending', 'expired', or None for all
+            status_filter: Optional filter - 'pending', 'expired', 'activated', or None for all
 
         Returns:
-            List of users with pending invitations
+            List of users matching the filter
         """
+        from sqlalchemy import or_
+
+        if status_filter == "activated":
+            # Query users who were invited and are now active (activated their account)
+            # These are depositors who have is_active=True and password_hash set
+            query = select(User).where(
+                User.is_active == True,  # noqa: E712
+                User.password_hash.isnot(None),
+                User.role_id == 1,  # depositor role
+            )
+            result = await self.db.execute(query)
+            return list(result.scalars().all())
+
         # Query users who have an invitation token (not activated)
         query = select(User).where(
             User.invitation_token.isnot(None),
@@ -229,3 +242,19 @@ class InvitationService:
             ]
 
         return users
+
+    async def list_pending_invitations(
+        self,
+        status_filter: str | None = None,
+    ) -> list[User]:
+        """List invitations that are pending (not yet activated).
+
+        Deprecated: Use list_invitations instead.
+
+        Args:
+            status_filter: Optional filter - 'pending', 'expired', 'activated', or None for all
+
+        Returns:
+            List of users with pending invitations
+        """
+        return await self.list_invitations(status_filter)
