@@ -9,27 +9,31 @@
 
 ### Backend - Implémenté ✅
 - [x] Endpoint `POST /api/v1/auth/activate` - Activation de compte avec token
-- [x] Endpoint `GET /api/v1/auth/validate-token/{token}` - Validation du token (nouveau)
+- [x] Endpoint `GET /api/v1/auth/validate-token/{token}` - Validation du token
+- [x] Endpoint `GET /api/v1/invitations` - Lister les invitations en attente (nouveau)
 - [x] Endpoint `POST /api/v1/invitations` - Création d'invitation + envoi email
 - [x] Endpoint `POST /api/v1/invitations/bulk` - Création en masse + envoi emails
 - [x] Endpoint `POST /api/v1/invitations/{id}/resend` - Renvoi d'invitation + email
 - [x] Endpoint `POST /api/v1/auth/password/reset-request` - Demande reset + email
 - [x] Endpoint `POST /api/v1/auth/password/reset` - Reset mot de passe
-- [x] Service invitation (génération token, expiration 7 jours)
+- [x] Endpoint `GET /api/v1/config/public` - Configuration publique (support email)
+- [x] Service invitation (génération token, expiration 7 jours, listing)
 - [x] Service auth (activation compte, reset password, validation token)
 - [x] **Service email** (SMTP async avec aiosmtplib)
-- [x] **Templates email** (invitation + reset password, HTML + texte)
+- [x] **Templates email** (invitation + reset password, HTML + texte, support email configurable)
 - [x] Tests unitaires et intégration
 
 ### Frontend - Implémenté ✅
 - [x] Page de connexion (`/login`)
 - [x] Page d'activation (`/activate?token=xxx`)
-- [x] **Validation du token au chargement** (nouveau)
-- [x] **Pages d'erreur dédiées** : token invalide, expiré, compte déjà activé (nouveau)
-- [x] **Pré-remplissage du formulaire** avec email et nom (nouveau)
+- [x] **Validation du token au chargement**
+- [x] **Pages d'erreur dédiées** : token invalide, expiré, compte déjà activé
+- [x] **Pré-remplissage du formulaire** avec email et nom
 - [x] Validation mot de passe (8 chars, lettre, chiffre, symbole)
 - [x] Gestion des erreurs (token invalide, expiré)
 - [x] Acceptation CGU
+- [x] **Hook useConfig** pour email de support configurable (nouveau)
+- [x] **Email de support dynamique** sur les pages d'erreur (nouveau)
 
 ---
 
@@ -47,6 +51,8 @@
 - [x] Ajout `FRONTEND_URL` dans config.py
 - [x] Ajout `SMTP_USE_TLS=false` pour MailHog
 - [x] MailHog démarre automatiquement avec `make dev`
+- [x] **Ajout `SUPPORT_EMAIL` configurable** (défaut: `noreply@example.com`)
+- [x] **Endpoint config publique** pour exposer les paramètres au frontend
 
 ### 3. Dépendances ✅
 - [x] `aiosmtplib` (déjà présent)
@@ -55,12 +61,22 @@
 ### 4. Tests ✅
 - [x] Tests unitaires du service email
 
-### 5. Validation Token (nouveau) ✅
+### 5. Validation Token ✅
 - [x] Endpoint `GET /api/v1/auth/validate-token/{token}`
 - [x] Schéma `TokenValidationResponse`
 - [x] Méthode `validate_invitation_token()` dans AuthService
 - [x] Frontend : validation au chargement de la page
 - [x] Pages d'erreur dédiées (invalide, expiré, déjà activé)
+
+### 6. Gestion des invitations ✅
+- [x] Endpoint `GET /api/v1/invitations` - Liste invitations en attente
+- [x] Filtre par statut (`?status=pending` ou `?status=expired`)
+- [x] Méthode `list_pending_invitations()` dans InvitationService
+
+### 7. Configuration publique ✅
+- [x] Endpoint `GET /api/v1/config/public` - Expose l'email de support
+- [x] Hook `useConfig` dans le frontend
+- [x] Email de support dynamique dans les templates et pages d'erreur
 
 ---
 
