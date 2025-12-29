@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts';
 import { Button, Input } from '@/components/ui';
 import { ApiException, apiClient } from '@/api/client';
+import { useConfig } from '@/hooks';
 
 interface TokenValidationResult {
   valid: boolean;
@@ -20,6 +21,7 @@ export function ActivatePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { activateAccount, isLoading } = useAuth();
+  const { config } = useConfig();
 
   // Token validation state
   const [tokenStatus, setTokenStatus] = useState<TokenStatus>('loading');
@@ -186,13 +188,13 @@ export function ActivatePage() {
           <p className="text-gray-600 mb-6">{tokenError}</p>
           <div className="space-y-4">
             <p className="text-sm text-gray-500">
-              Besoin d'aide ? Contactez les bénévoles ALPE :
+              Besoin d'aide ? Contactez le support :
             </p>
             <a
-              href="mailto:benevoles@alpe-plaisance.org"
+              href={`mailto:${config.supportEmail}`}
               className="text-blue-600 hover:text-blue-500 font-medium"
             >
-              benevoles@alpe-plaisance.org
+              {config.supportEmail}
             </a>
             <div className="pt-4">
               <Link
@@ -225,13 +227,13 @@ export function ActivatePage() {
           </p>
           <div className="space-y-4">
             <p className="text-sm text-gray-500">
-              Pour recevoir une nouvelle invitation, contactez les bénévoles ALPE :
+              Pour recevoir une nouvelle invitation, contactez le support :
             </p>
             <a
-              href="mailto:benevoles@alpe-plaisance.org"
+              href={`mailto:${config.supportEmail}`}
               className="text-blue-600 hover:text-blue-500 font-medium"
             >
-              benevoles@alpe-plaisance.org
+              {config.supportEmail}
             </a>
             <div className="pt-4">
               <Link

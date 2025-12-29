@@ -91,6 +91,7 @@ class EmailService:
             "first_name": first_name or "Déposant",
             "activation_url": activation_url,
             "expiry_days": settings.invitation_token_expire_days,
+            "support_email": settings.support_email,
         }
 
         html_content = html_template.render(**context)
@@ -129,6 +130,7 @@ class EmailService:
             "first_name": first_name or "Utilisateur",
             "reset_url": reset_url,
             "expiry_hours": 24,  # Password reset tokens expire in 24h
+            "support_email": settings.support_email,
         }
 
         html_content = html_template.render(**context)

@@ -775,3 +775,16 @@ links:
   - **Priorité :** Must have
   - **Responsable validation :** Administrateur système
 
+# Configuration système
+
+## Paramètres généraux
+
+- REQ-C-001 — Le système DOIT permettre à un administrateur de configurer l'email de support affiché aux utilisateurs.
+  - **Critères d'acceptation :**
+    - Paramètre `SUPPORT_EMAIL` configurable via la console d'administration ou variable d'environnement
+    - Valeur par défaut : `noreply@example.com`
+    - Validation du format email (RFC 5322)
+    - Cet email est affiché sur les pages d'erreur, dans les emails transactionnels et dans le pied de page
+  - **Priorité :** Must have
+  - **Responsable validation :** Administrateur ALPE
+

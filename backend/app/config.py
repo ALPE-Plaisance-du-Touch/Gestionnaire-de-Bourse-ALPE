@@ -50,6 +50,9 @@ class Settings(BaseSettings):
     # Frontend URL (for email links)
     frontend_url: str = "http://localhost:5173"
 
+    # Support email (displayed on error pages and in transactional emails)
+    support_email: str = "noreply@example.com"
+
     # File storage
     upload_dir: str = "uploads"
     max_upload_size_mb: int = 10
