@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invitationsApi } from '@/api';
 import { Button, Select } from '@/components/ui';
-import type { Invitation, InvitationStatusFilter } from '@/types';
+import type { Invitation, InvitationStatusFilter, BulkDeleteResult } from '@/types';
 
 type FilterOption = 'all' | InvitationStatusFilter;
 
@@ -47,6 +47,9 @@ interface InvitationsPageProps {
 export function InvitationsPage({ onCreateClick, onBulkCreateClick }: InvitationsPageProps) {
   const [statusFilter, setStatusFilter] = useState<FilterOption>('all');
   const [invitationToDelete, setInvitationToDelete] = useState<Invitation | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [bulkDeleteResult, setBulkDeleteResult] = useState<BulkDeleteResult | null>(null);
   const queryClient = useQueryClient();
 
   // Fetch invitations
@@ -79,6 +82,20 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
     },
     onError: () => {
       setInvitationToDelete(null);
+    },
+  });
+
+  // Bulk delete mutation
+  const bulkDeleteMutation = useMutation({
+    mutationFn: invitationsApi.bulkDeleteInvitations,
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['invitations'] });
+      setBulkDeleteResult(result);
+      setSelectedIds(new Set());
+      setShowBulkDeleteModal(false);
+    },
+    onError: () => {
+      setShowBulkDeleteModal(false);
     },
   });
 
@@ -122,6 +139,48 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
   const handleDeleteCancel = () => {
     setInvitationToDelete(null);
   };
+
+  // Selection handlers
+  const handleSelectAll = useCallback(() => {
+    if (selectedIds.size === invitations.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(invitations.map((i) => i.id)));
+    }
+  }, [invitations, selectedIds.size]);
+
+  const handleSelectOne = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const handleBulkDeleteClick = () => {
+    setShowBulkDeleteModal(true);
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    if (selectedIds.size > 0) {
+      try {
+        await bulkDeleteMutation.mutateAsync(Array.from(selectedIds));
+      } catch {
+        // Error handled by mutation
+      }
+    }
+  };
+
+  const handleBulkDeleteCancel = () => {
+    setShowBulkDeleteModal(false);
+  };
+
+  const isAllSelected = invitations.length > 0 && selectedIds.size === invitations.length;
+  const isSomeSelected = selectedIds.size > 0 && selectedIds.size < invitations.length;
 
   if (error) {
     return (
@@ -202,6 +261,48 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
           Erreur lors de la suppression de l'invitation. Veuillez réessayer.
         </div>
       )}
+      {bulkDeleteResult && (
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex justify-between items-center">
+          <span>
+            {bulkDeleteResult.deleted} invitation{bulkDeleteResult.deleted > 1 ? 's' : ''} supprimée{bulkDeleteResult.deleted > 1 ? 's' : ''} avec succès
+            {bulkDeleteResult.notFound > 0 && ` (${bulkDeleteResult.notFound} non trouvée${bulkDeleteResult.notFound > 1 ? 's' : ''})`}
+          </span>
+          <button onClick={() => setBulkDeleteResult(null)} className="text-green-700 hover:text-green-900">
+            ✕
+          </button>
+        </div>
+      )}
+      {bulkDeleteMutation.isError && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          Erreur lors de la suppression en masse. Veuillez réessayer.
+        </div>
+      )}
+
+      {/* Selection bar */}
+      {selectedIds.size > 0 && (
+        <div className="mb-4 bg-blue-50 border border-blue-200 px-4 py-3 rounded-lg flex justify-between items-center">
+          <span className="text-blue-700">
+            {selectedIds.size} invitation{selectedIds.size > 1 ? 's' : ''} sélectionnée{selectedIds.size > 1 ? 's' : ''}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSelectedIds(new Set())}
+            >
+              Désélectionner
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleBulkDeleteClick}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Supprimer la sélection
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -227,6 +328,18 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-4 py-3 w-12">
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      ref={(el) => {
+                        if (el) el.indeterminate = isSomeSelected;
+                      }}
+                      onChange={handleSelectAll}
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      aria-label="Sélectionner tout"
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Email
                   </th>
@@ -260,6 +373,15 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
 
                   return (
                     <tr key={invitation.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-4 w-12">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(invitation.id)}
+                          onChange={() => handleSelectOne(invitation.id)}
+                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          aria-label={`Sélectionner ${invitation.email}`}
+                        />
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
                           {invitation.email}
@@ -363,6 +485,42 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
                 className="bg-red-600 hover:bg-red-700"
               >
                 {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk delete confirmation modal */}
+      {showBulkDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Confirmer la suppression en masse
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Êtes-vous sûr de vouloir supprimer{' '}
+              <span className="font-medium">{selectedIds.size} invitation{selectedIds.size > 1 ? 's' : ''}</span> ?
+            </p>
+            <p className="text-sm text-red-600 bg-red-50 p-3 rounded mb-4">
+              Les invitations en attente seront définitivement supprimées.
+              Les comptes déjà activés seront retirés de la liste mais conservés.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={handleBulkDeleteCancel}
+                disabled={bulkDeleteMutation.isPending}
+              >
+                Annuler
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleBulkDeleteConfirm}
+                disabled={bulkDeleteMutation.isPending}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {bulkDeleteMutation.isPending ? 'Suppression...' : `Supprimer (${selectedIds.size})`}
               </Button>
             </div>
           </div>

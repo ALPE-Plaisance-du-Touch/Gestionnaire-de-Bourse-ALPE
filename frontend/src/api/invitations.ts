@@ -4,6 +4,7 @@ import type {
   InvitationCreateRequest,
   InvitationCreateResponse,
   BulkInvitationResult,
+  BulkDeleteResult,
   InvitationResendResponse,
   InvitationStatusFilter,
 } from '@/types';
@@ -68,5 +69,21 @@ export const invitationsApi = {
    */
   deleteInvitation: async (invitationId: string): Promise<void> => {
     await apiClient.delete(`/v1/invitations/${invitationId}`);
+  },
+
+  /**
+   * Delete multiple invitations at once.
+   * @param ids - Array of invitation IDs to delete
+   */
+  bulkDeleteInvitations: async (ids: string[]): Promise<BulkDeleteResult> => {
+    const response = await apiClient.post<{ total: number; deleted: number; not_found: number }>(
+      '/v1/invitations/bulk-delete',
+      { ids }
+    );
+    return {
+      total: response.data.total,
+      deleted: response.data.deleted,
+      notFound: response.data.not_found,
+    };
   },
 };

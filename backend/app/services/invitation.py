@@ -301,3 +301,27 @@ class InvitationService:
             await self.db.commit()
 
         return True
+
+    async def bulk_delete_invitations(self, invitation_ids: list[str]) -> dict:
+        """Delete multiple invitations at once.
+
+        Args:
+            invitation_ids: List of user IDs to delete
+
+        Returns:
+            Dict with total, deleted, not_found counts
+        """
+        result = {
+            "total": len(invitation_ids),
+            "deleted": 0,
+            "not_found": 0,
+        }
+
+        for invitation_id in invitation_ids:
+            deleted = await self.delete_invitation(invitation_id)
+            if deleted:
+                result["deleted"] += 1
+            else:
+                result["not_found"] += 1
+
+        return result

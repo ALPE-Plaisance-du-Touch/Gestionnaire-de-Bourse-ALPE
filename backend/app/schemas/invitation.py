@@ -49,3 +49,17 @@ class InvitationResendResponse(BaseModel):
     status: str
     expires_at: datetime
     message: str = "Invitation resent successfully"
+
+
+class BulkDeleteRequest(BaseModel):
+    """Request schema for bulk invitation deletion."""
+
+    ids: list[str] = Field(..., min_length=1, max_length=100)
+
+
+class BulkDeleteResult(BaseModel):
+    """Response schema for bulk invitation deletion."""
+
+    total: int
+    deleted: int
+    not_found: int

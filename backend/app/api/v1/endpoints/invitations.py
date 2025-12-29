@@ -10,6 +10,8 @@ from app.dependencies import DBSession, require_role
 from app.exceptions import DuplicateEmailError, InvalidTokenError
 from app.models import User
 from app.schemas import (
+    BulkDeleteRequest,
+    BulkDeleteResult,
     BulkInvitationResult,
     InvitationCreate,
     InvitationResendResponse,
@@ -205,6 +207,29 @@ async def resend_invitation(
             else status.HTTP_409_CONFLICT,
             detail=e.message,
         )
+
+
+@router.post(
+    "/bulk-delete",
+    response_model=BulkDeleteResult,
+    summary="Bulk delete invitations",
+    description="Delete multiple invitations at once. Requires manager or admin role.",
+)
+async def bulk_delete_invitations(
+    request: BulkDeleteRequest,
+    invitation_service: InvitationServiceDep,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Delete multiple invitations at once."""
+    result = await invitation_service.bulk_delete_invitations(request.ids)
+    logger.info(
+        f"Bulk delete: {result['deleted']}/{result['total']} invitations deleted by {current_user.email}"
+    )
+    return BulkDeleteResult(
+        total=result["total"],
+        deleted=result["deleted"],
+        not_found=result["not_found"],
+    )
 
 
 @router.delete(

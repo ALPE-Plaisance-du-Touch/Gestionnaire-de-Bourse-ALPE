@@ -99,15 +99,15 @@ Le backend est déjà implémenté (v0.2). Cette tâche concerne uniquement le *
 - [x] **10.5** Frontend: Ajouter fonction `deleteInvitation(id)` dans l'API client
 
 ### 11. Sélection multiple et suppression en masse
-- [ ] **11.1** Backend: Créer endpoint `POST /api/v1/invitations/bulk-delete`
+- [x] **11.1** Backend: Créer endpoint `POST /api/v1/invitations/bulk-delete`
   - Body: `{ "ids": ["id1", "id2", ...] }`
   - Retourner le nombre d'invitations supprimées
-- [ ] **11.2** Frontend: Ajouter checkbox sur chaque ligne du tableau
-- [ ] **11.3** Frontend: Ajouter checkbox "Sélectionner tout" dans l'en-tête
-- [ ] **11.4** Frontend: Afficher le nombre d'éléments sélectionnés
-- [ ] **11.5** Frontend: Bouton "Supprimer la sélection" (visible si sélection > 0)
-- [ ] **11.6** Frontend: Modal de confirmation avec récapitulatif
-- [ ] **11.7** Frontend: Ajouter fonction `bulkDeleteInvitations(ids)` dans l'API client
+- [x] **11.2** Frontend: Ajouter checkbox sur chaque ligne du tableau
+- [x] **11.3** Frontend: Ajouter checkbox "Sélectionner tout" dans l'en-tête
+- [x] **11.4** Frontend: Afficher le nombre d'éléments sélectionnés
+- [x] **11.5** Frontend: Bouton "Supprimer la sélection" (visible si sélection > 0)
+- [x] **11.6** Frontend: Modal de confirmation avec récapitulatif
+- [x] **11.7** Frontend: Ajouter fonction `bulkDeleteInvitations(ids)` dans l'API client
 
 ### 12. Tests Phase 2
 - [ ] **12.1** Tests backend pour les endpoints de suppression
@@ -118,8 +118,8 @@ Le backend est déjà implémenté (v0.2). Cette tâche concerne uniquement le *
 
 - [x] AC-9: Visualisation des invitations acceptées avec date d'activation
 - [x] AC-10: Suppression d'une invitation individuelle avec confirmation
-- [ ] AC-11: Sélection multiple d'invitations
-- [ ] AC-12: Suppression en masse des invitations sélectionnées
+- [x] AC-11: Sélection multiple d'invitations
+- [x] AC-12: Suppression en masse des invitations sélectionnées
 
 ## Notes techniques
 

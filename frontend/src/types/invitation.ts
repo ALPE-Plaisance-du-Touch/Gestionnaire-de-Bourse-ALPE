@@ -47,3 +47,13 @@ export interface InvitationResendResponse {
 }
 
 export type InvitationStatusFilter = 'pending' | 'expired' | 'activated';
+
+export interface BulkDeleteRequest {
+  ids: string[];
+}
+
+export interface BulkDeleteResult {
+  total: number;
+  deleted: number;
+  notFound: number;
+}
