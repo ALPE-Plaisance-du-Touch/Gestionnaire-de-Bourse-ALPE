@@ -27,12 +27,12 @@ Le backend est déjà implémenté (v0.2). Cette tâche concerne uniquement le *
   - [x] `resendInvitation(id)`
 
 ### 2. Page de gestion des invitations
-- [ ] **2.1** Créer `InvitationsPage` (`/admin/invitations`)
-  - [ ] Tableau avec colonnes: Email, Nom, Prénom, Statut, Date création, Expiration, Actions
-  - [ ] Filtres par statut (Tous, En attente, Expirés)
-  - [ ] Statistiques en haut (Total, En attente, Activés, Expirés)
-  - [ ] Bouton "Nouvelle invitation"
-  - [ ] Bouton "Invitations en masse"
+- [x] **2.1** Créer `InvitationsPage` (`/admin/invitations`)
+  - [x] Tableau avec colonnes: Email, Nom, Prénom, Statut, Date création, Expiration, Actions
+  - [x] Filtres par statut (Tous, En attente, Expirés)
+  - [x] Statistiques en haut (Total, En attente, Activés, Expirés)
+  - [x] Bouton "Nouvelle invitation"
+  - [x] Bouton "Invitations en masse"
 
 ### 3. Modal création invitation unique
 - [ ] **3.1** Créer `InvitationCreateModal`
@@ -50,9 +50,9 @@ Le backend est déjà implémenté (v0.2). Cette tâche concerne uniquement le *
   - [ ] Résumé final (créés, ignorés, erreurs)
 
 ### 5. Actions sur invitations
-- [ ] **5.1** Bouton "Relancer" pour invitations en attente/expirées
-- [ ] **5.2** Confirmation avant relance
-- [ ] **5.3** Feedback visuel après action
+- [x] **5.1** Bouton "Relancer" pour invitations en attente/expirées
+- [x] **5.2** Confirmation avant relance
+- [x] **5.3** Feedback visuel après action
 
 ### 6. Routes et navigation
 - [ ] **6.1** Ajouter route `/admin/invitations`
