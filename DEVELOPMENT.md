@@ -103,6 +103,20 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
   - [x] AuthContext tests
   - [x] LoginPage tests
   - [x] ProtectedRoute tests
+- [x] **0.2.17** Email service and templates
+  - [x] SMTP async service (aiosmtplib)
+  - [x] Invitation email template (HTML + text)
+  - [x] Password reset email template (HTML + text)
+  - [x] Configurable support email
+- [x] **0.2.18** Token validation and error handling
+  - [x] `GET /api/v1/auth/validate-token/{token}` endpoint
+  - [x] `GET /api/v1/invitations` endpoint (list pending)
+  - [x] `GET /api/v1/config/public` endpoint (public config)
+  - [x] Frontend token validation with error pages
+- [x] **0.2.19** Password reset frontend
+  - [x] ForgotPasswordPage (`/forgot-password`)
+  - [x] ResetPasswordPage (`/reset-password?token=xxx`)
+  - [x] useConfig hook for dynamic support email
 
 ---
 
