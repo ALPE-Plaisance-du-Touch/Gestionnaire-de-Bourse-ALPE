@@ -35,19 +35,19 @@ Le backend est déjà implémenté (v0.2). Cette tâche concerne uniquement le *
   - [x] Bouton "Invitations en masse"
 
 ### 3. Modal création invitation unique
-- [ ] **3.1** Créer `InvitationCreateModal`
-  - [ ] Champs: Email, Prénom, Nom, Type de liste (standard/1000/2000)
-  - [ ] Validation email
-  - [ ] Gestion erreur doublon
-  - [ ] Message succès avec feedback
+- [x] **3.1** Créer `InvitationCreateModal`
+  - [x] Champs: Email, Prénom, Nom, Type de liste (standard/1000/2000)
+  - [x] Validation email
+  - [x] Gestion erreur doublon
+  - [x] Message succès avec feedback
 
 ### 4. Modal import CSV en masse
-- [ ] **4.1** Créer `BulkInvitationModal`
-  - [ ] Zone de drop/upload fichier CSV
-  - [ ] Aperçu des données avant import
-  - [ ] Rapport de validation (erreurs, doublons)
-  - [ ] Barre de progression pendant l'import
-  - [ ] Résumé final (créés, ignorés, erreurs)
+- [x] **4.1** Créer `BulkInvitationModal`
+  - [x] Zone de drop/upload fichier CSV
+  - [x] Aperçu des données avant import
+  - [x] Rapport de validation (erreurs, doublons)
+  - [x] Barre de progression pendant l'import
+  - [x] Résumé final (créés, ignorés, erreurs)
 
 ### 5. Actions sur invitations
 - [x] **5.1** Bouton "Relancer" pour invitations en attente/expirées
@@ -55,9 +55,9 @@ Le backend est déjà implémenté (v0.2). Cette tâche concerne uniquement le *
 - [x] **5.3** Feedback visuel après action
 
 ### 6. Routes et navigation
-- [ ] **6.1** Ajouter route `/admin/invitations`
-- [ ] **6.2** Protéger avec ProtectedRoute (roles: manager, administrator)
-- [ ] **6.3** Ajouter lien dans le menu admin/header
+- [x] **6.1** Ajouter route `/admin/invitations`
+- [x] **6.2** Protéger avec ProtectedRoute (roles: manager, administrator)
+- [x] **6.3** Ajouter lien dans le menu admin/header
 
 ### 7. Tests
 - [ ] **7.1** Tests unitaires InvitationsPage
