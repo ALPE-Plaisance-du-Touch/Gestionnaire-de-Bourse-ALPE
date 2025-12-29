@@ -178,6 +178,28 @@ links:
       - Dashboard : graphique évolution invitations envoyées vs activées, taux d'activation global, délai moyen d'activation, taux d'expiration, nombre de relances
       - Répartition par type de liste (standard/1000/2000)
       - Export Excel : feuille invitations complètes, feuille statistiques, feuille invitations non activées
+    - **Visualisation des invitations activées :**
+      - Filtre "Activées" disponible dans le sélecteur de statut
+      - Colonne "Date d'activation" affichant la date et heure d'activation du compte
+      - Statistiques incluant le nombre d'invitations activées
+      - Historique complet visible : envoi → activation
+    - **Suppression d'invitation individuelle :**
+      - Bouton "Supprimer" sur chaque ligne du tableau (quel que soit le statut)
+      - Modal de confirmation avant suppression
+      - Si non activée : token invalidé
+      - Si activée : compte déposant non affecté (seule l'invitation est supprimée)
+      - Toast de confirmation après suppression
+      - Rafraîchissement automatique du tableau
+      - Traçabilité : logs d'audit de la suppression
+    - **Sélection multiple et suppression en masse :**
+      - Checkbox de sélection sur chaque ligne du tableau
+      - Checkbox "Sélectionner tout" dans l'en-tête (sélectionne la page courante)
+      - Compteur affichant le nombre d'éléments sélectionnés
+      - Bouton "Supprimer la sélection" visible si sélection > 0
+      - Modal de confirmation avec récapitulatif (nombre et répartition par statut)
+      - Barre de progression si suppression de >10 éléments
+      - Rapport final : nombre d'invitations supprimées
+      - Traçabilité : logs d'audit avec liste des IDs supprimés
     - **Sécurité :**
       - Tokens hashés en base de données (SHA-256), non lisibles en clair
       - Rate limiting : 100 invitations/heure par gestionnaire (anti-spam)

@@ -11,10 +11,12 @@ Le backend est déjà implémenté (v0.2). Cette tâche concerne uniquement le *
 
 | Endpoint | Méthode | Description |
 |----------|---------|-------------|
-| `/api/v1/invitations` | GET | Liste des invitations (filtrable: pending/expired) |
+| `/api/v1/invitations` | GET | Liste des invitations (filtrable: pending/expired/activated/all) |
 | `/api/v1/invitations` | POST | Créer une invitation unique |
 | `/api/v1/invitations/bulk` | POST | Créer des invitations en masse |
 | `/api/v1/invitations/{id}/resend` | POST | Relancer une invitation |
+| `/api/v1/invitations/{id}` | DELETE | Supprimer une invitation |
+| `/api/v1/invitations/bulk-delete` | POST | Supprimer plusieurs invitations |
 
 ## Tâches
 
@@ -76,9 +78,54 @@ Le backend est déjà implémenté (v0.2). Cette tâche concerne uniquement le *
 - [x] AC-5: Envoi en masse après validation
 - [x] AC-8: Relance invitation non activée
 
+---
+
+## Phase 2 - Améliorations (À implémenter)
+
+### 9. Affichage des invitations acceptées
+- [ ] **9.1** Backend: Modifier `GET /api/v1/invitations` pour supporter le filtre `activated`
+- [ ] **9.2** Frontend: Ajouter le filtre "Activées" dans le select de statut
+- [ ] **9.3** Frontend: Afficher la date d'activation dans une nouvelle colonne (si applicable)
+- [ ] **9.4** Frontend: Mettre à jour les statistiques pour inclure le compte des activées
+
+### 10. Suppression d'invitations individuelles
+- [ ] **10.1** Backend: Créer endpoint `DELETE /api/v1/invitations/{id}`
+  - Supprimer l'invitation (peu importe son statut)
+  - Retourner 204 No Content en cas de succès
+  - Retourner 404 si l'invitation n'existe pas
+- [ ] **10.2** Frontend: Ajouter bouton "Supprimer" sur chaque ligne du tableau
+- [ ] **10.3** Frontend: Modal de confirmation avant suppression
+- [ ] **10.4** Frontend: Feedback visuel après suppression (toast/notification)
+- [ ] **10.5** Frontend: Ajouter fonction `deleteInvitation(id)` dans l'API client
+
+### 11. Sélection multiple et suppression en masse
+- [ ] **11.1** Backend: Créer endpoint `POST /api/v1/invitations/bulk-delete`
+  - Body: `{ "ids": ["id1", "id2", ...] }`
+  - Retourner le nombre d'invitations supprimées
+- [ ] **11.2** Frontend: Ajouter checkbox sur chaque ligne du tableau
+- [ ] **11.3** Frontend: Ajouter checkbox "Sélectionner tout" dans l'en-tête
+- [ ] **11.4** Frontend: Afficher le nombre d'éléments sélectionnés
+- [ ] **11.5** Frontend: Bouton "Supprimer la sélection" (visible si sélection > 0)
+- [ ] **11.6** Frontend: Modal de confirmation avec récapitulatif
+- [ ] **11.7** Frontend: Ajouter fonction `bulkDeleteInvitations(ids)` dans l'API client
+
+### 12. Tests Phase 2
+- [ ] **12.1** Tests backend pour les endpoints de suppression
+- [ ] **12.2** Tests frontend pour la sélection multiple
+- [ ] **12.3** Tests frontend pour la suppression
+
+## Nouveaux critères d'acceptation (Phase 2)
+
+- [ ] AC-9: Visualisation des invitations acceptées avec date d'activation
+- [ ] AC-10: Suppression d'une invitation individuelle avec confirmation
+- [ ] AC-11: Sélection multiple d'invitations
+- [ ] AC-12: Suppression en masse des invitations sélectionnées
+
 ## Notes techniques
 
 - Utiliser React Query pour la gestion du cache et des mutations
 - Composants UI avec TailwindCSS (cohérent avec le reste de l'app)
 - Gestion des erreurs avec toast/alert
 - Format CSV attendu: `email,prenom,nom,type_liste`
+- Pour la sélection multiple: utiliser un état local `Set<string>` pour stocker les IDs sélectionnés
+- Soft delete vs hard delete: à définir (pour l'instant, hard delete)
