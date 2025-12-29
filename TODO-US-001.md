@@ -110,10 +110,11 @@
 
 ---
 
-## Optionnel (hors scope US-001)
+## Pages Reset Password (Frontend) ✅
 
-### Pages Reset Password (Frontend)
-- [ ] Page "Mot de passe oublié" (`/forgot-password`)
-- [ ] Page "Nouveau mot de passe" (`/reset-password?token=xxx`)
-
-Ces pages peuvent être ajoutées dans une future itération.
+- [x] Page "Mot de passe oublié" (`/forgot-password`)
+- [x] Page "Nouveau mot de passe" (`/reset-password?token=xxx`)
+- [x] Lien "Mot de passe oublié" sur la page de login
+- [x] Validation mot de passe (mêmes critères que l'activation)
+- [x] Gestion des erreurs (token invalide, expiré)
+- [x] Email de support dynamique via `useConfig`

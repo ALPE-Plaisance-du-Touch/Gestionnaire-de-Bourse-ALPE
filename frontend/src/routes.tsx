@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import { MainLayout } from '@/components/layout';
 import { ProtectedRoute } from '@/components/auth';
 import { AuthProvider } from '@/contexts';
-import { LoginPage, ActivatePage } from '@/pages/auth';
+import { LoginPage, ActivatePage, ForgotPasswordPage, ResetPasswordPage } from '@/pages/auth';
 
 /**
  * Root layout that provides auth context to all routes.
@@ -98,7 +98,11 @@ export const router = createBrowserRouter([
       },
       {
         path: '/forgot-password',
-        element: <div className="min-h-screen flex items-center justify-center">Récupération mot de passe (à implémenter)</div>,
+        element: <ForgotPasswordPage />,
+      },
+      {
+        path: '/reset-password',
+        element: <ResetPasswordPage />,
       },
 
       // Protected routes - any authenticated user
