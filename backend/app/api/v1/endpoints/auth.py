@@ -1,6 +1,8 @@
 """Authentication API endpoints."""
 
-from fastapi import APIRouter, HTTPException, Response, status
+import logging
+
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Response, status
 
 from app.dependencies import AuthServiceDep, CurrentActiveUser, DBSession
 from app.exceptions import (
@@ -19,6 +21,9 @@ from app.schemas import (
     TokenResponse,
     UserResponse,
 )
+from app.services.email import email_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -158,19 +163,26 @@ async def get_current_user_profile(
 )
 async def request_password_reset(
     request: PasswordResetRequest,
+    background_tasks: BackgroundTasks,
     auth_service: AuthServiceDep,
 ):
     """Request a password reset.
 
     Note: Always returns success to prevent email enumeration attacks.
-    If the email exists, a reset token will be generated and should be
-    sent via email.
+    If the email exists, a reset token will be generated and sent via email.
     """
-    token = await auth_service.request_password_reset(request.email)
+    result = await auth_service.request_password_reset(request.email)
 
-    # TODO: Send email with reset link if token is not None
-    # if token:
-    #     await email_service.send_password_reset_email(request.email, token)
+    # Send email with reset link if user exists
+    if result:
+        token, first_name = result
+        background_tasks.add_task(
+            email_service.send_password_reset_email,
+            to_email=request.email,
+            token=token,
+            first_name=first_name,
+        )
+        logger.info(f"Password reset email queued for {request.email}")
 
     return MessageResponse(
         message="If an account with this email exists, a password reset link has been sent."

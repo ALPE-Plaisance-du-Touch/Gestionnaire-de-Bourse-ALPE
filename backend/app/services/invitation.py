@@ -2,6 +2,7 @@
 
 import secrets
 from datetime import datetime, timedelta, timezone
+from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,6 +11,9 @@ from app.config import settings
 from app.exceptions import DuplicateEmailError, InvalidTokenError
 from app.models import User
 from app.repositories import UserRepository
+
+if TYPE_CHECKING:
+    from fastapi import BackgroundTasks
 
 
 class InvitationService:
@@ -76,15 +80,20 @@ class InvitationService:
         self,
         invitations: list[dict],
         created_by_id: str | None = None,
+        background_tasks: "BackgroundTasks | None" = None,
     ) -> dict:
         """Create multiple invitations at once.
 
         Args:
             invitations: List of dicts with email, first_name, last_name, list_type
+            created_by_id: ID of the user creating the invitations
+            background_tasks: FastAPI BackgroundTasks for sending emails
 
         Returns:
             Dict with total, created, duplicates, errors counts and details
         """
+        from app.services.email import email_service
+
         result = {
             "total": len(invitations),
             "created": 0,
@@ -103,7 +112,7 @@ class InvitationService:
                     })
                     continue
 
-                await self.create_invitation(
+                user, token = await self.create_invitation(
                     email=email,
                     first_name=inv.get("first_name"),
                     last_name=inv.get("last_name"),
@@ -111,6 +120,15 @@ class InvitationService:
                     created_by_id=created_by_id,
                 )
                 result["created"] += 1
+
+                # Queue email if background_tasks provided
+                if background_tasks:
+                    background_tasks.add_task(
+                        email_service.send_invitation_email,
+                        to_email=user.email,
+                        token=token,
+                        first_name=user.first_name,
+                    )
 
             except DuplicateEmailError:
                 result["duplicates"] += 1

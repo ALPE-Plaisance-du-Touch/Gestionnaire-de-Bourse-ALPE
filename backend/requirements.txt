@@ -10,6 +10,7 @@ PyJWT>=2.8.0
 passlib[bcrypt]>=1.7.4
 python-multipart>=0.0.6
 aiosmtplib>=3.0.0
+jinja2>=3.1.0
 email-validator>=2.1.0
 weasyprint>=60.0
 python-barcode>=0.15.1

@@ -291,10 +291,10 @@ class AuthService:
     # Password Reset
     # -------------------------------------------------------------------------
 
-    async def request_password_reset(self, email: str) -> str | None:
+    async def request_password_reset(self, email: str) -> tuple[str, str] | None:
         """Request a password reset for a user.
 
-        Returns the reset token if user exists, None otherwise.
+        Returns tuple of (reset_token, first_name) if user exists, None otherwise.
         Note: Always returns the same response to prevent email enumeration.
         """
         result = await self.db.execute(
@@ -312,7 +312,7 @@ class AuthService:
         user.invitation_expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
 
         await self.db.commit()
-        return token
+        return token, user.first_name
 
     async def reset_password(self, token: str, new_password: str) -> User:
         """Reset a user's password using a valid reset token."""

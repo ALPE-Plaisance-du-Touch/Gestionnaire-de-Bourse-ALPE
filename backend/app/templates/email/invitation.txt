@@ -1,0 +1,16 @@
+Bourse ALPE - Invitation
+
+Bonjour {{ first_name }},
+
+Vous avez été invité(e) à participer à la prochaine bourse ALPE en tant que déposant.
+
+Pour activer votre compte et déclarer vos articles, cliquez sur le lien ci-dessous :
+
+{{ activation_url }}
+
+Important : Ce lien est valide pendant {{ expiry_days }} jours.
+Passé ce délai, vous devrez demander une nouvelle invitation.
+
+---
+ALPE Plaisance du Touch
+Cet email a été envoyé automatiquement, merci de ne pas y répondre.

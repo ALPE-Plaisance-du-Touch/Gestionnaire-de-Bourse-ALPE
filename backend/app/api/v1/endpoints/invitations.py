@@ -1,8 +1,9 @@
 """Invitation API endpoints."""
 
+import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 from app.dependencies import DBSession, require_role
 from app.exceptions import DuplicateEmailError, InvalidTokenError
@@ -13,7 +14,10 @@ from app.schemas import (
     InvitationResendResponse,
     InvitationResponse,
 )
+from app.services.email import email_service
 from app.services.invitation import InvitationService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -35,6 +39,7 @@ InvitationServiceDep = Annotated[InvitationService, Depends(get_invitation_servi
 )
 async def create_invitation(
     request: InvitationCreate,
+    background_tasks: BackgroundTasks,
     invitation_service: InvitationServiceDep,
     current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
 ):
@@ -48,8 +53,14 @@ async def create_invitation(
             created_by_id=current_user.id,
         )
 
-        # TODO: Send invitation email
-        # await email_service.send_invitation_email(user.email, token)
+        # Send invitation email in background
+        background_tasks.add_task(
+            email_service.send_invitation_email,
+            to_email=user.email,
+            token=token,
+            first_name=user.first_name,
+        )
+        logger.info(f"Invitation created for {user.email}, email queued")
 
         return InvitationResponse(
             id=user.id,
@@ -76,6 +87,7 @@ async def create_invitation(
 )
 async def bulk_create_invitations(
     invitations: list[InvitationCreate],
+    background_tasks: BackgroundTasks,
     invitation_service: InvitationServiceDep,
     current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
 ):
@@ -93,9 +105,8 @@ async def bulk_create_invitations(
     result = await invitation_service.create_bulk_invitations(
         invitations=invitation_dicts,
         created_by_id=current_user.id,
+        background_tasks=background_tasks,
     )
-
-    # TODO: Send invitation emails for created invitations
 
     return BulkInvitationResult(
         total=result["total"],
@@ -113,6 +124,7 @@ async def bulk_create_invitations(
 )
 async def resend_invitation(
     invitation_id: str,
+    background_tasks: BackgroundTasks,
     invitation_service: InvitationServiceDep,
     current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
 ):
@@ -120,8 +132,14 @@ async def resend_invitation(
     try:
         user, token = await invitation_service.resend_invitation(invitation_id)
 
-        # TODO: Send invitation email
-        # await email_service.send_invitation_email(user.email, token)
+        # Send invitation email in background
+        background_tasks.add_task(
+            email_service.send_invitation_email,
+            to_email=user.email,
+            token=token,
+            first_name=user.first_name,
+        )
+        logger.info(f"Invitation resent for {user.email}, email queued")
 
         return InvitationResendResponse(
             id=user.id,

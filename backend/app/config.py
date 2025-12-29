@@ -47,6 +47,9 @@ class Settings(BaseSettings):
     smtp_from_name: str = "Bourse ALPE"
     smtp_use_tls: bool = True
 
+    # Frontend URL (for email links)
+    frontend_url: str = "http://localhost:5173"
+
     # File storage
     upload_dir: str = "uploads"
     max_upload_size_mb: int = 10
