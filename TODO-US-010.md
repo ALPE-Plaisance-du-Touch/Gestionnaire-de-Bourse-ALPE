@@ -60,21 +60,21 @@ Le backend est déjà implémenté (v0.2). Cette tâche concerne uniquement le *
 - [x] **6.3** Ajouter lien dans le menu admin/header
 
 ### 7. Tests
-- [ ] **7.1** Tests unitaires InvitationsPage
-- [ ] **7.2** Tests unitaires InvitationCreateModal
-- [ ] **7.3** Tests unitaires BulkInvitationModal
+- [x] **7.1** Tests unitaires InvitationsPage
+- [x] **7.2** Tests unitaires InvitationCreateModal
+- [x] **7.3** Tests unitaires BulkInvitationModal
 
 ### 8. Documentation
-- [ ] **8.1** Mettre à jour DEVELOPMENT.md avec tâches US-010 frontend
+- [x] **8.1** Mettre à jour DEVELOPMENT.md avec tâches US-010 frontend
 
 ## Critères d'acceptation (depuis US-010)
 
-- [ ] AC-1: Interface liste invitations accessible aux gestionnaires/admins
-- [ ] AC-2: Création invitation unique avec envoi email
-- [ ] AC-3: Gestion doublon (erreur ou relance)
-- [ ] AC-4: Import CSV avec validation
-- [ ] AC-5: Envoi en masse après validation
-- [ ] AC-8: Relance invitation non activée
+- [x] AC-1: Interface liste invitations accessible aux gestionnaires/admins
+- [x] AC-2: Création invitation unique avec envoi email
+- [x] AC-3: Gestion doublon (erreur ou relance)
+- [x] AC-4: Import CSV avec validation
+- [x] AC-5: Envoi en masse après validation
+- [x] AC-8: Relance invitation non activée
 
 ## Notes techniques
 
