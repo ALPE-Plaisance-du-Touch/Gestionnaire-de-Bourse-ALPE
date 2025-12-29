@@ -110,9 +110,9 @@ Le backend est déjà implémenté (v0.2). Cette tâche concerne uniquement le *
 - [x] **11.7** Frontend: Ajouter fonction `bulkDeleteInvitations(ids)` dans l'API client
 
 ### 12. Tests Phase 2
-- [ ] **12.1** Tests backend pour les endpoints de suppression
-- [ ] **12.2** Tests frontend pour la sélection multiple
-- [ ] **12.3** Tests frontend pour la suppression
+- [x] **12.1** Tests backend pour les endpoints de suppression
+- [x] **12.2** Tests frontend pour la sélection multiple
+- [x] **12.3** Tests frontend pour la suppression
 
 ## Nouveaux critères d'acceptation (Phase 2)
 
