@@ -191,3 +191,41 @@ class InvitationService:
                 raise TokenExpiredError("Invitation token has expired")
 
         return user
+
+    async def list_pending_invitations(
+        self,
+        status_filter: str | None = None,
+    ) -> list[User]:
+        """List invitations that are pending (not yet activated).
+
+        Args:
+            status_filter: Optional filter - 'pending', 'expired', or None for all
+
+        Returns:
+            List of users with pending invitations
+        """
+        # Query users who have an invitation token (not activated)
+        query = select(User).where(
+            User.invitation_token.isnot(None),
+            User.is_active == False,  # noqa: E712
+        )
+
+        result = await self.db.execute(query)
+        users = list(result.scalars().all())
+
+        # Apply status filter
+        now = datetime.now(timezone.utc)
+        if status_filter == "pending":
+            # Only non-expired
+            users = [
+                u for u in users
+                if u.invitation_expires_at and u.invitation_expires_at.replace(tzinfo=timezone.utc) > now
+            ]
+        elif status_filter == "expired":
+            # Only expired
+            users = [
+                u for u in users
+                if u.invitation_expires_at and u.invitation_expires_at.replace(tzinfo=timezone.utc) <= now
+            ]
+
+        return users

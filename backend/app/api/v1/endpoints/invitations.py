@@ -1,9 +1,10 @@
 """Invitation API endpoints."""
 
 import logging
-from typing import Annotated
+from datetime import datetime, timezone
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 
 from app.dependencies import DBSession, require_role
 from app.exceptions import DuplicateEmailError, InvalidTokenError
@@ -28,6 +29,54 @@ def get_invitation_service(db: DBSession) -> InvitationService:
 
 
 InvitationServiceDep = Annotated[InvitationService, Depends(get_invitation_service)]
+
+
+def compute_invitation_status(user: User) -> str:
+    """Compute the invitation status based on user state."""
+    if user.is_active and user.password_hash:
+        return "activated"
+    if not user.invitation_token:
+        return "cancelled"
+    if user.invitation_expires_at:
+        expires = user.invitation_expires_at
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+        if datetime.now(timezone.utc) > expires:
+            return "expired"
+    return "pending"
+
+
+@router.get(
+    "",
+    response_model=list[InvitationResponse],
+    summary="List pending invitations",
+    description="List invitations that have not been activated yet. Requires manager or admin role.",
+)
+async def list_invitations(
+    invitation_service: InvitationServiceDep,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+    status_filter: Literal["pending", "expired"] | None = Query(
+        None,
+        alias="status",
+        description="Filter by status: 'pending' (not expired), 'expired', or omit for all",
+    ),
+):
+    """List invitations that are pending (not yet activated)."""
+    users = await invitation_service.list_pending_invitations(status_filter)
+
+    return [
+        InvitationResponse(
+            id=user.id,
+            email=user.email,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            status=compute_invitation_status(user),
+            created_at=user.created_at,
+            expires_at=user.invitation_expires_at,
+            used_at=None,
+        )
+        for user in users
+    ]
 
 
 @router.post(

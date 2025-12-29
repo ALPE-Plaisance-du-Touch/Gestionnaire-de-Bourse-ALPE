@@ -223,9 +223,11 @@ class AuthService:
 
     async def activate_account(self, request: ActivateAccountRequest) -> User:
         """Activate a user account using an invitation token."""
-        # Find user by invitation token
+        # Find user by invitation token (eager load role for response)
         result = await self.db.execute(
-            select(User).where(User.invitation_token == request.token)
+            select(User)
+            .options(selectinload(User.role))
+            .where(User.invitation_token == request.token)
         )
         user = result.scalar_one_or_none()
 
