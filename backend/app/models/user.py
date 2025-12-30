@@ -64,6 +64,8 @@ class User(Base, UUIDMixin, TimestampMixin):
     invitation_expires_at: Mapped[datetime | None] = mapped_column(
         DateTime, nullable=True
     )
+    # Flag to hide invitation from list (soft delete for invitation display)
+    invitation_hidden: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Last login tracking
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

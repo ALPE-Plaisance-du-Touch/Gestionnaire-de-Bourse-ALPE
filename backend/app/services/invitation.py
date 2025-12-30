@@ -192,40 +192,136 @@ class InvitationService:
 
         return user
 
+    async def list_invitations(
+        self,
+        status_filter: str | None = None,
+    ) -> list[User]:
+        """List invitations with optional status filter.
+
+        Args:
+            status_filter: Optional filter - 'pending', 'expired', 'activated', or None for all
+
+        Returns:
+            List of users matching the filter
+        """
+        from sqlalchemy import or_
+
+        if status_filter == "activated":
+            # Query users who were invited and are now active (activated their account)
+            # These are depositors who have is_active=True and password_hash set
+            query = select(User).where(
+                User.is_active == True,  # noqa: E712
+                User.password_hash.isnot(None),
+                User.role_id == 1,  # depositor role
+                User.invitation_hidden == False,  # noqa: E712 - Not hidden from list
+            )
+            result = await self.db.execute(query)
+            return list(result.scalars().all())
+
+        # Query users who have an invitation token (not activated)
+        query = select(User).where(
+            User.invitation_token.isnot(None),
+            User.is_active == False,  # noqa: E712
+            User.invitation_hidden == False,  # noqa: E712 - Not hidden from list
+        )
+
+        result = await self.db.execute(query)
+        pending_users = list(result.scalars().all())
+
+        # Apply status filter for pending/expired
+        now = datetime.now(timezone.utc)
+        if status_filter == "pending":
+            # Only non-expired
+            return [
+                u for u in pending_users
+                if u.invitation_expires_at and u.invitation_expires_at.replace(tzinfo=timezone.utc) > now
+            ]
+        elif status_filter == "expired":
+            # Only expired
+            return [
+                u for u in pending_users
+                if u.invitation_expires_at and u.invitation_expires_at.replace(tzinfo=timezone.utc) <= now
+            ]
+
+        # status_filter is None (all) - include activated users too
+        activated_query = select(User).where(
+            User.is_active == True,  # noqa: E712
+            User.password_hash.isnot(None),
+            User.role_id == 1,  # depositor role
+            User.invitation_hidden == False,  # noqa: E712 - Not hidden from list
+        )
+        activated_result = await self.db.execute(activated_query)
+        activated_users = list(activated_result.scalars().all())
+
+        return pending_users + activated_users
+
     async def list_pending_invitations(
         self,
         status_filter: str | None = None,
     ) -> list[User]:
         """List invitations that are pending (not yet activated).
 
+        Deprecated: Use list_invitations instead.
+
         Args:
-            status_filter: Optional filter - 'pending', 'expired', or None for all
+            status_filter: Optional filter - 'pending', 'expired', 'activated', or None for all
 
         Returns:
             List of users with pending invitations
         """
-        # Query users who have an invitation token (not activated)
-        query = select(User).where(
-            User.invitation_token.isnot(None),
-            User.is_active == False,  # noqa: E712
-        )
+        return await self.list_invitations(status_filter)
 
-        result = await self.db.execute(query)
-        users = list(result.scalars().all())
+    async def delete_invitation(self, invitation_id: str) -> bool:
+        """Delete an invitation.
 
-        # Apply status filter
-        now = datetime.now(timezone.utc)
-        if status_filter == "pending":
-            # Only non-expired
-            users = [
-                u for u in users
-                if u.invitation_expires_at and u.invitation_expires_at.replace(tzinfo=timezone.utc) > now
-            ]
-        elif status_filter == "expired":
-            # Only expired
-            users = [
-                u for u in users
-                if u.invitation_expires_at and u.invitation_expires_at.replace(tzinfo=timezone.utc) <= now
-            ]
+        For pending invitations: deletes the user entirely.
+        For activated users: hides from invitation list but preserves the user account.
 
-        return users
+        Args:
+            invitation_id: The user ID of the invitation to delete
+
+        Returns:
+            True if deleted, False if not found
+        """
+        user = await self.user_repo.get_by_id(invitation_id)
+        if not user:
+            return False
+
+        # Check if user is a depositor (role_id = 1)
+        if user.role_id != 1:
+            return False
+
+        if user.is_active and user.password_hash:
+            # User has activated their account - hide from invitation list
+            user.invitation_hidden = True
+            await self.db.commit()
+        else:
+            # Pending invitation - delete the user entirely
+            await self.db.delete(user)
+            await self.db.commit()
+
+        return True
+
+    async def bulk_delete_invitations(self, invitation_ids: list[str]) -> dict:
+        """Delete multiple invitations at once.
+
+        Args:
+            invitation_ids: List of user IDs to delete
+
+        Returns:
+            Dict with total, deleted, not_found counts
+        """
+        result = {
+            "total": len(invitation_ids),
+            "deleted": 0,
+            "not_found": 0,
+        }
+
+        for invitation_id in invitation_ids:
+            deleted = await self.delete_invitation(invitation_id)
+            if deleted:
+                result["deleted"] += 1
+            else:
+                result["not_found"] += 1
+
+        return result

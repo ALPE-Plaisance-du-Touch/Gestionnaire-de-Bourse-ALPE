@@ -12,6 +12,8 @@ from app.schemas.auth import (
 )
 from app.schemas.common import ErrorResponse, MessageResponse, PaginatedResponse
 from app.schemas.invitation import (
+    BulkDeleteRequest,
+    BulkDeleteResult,
     BulkInvitationResult,
     InvitationCreate,
     InvitationResendResponse,
@@ -46,6 +48,8 @@ __all__ = [
     "InvitationResponse",
     "InvitationResendResponse",
     "BulkInvitationResult",
+    "BulkDeleteRequest",
+    "BulkDeleteResult",
     # Common
     "PaginatedResponse",
     "ErrorResponse",

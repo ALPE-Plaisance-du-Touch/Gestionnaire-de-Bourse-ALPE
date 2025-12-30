@@ -117,6 +117,15 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
   - [x] ForgotPasswordPage (`/forgot-password`)
   - [x] ResetPasswordPage (`/reset-password?token=xxx`)
   - [x] useConfig hook for dynamic support email
+- [x] **0.2.20** Invitation management frontend (US-010)
+  - [x] API client for invitations (`getInvitations`, `createInvitation`, `createBulkInvitations`, `resendInvitation`)
+  - [x] InvitationsPage (`/admin/invitations`) with table, filters, statistics
+  - [x] InvitationCreateModal for single invitation creation
+  - [x] BulkInvitationModal for CSV import
+  - [x] Resend action for pending/expired invitations
+  - [x] Route protection (manager, administrator roles)
+  - [x] Admin dropdown menu in Header
+  - [x] Unit tests for all invitation components
 
 ---
 

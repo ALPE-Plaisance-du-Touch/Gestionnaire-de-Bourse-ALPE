@@ -10,6 +10,8 @@ from app.dependencies import DBSession, require_role
 from app.exceptions import DuplicateEmailError, InvalidTokenError
 from app.models import User
 from app.schemas import (
+    BulkDeleteRequest,
+    BulkDeleteResult,
     BulkInvitationResult,
     InvitationCreate,
     InvitationResendResponse,
@@ -49,20 +51,20 @@ def compute_invitation_status(user: User) -> str:
 @router.get(
     "",
     response_model=list[InvitationResponse],
-    summary="List pending invitations",
-    description="List invitations that have not been activated yet. Requires manager or admin role.",
+    summary="List invitations",
+    description="List invitations with optional status filter. Requires manager or admin role.",
 )
 async def list_invitations(
     invitation_service: InvitationServiceDep,
     current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
-    status_filter: Literal["pending", "expired"] | None = Query(
+    status_filter: Literal["pending", "expired", "activated"] | None = Query(
         None,
         alias="status",
-        description="Filter by status: 'pending' (not expired), 'expired', or omit for all",
+        description="Filter by status: 'pending', 'expired', 'activated', or omit for all",
     ),
 ):
-    """List invitations that are pending (not yet activated)."""
-    users = await invitation_service.list_pending_invitations(status_filter)
+    """List invitations with optional status filter."""
+    users = await invitation_service.list_invitations(status_filter)
 
     return [
         InvitationResponse(
@@ -73,7 +75,8 @@ async def list_invitations(
             status=compute_invitation_status(user),
             created_at=user.created_at,
             expires_at=user.invitation_expires_at,
-            used_at=None,
+            # For activated users, use updated_at as activation date
+            used_at=user.updated_at if (user.is_active and user.password_hash) else None,
         )
         for user in users
     ]
@@ -204,3 +207,51 @@ async def resend_invitation(
             else status.HTTP_409_CONFLICT,
             detail=e.message,
         )
+
+
+@router.post(
+    "/bulk-delete",
+    response_model=BulkDeleteResult,
+    summary="Bulk delete invitations",
+    description="Delete multiple invitations at once. Requires manager or admin role.",
+)
+async def bulk_delete_invitations(
+    request: BulkDeleteRequest,
+    invitation_service: InvitationServiceDep,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Delete multiple invitations at once."""
+    result = await invitation_service.bulk_delete_invitations(request.ids)
+    logger.info(
+        f"Bulk delete: {result['deleted']}/{result['total']} invitations deleted by {current_user.email}"
+    )
+    return BulkDeleteResult(
+        total=result["total"],
+        deleted=result["deleted"],
+        not_found=result["not_found"],
+    )
+
+
+@router.delete(
+    "/{invitation_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete invitation",
+    description="Delete an invitation regardless of its status. Requires manager or admin role.",
+)
+async def delete_invitation(
+    invitation_id: str,
+    invitation_service: InvitationServiceDep,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Delete an invitation.
+
+    For pending invitations, the token is invalidated.
+    For activated users, only the invitation record is cleared (user account is preserved).
+    """
+    deleted = await invitation_service.delete_invitation(invitation_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Invitation not found",
+        )
+    logger.info(f"Invitation {invitation_id} deleted by {current_user.email}")

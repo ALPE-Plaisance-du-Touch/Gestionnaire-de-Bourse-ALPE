@@ -3,6 +3,7 @@ import { MainLayout } from '@/components/layout';
 import { ProtectedRoute } from '@/components/auth';
 import { AuthProvider } from '@/contexts';
 import { LoginPage, ActivatePage, ForgotPasswordPage, ResetPasswordPage } from '@/pages/auth';
+import { InvitationsPageWrapper } from '@/pages/admin';
 
 /**
  * Root layout that provides auth context to all routes.
@@ -161,11 +162,11 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: '/admin/*',
+        path: '/admin/invitations',
         element: (
           <ProtectedRoute allowedRoles={['manager', 'administrator']}>
             <MainLayout>
-              <div>Section admin (à implémenter)</div>
+              <InvitationsPageWrapper />
             </MainLayout>
           </ProtectedRoute>
         ),

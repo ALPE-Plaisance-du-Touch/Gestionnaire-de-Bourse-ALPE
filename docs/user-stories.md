@@ -2239,6 +2239,57 @@ acceptance_criteria:
       • Rate limiting : max 100 invitations/heure par gestionnaire (anti-spam)
       • Logs d'audit : toutes les actions sont tracées (création, relance, annulation)
 
+  # AC-16 : Visualisation des invitations activées
+  - GIVEN je consulte la liste des invitations
+    WHEN je sélectionne le filtre "Activées" dans les options de statut
+    THEN :
+      • Le tableau affiche uniquement les invitations au statut "Activée"
+      • Une colonne "Date d'activation" affiche la date et heure d'activation du compte
+      • Les statistiques en haut de page incluent le compte des invitations activées
+      • Je peux voir l'historique complet du parcours de l'invitation (envoi → activation)
+
+  # AC-17 : Suppression d'une invitation individuelle
+  - GIVEN je consulte une invitation dans le tableau (quel que soit son statut)
+    WHEN je clique sur le bouton "Supprimer" dans la colonne Actions
+    THEN :
+      • Le système affiche une modale de confirmation :
+        "Supprimer l'invitation de sophie.martin@example.com ?
+        Cette action est irréversible. Si l'invitation était activée, le compte déposant n'est pas affecté."
+      • Si je confirme :
+        - L'invitation est supprimée de la base de données
+        - Si l'invitation n'était pas encore activée, le token devient invalide
+        - Un toast de confirmation s'affiche : "✓ Invitation supprimée"
+        - Le tableau se rafraîchit automatiquement
+        - L'action est tracée dans les logs d'audit
+      • Si j'annule : rien ne se passe, la modale se ferme
+
+  # AC-18 : Sélection multiple d'invitations
+  - GIVEN je consulte le tableau des invitations
+    WHEN je souhaite sélectionner plusieurs invitations
+    THEN :
+      • Chaque ligne du tableau a une checkbox de sélection
+      • L'en-tête du tableau contient une checkbox "Sélectionner tout" (sélectionne la page courante)
+      • Un compteur affiche le nombre d'éléments sélectionnés : "3 invitations sélectionnées"
+      • Les sélections sont préservées lors de la navigation/filtrage
+      • Je peux combiner sélection individuelle et "Sélectionner tout"
+
+  # AC-19 : Suppression en masse des invitations sélectionnées
+  - GIVEN j'ai sélectionné une ou plusieurs invitations
+    WHEN je clique sur le bouton "Supprimer la sélection" (visible si sélection > 0)
+    THEN :
+      • Le système affiche une modale de confirmation :
+        "Supprimer 5 invitations ?
+        Statuts : 3 en attente, 1 expirée, 1 activée
+        Cette action est irréversible."
+      • Si je confirme :
+        - Le système supprime toutes les invitations sélectionnées
+        - Une barre de progression s'affiche si > 10 éléments
+        - Un rapport final s'affiche : "✓ 5 invitations supprimées"
+        - Le tableau se rafraîchit automatiquement
+        - La sélection est réinitialisée
+        - L'action est tracée dans les logs d'audit (liste des IDs supprimés)
+      • Si j'annule : rien ne se passe, la sélection est préservée
+
 business_rules:
   - Une invitation = 1 email unique pour 1 édition donnée
   - Validité : 7 jours calendaires après émission
@@ -2304,5 +2355,9 @@ test_scenarios:
   - T-US010-18 : Import CSV 500 lignes (OK, traitement asynchrone, rapport final)
   - T-US010-19 : Type liste 1000/2000 dans email (OK, mention priorité affichée)
   - T-US010-20 : Gestionnaire ne voit que ses invitations (OK, isolation données)
+  - T-US010-21 : Affichage invitations activées avec date d'activation (OK, filtre "Activées", colonne date)
+  - T-US010-22 : Suppression invitation individuelle (OK, confirmation, feedback)
+  - T-US010-23 : Sélection multiple invitations (OK, checkbox, compteur)
+  - T-US010-24 : Suppression en masse invitations sélectionnées (OK, confirmation, rapport)
 ```
 

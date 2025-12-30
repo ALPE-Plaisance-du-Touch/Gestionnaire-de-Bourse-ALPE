@@ -28,8 +28,8 @@ class InvitationResponse(BaseModel):
     last_name: str | None = None
     status: str
     created_at: datetime
-    expires_at: datetime
-    used_at: datetime | None = None
+    expires_at: datetime | None = None  # None for activated users
+    used_at: datetime | None = None  # Activation date for activated users
 
 
 class BulkInvitationResult(BaseModel):
@@ -49,3 +49,17 @@ class InvitationResendResponse(BaseModel):
     status: str
     expires_at: datetime
     message: str = "Invitation resent successfully"
+
+
+class BulkDeleteRequest(BaseModel):
+    """Request schema for bulk invitation deletion."""
+
+    ids: list[str] = Field(..., min_length=1, max_length=100)
+
+
+class BulkDeleteResult(BaseModel):
+    """Response schema for bulk invitation deletion."""
+
+    total: int
+    deleted: int
+    not_found: int
