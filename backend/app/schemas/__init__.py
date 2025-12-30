@@ -11,6 +11,14 @@ from app.schemas.auth import (
     TokenValidationResponse,
 )
 from app.schemas.common import ErrorResponse, MessageResponse, PaginatedResponse
+from app.schemas.edition import (
+    EditionCreate,
+    EditionListResponse,
+    EditionResponse,
+    EditionStatus,
+    EditionStatusUpdate,
+    EditionUpdate,
+)
 from app.schemas.invitation import (
     BulkDeleteRequest,
     BulkDeleteResult,
@@ -43,6 +51,13 @@ __all__ = [
     "UserSelfUpdate",
     "UserResponse",
     "UserListResponse",
+    # Edition
+    "EditionCreate",
+    "EditionUpdate",
+    "EditionStatusUpdate",
+    "EditionResponse",
+    "EditionListResponse",
+    "EditionStatus",
     # Invitation
     "InvitationCreate",
     "InvitationResponse",

@@ -10,6 +10,13 @@ export type EditionStatus =
   | 'closed'
   | 'archived';
 
+export interface EditionCreator {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
 export interface Edition {
   id: string;
   name: string;
@@ -27,7 +34,7 @@ export interface Edition {
   retrievalEndDatetime: string | null;
   commissionRate: number | null;
   createdAt: string;
-  updatedAt: string;
+  createdBy: EditionCreator | null;
 }
 
 export interface CreateEditionRequest {
@@ -42,6 +49,8 @@ export interface UpdateEditionRequest {
   name?: string;
   description?: string;
   location?: string;
+  startDatetime?: string;
+  endDatetime?: string;
   declarationDeadline?: string;
   depositStartDatetime?: string;
   depositEndDatetime?: string;
@@ -50,4 +59,12 @@ export interface UpdateEditionRequest {
   retrievalStartDatetime?: string;
   retrievalEndDatetime?: string;
   commissionRate?: number;
+}
+
+export interface EditionListResponse {
+  items: Edition[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
 }

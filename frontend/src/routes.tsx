@@ -3,7 +3,7 @@ import { MainLayout } from '@/components/layout';
 import { ProtectedRoute } from '@/components/auth';
 import { AuthProvider } from '@/contexts';
 import { LoginPage, ActivatePage, ForgotPasswordPage, ResetPasswordPage } from '@/pages/auth';
-import { InvitationsPageWrapper } from '@/pages/admin';
+import { InvitationsPageWrapper, EditionsPageWrapper } from '@/pages/admin';
 
 /**
  * Root layout that provides auth context to all routes.
@@ -48,16 +48,6 @@ function NotFoundPage() {
   );
 }
 
-function EditionsPage() {
-  return (
-    <MainLayout>
-      <div className="py-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Éditions</h1>
-        <p className="text-gray-600">Liste des éditions à implémenter.</p>
-      </div>
-    </MainLayout>
-  );
-}
 
 function ListsPage() {
   return (
@@ -118,8 +108,10 @@ export const router = createBrowserRouter([
       {
         path: '/editions',
         element: (
-          <ProtectedRoute>
-            <EditionsPage />
+          <ProtectedRoute allowedRoles={['manager', 'administrator']}>
+            <MainLayout>
+              <EditionsPageWrapper />
+            </MainLayout>
           </ProtectedRoute>
         ),
       },
@@ -167,6 +159,16 @@ export const router = createBrowserRouter([
           <ProtectedRoute allowedRoles={['manager', 'administrator']}>
             <MainLayout>
               <InvitationsPageWrapper />
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin/editions',
+        element: (
+          <ProtectedRoute allowedRoles={['manager', 'administrator']}>
+            <MainLayout>
+              <EditionsPageWrapper />
             </MainLayout>
           </ProtectedRoute>
         ),
