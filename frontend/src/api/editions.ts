@@ -8,7 +8,8 @@ import type {
 } from '@/types';
 
 /**
- * API response type (snake_case from backend).
+ * API response type after Axios interceptor transforms keys to camelCase.
+ * Note: commissionRate comes as string from backend (Decimal serialization).
  */
 interface EditionApiResponse {
   id: string;
@@ -16,21 +17,21 @@ interface EditionApiResponse {
   description: string | null;
   location: string | null;
   status: string;
-  start_datetime: string;
-  end_datetime: string;
-  declaration_deadline: string | null;
-  deposit_start_datetime: string | null;
-  deposit_end_datetime: string | null;
-  sale_start_datetime: string | null;
-  sale_end_datetime: string | null;
-  retrieval_start_datetime: string | null;
-  retrieval_end_datetime: string | null;
-  commission_rate: number | null;
-  created_at: string;
-  created_by: {
+  startDatetime: string;
+  endDatetime: string;
+  declarationDeadline: string | null;
+  depositStartDatetime: string | null;
+  depositEndDatetime: string | null;
+  saleStartDatetime: string | null;
+  saleEndDatetime: string | null;
+  retrievalStartDatetime: string | null;
+  retrievalEndDatetime: string | null;
+  commissionRate: string | null;  // Decimal is serialized as string by Pydantic
+  createdAt: string;
+  createdBy: {
     id: string;
-    first_name: string;
-    last_name: string;
+    firstName: string;
+    lastName: string;
     email: string;
   } | null;
 }
@@ -45,6 +46,8 @@ interface EditionListApiResponse {
 
 /**
  * Transform API response to frontend Edition type.
+ * Axios interceptor already converts snake_case to camelCase,
+ * we just need to parse commissionRate from string to number.
  */
 function transformEdition(data: EditionApiResponse): Edition {
   return {
@@ -53,25 +56,18 @@ function transformEdition(data: EditionApiResponse): Edition {
     description: data.description,
     location: data.location,
     status: data.status as EditionStatus,
-    startDatetime: data.start_datetime,
-    endDatetime: data.end_datetime,
-    declarationDeadline: data.declaration_deadline,
-    depositStartDatetime: data.deposit_start_datetime,
-    depositEndDatetime: data.deposit_end_datetime,
-    saleStartDatetime: data.sale_start_datetime,
-    saleEndDatetime: data.sale_end_datetime,
-    retrievalStartDatetime: data.retrieval_start_datetime,
-    retrievalEndDatetime: data.retrieval_end_datetime,
-    commissionRate: data.commission_rate,
-    createdAt: data.created_at,
-    createdBy: data.created_by
-      ? {
-          id: data.created_by.id,
-          firstName: data.created_by.first_name,
-          lastName: data.created_by.last_name,
-          email: data.created_by.email,
-        }
-      : null,
+    startDatetime: data.startDatetime,
+    endDatetime: data.endDatetime,
+    declarationDeadline: data.declarationDeadline,
+    depositStartDatetime: data.depositStartDatetime,
+    depositEndDatetime: data.depositEndDatetime,
+    saleStartDatetime: data.saleStartDatetime,
+    saleEndDatetime: data.saleEndDatetime,
+    retrievalStartDatetime: data.retrievalStartDatetime,
+    retrievalEndDatetime: data.retrievalEndDatetime,
+    commissionRate: data.commissionRate !== null ? parseFloat(data.commissionRate) : null,
+    createdAt: data.createdAt,
+    createdBy: data.createdBy,
   };
 }
 
