@@ -79,10 +79,11 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
       return;
     }
 
+    // Send dates as-is (local time) - backend stores without timezone
     createMutation.mutate({
       name: name.trim(),
-      startDatetime: new Date(startDatetime).toISOString(),
-      endDatetime: new Date(endDatetime).toISOString(),
+      startDatetime: `${startDatetime}:00`,
+      endDatetime: `${endDatetime}:00`,
       location: location.trim() || undefined,
       description: description.trim() || undefined,
     });
