@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 "Gestionnaire de Bourse ALPE" is a web application to manage second-hand goods sales events organized by ALPE Plaisance du Touch (France). The target audience is depositors (sellers) and volunteer staff.
 
-**Current status**: Development phase - v0.1 (Scaffolding complete)
-**Next milestone**: v0.2 - Authentication System
+**Current status**: Development phase - v0.3 (Edition Management complete)
+**Next milestone**: v0.4 - Billetweb Import (US-008)
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed progress tracking and task breakdown.
 
@@ -37,11 +37,12 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed progress tracking and task bre
 ```
 ├── backend/
 │   ├── app/
-│   │   ├── api/v1/          # API routes (to implement)
-│   │   ├── models/          # SQLAlchemy models
-│   │   ├── repositories/    # Data access layer (to implement)
-│   │   ├── schemas/         # Pydantic schemas (to implement)
-│   │   ├── services/        # Business logic (to implement)
+│   │   ├── api/v1/          # API routes
+│   │   │   └── endpoints/   # auth, editions, deposit_slots, invitations
+│   │   ├── models/          # SQLAlchemy models (User, Edition, DepositSlot, etc.)
+│   │   ├── repositories/    # Data access layer
+│   │   ├── schemas/         # Pydantic schemas
+│   │   ├── services/        # Business logic
 │   │   ├── config.py        # Settings (Pydantic)
 │   │   ├── dependencies.py  # FastAPI dependencies
 │   │   ├── exceptions.py    # Custom exceptions
@@ -51,11 +52,11 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed progress tracking and task bre
 │   └── Dockerfile
 ├── frontend/
 │   ├── src/
-│   │   ├── api/             # Axios client
-│   │   ├── components/      # UI components
-│   │   ├── contexts/        # React contexts (to implement)
-│   │   ├── hooks/           # Custom hooks (to implement)
-│   │   ├── pages/           # Page components
+│   │   ├── api/             # Axios client + API modules (auth, editions, invitations, deposit-slots)
+│   │   ├── components/      # UI components (ui/, auth/, editions/, invitations/)
+│   │   ├── contexts/        # React contexts (AuthContext)
+│   │   ├── hooks/           # Custom hooks (useConfig)
+│   │   ├── pages/           # Page components (auth/, admin/)
 │   │   ├── types/           # TypeScript types
 │   │   ├── App.tsx
 │   │   └── routes.tsx
@@ -68,7 +69,7 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed progress tracking and task bre
 
 ## Shell Commands
 
-**Working directory**: All shell commands should be run from the project root (`c:\dev\alpe\Gestionnaire-de-Bourse-ALPE`). No need to prefix commands with `cd` - assume we are already in the correct directory.
+**Working directory**: The shell is already positioned at the project root (`c:\dev\alpe\Gestionnaire-de-Bourse-ALPE`). Do not use `cd` to navigate to the project - all commands can be run directly.
 
 ## Common Commands
 
@@ -102,6 +103,15 @@ make db-shell         # MySQL CLI
 2. **Commits**: Conventional Commits format (`feat:`, `fix:`, `docs:`, `chore:`)
 3. **Code language**: English (variable names, comments, commits)
 4. **Spec language**: French (all docs/ content)
+
+### Starting a New User Story
+When beginning work on a new US, create a `TODO-US-XXX.md` file at project root with:
+- Acceptance criteria checklist from the spec
+- Technical tasks breakdown (backend/frontend)
+- Files to create/modify
+- Test requirements
+
+This file tracks progress during development and is deleted after the PR is merged.
 
 ### Git Flow
 - `main` - Production-ready code
@@ -178,8 +188,36 @@ VITE_API_URL=http://localhost:8000/api
 ## Testing
 
 - **Backend**: pytest with async support, fixtures in `conftest.py`
-- **Frontend**: Vitest + React Testing Library
+- **Frontend**: Vitest + React Testing Library (109 tests)
 - **Coverage target**: 80%+ for business logic
+
+## Implemented Features
+
+### v0.2 - Authentication ✅
+- Login/logout with JWT tokens
+- Account activation via invitation link
+- Password reset flow
+- Role-based access control (depositor, volunteer, manager, administrator)
+- Invitation management (single + bulk CSV import)
+
+### v0.3 - Edition Management ✅
+- Edition CRUD (create, list, update, delete)
+- Edition configuration (operational dates, commission rate)
+- Deposit slots management (capacity, local reservation)
+- Automatic status transitions (draft → configured)
+- Protected routes for manager/admin roles
+
+## Technical Notes
+
+### API Data Transformation
+The Axios client has an interceptor that automatically converts snake_case (backend) to camelCase (frontend). When writing API modules:
+- Response interfaces should use **camelCase** (already transformed)
+- Request payloads should use **snake_case** (for backend)
+
+### Datetime Handling
+Backend stores datetimes without timezone info. Frontend should:
+- Send dates as local time strings (e.g., `2025-03-15T09:00:00`)
+- Parse dates directly without `new Date()` conversion to avoid timezone shifts
 
 ## Current Development Focus
 

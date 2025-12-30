@@ -16,7 +16,7 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 |---------|-----------|--------|----------|
 | 0.1 | Project Scaffolding | ✅ Done | 100% |
 | 0.2 | Authentication System | ✅ Done | 100% |
-| 0.3 | Edition Management | 🔲 Not Started | 0% |
+| 0.3 | Edition Management | ✅ Done | 100% |
 | 0.4 | Billetweb Import | 🔲 Not Started | 0% |
 | 0.5 | Article Declaration | 🔲 Not Started | 0% |
 | 0.6 | Label Generation | 🔲 Not Started | 0% |
@@ -27,8 +27,8 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.11 | PWA & Offline Mode | 🔲 Not Started | 0% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.2 (Authentication complete)
-**Next Target:** 0.3 - Edition Management (US-006, US-007)
+**Current Version:** 0.3 (Edition Management complete)
+**Next Target:** 0.4 - Billetweb Import (US-008)
 
 ---
 
@@ -129,27 +129,35 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
-## v0.3 - Edition Management (US-006, US-007)
+## v0.3 - Edition Management (US-006, US-007) ✅
 
-**Branch:** `feature/us-006-edition-management`
+**Branches:** `feature/us-006-edition-management`, `feature/us-007-edition-configuration`
 
-### Backend Tasks
-- [ ] **0.3.1** Implement edition schemas
-- [ ] **0.3.2** Implement edition service
-  - [ ] Lifecycle state machine
-  - [ ] Date validations
-- [ ] **0.3.3** Implement edition repository
-- [ ] **0.3.4** Implement edition API endpoints
-  - [ ] CRUD operations
-  - [ ] Status transitions
-- [ ] **0.3.5** Write tests
+### Backend Tasks ✅
+- [x] **0.3.1** Implement edition schemas (EditionCreate, EditionUpdate, EditionResponse)
+- [x] **0.3.2** Implement edition service
+  - [x] Lifecycle state machine (draft → configured → registrations_open → in_progress → closed)
+  - [x] Date validations (chronological order)
+- [x] **0.3.3** Implement edition repository
+- [x] **0.3.4** Implement edition API endpoints
+  - [x] CRUD operations (GET, POST, PUT, DELETE /editions)
+  - [x] Status transitions (PATCH /editions/{id}/status)
+- [x] **0.3.5** Implement deposit slots
+  - [x] DepositSlot model with migration
+  - [x] CRUD endpoints (/editions/{id}/deposit-slots)
+  - [x] Capacity and local reservation support
+- [x] **0.3.6** Write tests (20 backend tests)
 
-### Frontend Tasks
-- [ ] **0.3.6** Implement EditionListPage
-- [ ] **0.3.7** Implement EditionCreatePage
-- [ ] **0.3.8** Implement EditionDetailPage
-- [ ] **0.3.9** Implement EditionConfigPage (dates)
-- [ ] **0.3.10** Write tests
+### Frontend Tasks ✅
+- [x] **0.3.7** Implement EditionsListPage (table with filters, pagination)
+- [x] **0.3.8** Implement EditionCreateModal
+- [x] **0.3.9** Implement EditionDetailPage (/editions/:id)
+  - [x] General info (name, dates, location, description)
+  - [x] Configuration dates (declaration, deposit, sale, retrieval)
+  - [x] Commission rate (0-100%, default 20%)
+  - [x] Auto status transition (draft → configured)
+- [x] **0.3.10** Implement DepositSlotsEditor component
+- [x] **0.3.11** Write tests (109 frontend tests total)
 
 ---
 
