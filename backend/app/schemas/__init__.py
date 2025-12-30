@@ -11,6 +11,12 @@ from app.schemas.auth import (
     TokenValidationResponse,
 )
 from app.schemas.common import ErrorResponse, MessageResponse, PaginatedResponse
+from app.schemas.deposit_slot import (
+    DepositSlotCreate,
+    DepositSlotListResponse,
+    DepositSlotResponse,
+    DepositSlotUpdate,
+)
 from app.schemas.edition import (
     EditionCreate,
     EditionListResponse,
@@ -51,6 +57,11 @@ __all__ = [
     "UserSelfUpdate",
     "UserResponse",
     "UserListResponse",
+    # Deposit Slot
+    "DepositSlotCreate",
+    "DepositSlotUpdate",
+    "DepositSlotResponse",
+    "DepositSlotListResponse",
     # Edition
     "EditionCreate",
     "EditionUpdate",

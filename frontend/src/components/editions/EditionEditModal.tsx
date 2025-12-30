@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { editionsApi, ApiException } from '@/api';
 import { Button, Input, Modal } from '@/components/ui';
+import { DepositSlotsEditor } from './DepositSlotsEditor';
 import type { Edition } from '@/types';
 
 interface EditionEditModalProps {
@@ -439,6 +440,11 @@ export function EditionEditModal({ isOpen, onClose, edition }: EditionEditModalP
                 value={depositEndDatetime}
                 onChange={(e) => setDepositEndDatetime(e.target.value)}
               />
+            </div>
+
+            {/* Deposit Slots */}
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <DepositSlotsEditor editionId={edition.id} disabled={!isEditable} />
             </div>
 
             {/* Sale Dates */}
