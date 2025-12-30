@@ -2,6 +2,7 @@
 
 **Branche:** `feature/us-006-edition-management`
 **User Story:** En tant qu'administrateur, je veux créer une nouvelle édition de bourse
+**Statut:** ✅ TERMINÉ
 
 ## Contexte
 
@@ -27,111 +28,144 @@ Une édition représente un événement de bourse (ex: "Bourse Printemps 2025").
 ## Tâches
 
 ### 1. Backend - Schemas Pydantic
-- [ ] **1.1** Créer `backend/app/schemas/edition.py`
-  - [ ] `EditionStatus` enum (brouillon, configuree, inscriptions_ouvertes, en_cours, cloturee)
-  - [ ] `EditionBase` (name, start_datetime, end_datetime, location?, description?)
-  - [ ] `EditionCreate` extends EditionBase
-  - [ ] `EditionUpdate` (tous champs optionnels)
-  - [ ] `EditionResponse` (inclut id, status, created_at, created_by, etc.)
-  - [ ] `EditionListResponse` (liste paginée)
+- [x] **1.1** Créer `backend/app/schemas/edition.py`
+  - [x] `EditionStatus` enum (brouillon, configuree, inscriptions_ouvertes, en_cours, cloturee)
+  - [x] `EditionBase` (name, start_datetime, end_datetime, location?, description?)
+  - [x] `EditionCreate` extends EditionBase
+  - [x] `EditionUpdate` (tous champs optionnels)
+  - [x] `EditionResponse` (inclut id, status, created_at, created_by, etc.)
+  - [x] `EditionListResponse` (liste paginée)
 
 ### 2. Backend - Repository
-- [ ] **2.1** Créer `backend/app/repositories/edition_repository.py`
-  - [ ] `create(edition_data, created_by_id)` → Edition
-  - [ ] `get_by_id(id)` → Edition | None
-  - [ ] `get_by_name(name)` → Edition | None (pour vérifier unicité)
-  - [ ] `get_all(skip, limit)` → list[Edition]
-  - [ ] `update(id, edition_data, updated_by_id)` → Edition
-  - [ ] `delete(id)` → bool
+- [x] **2.1** Créer `backend/app/repositories/edition.py`
+  - [x] `create(edition_data, created_by_id)` → Edition
+  - [x] `get_by_id(id)` → Edition | None
+  - [x] `name_exists(name)` → bool (pour vérifier unicité)
+  - [x] `list_editions(skip, limit, status?)` → list[Edition]
+  - [x] `update(id, edition_data)` → Edition
+  - [x] `delete(id)` → bool
 
 ### 3. Backend - Service
-- [ ] **3.1** Créer `backend/app/services/edition_service.py`
-  - [ ] `create_edition(data, admin_user)` → Edition
+- [x] **3.1** Créer `backend/app/services/edition.py`
+  - [x] `create_edition(data, admin_user)` → Edition
     - Valider unicité du nom
     - Valider datetime_fin > datetime_debut
     - Créer avec status = "brouillon"
-  - [ ] `get_edition(id)` → Edition
-  - [ ] `list_editions(skip, limit)` → list[Edition]
-  - [ ] `update_edition(id, data, user)` → Edition
+  - [x] `get_edition(id)` → Edition
+  - [x] `list_editions(skip, limit)` → list[Edition]
+  - [x] `update_edition(id, data, user)` → Edition
     - Valider transitions de statut
-    - Valider que l'édition n'est pas clôturée
-  - [ ] `delete_edition(id)` → bool
+  - [x] `update_status(id, new_status)` → Edition
+    - Valider transitions de statut valides
+  - [x] `delete_edition(id)` → bool
     - Seulement si status = "brouillon"
 
 ### 4. Backend - API Endpoints
-- [ ] **4.1** Créer `backend/app/api/v1/editions.py`
-  - [ ] `POST /api/v1/editions` - Créer une édition (admin only)
-  - [ ] `GET /api/v1/editions` - Lister les éditions (manager, admin)
-  - [ ] `GET /api/v1/editions/{id}` - Détail d'une édition (manager, admin)
-  - [ ] `PUT /api/v1/editions/{id}` - Modifier une édition (admin only pour création, manager pour config)
-  - [ ] `DELETE /api/v1/editions/{id}` - Supprimer une édition brouillon (admin only)
-- [ ] **4.2** Enregistrer le router dans `main.py`
+- [x] **4.1** Créer `backend/app/api/v1/endpoints/editions.py`
+  - [x] `POST /api/v1/editions` - Créer une édition (admin only)
+  - [x] `GET /api/v1/editions` - Lister les éditions (manager, admin)
+  - [x] `GET /api/v1/editions/{id}` - Détail d'une édition (manager, admin)
+  - [x] `PUT /api/v1/editions/{id}` - Modifier une édition (manager, admin)
+  - [x] `PATCH /api/v1/editions/{id}/status` - Changer le statut (manager, admin)
+  - [x] `DELETE /api/v1/editions/{id}` - Supprimer une édition brouillon (admin only)
+- [x] **4.2** Enregistrer le router dans `api/v1/__init__.py`
 
 ### 5. Backend - Tests
-- [ ] **5.1** Tests unitaires pour `edition_service.py`
-  - [ ] Test création nominale
-  - [ ] Test nom en doublon
-  - [ ] Test dates incohérentes
-  - [ ] Test suppression édition brouillon
-  - [ ] Test suppression édition non-brouillon (refusée)
-- [ ] **5.2** Tests d'intégration pour les endpoints
-  - [ ] Test CRUD complet
-  - [ ] Test permissions (admin vs manager vs deposant)
-  - [ ] Test validations
+- [x] **5.1** Tests d'intégration pour les endpoints (`backend/tests/integration/test_editions_api.py`)
+  - [x] Test création nominale
+  - [x] Test nom en doublon
+  - [x] Test dates incohérentes
+  - [x] Test suppression édition brouillon
+  - [x] Test suppression édition non-brouillon (refusée)
+  - [x] Test CRUD complet
+  - [x] Test permissions (admin vs manager vs deposant)
+  - [x] Test validations
 
 ### 6. Frontend - Types TypeScript
-- [ ] **6.1** Mettre à jour `frontend/src/types/edition.ts`
-  - [ ] Type `EditionStatus`
-  - [ ] Interface `Edition`
-  - [ ] Interface `EditionCreate`
-  - [ ] Interface `EditionUpdate`
+- [x] **6.1** Mettre à jour `frontend/src/types/edition.ts`
+  - [x] Type `EditionStatus`
+  - [x] Interface `Edition` (avec champs camelCase)
+  - [x] Interface `EditionCreator`
+  - [x] Interface `CreateEditionRequest`
+  - [x] Interface `UpdateEditionRequest`
+  - [x] Interface `EditionListResponse`
 
 ### 7. Frontend - API Client
-- [ ] **7.1** Créer `frontend/src/api/editions.ts`
-  - [ ] `getEditions()` → Edition[]
-  - [ ] `getEdition(id)` → Edition
-  - [ ] `createEdition(data)` → Edition
-  - [ ] `updateEdition(id, data)` → Edition
-  - [ ] `deleteEdition(id)` → void
+- [x] **7.1** Mettre à jour `frontend/src/api/editions.ts`
+  - [x] Transformation snake_case (API) → camelCase (frontend)
+  - [x] `getEditions(params?)` → EditionListResponse
+  - [x] `getEdition(id)` → Edition
+  - [x] `createEdition(data)` → Edition
+  - [x] `updateEdition(id, data)` → Edition
+  - [x] `updateEditionStatus(id, status)` → Edition
+  - [x] `deleteEdition(id)` → void
 
 ### 8. Frontend - Page liste des éditions
-- [ ] **8.1** Créer `EditionsListPage` (`/admin/editions`)
-  - [ ] Tableau avec colonnes: Nom, Dates, Lieu, Statut, Actions
-  - [ ] Badge coloré selon statut
-  - [ ] Bouton "Nouvelle édition" (admin only)
-  - [ ] Bouton "Voir" pour chaque édition
-  - [ ] Bouton "Supprimer" pour éditions brouillon (admin only)
+- [x] **8.1** Créer `EditionsListPage` (`frontend/src/pages/admin/EditionsListPage.tsx`)
+  - [x] Tableau avec colonnes: Nom, Dates, Lieu, Statut, Créée par, Actions
+  - [x] Badge coloré selon statut
+  - [x] Statistiques (Total, Brouillons, En cours, Clôturées)
+  - [x] Filtre par statut
+  - [x] Bouton "Nouvelle édition" (admin only)
+  - [x] Bouton "Modifier" pour chaque édition
+  - [x] Bouton "Supprimer" pour éditions brouillon (admin only)
+  - [x] Modal de confirmation de suppression
 
-### 9. Frontend - Modal/Page création d'édition
-- [ ] **9.1** Créer `EditionCreateModal` ou `EditionCreatePage`
-  - [ ] Champs: Nom, Date/heure début, Date/heure fin, Lieu, Description
-  - [ ] Validation formulaire (nom requis, dates requises, fin > début)
-  - [ ] Gestion erreur nom en doublon
-  - [ ] Message succès et redirection
+### 9. Frontend - Modal création d'édition
+- [x] **9.1** Créer `EditionCreateModal` (`frontend/src/components/editions/EditionCreateModal.tsx`)
+  - [x] Champs: Nom, Date/heure début, Date/heure fin, Lieu, Description
+  - [x] Validation formulaire (nom requis, dates requises, fin > début)
+  - [x] Gestion erreur nom en doublon
+  - [x] Message succès et option "Créer une autre édition"
 
 ### 10. Frontend - Routes et navigation
-- [ ] **10.1** Ajouter route `/admin/editions`
-- [ ] **10.2** Ajouter route `/admin/editions/new` (ou modal)
-- [ ] **10.3** Ajouter route `/admin/editions/:id` (détail/configuration)
-- [ ] **10.4** Protéger avec ProtectedRoute (roles: manager, administrator)
-- [ ] **10.5** Ajouter lien dans le menu admin
+- [x] **10.1** Ajouter route `/editions` (manager, admin)
+- [x] **10.2** Ajouter route `/admin/editions` (manager, admin)
+- [x] **10.3** Créer `EditionsPageWrapper` pour intégrer page et modals
+- [x] **10.4** Protéger avec ProtectedRoute (roles: manager, administrator)
 
 ### 11. Frontend - Tests
-- [ ] **11.1** Tests unitaires EditionsListPage
-- [ ] **11.2** Tests unitaires EditionCreateModal
+- [x] **11.1** Tests unitaires `EditionsListPage` (`EditionsListPage.test.tsx`)
+- [x] **11.2** Tests unitaires `EditionCreateModal` (`EditionCreateModal.test.tsx`)
 
 ## Critères d'acceptation (depuis US-006)
 
-- [ ] AC-1: Interface liste éditions accessible aux gestionnaires/admins
-- [ ] AC-2: Formulaire création avec champs obligatoires (nom, dates)
-- [ ] AC-3: Création réussie → statut "Brouillon", message confirmation, redirection
-- [ ] AC-4: Erreur si nom d'édition en double
-- [ ] AC-5: Validation dates (fin > début)
-- [ ] AC-6: Seuls les administrateurs peuvent créer/supprimer des éditions
+- [x] AC-1: Interface liste éditions accessible aux gestionnaires/admins
+- [x] AC-2: Formulaire création avec champs obligatoires (nom, dates)
+- [x] AC-3: Création réussie → statut "Brouillon", message confirmation
+- [x] AC-4: Erreur si nom d'édition en double
+- [x] AC-5: Validation dates (fin > début)
+- [x] AC-6: Seuls les administrateurs peuvent créer/supprimer des éditions
+
+## Fichiers créés/modifiés
+
+### Backend
+- `backend/app/schemas/edition.py` (nouveau)
+- `backend/app/schemas/__init__.py` (modifié)
+- `backend/app/repositories/edition.py` (nouveau)
+- `backend/app/repositories/__init__.py` (modifié)
+- `backend/app/services/edition.py` (nouveau)
+- `backend/app/services/__init__.py` (modifié)
+- `backend/app/api/v1/endpoints/editions.py` (nouveau)
+- `backend/app/api/v1/__init__.py` (modifié)
+- `backend/tests/integration/test_editions_api.py` (nouveau)
+
+### Frontend
+- `frontend/src/types/edition.ts` (modifié)
+- `frontend/src/api/editions.ts` (réécrit)
+- `frontend/src/components/editions/EditionCreateModal.tsx` (nouveau)
+- `frontend/src/components/editions/EditionCreateModal.test.tsx` (nouveau)
+- `frontend/src/components/editions/index.ts` (nouveau)
+- `frontend/src/pages/admin/EditionsListPage.tsx` (nouveau)
+- `frontend/src/pages/admin/EditionsListPage.test.tsx` (nouveau)
+- `frontend/src/pages/admin/EditionsPageWrapper.tsx` (nouveau)
+- `frontend/src/pages/admin/index.ts` (modifié)
+- `frontend/src/routes.tsx` (modifié)
 
 ## Notes techniques
 
-- Utiliser React Query pour la gestion du cache
+- React Query pour la gestion du cache
 - Composants UI avec TailwindCSS (cohérent avec le reste de l'app)
 - Format datetime: ISO 8601
-- Le modèle Edition existe déjà dans `backend/app/models/edition.py`
+- Transformation snake_case (API) ↔ camelCase (frontend) dans le client API
+- Le modèle Edition existait déjà dans `backend/app/models/edition.py`
