@@ -3,7 +3,7 @@ import { MainLayout } from '@/components/layout';
 import { ProtectedRoute } from '@/components/auth';
 import { AuthProvider } from '@/contexts';
 import { LoginPage, ActivatePage, ForgotPasswordPage, ResetPasswordPage } from '@/pages/auth';
-import { InvitationsPageWrapper, EditionsPageWrapper } from '@/pages/admin';
+import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage } from '@/pages/admin';
 
 /**
  * Root layout that provides auth context to all routes.
@@ -118,9 +118,9 @@ export const router = createBrowserRouter([
       {
         path: '/editions/:id',
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['manager', 'administrator']}>
             <MainLayout>
-              <div>Détail édition (à implémenter)</div>
+              <EditionDetailPage />
             </MainLayout>
           </ProtectedRoute>
         ),

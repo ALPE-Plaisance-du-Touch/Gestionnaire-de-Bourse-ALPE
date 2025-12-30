@@ -1,15 +1,19 @@
 import { useState, useEffect, type FormEvent } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { editionsApi, ApiException } from '@/api';
-import { Button, Input, Modal } from '@/components/ui';
-import { DepositSlotsEditor } from './DepositSlotsEditor';
-import type { Edition } from '@/types';
+import { Button, Input } from '@/components/ui';
+import { DepositSlotsEditor } from '@/components/editions';
+import type { EditionStatus } from '@/types';
 
-interface EditionEditModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  edition: Edition | null;
-}
+const STATUS_LABELS: Record<EditionStatus, { label: string; className: string }> = {
+  draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-800' },
+  configured: { label: 'Configuré', className: 'bg-blue-100 text-blue-800' },
+  registrations_open: { label: 'Inscriptions ouvertes', className: 'bg-purple-100 text-purple-800' },
+  in_progress: { label: 'En cours', className: 'bg-green-100 text-green-800' },
+  closed: { label: 'Clôturé', className: 'bg-orange-100 text-orange-800' },
+  archived: { label: 'Archivé', className: 'bg-gray-100 text-gray-500' },
+};
 
 /**
  * Format an ISO datetime string for datetime-local input.
@@ -17,7 +21,6 @@ interface EditionEditModalProps {
 function formatDatetimeLocal(isoString: string | null): string {
   if (!isoString) return '';
   const date = new Date(isoString);
-  // Format: YYYY-MM-DDTHH:mm
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -49,7 +52,6 @@ function validateDateOrder(dates: {
     retrievalEnd,
   } = dates;
 
-  // If any required date is missing, skip validation (will be caught by required check)
   if (!declarationDeadline || !depositStart || !depositEnd || !saleStart || !saleEnd || !retrievalStart || !retrievalEnd) {
     return null;
   }
@@ -62,32 +64,21 @@ function validateDateOrder(dates: {
   const retStart = new Date(retrievalStart);
   const retEnd = new Date(retrievalEnd);
 
-  // Declaration deadline must be before deposit
   if (declDate >= depStart) {
     return 'La date limite de déclaration doit être avant le début du dépôt.';
   }
-
-  // Deposit end must be after deposit start
   if (depEnd <= depStart) {
     return 'La fin du dépôt doit être après le début du dépôt.';
   }
-
-  // Sale start must be after deposit end
   if (salStart < depEnd) {
     return 'Le début de la vente doit être après la fin du dépôt.';
   }
-
-  // Sale end must be after sale start
   if (salEnd <= salStart) {
     return 'La fin de la vente doit être après le début de la vente.';
   }
-
-  // Retrieval start must be after sale end
   if (retStart < salEnd) {
     return 'Le début de la récupération doit être après la fin de la vente.';
   }
-
-  // Retrieval end must be after retrieval start
   if (retEnd <= retStart) {
     return 'La fin de la récupération doit être après le début de la récupération.';
   }
@@ -95,17 +86,17 @@ function validateDateOrder(dates: {
   return null;
 }
 
-export function EditionEditModal({ isOpen, onClose, edition }: EditionEditModalProps) {
+export function EditionDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // Basic info
+  // Form state
   const [name, setName] = useState('');
   const [startDatetime, setStartDatetime] = useState('');
   const [endDatetime, setEndDatetime] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
-
-  // Configuration dates
   const [declarationDeadline, setDeclarationDeadline] = useState('');
   const [depositStartDatetime, setDepositStartDatetime] = useState('');
   const [depositEndDatetime, setDepositEndDatetime] = useState('');
@@ -113,15 +104,20 @@ export function EditionEditModal({ isOpen, onClose, edition }: EditionEditModalP
   const [saleEndDatetime, setSaleEndDatetime] = useState('');
   const [retrievalStartDatetime, setRetrievalStartDatetime] = useState('');
   const [retrievalEndDatetime, setRetrievalEndDatetime] = useState('');
-
-  // Commission rate
   const [commissionRate, setCommissionRate] = useState('20');
 
   // UI state
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Initialize form with edition data
+  // Fetch edition
+  const { data: edition, isLoading, error: fetchError } = useQuery({
+    queryKey: ['edition', id],
+    queryFn: () => editionsApi.getEdition(id!),
+    enabled: !!id,
+  });
+
+  // Sync form state when edition data changes (initial load or after save)
   useEffect(() => {
     if (edition) {
       setName(edition.name);
@@ -137,16 +133,15 @@ export function EditionEditModal({ isOpen, onClose, edition }: EditionEditModalP
       setRetrievalStartDatetime(formatDatetimeLocal(edition.retrievalStartDatetime));
       setRetrievalEndDatetime(formatDatetimeLocal(edition.retrievalEndDatetime));
       setCommissionRate(edition.commissionRate !== null ? String(edition.commissionRate * 100) : '20');
-      setError(null);
-      setSuccess(false);
     }
   }, [edition]);
 
   const updateMutation = useMutation({
     mutationFn: (data: Parameters<typeof editionsApi.updateEdition>[1]) =>
-      editionsApi.updateEdition(edition!.id, data),
-    onSuccess: () => {
+      editionsApi.updateEdition(id!, data),
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['editions'] });
+      await queryClient.refetchQueries({ queryKey: ['edition', id] });
       setSuccess(true);
       setError(null);
     },
@@ -167,31 +162,25 @@ export function EditionEditModal({ isOpen, onClose, edition }: EditionEditModalP
 
   const statusMutation = useMutation({
     mutationFn: (status: 'configured') =>
-      editionsApi.updateEditionStatus(edition!.id, status),
+      editionsApi.updateEditionStatus(id!, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['editions'] });
+      queryClient.invalidateQueries({ queryKey: ['edition', id] });
     },
   });
-
-  const handleClose = () => {
-    setError(null);
-    setSuccess(false);
-    onClose();
-  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccess(false);
 
     if (!edition) return;
 
-    // Validate name
     if (!name.trim()) {
       setError("Le nom de l'édition est requis.");
       return;
     }
 
-    // Validate basic dates
     if (!startDatetime || !endDatetime) {
       setError('Les dates de début et de fin sont requises.');
       return;
@@ -205,14 +194,12 @@ export function EditionEditModal({ isOpen, onClose, edition }: EditionEditModalP
       return;
     }
 
-    // Validate commission rate
     const commissionNum = parseFloat(commissionRate);
     if (isNaN(commissionNum) || commissionNum < 0 || commissionNum > 100) {
       setError('Le taux de commission doit être entre 0 et 100%.');
       return;
     }
 
-    // Check if all configuration dates are provided for validation
     const hasAllConfigDates =
       declarationDeadline &&
       depositStartDatetime &&
@@ -222,7 +209,6 @@ export function EditionEditModal({ isOpen, onClose, edition }: EditionEditModalP
       retrievalStartDatetime &&
       retrievalEndDatetime;
 
-    // Validate chronological order if all dates are provided
     if (hasAllConfigDates) {
       const dateError = validateDateOrder({
         declarationDeadline,
@@ -240,7 +226,6 @@ export function EditionEditModal({ isOpen, onClose, edition }: EditionEditModalP
       }
     }
 
-    // Build update payload
     const updateData: Parameters<typeof editionsApi.updateEdition>[1] = {
       name: name.trim(),
       startDatetime: new Date(startDatetime).toISOString(),
@@ -250,7 +235,6 @@ export function EditionEditModal({ isOpen, onClose, edition }: EditionEditModalP
       commissionRate: commissionNum / 100,
     };
 
-    // Add configuration dates if provided
     if (declarationDeadline) {
       updateData.declarationDeadline = new Date(declarationDeadline).toISOString();
     }
@@ -276,7 +260,6 @@ export function EditionEditModal({ isOpen, onClose, edition }: EditionEditModalP
     try {
       await updateMutation.mutateAsync(updateData);
 
-      // If all configuration dates are set and edition is draft, change status to configured
       if (hasAllConfigDates && edition.status === 'draft') {
         await statusMutation.mutateAsync('configured');
       }
@@ -285,55 +268,95 @@ export function EditionEditModal({ isOpen, onClose, edition }: EditionEditModalP
     }
   };
 
-  const isConfigured = edition?.status !== 'draft';
+  if (isLoading) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchError || !edition) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+          Édition introuvable ou erreur lors du chargement.
+        </div>
+        <Link to="/editions" className="text-blue-600 hover:text-blue-700">
+          ← Retour à la liste des éditions
+        </Link>
+      </div>
+    );
+  }
+
+  const statusInfo = STATUS_LABELS[edition.status];
+  const isEditable = !['closed', 'archived'].includes(edition.status);
   const isPending = updateMutation.isPending || statusMutation.isPending;
 
-  // Check if edition can be edited (not closed or archived)
-  const isEditable = edition && !['closed', 'archived'].includes(edition.status);
-
-  if (!edition) return null;
-
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title={`Modifier : ${edition.name}`}
-      size="xl"
-    >
-      {success ? (
-        <div className="space-y-4">
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-            <p className="font-medium">Modifications enregistrées !</p>
-            <p className="text-sm mt-1">
-              {statusMutation.isSuccess
-                ? "L'édition est maintenant configurée et prête pour l'import des inscriptions."
-                : "Les modifications ont été enregistrées avec succès."}
+    <div className="p-6 max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="mb-6">
+        <Link
+          to="/editions"
+          className="text-sm text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 mb-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Retour aux éditions
+        </Link>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{edition.name}</h1>
+            <p className="mt-1 text-gray-600">
+              Configurez les dates clés et les créneaux de dépôt.
             </p>
           </div>
-          <div className="flex justify-end">
-            <Button onClick={handleClose}>Fermer</Button>
-          </div>
+          <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${statusInfo.className}`}>
+            {statusInfo.label}
+          </span>
         </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          )}
+      </div>
 
-          {!isEditable && (
-            <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg">
-              Cette édition est clôturée et ne peut plus être modifiée.
-            </div>
-          )}
+      {/* Success message */}
+      {success && (
+        <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          <p className="font-medium">Modifications enregistrées !</p>
+          <p className="text-sm mt-1">
+            {statusMutation.isSuccess
+              ? "L'édition est maintenant configurée et prête pour l'import des inscriptions."
+              : "Les modifications ont été enregistrées avec succès."}
+          </p>
+        </div>
+      )}
 
-          {/* Basic Information */}
+      {/* Error message */}
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      {/* Not editable warning */}
+      {!isEditable && (
+        <div className="mb-6 bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg">
+          Cette édition est clôturée et ne peut plus être modifiée.
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {/* Basic Information Section */}
+        <section className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">
+            Informations générales
+          </h2>
+
           <fieldset disabled={!isEditable} className="space-y-4">
-            <legend className="text-lg font-medium text-gray-900 mb-2">
-              Informations générales
-            </legend>
-
             <Input
               label="Nom de l'édition"
               type="text"
@@ -381,18 +404,19 @@ export function EditionEditModal({ isOpen, onClose, edition }: EditionEditModalP
               />
             </div>
           </fieldset>
+        </section>
 
-          {/* Configuration Section */}
-          <fieldset disabled={!isEditable} className="space-y-4 border-t pt-6">
-            <legend className="text-lg font-medium text-gray-900 mb-2">
-              Configuration de l'édition
-            </legend>
+        {/* Configuration Section */}
+        <section className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-2">
+            Configuration de l'édition
+          </h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Définissez les dates clés et le taux de commission.
+            {edition.status === 'draft' && " Une fois toutes les dates renseignées, l'édition passera en statut \"Configurée\"."}
+          </p>
 
-            <p className="text-sm text-gray-500 mb-4">
-              Définissez les dates clés et le taux de commission.
-              {!isConfigured && " Une fois toutes les dates renseignées, l'édition passera en statut \"Configurée\"."}
-            </p>
-
+          <fieldset disabled={!isEditable} className="space-y-6">
             {/* Commission Rate */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="max-w-xs">
@@ -427,90 +451,103 @@ export function EditionEditModal({ isOpen, onClose, edition }: EditionEditModalP
             </div>
 
             {/* Deposit Dates */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="Début du dépôt"
-                type="datetime-local"
-                value={depositStartDatetime}
-                onChange={(e) => setDepositStartDatetime(e.target.value)}
-              />
-              <Input
-                label="Fin du dépôt"
-                type="datetime-local"
-                value={depositEndDatetime}
-                onChange={(e) => setDepositEndDatetime(e.target.value)}
-              />
-            </div>
-
-            {/* Deposit Slots */}
-            <div className="border rounded-lg p-4 bg-gray-50">
-              <DepositSlotsEditor editionId={edition.id} disabled={!isEditable} />
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Période de dépôt</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="Début du dépôt"
+                  type="datetime-local"
+                  value={depositStartDatetime}
+                  onChange={(e) => setDepositStartDatetime(e.target.value)}
+                />
+                <Input
+                  label="Fin du dépôt"
+                  type="datetime-local"
+                  value={depositEndDatetime}
+                  onChange={(e) => setDepositEndDatetime(e.target.value)}
+                />
+              </div>
             </div>
 
             {/* Sale Dates */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="Début de la vente"
-                type="datetime-local"
-                value={saleStartDatetime}
-                onChange={(e) => setSaleStartDatetime(e.target.value)}
-              />
-              <Input
-                label="Fin de la vente"
-                type="datetime-local"
-                value={saleEndDatetime}
-                onChange={(e) => setSaleEndDatetime(e.target.value)}
-              />
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Période de vente</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="Début de la vente"
+                  type="datetime-local"
+                  value={saleStartDatetime}
+                  onChange={(e) => setSaleStartDatetime(e.target.value)}
+                />
+                <Input
+                  label="Fin de la vente"
+                  type="datetime-local"
+                  value={saleEndDatetime}
+                  onChange={(e) => setSaleEndDatetime(e.target.value)}
+                />
+              </div>
             </div>
 
             {/* Retrieval Dates */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="Début de la récupération"
-                type="datetime-local"
-                value={retrievalStartDatetime}
-                onChange={(e) => setRetrievalStartDatetime(e.target.value)}
-              />
-              <Input
-                label="Fin de la récupération"
-                type="datetime-local"
-                value={retrievalEndDatetime}
-                onChange={(e) => setRetrievalEndDatetime(e.target.value)}
-              />
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Période de récupération</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="Début de la récupération"
+                  type="datetime-local"
+                  value={retrievalStartDatetime}
+                  onChange={(e) => setRetrievalStartDatetime(e.target.value)}
+                />
+                <Input
+                  label="Fin de la récupération"
+                  type="datetime-local"
+                  value={retrievalEndDatetime}
+                  onChange={(e) => setRetrievalEndDatetime(e.target.value)}
+                />
+              </div>
             </div>
           </fieldset>
+        </section>
 
-          {/* Status Info */}
-          <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
-            <strong>Statut actuel :</strong>{' '}
-            {edition.status === 'draft'
-              ? 'Brouillon - Configurez les dates pour passer en statut "Configurée"'
-              : edition.status === 'configured'
-              ? 'Configurée - Prête pour l\'import des inscriptions'
-              : edition.status === 'registrations_open'
-              ? 'Inscriptions ouvertes'
-              : edition.status === 'in_progress'
-              ? 'En cours'
-              : edition.status === 'closed'
-              ? 'Clôturée'
-              : 'Archivée'}
-          </div>
+        {/* Deposit Slots Section */}
+        <section className="bg-white rounded-lg shadow p-6">
+          <DepositSlotsEditor editionId={edition.id} disabled={!isEditable} />
+        </section>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={handleClose}>
-              Annuler
-            </Button>
-            <Button
-              type="submit"
-              disabled={isPending || !isEditable}
-              isLoading={isPending}
-            >
-              Enregistrer
-            </Button>
-          </div>
-        </form>
-      )}
-    </Modal>
+        {/* Status Info */}
+        <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
+          <strong>Statut actuel :</strong>{' '}
+          {edition.status === 'draft'
+            ? 'Brouillon - Configurez les dates pour passer en statut "Configurée"'
+            : edition.status === 'configured'
+            ? 'Configurée - Prête pour l\'import des inscriptions'
+            : edition.status === 'registrations_open'
+            ? 'Inscriptions ouvertes'
+            : edition.status === 'in_progress'
+            ? 'En cours'
+            : edition.status === 'closed'
+            ? 'Clôturée'
+            : 'Archivée'}
+        </div>
+
+        {/* Actions */}
+        <div className="flex justify-between items-center pt-4 border-t">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate('/editions')}
+          >
+            Annuler
+          </Button>
+          <Button
+            type="submit"
+            disabled={isPending || !isEditable}
+            isLoading={isPending}
+          >
+            Enregistrer les modifications
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }

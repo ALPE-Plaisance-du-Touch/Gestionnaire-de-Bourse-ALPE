@@ -1,21 +1,19 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { EditionsListPage } from './EditionsListPage';
-import { EditionCreateModal, EditionEditModal } from '@/components/editions';
+import { EditionCreateModal } from '@/components/editions';
 import type { Edition } from '@/types';
 
 /**
- * Wrapper component that combines EditionsListPage with modals.
+ * Wrapper component that combines EditionsListPage with create modal.
+ * Edit functionality uses dedicated EditionDetailPage via navigation.
  */
 export function EditionsPageWrapper() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editionToEdit, setEditionToEdit] = useState<Edition | null>(null);
+  const navigate = useNavigate();
 
   const handleEditClick = (edition: Edition) => {
-    setEditionToEdit(edition);
-  };
-
-  const handleEditModalClose = () => {
-    setEditionToEdit(null);
+    navigate(`/editions/${edition.id}`);
   };
 
   return (
@@ -28,12 +26,6 @@ export function EditionsPageWrapper() {
       <EditionCreateModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-      />
-
-      <EditionEditModal
-        isOpen={editionToEdit !== null}
-        onClose={handleEditModalClose}
-        edition={editionToEdit}
       />
     </>
   );

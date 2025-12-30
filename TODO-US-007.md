@@ -59,19 +59,28 @@
 - [x] Endpoints CRUD pour /editions/{id}/deposit-slots
 
 ### Frontend
-- [x] Créer `EditionEditModal.tsx`
+- [x] ~~Créer `EditionEditModal.tsx`~~ → Remplacé par page dédiée
 - [x] Formulaire avec sections : informations générales + configuration
 - [x] Validation côté client de l'ordre des dates
 - [x] Champ taux de commission (0-100%)
-- [x] Intégration avec `EditionsPageWrapper`
+- [x] ~~Intégration avec `EditionsPageWrapper`~~ → Navigation vers page dédiée
 - [x] Appel API updateEdition + updateEditionStatus
 - [x] Affichage du statut actuel de l'édition
 - [x] Désactivation du formulaire pour éditions clôturées
 - [x] Composant `DepositSlotsEditor` pour gestion des créneaux
 - [x] API client pour deposit-slots
 
+### Refactoring UX - Page dédiée
+- [x] Créer `EditionDetailPage.tsx` pour remplacer le modal
+- [x] Route `/editions/:id` avec page dédiée
+- [x] Navigation depuis la liste vers la page détail
+- [x] Bouton retour vers la liste
+- [x] Supprimer `EditionEditModal.tsx` après migration
+- [x] Créer tests pour `EditionDetailPage` (17 tests)
+
 ### Tests
-- [x] 16 tests unitaires `EditionEditModal.test.tsx`
+- [x] ~~16 tests unitaires `EditionEditModal.test.tsx`~~ → Remplacés par tests EditionDetailPage
+- [x] 17 tests unitaires `EditionDetailPage.test.tsx`
 - [x] 20 tests backend pour editions API
 
 ## Fichiers créés/modifiés
@@ -89,11 +98,13 @@
 - `backend/migrations/versions/..._add_deposit_slots_table.py` (nouveau)
 
 ### Frontend
-- `frontend/src/components/editions/EditionEditModal.tsx` (nouveau)
-- `frontend/src/components/editions/EditionEditModal.test.tsx` (nouveau)
 - `frontend/src/components/editions/DepositSlotsEditor.tsx` (nouveau)
 - `frontend/src/components/editions/index.ts` (modifié)
-- `frontend/src/pages/admin/EditionsPageWrapper.tsx` (modifié)
+- `frontend/src/pages/admin/EditionsPageWrapper.tsx` (modifié - navigation au lieu de modal)
+- `frontend/src/pages/admin/EditionDetailPage.tsx` (nouveau)
+- `frontend/src/pages/admin/EditionDetailPage.test.tsx` (nouveau - 17 tests)
+- `frontend/src/pages/admin/index.ts` (modifié)
+- `frontend/src/routes.tsx` (modifié)
 - `frontend/src/types/deposit-slot.ts` (nouveau)
 - `frontend/src/types/index.ts` (modifié)
 - `frontend/src/api/deposit-slots.ts` (nouveau)
@@ -107,5 +118,5 @@
 
 ## Résultat des tests
 
-- Frontend : 108 tests passent
+- Frontend : 109 tests passent
 - Backend : 20 tests editions passent
