@@ -10,23 +10,25 @@ interface DepositSlotsEditorProps {
 }
 
 /**
- * Format an ISO datetime string for datetime-local input.
+ * Format a datetime string for datetime-local input.
+ * Backend stores dates without timezone info, so we parse directly without conversion.
  */
-function formatDatetimeLocal(isoString: string): string {
-  const date = new Date(isoString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
+function formatDatetimeLocal(datetimeString: string): string {
+  // Remove timezone suffix if present and take first 16 chars (YYYY-MM-DDTHH:mm)
+  return datetimeString.replace('Z', '').substring(0, 16);
 }
 
 /**
  * Format a datetime for display.
+ * Parse the date string directly to avoid timezone conversion.
  */
-function formatDisplayDateTime(isoString: string): string {
-  const date = new Date(isoString);
+function formatDisplayDateTime(datetimeString: string): string {
+  // Parse "2025-03-15T09:00:00" directly without timezone interpretation
+  const [datePart, timePart] = datetimeString.replace('Z', '').split('T');
+  const [year, month, day] = datePart.split('-').map(Number);
+  const [hours, minutes] = timePart.split(':').map(Number);
+
+  const date = new Date(year, month - 1, day, hours, minutes);
   return date.toLocaleDateString('fr-FR', {
     weekday: 'short',
     day: '2-digit',
@@ -38,11 +40,21 @@ function formatDisplayDateTime(isoString: string): string {
 }
 
 /**
+ * Parse a datetime string without timezone conversion.
+ */
+function parseLocalDatetime(datetimeString: string): Date {
+  const [datePart, timePart] = datetimeString.replace('Z', '').split('T');
+  const [year, month, day] = datePart.split('-').map(Number);
+  const [hours, minutes, seconds = 0] = timePart.split(':').map(Number);
+  return new Date(year, month - 1, day, hours, minutes, seconds);
+}
+
+/**
  * Calculate duration in hours and minutes.
  */
 function formatDuration(startDatetime: string, endDatetime: string): string {
-  const start = new Date(startDatetime);
-  const end = new Date(endDatetime);
+  const start = parseLocalDatetime(startDatetime);
+  const end = parseLocalDatetime(endDatetime);
   const diffMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
   const hours = Math.floor(diffMinutes / 60);
   const minutes = diffMinutes % 60;
@@ -131,10 +143,11 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
       return;
     }
 
+    // Send dates as-is (local time) - backend stores without timezone
     createMutation.mutate({
       ...newSlot,
-      startDatetime: start.toISOString(),
-      endDatetime: end.toISOString(),
+      startDatetime: `${newSlot.startDatetime}:00`,
+      endDatetime: `${newSlot.endDatetime}:00`,
     });
   };
 

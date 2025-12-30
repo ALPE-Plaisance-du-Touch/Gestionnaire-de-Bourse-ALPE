@@ -16,17 +16,15 @@ const STATUS_LABELS: Record<EditionStatus, { label: string; className: string }>
 };
 
 /**
- * Format an ISO datetime string for datetime-local input.
+ * Format a datetime string for datetime-local input.
+ * Backend stores dates without timezone info, so we parse directly without conversion.
+ * Input format: "2025-03-15T09:00:00" or "2025-03-15T09:00:00Z"
+ * Output format: "2025-03-15T09:00"
  */
-function formatDatetimeLocal(isoString: string | null): string {
-  if (!isoString) return '';
-  const date = new Date(isoString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
+function formatDatetimeLocal(datetimeString: string | null): string {
+  if (!datetimeString) return '';
+  // Remove timezone suffix if present and take first 16 chars (YYYY-MM-DDTHH:mm)
+  return datetimeString.replace('Z', '').substring(0, 16);
 }
 
 /**
@@ -226,35 +224,39 @@ export function EditionDetailPage() {
       }
     }
 
+    // Send dates as-is (local time) - backend stores without timezone
+    // Format: "2025-03-15T09:00" -> "2025-03-15T09:00:00"
+    const formatLocalDatetime = (dt: string) => dt ? `${dt}:00` : undefined;
+
     const updateData: Parameters<typeof editionsApi.updateEdition>[1] = {
       name: name.trim(),
-      startDatetime: new Date(startDatetime).toISOString(),
-      endDatetime: new Date(endDatetime).toISOString(),
+      startDatetime: formatLocalDatetime(startDatetime)!,
+      endDatetime: formatLocalDatetime(endDatetime)!,
       location: location.trim() || undefined,
       description: description.trim() || undefined,
       commissionRate: commissionNum / 100,
     };
 
     if (declarationDeadline) {
-      updateData.declarationDeadline = new Date(declarationDeadline).toISOString();
+      updateData.declarationDeadline = formatLocalDatetime(declarationDeadline);
     }
     if (depositStartDatetime) {
-      updateData.depositStartDatetime = new Date(depositStartDatetime).toISOString();
+      updateData.depositStartDatetime = formatLocalDatetime(depositStartDatetime);
     }
     if (depositEndDatetime) {
-      updateData.depositEndDatetime = new Date(depositEndDatetime).toISOString();
+      updateData.depositEndDatetime = formatLocalDatetime(depositEndDatetime);
     }
     if (saleStartDatetime) {
-      updateData.saleStartDatetime = new Date(saleStartDatetime).toISOString();
+      updateData.saleStartDatetime = formatLocalDatetime(saleStartDatetime);
     }
     if (saleEndDatetime) {
-      updateData.saleEndDatetime = new Date(saleEndDatetime).toISOString();
+      updateData.saleEndDatetime = formatLocalDatetime(saleEndDatetime);
     }
     if (retrievalStartDatetime) {
-      updateData.retrievalStartDatetime = new Date(retrievalStartDatetime).toISOString();
+      updateData.retrievalStartDatetime = formatLocalDatetime(retrievalStartDatetime);
     }
     if (retrievalEndDatetime) {
-      updateData.retrievalEndDatetime = new Date(retrievalEndDatetime).toISOString();
+      updateData.retrievalEndDatetime = formatLocalDatetime(retrievalEndDatetime);
     }
 
     try {

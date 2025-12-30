@@ -7,17 +7,17 @@ import type {
 } from '@/types';
 
 /**
- * API response type (snake_case from backend).
+ * API response type after Axios interceptor transforms keys to camelCase.
  */
 interface DepositSlotApiResponse {
   id: string;
-  edition_id: string;
-  start_datetime: string;
-  end_datetime: string;
-  max_capacity: number;
-  reserved_for_locals: boolean;
+  editionId: string;
+  startDatetime: string;
+  endDatetime: string;
+  maxCapacity: number;
+  reservedForLocals: boolean;
   description: string | null;
-  created_at: string;
+  createdAt: string;
 }
 
 interface DepositSlotListApiResponse {
@@ -27,17 +27,18 @@ interface DepositSlotListApiResponse {
 
 /**
  * Transform API response to frontend DepositSlot type.
+ * Axios interceptor already converts snake_case to camelCase.
  */
 function transformDepositSlot(data: DepositSlotApiResponse): DepositSlot {
   return {
     id: data.id,
-    editionId: data.edition_id,
-    startDatetime: data.start_datetime,
-    endDatetime: data.end_datetime,
-    maxCapacity: data.max_capacity,
-    reservedForLocals: data.reserved_for_locals,
+    editionId: data.editionId,
+    startDatetime: data.startDatetime,
+    endDatetime: data.endDatetime,
+    maxCapacity: data.maxCapacity,
+    reservedForLocals: data.reservedForLocals,
     description: data.description,
-    createdAt: data.created_at,
+    createdAt: data.createdAt,
   };
 }
 
