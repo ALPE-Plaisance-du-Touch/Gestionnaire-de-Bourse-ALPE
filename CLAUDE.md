@@ -66,6 +66,10 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed progress tracking and task bre
 └── DEVELOPMENT.md           # Progress tracking
 ```
 
+## Shell Commands
+
+**Working directory**: All shell commands should be run from the project root (`c:\dev\alpe\Gestionnaire-de-Bourse-ALPE`). No need to prefix commands with `cd` - assume we are already in the correct directory.
+
 ## Common Commands
 
 ```bash
