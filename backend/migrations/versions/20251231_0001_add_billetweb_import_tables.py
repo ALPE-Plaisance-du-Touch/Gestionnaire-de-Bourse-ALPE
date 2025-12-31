@@ -25,7 +25,7 @@ def upgrade() -> None:
     op.create_table(
         "billetweb_import_logs",
         sa.Column("edition_id", sa.String(length=36), nullable=False),
-        sa.Column("imported_by_id", sa.String(length=36), nullable=False),
+        sa.Column("imported_by_id", sa.String(length=36), nullable=True),
         sa.Column("filename", sa.String(length=255), nullable=False),
         sa.Column("file_size_bytes", sa.Integer(), nullable=False),
         sa.Column("total_rows", sa.Integer(), default=0),

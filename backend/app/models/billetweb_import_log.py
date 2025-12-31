@@ -26,9 +26,9 @@ class BilletwebImportLog(Base, UUIDMixin, TimestampMixin):
         ForeignKey("editions.id", ondelete="CASCADE"),
         nullable=False,
     )
-    imported_by_id: Mapped[str] = mapped_column(
+    imported_by_id: Mapped[str | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"),
-        nullable=False,
+        nullable=True,
     )
 
     # File info
@@ -54,4 +54,4 @@ class BilletwebImportLog(Base, UUIDMixin, TimestampMixin):
 
     # Relationships
     edition: Mapped["Edition"] = relationship("Edition", back_populates="billetweb_imports")
-    imported_by: Mapped["User"] = relationship("User")
+    imported_by: Mapped["User | None"] = relationship("User")

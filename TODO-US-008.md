@@ -2,69 +2,72 @@
 
 ## Critères d'acceptation
 
-- [ ] **AC-1** : Bouton "Importer les inscriptions Billetweb" visible sur édition en statut "Configurée"
-- [ ] **AC-2** : Modale d'import avec sélection fichier (.xlsx/.xls), instructions et boutons Prévisualiser/Importer
-- [ ] **AC-3** : Prévisualisation avec tableau récapitulatif (lignes totales, payés/valides, existants/nouveaux, doublons, erreurs)
-- [ ] **AC-4** : Import réussi : association existants, création nouveaux comptes, envoi invitations, redirection liste déposants
-- [ ] **AC-5** : Gestion doublons email dans le fichier (seule 1ère occurrence gardée)
-- [ ] **AC-6** : Déposants déjà associés à l'édition ignorés sans erreur
-- [ ] **AC-7** : Erreur format fichier invalide (colonnes manquantes)
+- [x] **AC-1** : Bouton "Importer les inscriptions Billetweb" visible sur édition en statut "Configurée"
+- [x] **AC-2** : Modale d'import avec sélection fichier (.xlsx/.xls), instructions et boutons Prévisualiser/Importer
+- [x] **AC-3** : Prévisualisation avec tableau récapitulatif (lignes totales, payés/valides, existants/nouveaux, doublons, erreurs)
+- [x] **AC-4** : Import réussi : association existants, création nouveaux comptes, envoi invitations, redirection liste déposants
+- [x] **AC-5** : Gestion doublons email dans le fichier (seule 1ère occurrence gardée)
+- [x] **AC-6** : Déposants déjà associés à l'édition ignorés sans erreur
+- [x] **AC-7** : Erreur format fichier invalide (colonnes manquantes)
 - [ ] **AC-8** : Erreur créneaux non reconnus (bloquant)
-- [ ] **AC-10** : Erreur données invalides (emails, téléphones) avec option ignorer
-- [ ] **AC-11** : Notification email aux déposants existants associés
-- [ ] **AC-12** : Limite 5 Mo ou 500 lignes max
-- [ ] **AC-13** : Contrôle d'accès (gestionnaire/admin uniquement)
+- [x] **AC-10** : Erreur données invalides (emails, téléphones) avec option ignorer
+- [x] **AC-11** : Notification email aux déposants existants associés
+- [x] **AC-12** : Limite 5 Mo ou 500 lignes max
+- [x] **AC-13** : Contrôle d'accès (gestionnaire/admin uniquement)
 
 ## Tâches Backend
 
 ### Modèles et migrations
 
-- [ ] Créer le modèle `EditionDepositor` (association déposant-édition avec type de liste et créneau)
-- [ ] Créer la table d'audit des imports (`billetweb_import_log`)
-- [ ] Migration Alembic
+- [x] Créer le modèle `EditionDepositor` (association déposant-édition avec type de liste et créneau)
+- [x] Créer la table d'audit des imports (`billetweb_import_log`)
+- [x] Migration Alembic
 
 ### Service d'import Billetweb
 
-- [ ] Créer `BilletwebImportService` dans `backend/app/services/`
-- [ ] Parser le fichier Excel (.xlsx/.xls) avec openpyxl
-- [ ] Extraire les colonnes utiles (D, F, G, J, K, L, P, Y, Z, AE, AF, AG, AH)
-- [ ] Filtrer : Payé="Oui" ET Valide="Oui"
-- [ ] Valider le format du fichier (colonnes requises présentes)
-- [ ] Valider les emails (format RFC 5322)
-- [ ] Valider les téléphones (format français)
+- [x] Créer `BilletwebImportService` dans `backend/app/services/`
+- [x] Parser le fichier Excel (.xlsx/.xls) avec openpyxl
+- [x] Extraire les colonnes utiles (D, F, G, J, K, L, P, Y, Z, AE, AF, AG, AH)
+- [x] Filtrer : Payé="Oui" ET Valide="Oui"
+- [x] Valider le format du fichier (colonnes requises présentes)
+- [x] Valider les emails (format RFC 5322)
+- [x] Valider les téléphones (format français)
 - [ ] Mapper les créneaux (Séance) vers les `DepositSlot` de l'édition
-- [ ] Mapper les tarifs vers les types de liste (standard/1000/2000)
-- [ ] Détecter les doublons email dans le fichier
-- [ ] Identifier déposants existants vs nouveaux (par email)
-- [ ] Identifier déposants déjà associés à l'édition
+- [x] Mapper les tarifs vers les types de liste (standard/1000/2000)
+- [x] Détecter les doublons email dans le fichier
+- [x] Identifier déposants existants vs nouveaux (par email)
+- [x] Identifier déposants déjà associés à l'édition
 
 ### Logique d'import
 
-- [ ] Associer les déposants existants à l'édition
-- [ ] Créer les nouveaux comptes utilisateurs (statut "invitation_envoyee")
-- [ ] Générer les invitations (token 7 jours) pour les nouveaux
-- [ ] Enregistrer l'import dans les logs d'audit
+- [x] Associer les déposants existants à l'édition
+- [x] Créer les nouveaux comptes utilisateurs (statut "invitation_envoyee")
+- [x] Générer les invitations (token 7 jours) pour les nouveaux
+- [x] Enregistrer l'import dans les logs d'audit
 
 ### Service d'email
 
-- [ ] Template email invitation nouveaux déposants (avec créneau et type liste)
-- [ ] Template email notification déposants existants
-- [ ] Envoi des emails en batch
+- [x] Template email invitation nouveaux déposants (avec créneau et type liste)
+- [x] Template email notification déposants existants
+- [x] Envoi des emails en batch
 
 ### API Endpoints
 
-- [ ] `POST /api/v1/editions/{id}/billetweb/preview` - Prévisualisation
-- [ ] `POST /api/v1/editions/{id}/billetweb/import` - Import effectif
-- [ ] Schémas Pydantic pour requête (multipart file) et réponses
-- [ ] Validation : édition en statut "Configurée"
-- [ ] Validation : rôle gestionnaire ou admin
-- [ ] Validation : taille fichier <= 5 Mo, <= 500 lignes
+- [x] `POST /api/v1/editions/{id}/billetweb/preview` - Prévisualisation
+- [x] `POST /api/v1/editions/{id}/billetweb/import` - Import effectif
+- [x] `GET /api/v1/editions/{id}/billetweb/depositors` - Liste des déposants
+- [x] `GET /api/v1/editions/{id}/billetweb/import-logs` - Historique des imports
+- [x] `GET /api/v1/editions/{id}/billetweb/stats` - Statistiques
+- [x] Schémas Pydantic pour requête (multipart file) et réponses
+- [x] Validation : édition en statut "Configurée"
+- [x] Validation : rôle gestionnaire ou admin
+- [x] Validation : taille fichier <= 5 Mo, <= 500 lignes
 
 ### Repository
 
-- [ ] Créer `EditionDepositorRepository`
-- [ ] Créer `BilletwebImportLogRepository`
-- [ ] Méthodes : association déposant-édition, vérification doublon, etc.
+- [x] Créer `EditionDepositorRepository`
+- [x] Créer `BilletwebImportLogRepository`
+- [x] Méthodes : association déposant-édition, vérification doublon, etc.
 
 ### Tests Backend
 
@@ -79,33 +82,33 @@
 
 ### Types TypeScript
 
-- [ ] `BilletwebPreviewResult` (résumé prévisualisation)
-- [ ] `BilletwebImportResult` (résumé import)
-- [ ] `BilletwebError` (erreur ligne par ligne)
+- [x] `BilletwebPreviewResult` (résumé prévisualisation)
+- [x] `BilletwebImportResult` (résumé import)
+- [x] `BilletwebError` (erreur ligne par ligne)
 
 ### API Client
 
-- [ ] `previewBilletwebImport(editionId, file)` dans `api/billetweb.ts`
-- [ ] `importBilletweb(editionId, file, options)` dans `api/billetweb.ts`
+- [x] `previewBilletwebImport(editionId, file)` dans `api/billetweb.ts`
+- [x] `importBilletweb(editionId, file, options)` dans `api/billetweb.ts`
 
 ### Composants
 
-- [ ] `BilletwebImportButton` - Bouton sur page édition (si statut Configurée)
-- [ ] `BilletwebImportModal` - Modale d'import
-  - [ ] Zone de sélection fichier (drag & drop)
-  - [ ] Instructions et liste colonnes requises
-  - [ ] Bouton Prévisualiser / Importer
-- [ ] `BilletwebPreviewTable` - Tableau récapitulatif prévisualisation
-  - [ ] Statistiques (total, payés, nouveaux, existants, doublons)
-  - [ ] Liste des erreurs ligne par ligne
-  - [ ] Avertissement doublons
-- [ ] `BilletwebImportResult` - Résultat après import
-  - [ ] Résumé (X associés, Y invitations envoyées)
+- [x] `BilletwebImportButton` - Bouton sur page édition (si statut Configurée)
+- [x] `BilletwebImportModal` - Modale d'import
+  - [x] Zone de sélection fichier (drag & drop)
+  - [x] Instructions et liste colonnes requises
+  - [x] Bouton Prévisualiser / Importer
+- [x] `BilletwebPreviewTable` - Tableau récapitulatif prévisualisation
+  - [x] Statistiques (total, payés, nouveaux, existants, doublons)
+  - [x] Liste des erreurs ligne par ligne
+  - [x] Avertissement doublons
+- [x] `BilletwebImportResult` - Résultat après import
+  - [x] Résumé (X associés, Y invitations envoyées)
   - [ ] Bouton vers liste déposants
 
 ### Pages
 
-- [ ] Intégrer `BilletwebImportButton` dans page détail édition
+- [x] Intégrer `BilletwebImportButton` dans page détail édition
 - [ ] Route vers liste déposants de l'édition (à créer si inexistante)
 
 ### Tests Frontend
@@ -114,36 +117,40 @@
 - [ ] Tests API client (mocks)
 - [ ] Tests intégration page édition
 
-## Fichiers à créer/modifier
+## Fichiers créés/modifiés
 
 ### Backend
 
-- `backend/app/models/edition_depositor.py` (nouveau)
-- `backend/app/models/billetweb_import_log.py` (nouveau)
-- `backend/app/models/__init__.py` (export nouveaux modèles)
-- `backend/app/repositories/edition_depositor.py` (nouveau)
-- `backend/app/repositories/billetweb_import_log.py` (nouveau)
-- `backend/app/services/billetweb_import.py` (nouveau)
-- `backend/app/services/email.py` (nouveaux templates)
-- `backend/app/schemas/billetweb.py` (nouveau)
-- `backend/app/api/v1/endpoints/billetweb.py` (nouveau)
-- `backend/app/api/v1/router.py` (ajouter route)
-- `backend/migrations/versions/xxx_add_billetweb_import.py` (nouveau)
-- `backend/requirements.txt` (ajouter openpyxl)
-- `backend/tests/test_billetweb_import.py` (nouveau)
-- `backend/tests/fixtures/billetweb_*.xlsx` (nouveaux)
+- [x] `backend/app/models/edition_depositor.py` (nouveau)
+- [x] `backend/app/models/billetweb_import_log.py` (nouveau)
+- [x] `backend/app/models/__init__.py` (export nouveaux modèles)
+- [x] `backend/app/repositories/edition_depositor.py` (nouveau)
+- [x] `backend/app/repositories/billetweb_import_log.py` (nouveau)
+- [x] `backend/app/services/billetweb_import.py` (nouveau)
+- [x] `backend/app/services/email.py` (nouveaux templates)
+- [x] `backend/app/schemas/billetweb.py` (nouveau)
+- [x] `backend/app/api/v1/endpoints/billetweb.py` (nouveau)
+- [x] `backend/app/api/v1/__init__.py` (ajouter route)
+- [x] `backend/migrations/versions/20251231_0001_add_billetweb_import_tables.py` (nouveau)
+- [x] `backend/requirements.txt` (ajouter openpyxl)
+- [x] `backend/templates/email/billetweb_invitation.html` (nouveau)
+- [x] `backend/templates/email/billetweb_invitation.txt` (nouveau)
+- [x] `backend/templates/email/edition_registration.html` (nouveau)
+- [x] `backend/templates/email/edition_registration.txt` (nouveau)
+- [ ] `backend/tests/test_billetweb_import.py` (nouveau)
+- [ ] `backend/tests/fixtures/billetweb_*.xlsx` (nouveaux)
 
 ### Frontend
 
-- `frontend/src/types/billetweb.ts` (nouveau)
-- `frontend/src/api/billetweb.ts` (nouveau)
-- `frontend/src/components/billetweb/BilletwebImportButton.tsx` (nouveau)
-- `frontend/src/components/billetweb/BilletwebImportModal.tsx` (nouveau)
-- `frontend/src/components/billetweb/BilletwebPreviewTable.tsx` (nouveau)
-- `frontend/src/components/billetweb/BilletwebImportResult.tsx` (nouveau)
-- `frontend/src/components/billetweb/index.ts` (nouveau)
-- `frontend/src/pages/admin/EditionDetailPage.tsx` (modifier)
-- `frontend/src/tests/billetweb.test.tsx` (nouveau)
+- [x] `frontend/src/types/billetweb.ts` (nouveau)
+- [x] `frontend/src/api/billetweb.ts` (nouveau)
+- [x] `frontend/src/components/billetweb/BilletwebImportButton.tsx` (nouveau)
+- [x] `frontend/src/components/billetweb/BilletwebImportModal.tsx` (nouveau)
+- [x] `frontend/src/components/billetweb/BilletwebPreviewTable.tsx` (nouveau)
+- [x] `frontend/src/components/billetweb/BilletwebImportResult.tsx` (nouveau)
+- [x] `frontend/src/components/billetweb/index.ts` (nouveau)
+- [x] `frontend/src/pages/admin/EditionDetailPage.tsx` (modifier)
+- [ ] `frontend/src/tests/billetweb.test.tsx` (nouveau)
 
 ## Mapping Tarifs Billetweb -> Type de liste
 
@@ -175,3 +182,9 @@ Exemple :
 - Volume attendu : 200-300 inscriptions par édition
 - Token invitation : 7 jours de validité
 - Code postal 31830 = Plaisançois (info utile pour stats)
+
+## Reste à faire
+
+1. **AC-8** : Mapper les créneaux Billetweb vers les `DepositSlot` - nécessite de connaître le format exact du champ "Séance"
+2. **Tests** : Écrire les tests unitaires et d'intégration (backend + frontend)
+3. **Page liste déposants** : Créer la route/page pour afficher les déposants d'une édition
