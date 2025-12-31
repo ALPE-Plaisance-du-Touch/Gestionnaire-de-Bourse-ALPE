@@ -26,12 +26,7 @@ export const billetwebApi = {
 
     const response = await apiClient.post<BilletwebPreviewResponse>(
       `/v1/editions/${editionId}/billetweb/preview`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
+      formData
     );
     return response.data;
   },
@@ -59,12 +54,7 @@ export const billetwebApi = {
 
     const response = await apiClient.post<BilletwebImportResponse>(
       url,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
+      formData
     );
     return response.data;
   },

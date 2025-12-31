@@ -1,20 +1,20 @@
-"""Billetweb import service for processing Excel files from Billetweb."""
+"""Billetweb import service for processing CSV files from Billetweb."""
 
+import csv
 import logging
 import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from io import BytesIO
+from io import StringIO
 from typing import TYPE_CHECKING
 
-from openpyxl import load_workbook
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import DepositSlot, Edition, User
 from app.models.billetweb_import_log import BilletwebImportLog
 from app.models.edition_depositor import EditionDepositor
 from app.models.item_list import ListType
-from app.repositories import UserRepository
+from app.repositories import DepositSlotRepository, UserRepository
 from app.schemas.billetweb import (
     BilletwebPreviewResponse,
     BilletwebPreviewStats,
@@ -28,45 +28,26 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-# Billetweb column indices (0-indexed)
+# Billetweb CSV column names (from header row)
 class BilletwebColumns:
-    """Column indices for Billetweb Excel export (0-indexed)."""
+    """Column names for Billetweb CSV export."""
 
-    DATE_CREATION = 3  # D
-    SEANCE = 5  # F - Deposit slot
-    TARIF = 6  # G - Pricing/list type
-    NOM = 9  # J
-    PRENOM = 10  # K
-    EMAIL = 11  # L
-    COMMANDE = 15  # P - Order reference
-    PAYE = 24  # Y
-    VALIDE = 25  # Z
-    TELEPHONE = 30  # AE
-    ADRESSE = 31  # AF
-    CODE_POSTAL = 32  # AG
-    VILLE = 33  # AH
-
-
-# Tarif to ListType mapping
-TARIF_MAPPING = {
-    "standard": ListType.STANDARD.value,
-    "normal": ListType.STANDARD.value,
-    "classique": ListType.STANDARD.value,
-    "adhérent": ListType.LIST_1000.value,
-    "adherent": ListType.LIST_1000.value,
-    "adhérent alpe": ListType.LIST_1000.value,
-    "membre": ListType.LIST_1000.value,
-    "membre alpe": ListType.LIST_1000.value,
-    "liste 1000": ListType.LIST_1000.value,
-    "famille": ListType.LIST_2000.value,
-    "ami": ListType.LIST_2000.value,
-    "famille/ami": ListType.LIST_2000.value,
-    "liste 2000": ListType.LIST_2000.value,
-}
+    SEANCE = "Séance"  # Deposit slot datetime
+    TARIF = "Tarif"  # Pricing/list type
+    NOM = "Nom"
+    PRENOM = "Prénom"
+    EMAIL = "Email"
+    COMMANDE = "Commande"  # Order reference
+    PAYE = "Payé"
+    VALIDE = "Valide"
+    TELEPHONE = "Téléphone (Commande) - #5"
+    ADRESSE = "Adresse (Commande) - #7"
+    CODE_POSTAL = "Code postal (Commande) - #8"
+    VILLE = "Ville (Commande) - #9"
 
 
 # Required columns (will raise error if missing)
-REQUIRED_COLUMNS = [
+REQUIRED_COLUMN_NAMES = [
     BilletwebColumns.NOM,
     BilletwebColumns.PRENOM,
     BilletwebColumns.EMAIL,
@@ -74,13 +55,45 @@ REQUIRED_COLUMNS = [
     BilletwebColumns.TARIF,
     BilletwebColumns.PAYE,
     BilletwebColumns.VALIDE,
-    BilletwebColumns.TELEPHONE,
-    BilletwebColumns.CODE_POSTAL,
-    BilletwebColumns.VILLE,
 ]
 
-# Minimum columns expected (to validate file format)
-MIN_COLUMNS = 35  # Billetweb exports have 35 columns (A to AI)
+# Optional columns (won't fail if missing)
+OPTIONAL_COLUMN_NAMES = [
+    BilletwebColumns.TELEPHONE,
+    BilletwebColumns.ADRESSE,
+    BilletwebColumns.CODE_POSTAL,
+    BilletwebColumns.VILLE,
+    BilletwebColumns.COMMANDE,
+]
+
+
+# Tarif to ListType mapping
+# Based on Billetweb example: "Réservé habitants de Plaisance" = local residents
+TARIF_MAPPING = {
+    # Standard tarifs
+    "standard": ListType.STANDARD.value,
+    "normal": ListType.STANDARD.value,
+    "classique": ListType.STANDARD.value,
+    "tarif normal": ListType.STANDARD.value,
+    # Local residents (Plaisance) - maps to LIST_1000 (ALPE members)
+    "réservé habitants de plaisance": ListType.LIST_1000.value,
+    "reserve habitants de plaisance": ListType.LIST_1000.value,
+    "habitants de plaisance": ListType.LIST_1000.value,
+    "plaisançois": ListType.LIST_1000.value,
+    "plaisancois": ListType.LIST_1000.value,
+    # ALPE members
+    "adhérent": ListType.LIST_1000.value,
+    "adherent": ListType.LIST_1000.value,
+    "adhérent alpe": ListType.LIST_1000.value,
+    "membre": ListType.LIST_1000.value,
+    "membre alpe": ListType.LIST_1000.value,
+    "liste 1000": ListType.LIST_1000.value,
+    # Family/Friends
+    "famille": ListType.LIST_2000.value,
+    "ami": ListType.LIST_2000.value,
+    "famille/ami": ListType.LIST_2000.value,
+    "liste 2000": ListType.LIST_2000.value,
+}
 
 
 @dataclass
@@ -176,15 +189,15 @@ class BilletwebImportService:
         normalized = BilletwebImportService._normalize_for_comparison(tarif)
         return TARIF_MAPPING.get(normalized, ListType.STANDARD.value)
 
-    def _parse_workbook(
+    def _parse_csv(
         self,
         file_content: bytes,
         deposit_slots: list[DepositSlot],
     ) -> PreviewResult:
-        """Parse the Excel workbook and validate data.
+        """Parse the CSV file and validate data.
 
         Args:
-            file_content: Raw Excel file content
+            file_content: Raw CSV file content
             deposit_slots: List of configured deposit slots for the edition
 
         Returns:
@@ -194,24 +207,41 @@ class BilletwebImportService:
         warnings: list[str] = []
         parsed_rows: list[ParsedRow] = []
 
-        # Build slot mapping (normalized seance name -> slot_id)
+        # Build slot mapping (normalized seance datetime -> slot_id)
         slot_mapping: dict[str, str] = {}
         available_slots: list[str] = []
         for slot in deposit_slots:
             # Create a normalized slot name for matching
-            slot_name = slot.description or f"{slot.start_datetime.strftime('%A %d %B %Hh')}-{slot.end_datetime.strftime('%Hh')}"
+            slot_name = slot.description or f"{slot.start_datetime.strftime('%Y-%m-%d %H:%M')}"
             available_slots.append(slot_name)
-            slot_mapping[self._normalize_for_comparison(slot_name)] = slot.id
-            # Also map by datetime string
+            # Map by datetime string (Billetweb format: "2025-11-05 20:00")
             dt_key = slot.start_datetime.strftime("%Y-%m-%d %H:%M")
             slot_mapping[dt_key] = slot.id
+            # Also map by description if provided
+            if slot.description:
+                slot_mapping[self._normalize_for_comparison(slot.description)] = slot.id
 
-        # Load workbook
+        # Parse CSV file
         try:
-            wb = load_workbook(filename=BytesIO(file_content), read_only=True, data_only=True)
-            ws = wb.active
+            # Try different encodings
+            content_str = None
+            for encoding in ["utf-8", "utf-8-sig", "latin-1", "cp1252"]:
+                try:
+                    content_str = file_content.decode(encoding)
+                    break
+                except UnicodeDecodeError:
+                    continue
+
+            if content_str is None:
+                raise ValueError("Impossible de décoder le fichier CSV")
+
+            # Parse CSV
+            reader = csv.DictReader(StringIO(content_str))
+            rows = list(reader)
+            headers = reader.fieldnames or []
+
         except Exception as e:
-            logger.error(f"Failed to parse Excel file: {e}")
+            logger.error(f"Failed to parse CSV file: {e}")
             return PreviewResult(
                 stats=BilletwebPreviewStats(
                     total_rows=0,
@@ -228,13 +258,11 @@ class BilletwebImportService:
                         row_number=0,
                         email=None,
                         error_type="invalid_file",
-                        error_message=f"Impossible de lire le fichier Excel: {str(e)}",
+                        error_message=f"Impossible de lire le fichier CSV: {str(e)}",
                     )
                 ],
             )
 
-        # Get all rows (skip header)
-        rows = list(ws.iter_rows(min_row=2, values_only=True))
         total_rows = len(rows)
 
         if total_rows == 0:
@@ -259,9 +287,9 @@ class BilletwebImportService:
                 ],
             )
 
-        # Check column count
-        first_row = rows[0]
-        if len(first_row) < MIN_COLUMNS:
+        # Check required columns
+        missing_columns = [col for col in REQUIRED_COLUMN_NAMES if col not in headers]
+        if missing_columns:
             return PreviewResult(
                 stats=BilletwebPreviewStats(
                     total_rows=total_rows,
@@ -278,7 +306,7 @@ class BilletwebImportService:
                         row_number=0,
                         email=None,
                         error_type="invalid_format",
-                        error_message=f"Format de fichier invalide. Attendu au moins {MIN_COLUMNS} colonnes, trouvé {len(first_row)}. Utilisez le fichier d'export Billetweb sans modification.",
+                        error_message=f"Colonnes manquantes dans le fichier CSV: {', '.join(missing_columns)}. Utilisez le fichier d'export Billetweb sans modification.",
                     )
                 ],
             )
@@ -288,13 +316,11 @@ class BilletwebImportService:
         rows_unpaid_invalid = 0
         duplicates_in_file = 0
 
-        for idx, row in enumerate(rows, start=2):  # Start at 2 (Excel row number, after header)
-            # Extract values
-            def get_cell(col_idx: int) -> str | None:
-                if col_idx < len(row):
-                    val = row[col_idx]
-                    return str(val).strip() if val is not None else None
-                return None
+        for idx, row in enumerate(rows, start=2):  # Start at 2 (row 1 is header)
+            # Extract values using column names
+            def get_cell(col_name: str) -> str | None:
+                val = row.get(col_name)
+                return str(val).strip() if val else None
 
             paye_val = self._normalize_for_comparison(get_cell(BilletwebColumns.PAYE))
             valide_val = self._normalize_for_comparison(get_cell(BilletwebColumns.VALIDE))
@@ -316,11 +342,12 @@ class BilletwebImportService:
             commande_ref = get_cell(BilletwebColumns.COMMANDE)
 
             # Check for duplicate emails in file
-            email_lower = email.lower()
-            if email_lower in seen_emails:
+            email_lower = email.lower() if email else ""
+            if email_lower and email_lower in seen_emails:
                 duplicates_in_file += 1
                 continue
-            seen_emails.add(email_lower)
+            if email_lower:
+                seen_emails.add(email_lower)
 
             # Validate required fields
             row_errors = []
@@ -337,9 +364,10 @@ class BilletwebImportService:
             if not seance:
                 row_errors.append(("missing_field", "Séance/Créneau manquant", "seance", None))
             else:
-                # Check if slot exists
+                # Check if slot exists - match by datetime or description
                 seance_normalized = self._normalize_for_comparison(seance)
-                if seance_normalized not in slot_mapping:
+                # Try direct datetime match first (Billetweb format: "2025-11-05 20:00")
+                if seance not in slot_mapping and seance_normalized not in slot_mapping:
                     row_errors.append((
                         "unknown_slot",
                         f"Créneau non reconnu: '{seance}'. Créneaux disponibles: {', '.join(available_slots)}",
@@ -417,17 +445,18 @@ class BilletwebImportService:
 
         Args:
             edition: The edition to import depositors into
-            file_content: Raw Excel file content
+            file_content: Raw CSV file content
             filename: Original filename for logging
 
         Returns:
             BilletwebPreviewResponse with statistics and any errors
         """
-        # Get deposit slots for this edition
-        deposit_slots = edition.deposit_slots
+        # Get deposit slots for this edition via repository (async-safe)
+        slot_repo = DepositSlotRepository(self.db)
+        deposit_slots, _ = await slot_repo.list_by_edition(edition.id)
 
-        # Parse the workbook
-        result = self._parse_workbook(file_content, deposit_slots)
+        # Parse the CSV file
+        result = self._parse_csv(file_content, deposit_slots)
 
         # If there are parsing errors, return early
         if result.errors:
@@ -500,11 +529,11 @@ class BilletwebImportService:
         send_emails: bool = True,
         background_tasks: "BackgroundTasks | None" = None,
     ) -> tuple[BilletwebImportLog, int, int]:
-        """Import depositors from a Billetweb Excel file.
+        """Import depositors from a Billetweb CSV file.
 
         Args:
             edition: The edition to import depositors into
-            file_content: Raw Excel file content
+            file_content: Raw CSV file content
             filename: Original filename for logging
             file_size: File size in bytes
             imported_by: User performing the import
@@ -520,11 +549,12 @@ class BilletwebImportService:
         """
         from app.services.email import email_service
 
-        # Get deposit slots for this edition
-        deposit_slots = edition.deposit_slots
+        # Get deposit slots for this edition via repository (async-safe)
+        slot_repo = DepositSlotRepository(self.db)
+        deposit_slots, _ = await slot_repo.list_by_edition(edition.id)
 
-        # Parse the workbook
-        result = self._parse_workbook(file_content, deposit_slots)
+        # Parse the CSV file
+        result = self._parse_csv(file_content, deposit_slots)
 
         # Check for errors
         if result.errors and not ignore_errors:

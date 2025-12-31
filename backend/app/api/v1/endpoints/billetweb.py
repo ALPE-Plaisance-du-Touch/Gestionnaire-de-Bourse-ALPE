@@ -45,13 +45,13 @@ async def get_edition_or_404(db: DBSession, edition_id: str):
     "/preview",
     response_model=BilletwebPreviewResponse,
     summary="Preview Billetweb import",
-    description="Parse and validate a Billetweb Excel file without importing. Returns statistics and errors.",
+    description="Parse and validate a Billetweb CSV file without importing. Returns statistics and errors.",
 )
 async def preview_billetweb_import(
     edition_id: str,
     db: DBSession,
     current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
-    file: UploadFile = File(..., description="Billetweb Excel export file (.xlsx or .xls)"),
+    file: UploadFile = File(..., description="Billetweb CSV export file (.csv)"),
 ):
     """Preview a Billetweb import file.
 
@@ -61,10 +61,10 @@ async def preview_billetweb_import(
     - Whether the import can proceed
     """
     # Validate file type
-    if not file.filename or not (file.filename.endswith(".xlsx") or file.filename.endswith(".xls")):
+    if not file.filename or not file.filename.endswith(".csv"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid file type. Only .xlsx and .xls files are accepted.",
+            detail="Invalid file type. Only .csv files are accepted.",
         )
 
     # Read file content
@@ -105,14 +105,14 @@ async def preview_billetweb_import(
     "/import",
     response_model=BilletwebImportResponse,
     summary="Import Billetweb file",
-    description="Import depositors from a Billetweb Excel file. Sends invitations to new depositors.",
+    description="Import depositors from a Billetweb CSV file. Sends invitations to new depositors.",
 )
 async def import_billetweb(
     edition_id: str,
     db: DBSession,
     background_tasks: BackgroundTasks,
     current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
-    file: UploadFile = File(..., description="Billetweb Excel export file (.xlsx or .xls)"),
+    file: UploadFile = File(..., description="Billetweb CSV export file (.csv)"),
     ignore_errors: bool = Query(False, description="Skip rows with errors instead of failing"),
     send_emails: bool = Query(True, description="Send invitation/notification emails"),
 ):
@@ -126,10 +126,10 @@ async def import_billetweb(
     5. Returns import statistics
     """
     # Validate file type
-    if not file.filename or not (file.filename.endswith(".xlsx") or file.filename.endswith(".xls")):
+    if not file.filename or not file.filename.endswith(".csv"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid file type. Only .xlsx and .xls files are accepted.",
+            detail="Invalid file type. Only .csv files are accepted.",
         )
 
     # Read file content

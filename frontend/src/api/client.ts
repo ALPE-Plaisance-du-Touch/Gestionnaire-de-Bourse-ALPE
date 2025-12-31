@@ -137,8 +137,13 @@ function createApiClient(): AxiosInstance {
         config.headers.Authorization = `Bearer ${token}`;
       }
       // Transform request data: camelCase -> snake_case
-      if (config.data && typeof config.data === 'object') {
+      // Skip FormData objects (file uploads)
+      if (config.data && typeof config.data === 'object' && !(config.data instanceof FormData)) {
         config.data = keysToSnakeCase(config.data);
+      }
+      // Remove Content-Type for FormData so browser sets it with boundary
+      if (config.data instanceof FormData) {
+        delete config.headers['Content-Type'];
       }
       return config;
     },

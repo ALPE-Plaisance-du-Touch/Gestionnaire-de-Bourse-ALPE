@@ -3,13 +3,13 @@
 ## Critères d'acceptation
 
 - [x] **AC-1** : Bouton "Importer les inscriptions Billetweb" visible sur édition en statut "Configurée"
-- [x] **AC-2** : Modale d'import avec sélection fichier (.xlsx/.xls), instructions et boutons Prévisualiser/Importer
+- [x] **AC-2** : Modale d'import avec sélection fichier (.csv), instructions et boutons Prévisualiser/Importer
 - [x] **AC-3** : Prévisualisation avec tableau récapitulatif (lignes totales, payés/valides, existants/nouveaux, doublons, erreurs)
 - [x] **AC-4** : Import réussi : association existants, création nouveaux comptes, envoi invitations, redirection liste déposants
 - [x] **AC-5** : Gestion doublons email dans le fichier (seule 1ère occurrence gardée)
 - [x] **AC-6** : Déposants déjà associés à l'édition ignorés sans erreur
 - [x] **AC-7** : Erreur format fichier invalide (colonnes manquantes)
-- [ ] **AC-8** : Erreur créneaux non reconnus (bloquant)
+- [x] **AC-8** : Erreur créneaux non reconnus (bloquant)
 - [x] **AC-10** : Erreur données invalides (emails, téléphones) avec option ignorer
 - [x] **AC-11** : Notification email aux déposants existants associés
 - [x] **AC-12** : Limite 5 Mo ou 500 lignes max
@@ -26,13 +26,13 @@
 ### Service d'import Billetweb
 
 - [x] Créer `BilletwebImportService` dans `backend/app/services/`
-- [x] Parser le fichier Excel (.xlsx/.xls) avec openpyxl
-- [x] Extraire les colonnes utiles (D, F, G, J, K, L, P, Y, Z, AE, AF, AG, AH)
+- [x] Parser le fichier CSV avec le module csv standard
+- [x] Extraire les colonnes utiles par nom (Nom, Prénom, Email, Séance, Tarif, Payé, Valide, Téléphone, Code postal, Ville)
 - [x] Filtrer : Payé="Oui" ET Valide="Oui"
 - [x] Valider le format du fichier (colonnes requises présentes)
 - [x] Valider les emails (format RFC 5322)
 - [x] Valider les téléphones (format français)
-- [ ] Mapper les créneaux (Séance) vers les `DepositSlot` de l'édition
+- [x] Mapper les créneaux (Séance) vers les `DepositSlot` de l'édition
 - [x] Mapper les tarifs vers les types de liste (standard/1000/2000)
 - [x] Détecter les doublons email dans le fichier
 - [x] Identifier déposants existants vs nouveaux (par email)
@@ -132,13 +132,13 @@
 - [x] `backend/app/api/v1/endpoints/billetweb.py` (nouveau)
 - [x] `backend/app/api/v1/__init__.py` (ajouter route)
 - [x] `backend/migrations/versions/20251231_0001_add_billetweb_import_tables.py` (nouveau)
-- [x] `backend/requirements.txt` (ajouter openpyxl)
+- [x] `backend/requirements.txt` (pas de dépendance externe, CSV natif)
 - [x] `backend/templates/email/billetweb_invitation.html` (nouveau)
 - [x] `backend/templates/email/billetweb_invitation.txt` (nouveau)
 - [x] `backend/templates/email/edition_registration.html` (nouveau)
 - [x] `backend/templates/email/edition_registration.txt` (nouveau)
 - [ ] `backend/tests/test_billetweb_import.py` (nouveau)
-- [ ] `backend/tests/fixtures/billetweb_*.xlsx` (nouveaux)
+- [ ] `backend/tests/fixtures/billetweb_*.csv` (nouveaux)
 
 ### Frontend
 
@@ -156,26 +156,41 @@
 
 | Tarif Billetweb | Type de liste | Code |
 |-----------------|---------------|------|
-| "Standard" | Standard | 100-600 |
-| "Adhérent ALPE" | Liste 1000 | 1000+ |
-| "Famille/Ami" | Liste 2000 | 2000+ |
+| "Standard", "Normal", "Classique" | Standard | 100-600 |
+| "Réservé habitants de Plaisance" | Liste 1000 | 1000+ |
+| "Adhérent ALPE", "Membre ALPE" | Liste 1000 | 1000+ |
+| "Famille", "Ami", "Famille/Ami" | Liste 2000 | 2000+ |
 
-> Note : Confirmer les libellés exacts des tarifs Billetweb avec l'équipe ALPE.
+## Format du fichier CSV Billetweb
+
+**Colonnes requises :**
+- `Nom` - Nom de famille
+- `Prénom` - Prénom
+- `Email` - Adresse email
+- `Séance` - Créneau au format datetime (ex: "2025-11-05 20:00")
+- `Tarif` - Type de tarif (mappé vers type de liste)
+- `Payé` - "Oui" ou "Non"
+- `Valide` - "Oui" ou "Non"
+
+**Colonnes optionnelles :**
+- `Téléphone (Commande) - #5` - Numéro de téléphone
+- `Adresse (Commande) - #7` - Adresse postale
+- `Code postal (Commande) - #8` - Code postal
+- `Ville (Commande) - #9` - Ville
+- `Commande` - Référence de commande Billetweb
 
 ## Mapping Créneaux
 
-Le champ "Séance" de Billetweb doit correspondre **exactement** au label des créneaux configurés dans l'édition (US-007).
+Le champ "Séance" de Billetweb contient une date/heure au format `YYYY-MM-DD HH:MM`.
+Ce format est comparé au `start_datetime` des créneaux de dépôt configurés.
 
 Exemple :
-- Billetweb : "Samedi 15 mars 9h-12h"
-- Créneau configuré : "Samedi 15 mars 9h-12h"
-
-> Note : Définir la stratégie de matching (exact, fuzzy, ou normalisation).
+- Billetweb : "2025-11-05 20:00"
+- Créneau configuré : start_datetime = 2025-11-05 20:00
 
 ## Dépendances techniques
 
-- `openpyxl` : Lecture fichiers Excel (.xlsx)
-- `xlrd` : Lecture fichiers Excel anciens (.xls) - optionnel
+- Module `csv` de Python (standard, pas de dépendance externe)
 
 ## Notes
 
@@ -185,6 +200,5 @@ Exemple :
 
 ## Reste à faire
 
-1. **AC-8** : Mapper les créneaux Billetweb vers les `DepositSlot` - nécessite de connaître le format exact du champ "Séance"
-2. **Tests** : Écrire les tests unitaires et d'intégration (backend + frontend)
-3. **Page liste déposants** : Créer la route/page pour afficher les déposants d'une édition
+1. **Tests** : Écrire les tests unitaires et d'intégration (backend + frontend)
+2. **Page liste déposants** : Créer la route/page pour afficher les déposants d'une édition

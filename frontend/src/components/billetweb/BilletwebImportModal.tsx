@@ -56,8 +56,8 @@ export function BilletwebImportModal({
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       // Validate file type
-      if (!selectedFile.name.endsWith('.xlsx') && !selectedFile.name.endsWith('.xls')) {
-        setError('Type de fichier invalide. Seuls les fichiers .xlsx et .xls sont acceptes.');
+      if (!selectedFile.name.endsWith('.csv')) {
+        setError('Type de fichier invalide. Seuls les fichiers .csv sont acceptes.');
         return;
       }
       // Validate file size (5 MB max)
@@ -74,8 +74,8 @@ export function BilletwebImportModal({
     e.preventDefault();
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile) {
-      if (!droppedFile.name.endsWith('.xlsx') && !droppedFile.name.endsWith('.xls')) {
-        setError('Type de fichier invalide. Seuls les fichiers .xlsx et .xls sont acceptes.');
+      if (!droppedFile.name.endsWith('.csv')) {
+        setError('Type de fichier invalide. Seuls les fichiers .csv sont acceptes.');
         return;
       }
       if (droppedFile.size > 5 * 1024 * 1024) {
@@ -102,6 +102,7 @@ export function BilletwebImportModal({
       setPreview(result);
       setStep('preview');
     } catch (err: any) {
+      console.error('Preview error:', err.response?.data);
       setError(err.response?.data?.detail || 'Erreur lors de la previsualisation');
     } finally {
       setIsLoading(false);
@@ -219,14 +220,14 @@ export function BilletwebImportModal({
                   </button>
                 </p>
                 <p className="text-xs text-gray-500">
-                  Fichiers Excel (.xlsx, .xls) - Max 5 Mo
+                  Fichiers CSV (.csv) - Max 5 Mo
                 </p>
               </div>
             )}
             <input
               ref={fileInputRef}
               type="file"
-              accept=".xlsx,.xls"
+              accept=".csv"
               onChange={handleFileChange}
               className="hidden"
             />
