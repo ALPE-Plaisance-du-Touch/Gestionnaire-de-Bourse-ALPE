@@ -10,6 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin, UUIDMixin
 
 if TYPE_CHECKING:
+    from app.models.edition_depositor import EditionDepositor
     from app.models.item_list import ItemList
 
 
@@ -73,6 +74,9 @@ class User(Base, UUIDMixin, TimestampMixin):
     # Relationships
     item_lists: Mapped[list["ItemList"]] = relationship(
         "ItemList", back_populates="depositor"
+    )
+    edition_registrations: Mapped[list["EditionDepositor"]] = relationship(
+        "EditionDepositor", back_populates="user"
     )
 
     @property

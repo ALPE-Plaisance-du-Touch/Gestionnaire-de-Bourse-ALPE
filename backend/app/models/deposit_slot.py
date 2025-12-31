@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app.models.edition import Edition
+    from app.models.edition_depositor import EditionDepositor
 
 
 class DepositSlot(Base, UUIDMixin, TimestampMixin):
@@ -40,6 +41,11 @@ class DepositSlot(Base, UUIDMixin, TimestampMixin):
 
     # Optional description
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    # Relationships
+    registered_depositors: Mapped[list["EditionDepositor"]] = relationship(
+        "EditionDepositor", back_populates="deposit_slot"
+    )
 
     @property
     def duration_minutes(self) -> int:

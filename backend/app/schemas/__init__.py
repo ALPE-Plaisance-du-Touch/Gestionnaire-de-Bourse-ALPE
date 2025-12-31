@@ -33,6 +33,18 @@ from app.schemas.invitation import (
     InvitationResendResponse,
     InvitationResponse,
 )
+from app.schemas.billetweb import (
+    BilletwebImportOptions,
+    BilletwebImportResponse,
+    BilletwebImportResult,
+    BilletwebImportLogResponse,
+    BilletwebPreviewResponse,
+    BilletwebPreviewStats,
+    BilletwebRowError,
+    EditionDepositorResponse,
+    EditionDepositorWithUserResponse,
+    EditionDepositorsListResponse,
+)
 from app.schemas.user import (
     UserCreate,
     UserListResponse,
@@ -76,6 +88,17 @@ __all__ = [
     "BulkInvitationResult",
     "BulkDeleteRequest",
     "BulkDeleteResult",
+    # Billetweb
+    "BilletwebImportOptions",
+    "BilletwebImportResponse",
+    "BilletwebImportResult",
+    "BilletwebImportLogResponse",
+    "BilletwebPreviewResponse",
+    "BilletwebPreviewStats",
+    "BilletwebRowError",
+    "EditionDepositorResponse",
+    "EditionDepositorWithUserResponse",
+    "EditionDepositorsListResponse",
     # Common
     "PaginatedResponse",
     "ErrorResponse",

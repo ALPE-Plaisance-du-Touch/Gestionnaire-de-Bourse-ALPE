@@ -1,9 +1,10 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { editionsApi, ApiException } from '@/api';
+import { editionsApi, billetwebApi, ApiException } from '@/api';
 import { Button, Input } from '@/components/ui';
 import { DepositSlotsEditor } from '@/components/editions';
+import { BilletwebImportButton } from '@/components/billetweb';
 import type { EditionStatus } from '@/types';
 
 const STATUS_LABELS: Record<EditionStatus, { label: string; className: string }> = {
@@ -113,6 +114,13 @@ export function EditionDetailPage() {
     queryKey: ['edition', id],
     queryFn: () => editionsApi.getEdition(id!),
     enabled: !!id,
+  });
+
+  // Fetch import stats for configured editions
+  const { data: importStats, refetch: refetchImportStats } = useQuery({
+    queryKey: ['billetweb-stats', id],
+    queryFn: () => billetwebApi.getImportStats(id!),
+    enabled: !!id && edition?.status === 'configured',
   });
 
   // Sync form state when edition data changes (initial load or after save)
@@ -515,6 +523,44 @@ export function EditionDetailPage() {
         <section className="bg-white rounded-lg shadow p-6">
           <DepositSlotsEditor editionId={edition.id} disabled={!isEditable} />
         </section>
+
+        {/* Billetweb Import Section - Only for configured editions */}
+        {edition.status === 'configured' && (
+          <section className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-2">
+              Inscriptions Billetweb
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Importez les inscriptions depuis Billetweb pour associer les deposants a cette edition.
+            </p>
+
+            <BilletwebImportButton
+              edition={edition}
+              importCount={importStats?.totalDepositors ?? 0}
+              onImportSuccess={() => refetchImportStats()}
+            />
+
+            {importStats && importStats.totalImports > 0 && (
+              <div className="mt-4 bg-gray-50 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Historique des imports</h4>
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <p className="text-gray-500">Deposants inscrits</p>
+                    <p className="text-xl font-semibold text-gray-900">{importStats.totalDepositors}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Imports effectues</p>
+                    <p className="text-xl font-semibold text-gray-900">{importStats.totalImports}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Lignes importees</p>
+                    <p className="text-xl font-semibold text-gray-900">{importStats.totalImported}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Status Info */}
         <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">

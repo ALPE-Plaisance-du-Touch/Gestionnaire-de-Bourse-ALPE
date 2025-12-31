@@ -1,0 +1,20 @@
+Bonjour {{ first_name }},
+
+Bonne nouvelle ! Vous etes inscrit(e) a l'edition "{{ edition_name }}" de la bourse ALPE.
+
+{% if slot_datetime %}
+Creneau de depot : {{ slot_datetime.strftime('%A %d %B %Y a %Hh%M') }}
+{% endif %}
+
+Vous pouvez des maintenant vous connecter pour declarer vos articles :
+{{ login_url }}
+
+N'oubliez pas de :
+- Declarer vos articles avant la date limite
+- Imprimer vos etiquettes
+- Preparer vos articles pour le depot
+
+---
+ALPE Plaisance du Touch
+Cet email a ete envoye automatiquement, merci de ne pas y repondre.
+Besoin d'aide ? Contactez-nous : {{ support_email }}
