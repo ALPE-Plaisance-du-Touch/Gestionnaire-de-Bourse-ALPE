@@ -71,12 +71,12 @@
 
 ### Tests Backend
 
-- [ ] Tests unitaires `BilletwebImportService`
-- [ ] Tests parsing Excel (fichier valide, colonnes manquantes, etc.)
-- [ ] Tests validation (emails, téléphones, créneaux)
-- [ ] Tests intégration API endpoints
-- [ ] Tests contrôle d'accès
-- [ ] Fixtures : fichiers Excel de test
+- [x] Tests unitaires `BilletwebImportService`
+- [x] Tests parsing CSV (fichier valide, colonnes manquantes, etc.)
+- [x] Tests validation (emails, téléphones, créneaux)
+- [x] Tests intégration API endpoints
+- [x] Tests contrôle d'accès
+- [x] Fixtures : fichiers CSV de test
 
 ## Tâches Frontend
 
@@ -137,8 +137,9 @@
 - [x] `backend/templates/email/billetweb_invitation.txt` (nouveau)
 - [x] `backend/templates/email/edition_registration.html` (nouveau)
 - [x] `backend/templates/email/edition_registration.txt` (nouveau)
-- [ ] `backend/tests/test_billetweb_import.py` (nouveau)
-- [ ] `backend/tests/fixtures/billetweb_*.csv` (nouveaux)
+- [x] `backend/tests/unit/test_billetweb_import.py` (nouveau)
+- [x] `backend/tests/integration/test_billetweb_api.py` (nouveau)
+- [x] `backend/tests/fixtures/billetweb_*.csv` (nouveaux)
 
 ### Frontend
 
