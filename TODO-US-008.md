@@ -113,9 +113,9 @@
 
 ### Tests Frontend
 
-- [ ] Tests composants (modal, preview, result)
-- [ ] Tests API client (mocks)
-- [ ] Tests intégration page édition
+- [x] Tests composants (modal, preview, result)
+- [x] Tests API client (mocks)
+- [x] Tests intégration page édition
 
 ## Fichiers créés/modifiés
 
@@ -151,7 +151,10 @@
 - [x] `frontend/src/components/billetweb/BilletwebImportResult.tsx` (nouveau)
 - [x] `frontend/src/components/billetweb/index.ts` (nouveau)
 - [x] `frontend/src/pages/admin/EditionDetailPage.tsx` (modifier)
-- [ ] `frontend/src/tests/billetweb.test.tsx` (nouveau)
+- [x] `frontend/src/components/billetweb/BilletwebImportButton.test.tsx` (nouveau)
+- [x] `frontend/src/components/billetweb/BilletwebImportModal.test.tsx` (nouveau)
+- [x] `frontend/src/components/billetweb/BilletwebPreviewTable.test.tsx` (nouveau)
+- [x] `frontend/src/components/billetweb/BilletwebImportResult.test.tsx` (nouveau)
 
 ## Mapping Tarifs Billetweb -> Type de liste
 
@@ -201,5 +204,27 @@ Exemple :
 
 ## Reste à faire
 
-1. **Tests** : Écrire les tests unitaires et d'intégration (backend + frontend)
+1. ~~**Tests** : Écrire les tests unitaires et d'intégration (backend + frontend)~~ ✅ Complété
 2. **Page liste déposants** : Créer la route/page pour afficher les déposants d'une édition
+
+## Résumé des tests
+
+### Backend (34 tests)
+- **Unit tests** (`test_billetweb_import.py`): 21 tests
+  - Validation email/téléphone
+  - Normalisation téléphone
+  - Mapping tarifs vers types de liste
+  - Parsing CSV (fichiers valides, colonnes manquantes, données invalides, non-payés, doublons)
+  - Templates email
+- **Integration tests** (`test_billetweb_api.py`): 13 tests
+  - Authentification requise
+  - Contrôle d'accès (rôle manager/admin)
+  - Preview/Import endpoints
+  - Validation fichier CSV
+  - Statistiques et liste déposants
+
+### Frontend (41 tests)
+- `BilletwebImportButton.test.tsx`: 9 tests (visibilité, compteur, interactions modal)
+- `BilletwebImportModal.test.tsx`: 14 tests (rendu, sélection fichier, preview, import)
+- `BilletwebPreviewTable.test.tsx`: 9 tests (statistiques, erreurs, warnings)
+- `BilletwebImportResult.test.tsx`: 9 tests (succès, erreur, détails résultat)
