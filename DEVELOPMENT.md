@@ -17,8 +17,8 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.1 | Project Scaffolding | ✅ Done | 100% |
 | 0.2 | Authentication System | ✅ Done | 100% |
 | 0.3 | Edition Management | ✅ Done | 100% |
-| 0.4 | Billetweb Import | 🔲 Not Started | 0% |
-| 0.5 | Article Declaration | 🔲 Not Started | 0% |
+| 0.4 | Billetweb Import | ✅ Done | 100% |
+| 0.5 | Article Declaration | 🔄 In Progress | 0% |
 | 0.6 | Label Generation | 🔲 Not Started | 0% |
 | 0.7 | Sales & Checkout | 🔲 Not Started | 0% |
 | 0.8 | Payout Calculation | 🔲 Not Started | 0% |
@@ -27,8 +27,8 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.11 | PWA & Offline Mode | 🔲 Not Started | 0% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.3 (Edition Management complete)
-**Next Target:** 0.4 - Billetweb Import (US-008)
+**Current Version:** 0.4 (Billetweb Import complete)
+**Next Target:** 0.5 - Article Declaration (US-002)
 
 ---
 
@@ -161,15 +161,33 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
-## v0.4 - Billetweb Import (US-008)
+## v0.4 - Billetweb Import (US-008) ✅
 
 **Branch:** `feature/us-008-billetweb-import`
 
-- [ ] **0.4.1** CSV parser service
-- [ ] **0.4.2** Import API endpoint
-- [ ] **0.4.3** Duplicate detection
-- [ ] **0.4.4** Import UI with preview
-- [ ] **0.4.5** Write tests
+### Backend Tasks ✅
+- [x] **0.4.1** CSV parser service (Billetweb format)
+- [x] **0.4.2** Import API endpoints
+  - [x] `POST /editions/{id}/billetweb/preview` - Preview import
+  - [x] `POST /editions/{id}/billetweb/import` - Execute import
+  - [x] `GET /editions/{id}/billetweb/stats` - Import statistics
+  - [x] `GET /editions/{id}/depositors` - List depositors
+- [x] **0.4.3** Duplicate detection (email, order ref)
+- [x] **0.4.4** EditionDepositor model and repository
+- [x] **0.4.5** BilletwebImportLog model for audit trail
+- [x] **0.4.6** Write tests (116 backend tests total)
+
+### Frontend Tasks ✅
+- [x] **0.4.7** BilletwebImportButton component
+- [x] **0.4.8** BilletwebImportModal with multi-step flow
+  - [x] File upload step
+  - [x] Preview step with stats and errors
+  - [x] Import execution step
+  - [x] Result display step
+- [x] **0.4.9** BilletwebPreviewStats component
+- [x] **0.4.10** BilletwebImportResult component
+- [x] **0.4.11** EditionDepositorsPage (`/editions/:id/depositors`)
+- [x] **0.4.12** Write tests (152 frontend tests total)
 
 ---
 
