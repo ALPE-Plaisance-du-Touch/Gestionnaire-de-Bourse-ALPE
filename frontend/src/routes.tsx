@@ -4,6 +4,7 @@ import { ProtectedRoute } from '@/components/auth';
 import { AuthProvider } from '@/contexts';
 import { LoginPage, ActivatePage, ForgotPasswordPage, ResetPasswordPage } from '@/pages/auth';
 import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, EditionDepositorsPage } from '@/pages/admin';
+import { MyListsPage, ListDetailPage } from '@/pages/depositor';
 
 /**
  * Root layout that provides auth context to all routes.
@@ -49,16 +50,6 @@ function NotFoundPage() {
 }
 
 
-function ListsPage() {
-  return (
-    <MainLayout>
-      <div className="py-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Mes listes</h1>
-        <p className="text-gray-600">Mes listes d'articles à implémenter.</p>
-      </div>
-    </MainLayout>
-  );
-}
 
 function AdminPage() {
   return (
@@ -135,20 +126,23 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      // Depositor routes - article declaration
       {
-        path: '/lists',
+        path: '/depositor/editions/:editionId/lists',
         element: (
           <ProtectedRoute>
-            <ListsPage />
+            <MainLayout>
+              <MyListsPage />
+            </MainLayout>
           </ProtectedRoute>
         ),
       },
       {
-        path: '/lists/:id',
+        path: '/depositor/lists/:listId',
         element: (
           <ProtectedRoute>
             <MainLayout>
-              <div>Détail liste (à implémenter)</div>
+              <ListDetailPage />
             </MainLayout>
           </ProtectedRoute>
         ),
