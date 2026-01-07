@@ -182,7 +182,7 @@ export function ListDetailPage() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6">
       {/* Header */}
       <div className="mb-6">
         <button
