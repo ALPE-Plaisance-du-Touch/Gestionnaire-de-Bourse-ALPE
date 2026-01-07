@@ -1,6 +1,7 @@
 """Email service for sending transactional emails."""
 
 import logging
+from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -139,6 +140,93 @@ class EmailService:
         return await self._send_email(
             to_email=to_email,
             subject="Bourse ALPE - Réinitialisation de mot de passe",
+            html_content=html_content,
+            text_content=text_content,
+        )
+
+    async def send_billetweb_invitation_email(
+        self,
+        to_email: str,
+        token: str,
+        first_name: str | None = None,
+        edition_name: str | None = None,
+        slot_datetime: datetime | None = None,
+    ) -> bool:
+        """Send an invitation email for a Billetweb import.
+
+        Args:
+            to_email: Recipient email address
+            token: Activation token
+            first_name: Optional first name for personalization
+            edition_name: Name of the edition
+            slot_datetime: Optional deposit slot datetime
+
+        Returns:
+            True if email was sent successfully
+        """
+        activation_url = f"{settings.frontend_url}/activate?token={token}"
+
+        # Render templates
+        html_template = self.jinja_env.get_template("billetweb_invitation.html")
+        text_template = self.jinja_env.get_template("billetweb_invitation.txt")
+
+        context = {
+            "first_name": first_name or "Déposant",
+            "activation_url": activation_url,
+            "edition_name": edition_name or "Bourse ALPE",
+            "slot_datetime": slot_datetime,
+            "expiry_days": settings.invitation_token_expire_days,
+            "support_email": settings.support_email,
+        }
+
+        html_content = html_template.render(**context)
+        text_content = text_template.render(**context)
+
+        return await self._send_email(
+            to_email=to_email,
+            subject=f"Inscription Bourse ALPE - {edition_name or 'Activez votre compte'}",
+            html_content=html_content,
+            text_content=text_content,
+        )
+
+    async def send_edition_registration_notification(
+        self,
+        to_email: str,
+        first_name: str | None = None,
+        edition_name: str | None = None,
+        slot_datetime: datetime | None = None,
+    ) -> bool:
+        """Send a notification email to existing depositors about their edition registration.
+
+        Args:
+            to_email: Recipient email address
+            first_name: Optional first name for personalization
+            edition_name: Name of the edition
+            slot_datetime: Optional deposit slot datetime
+
+        Returns:
+            True if email was sent successfully
+        """
+        login_url = f"{settings.frontend_url}/login"
+
+        # Render templates
+        html_template = self.jinja_env.get_template("edition_registration.html")
+        text_template = self.jinja_env.get_template("edition_registration.txt")
+
+        context = {
+            "first_name": first_name or "Déposant",
+            "login_url": login_url,
+            "edition_name": edition_name or "Bourse ALPE",
+            "slot_datetime": slot_datetime,
+            "support_email": settings.support_email,
+        }
+
+        html_content = html_template.render(**context)
+        text_content = text_template.render(**context)
+
+        return await self._send_email(
+            to_email=to_email,
+            subject=f"Vous êtes inscrit(e) à {edition_name or 'la Bourse ALPE'}",
             html_content=html_content,
             text_content=text_content,
         )

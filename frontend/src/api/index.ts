@@ -3,3 +3,4 @@ export { authApi } from './auth';
 export { invitationsApi } from './invitations';
 export { editionsApi } from './editions';
 export { depositSlotsApi } from './deposit-slots';
+export { billetwebApi } from './billetweb';

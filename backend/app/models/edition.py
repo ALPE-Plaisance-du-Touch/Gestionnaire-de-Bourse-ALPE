@@ -11,7 +11,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin, UUIDMixin
 
 if TYPE_CHECKING:
+    from app.models.billetweb_import_log import BilletwebImportLog
     from app.models.deposit_slot import DepositSlot
+    from app.models.edition_depositor import EditionDepositor
     from app.models.item_list import ItemList
     from app.models.sale import Sale
     from app.models.user import User
@@ -99,6 +101,12 @@ class Edition(Base, UUIDMixin, TimestampMixin):
     )
     sales: Mapped[list["Sale"]] = relationship(
         "Sale", back_populates="edition", cascade="all, delete-orphan"
+    )
+    depositors: Mapped[list["EditionDepositor"]] = relationship(
+        "EditionDepositor", back_populates="edition", cascade="all, delete-orphan"
+    )
+    billetweb_imports: Mapped[list["BilletwebImportLog"]] = relationship(
+        "BilletwebImportLog", back_populates="edition", cascade="all, delete-orphan"
     )
 
     @property
