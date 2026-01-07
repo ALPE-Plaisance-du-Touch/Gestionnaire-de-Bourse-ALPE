@@ -136,27 +136,46 @@ class TestValidateLot:
     def test_valid_lot(self):
         """Valid lot does not raise."""
         service = ArticleService(AsyncMock())
-        service._validate_lot(3, "18 mois")  # Should not raise
+        service._validate_lot(3, "18 mois", "body")  # Should not raise
+
+    def test_valid_lot_pajama(self):
+        """Valid lot with pajama does not raise."""
+        service = ArticleService(AsyncMock())
+        service._validate_lot(2, "24 mois", "pajama")  # Should not raise
 
     def test_lot_no_quantity(self):
         """Lot without quantity raises error."""
         service = ArticleService(AsyncMock())
         with pytest.raises(InvalidLotError):
-            service._validate_lot(None, "18 mois")
+            service._validate_lot(None, "18 mois", "body")
 
     def test_lot_too_many_items(self):
         """Lot with too many items raises error."""
         service = ArticleService(AsyncMock())
         with pytest.raises(InvalidLotError) as exc_info:
-            service._validate_lot(5, "18 mois")
+            service._validate_lot(5, "18 mois", "body")
         assert "3 articles maximum" in str(exc_info.value.message)
 
     def test_lot_age_too_old(self):
         """Lot for items over 36 months raises error."""
         service = ArticleService(AsyncMock())
         with pytest.raises(InvalidLotError) as exc_info:
-            service._validate_lot(3, "4 ans")
+            service._validate_lot(3, "4 ans", "body")
         assert "36 mois" in str(exc_info.value.message)
+
+    def test_lot_invalid_subcategory(self):
+        """Lot with non-body/pajama subcategory raises error."""
+        service = ArticleService(AsyncMock())
+        with pytest.raises(InvalidLotError) as exc_info:
+            service._validate_lot(3, "18 mois", "tshirt")
+        assert "bodys et pyjamas" in str(exc_info.value.message)
+
+    def test_lot_no_subcategory(self):
+        """Lot without subcategory raises error."""
+        service = ArticleService(AsyncMock())
+        with pytest.raises(InvalidLotError) as exc_info:
+            service._validate_lot(3, "18 mois", None)
+        assert "bodys et pyjamas" in str(exc_info.value.message)
 
 
 class TestValidateArticleConstraints:

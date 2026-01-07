@@ -35,6 +35,8 @@ class ArticleSubcategory(str, Enum):
     RAINCOAT = "raincoat"
     JACKET = "jacket"
     LAYETTE = "layette"
+    BODY = "body"  # Bodys - lot allowed
+    PAJAMA = "pajama"  # Pyjamas/Grenouillères - lot allowed
 
     # Accessories subcategories
     HANDBAG = "handbag"  # 1 max
@@ -77,7 +79,7 @@ class ArticleStatus(str, Enum):
 # Price constraints
 MIN_PRICE = Decimal("1.00")
 MAX_PRICE_STROLLER = Decimal("150.00")
-MAX_PRICE_DEFAULT = Decimal("100.00")
+# No general max price - only strollers have a 150€ limit
 
 # Article limits per list
 MAX_ARTICLES_PER_LIST = 24
@@ -96,6 +98,8 @@ CATEGORY_LIMITS = {
 # Lot constraints
 MAX_LOT_SIZE = 3
 MAX_LOT_AGE_MONTHS = 36
+# Only bodys and pajamas can be sold in lots
+LOT_ALLOWED_SUBCATEGORIES = {"body", "pajama"}
 
 # Blacklisted categories (not allowed)
 BLACKLISTED_ITEMS = [
@@ -119,8 +123,8 @@ class ArticleCreate(BaseModel):
 
     category: ArticleCategory
     subcategory: str | None = Field(None, max_length=50)
-    description: str = Field(..., min_length=1, max_length=255)
-    price: Decimal = Field(..., ge=MIN_PRICE, le=MAX_PRICE_DEFAULT)
+    description: str = Field(..., min_length=1, max_length=100)
+    price: Decimal = Field(..., ge=MIN_PRICE)
     size: str | None = Field(None, max_length=50)
     brand: str | None = Field(None, max_length=100)
     color: str | None = Field(None, max_length=50)
@@ -158,8 +162,8 @@ class ArticleCreate(BaseModel):
 class ArticleUpdate(BaseModel):
     """Schema for updating an article."""
 
-    description: str | None = Field(None, min_length=1, max_length=255)
-    price: Decimal | None = Field(None, ge=MIN_PRICE, le=MAX_PRICE_DEFAULT)
+    description: str | None = Field(None, min_length=1, max_length=100)
+    price: Decimal | None = Field(None, ge=MIN_PRICE)
     size: str | None = Field(None, max_length=50)
     brand: str | None = Field(None, max_length=100)
     color: str | None = Field(None, max_length=50)

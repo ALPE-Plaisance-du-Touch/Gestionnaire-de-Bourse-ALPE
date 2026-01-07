@@ -32,6 +32,8 @@ const SUBCATEGORY_OPTIONS: Record<string, { value: string; label: string }[]> = 
     { value: 'raincoat', label: 'Imperméable' },
     { value: 'jogging', label: 'Jogging' },
     { value: 'layette', label: 'Layette' },
+    { value: 'body', label: 'Bodys (lot autorisé)' },
+    { value: 'pajama', label: 'Pyjamas/Grenouillères (lot autorisé)' },
   ],
   accessories: [
     { value: 'handbag', label: 'Sac à main (1 max)' },
@@ -70,8 +72,12 @@ const GENDER_OPTIONS = [
   { value: 'adult_unisex', label: 'Adulte mixte' },
 ];
 
+// Only these subcategories can be sold as lots
+const LOT_ALLOWED_SUBCATEGORIES = ['body', 'pajama'];
+
 interface ArticleFormProps {
   article?: Article | null;
+  duplicateFrom?: Article | null;
   constraints?: CategoryConstraints;
   clothingCount: number;
   onSubmit: (data: CreateArticleRequest) => void;
@@ -81,22 +87,26 @@ interface ArticleFormProps {
 
 export function ArticleForm({
   article,
+  duplicateFrom,
   constraints,
   clothingCount,
   onSubmit,
   onCancel,
   isSubmitting,
 }: ArticleFormProps) {
-  const [category, setCategory] = useState<ArticleCategory>(article?.category ?? 'clothing');
-  const [subcategory, setSubcategory] = useState(article?.subcategory ?? '');
-  const [description, setDescription] = useState(article?.description ?? '');
-  const [price, setPrice] = useState(article?.price?.toString() ?? '');
-  const [size, setSize] = useState(article?.size ?? '');
-  const [brand, setBrand] = useState(article?.brand ?? '');
-  const [color, setColor] = useState(article?.color ?? '');
-  const [gender, setGender] = useState<ArticleGender | ''>(article?.gender ?? '');
-  const [isLot, setIsLot] = useState(article?.isLot ?? false);
-  const [lotQuantity, setLotQuantity] = useState(article?.lotQuantity?.toString() ?? '');
+  // Use article for editing, duplicateFrom for duplicating (pre-filled but creates new)
+  const sourceArticle = article ?? duplicateFrom;
+  const [category, setCategory] = useState<ArticleCategory>(sourceArticle?.category ?? 'clothing');
+  const [subcategory, setSubcategory] = useState(sourceArticle?.subcategory ?? '');
+  const [description, setDescription] = useState(sourceArticle?.description ?? '');
+  const [price, setPrice] = useState(sourceArticle?.price?.toString() ?? '');
+  const [size, setSize] = useState(sourceArticle?.size ?? '');
+  const [brand, setBrand] = useState(sourceArticle?.brand ?? '');
+  const [color, setColor] = useState(sourceArticle?.color ?? '');
+  const [gender, setGender] = useState<ArticleGender | ''>(sourceArticle?.gender ?? '');
+  const [isLot, setIsLot] = useState(sourceArticle?.isLot ?? false);
+  const [lotQuantity, setLotQuantity] = useState(sourceArticle?.lotQuantity?.toString() ?? '');
+  // For duplication, require re-certification
   const [conformityCertified, setConformityCertified] = useState(article?.conformityCertified ?? false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -106,6 +116,7 @@ export function ArticleForm({
   const subcategoryOptions = SUBCATEGORY_OPTIONS[category] ?? [];
   const maxClothing = constraints?.maxClothingPerList ?? 12;
   const canAddClothing = !article && (clothingCount < maxClothing || !isClothing);
+  const canCreateLot = LOT_ALLOWED_SUBCATEGORIES.includes(subcategory);
 
   // Reset subcategory and clothing-specific fields when category changes
   useEffect(() => {
@@ -120,6 +131,14 @@ export function ArticleForm({
       }
     }
   }, [category, article, showSizeAndGender]);
+
+  // Reset lot when subcategory changes to one that doesn't allow lots
+  useEffect(() => {
+    if (!article && !LOT_ALLOWED_SUBCATEGORIES.includes(subcategory)) {
+      setIsLot(false);
+      setLotQuantity('');
+    }
+  }, [subcategory, article]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -220,12 +239,12 @@ export function ArticleForm({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Ex: Pull bleu marine avec col rond"
-          maxLength={255}
+          maxLength={100}
         />
         {errors.description && (
           <p className="mt-1 text-sm text-red-600">{errors.description}</p>
         )}
-        <p className="mt-1 text-xs text-gray-500">{description.length}/255 caractères</p>
+        <p className="mt-1 text-xs text-gray-500">{description.length}/100 caractères</p>
       </div>
 
       {/* Price, Size & Gender */}
@@ -239,7 +258,7 @@ export function ArticleForm({
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             min="1"
-            max={subcategory === 'stroller' ? '150' : '100'}
+            max={subcategory === 'stroller' ? '150' : undefined}
             step="0.5"
             placeholder="Ex: 5"
           />
@@ -305,41 +324,43 @@ export function ArticleForm({
         </div>
       )}
 
-      {/* Lot */}
-      <div className="bg-gray-50 rounded-lg p-4">
-        <label className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            checked={isLot}
-            onChange={(e) => setIsLot(e.target.checked)}
-            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-          />
-          <span className="text-sm font-medium text-gray-700">
-            Vendre en lot (groupe d'articles similaires)
-          </span>
-        </label>
-        {isLot && (
-          <div className="mt-3 ml-7">
-            <label className="block text-sm text-gray-600 mb-1">
-              Nombre d'articles dans le lot (max 3)
-            </label>
-            <Input
-              type="number"
-              value={lotQuantity}
-              onChange={(e) => setLotQuantity(e.target.value)}
-              min="1"
-              max="3"
-              className="w-24"
+      {/* Lot - only shown for body/pajama subcategories */}
+      {canCreateLot && (
+        <div className="bg-gray-50 rounded-lg p-4">
+          <label className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              checked={isLot}
+              onChange={(e) => setIsLot(e.target.checked)}
+              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
-            {errors.lotQuantity && (
-              <p className="mt-1 text-sm text-red-600">{errors.lotQuantity}</p>
-            )}
-            <p className="mt-1 text-xs text-gray-500">
-              Les lots ne peuvent contenir que des vêtements de taille 36 mois ou moins.
-            </p>
-          </div>
-        )}
-      </div>
+            <span className="text-sm font-medium text-gray-700">
+              Vendre en lot (groupe d'articles similaires)
+            </span>
+          </label>
+          {isLot && (
+            <div className="mt-3 ml-7">
+              <label className="block text-sm text-gray-600 mb-1">
+                Nombre d'articles dans le lot (max 3)
+              </label>
+              <Input
+                type="number"
+                value={lotQuantity}
+                onChange={(e) => setLotQuantity(e.target.value)}
+                min="1"
+                max="3"
+                className="w-24"
+              />
+              {errors.lotQuantity && (
+                <p className="mt-1 text-sm text-red-600">{errors.lotQuantity}</p>
+              )}
+              <p className="mt-1 text-xs text-gray-500">
+                Taille 36 mois maximum. Taille et marque identiques pour le lot.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Conformity certification */}
       <div className={`rounded-lg p-4 ${errors.conformityCertified ? 'bg-red-50 border border-red-300' : 'bg-green-50 border border-green-200'}`}>

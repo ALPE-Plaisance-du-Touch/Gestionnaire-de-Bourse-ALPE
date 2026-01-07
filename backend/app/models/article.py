@@ -60,8 +60,8 @@ class Article(Base, UUIDMixin, TimestampMixin):
 
     __tablename__ = "articles"
 
-    # Basic info
-    description: Mapped[str] = mapped_column(String(255), nullable=False)
+    # Basic info (description limited to 100 chars to fit on labels)
+    description: Mapped[str] = mapped_column(String(100), nullable=False)
     category: Mapped[str] = mapped_column(String(50), nullable=False)
     subcategory: Mapped[str | None] = mapped_column(String(50), nullable=True)
     size: Mapped[str | None] = mapped_column(String(50), nullable=True)

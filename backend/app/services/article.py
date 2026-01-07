@@ -18,6 +18,7 @@ from app.schemas.article import (
     ArticleUpdate,
     BLACKLISTED_ITEMS,
     CATEGORY_LIMITS,
+    LOT_ALLOWED_SUBCATEGORIES,
     MAX_ARTICLES_PER_LIST,
     MAX_CLOTHING_PER_LIST,
     MAX_LOT_AGE_MONTHS,
@@ -26,10 +27,7 @@ from app.schemas.article import (
     MIN_PRICE,
 )
 from app.services.item_list import ItemListNotFoundError, ItemListService
-
-
-# Categories that count as clothing
-CLOTHING_CATEGORIES = {"clothing", "shoes", "accessories"}
+from app.repositories.article import CLOTHING_CATEGORIES
 
 
 class CategoryLimitExceededError(ValidationError):
@@ -165,7 +163,7 @@ class ArticleService:
                 else article.lot_quantity
             )
             if is_lot and lot_qty:
-                self._validate_lot(lot_qty, article.size)
+                self._validate_lot(lot_qty, article.size, article.subcategory)
 
         # Update
         update_data = data.model_dump(exclude_unset=True)
@@ -285,7 +283,7 @@ class ArticleService:
 
         # 6. Validate lot
         if data.is_lot:
-            self._validate_lot(data.lot_quantity, data.size)
+            self._validate_lot(data.lot_quantity, data.size, data.subcategory)
 
     def _validate_price(
         self,
@@ -307,7 +305,7 @@ class ArticleService:
             )
 
     def _validate_lot(
-        self, lot_quantity: int | None, size: str | None
+        self, lot_quantity: int | None, size: str | None, subcategory: str | None = None
     ) -> None:
         """Validate lot configuration."""
         if lot_quantity is None:
@@ -316,6 +314,12 @@ class ArticleService:
         if lot_quantity > MAX_LOT_SIZE:
             raise InvalidLotError(
                 f"Un lot ne peut contenir que {MAX_LOT_SIZE} articles maximum"
+            )
+
+        # Check subcategory restriction (only bodys and pajamas allowed)
+        if subcategory not in LOT_ALLOWED_SUBCATEGORIES:
+            raise InvalidLotError(
+                "Les lots sont uniquement autorisés pour les bodys et pyjamas/grenouillères"
             )
 
         # Check age restriction for lots (max 36 months)

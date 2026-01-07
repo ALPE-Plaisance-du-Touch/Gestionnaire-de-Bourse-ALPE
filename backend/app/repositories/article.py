@@ -12,12 +12,17 @@ from app.models.article import ArticleStatus
 CATEGORY_ORDER = {
     "clothing": 1,
     "shoes": 2,
-    "nursery": 3,
-    "toys": 4,
-    "books": 5,
-    "accessories": 6,
+    "accessories": 3,
+    "nursery": 4,
+    "toys": 5,
+    "books": 6,
     "other": 7,
 }
+
+# Categories that count as clothing (lines 1-12)
+CLOTHING_CATEGORIES = {"clothing", "shoes", "accessories"}
+# First line for non-clothing categories
+NON_CLOTHING_START_LINE = 13
 
 
 class ArticleRepository:
@@ -180,10 +185,17 @@ class ArticleRepository:
     async def reorder_articles(self, item_list_id: str) -> None:
         """Reorder all articles in a list by category and assign new line numbers.
 
+        Lines 1-12 are reserved for clothing (clothing, shoes, accessories).
+        Lines 13-24 are for other categories (nursery, toys, books, other).
+
         This maintains the category order (clothing first, then shoes, etc.)
-        and renumbers all articles from 1 to N.
+        and assigns line numbers according to the clothing/non-clothing split.
         """
         articles = await self.get_by_list_id(item_list_id, order_by_category=True)
+
+        # Split into clothing and non-clothing
+        clothing_articles = [a for a in articles if a.category in CLOTHING_CATEGORIES]
+        other_articles = [a for a in articles if a.category not in CLOTHING_CATEGORIES]
 
         # First pass: set all line numbers to negative values to avoid unique constraint conflicts
         for index, article in enumerate(articles, start=1):
@@ -191,8 +203,13 @@ class ArticleRepository:
 
         await self.db.flush()
 
-        # Second pass: set final line numbers
-        for index, article in enumerate(articles, start=1):
+        # Second pass: assign final line numbers
+        # Clothing: lines 1-12
+        for index, article in enumerate(clothing_articles, start=1):
+            article.line_number = index
+
+        # Non-clothing: lines 13-24
+        for index, article in enumerate(other_articles, start=NON_CLOTHING_START_LINE):
             article.line_number = index
 
         await self.db.commit()

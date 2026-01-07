@@ -28,6 +28,7 @@ export function ListDetailPage() {
 
   const [showArticleForm, setShowArticleForm] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
+  const [duplicatingArticle, setDuplicatingArticle] = useState<Article | null>(null);
   const [showValidateModal, setShowValidateModal] = useState(false);
   const [confirmationAccepted, setConfirmationAccepted] = useState(false);
 
@@ -106,6 +107,13 @@ export function ListDetailPage() {
 
   const handleEditArticle = (article: Article) => {
     setEditingArticle(article);
+    setDuplicatingArticle(null);
+    setShowArticleForm(true);
+  };
+
+  const handleDuplicateArticle = (article: Article) => {
+    setEditingArticle(null);
+    setDuplicatingArticle(article);
     setShowArticleForm(true);
   };
 
@@ -129,6 +137,7 @@ export function ListDetailPage() {
   const handleCancelForm = () => {
     setShowArticleForm(false);
     setEditingArticle(null);
+    setDuplicatingArticle(null);
   };
 
   const handleValidateList = () => {
@@ -267,10 +276,15 @@ export function ListDetailPage() {
       {showArticleForm ? (
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            {editingArticle ? 'Modifier l\'article' : 'Ajouter un article'}
+            {editingArticle
+              ? 'Modifier l\'article'
+              : duplicatingArticle
+              ? 'Dupliquer l\'article'
+              : 'Ajouter un article'}
           </h2>
           <ArticleForm
             article={editingArticle}
+            duplicateFrom={duplicatingArticle}
             constraints={constraints}
             clothingCount={clothingCount}
             onSubmit={handleArticleSubmit}
@@ -300,7 +314,9 @@ export function ListDetailPage() {
             isDraft={isDraft}
             onEdit={handleEditArticle}
             onDelete={handleDeleteArticle}
+            onDuplicate={handleDuplicateArticle}
             isDeleting={deleteMutation.isPending}
+            canAddMore={canAddMore}
           />
         </>
       )}

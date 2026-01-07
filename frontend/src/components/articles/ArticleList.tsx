@@ -33,7 +33,9 @@ interface ArticleListProps {
   isDraft: boolean;
   onEdit: (article: Article) => void;
   onDelete: (article: Article) => void;
+  onDuplicate: (article: Article) => void;
   isDeleting: boolean;
+  canAddMore: boolean;
 }
 
 export function ArticleList({
@@ -41,7 +43,9 @@ export function ArticleList({
   isDraft,
   onEdit,
   onDelete,
+  onDuplicate,
   isDeleting,
+  canAddMore,
 }: ArticleListProps) {
   if (articles.length === 0) {
     return (
@@ -168,6 +172,15 @@ export function ArticleList({
                       onClick={() => onEdit(article)}
                     >
                       Modifier
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDuplicate(article)}
+                      disabled={!canAddMore}
+                      title={!canAddMore ? 'Liste complète' : 'Dupliquer cet article'}
+                    >
+                      Dupliquer
                     </Button>
                     <Button
                       variant="ghost"
