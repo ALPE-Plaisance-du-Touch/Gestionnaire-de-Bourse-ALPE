@@ -2,7 +2,16 @@
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, billetweb, config, deposit_slots, editions, invitations
+from app.api.v1.endpoints import (
+    auth,
+    billetweb,
+    config,
+    deposit_slots,
+    depositor_articles,
+    depositor_lists,
+    editions,
+    invitations,
+)
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["Auth"])
@@ -19,3 +28,15 @@ api_router.include_router(
     tags=["Billetweb Import"],
 )
 api_router.include_router(invitations.router, prefix="/invitations", tags=["Invitations"])
+
+# Depositor endpoints (article declaration)
+api_router.include_router(
+    depositor_lists.router,
+    prefix="/depositor",
+    tags=["Depositor Lists"],
+)
+api_router.include_router(
+    depositor_articles.router,
+    prefix="/depositor",
+    tags=["Depositor Articles"],
+)
