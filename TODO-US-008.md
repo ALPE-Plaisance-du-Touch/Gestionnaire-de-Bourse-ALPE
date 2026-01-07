@@ -104,12 +104,13 @@
   - [x] Avertissement doublons
 - [x] `BilletwebImportResult` - Résultat après import
   - [x] Résumé (X associés, Y invitations envoyées)
-  - [ ] Bouton vers liste déposants
+  - [x] Bouton vers liste déposants
 
 ### Pages
 
 - [x] Intégrer `BilletwebImportButton` dans page détail édition
-- [ ] Route vers liste déposants de l'édition (à créer si inexistante)
+- [x] Route vers liste déposants de l'édition (`/editions/:id/depositors`)
+- [x] `EditionDepositorsPage` - Liste paginée des déposants avec filtres
 
 ### Tests Frontend
 
@@ -155,6 +156,9 @@
 - [x] `frontend/src/components/billetweb/BilletwebImportModal.test.tsx` (nouveau)
 - [x] `frontend/src/components/billetweb/BilletwebPreviewTable.test.tsx` (nouveau)
 - [x] `frontend/src/components/billetweb/BilletwebImportResult.test.tsx` (nouveau)
+- [x] `frontend/src/pages/admin/EditionDepositorsPage.tsx` (nouveau)
+- [x] `frontend/src/pages/admin/index.ts` (export ajouté)
+- [x] `frontend/src/routes.tsx` (route ajoutée)
 
 ## Mapping Tarifs Billetweb -> Type de liste
 
@@ -205,7 +209,9 @@ Exemple :
 ## Reste à faire
 
 1. ~~**Tests** : Écrire les tests unitaires et d'intégration (backend + frontend)~~ ✅ Complété
-2. **Page liste déposants** : Créer la route/page pour afficher les déposants d'une édition
+2. ~~**Page liste déposants** : Créer la route/page pour afficher les déposants d'une édition~~ ✅ Complété
+
+**US-008 terminée !** Tous les critères d'acceptation sont validés.
 
 ## Résumé des tests
 

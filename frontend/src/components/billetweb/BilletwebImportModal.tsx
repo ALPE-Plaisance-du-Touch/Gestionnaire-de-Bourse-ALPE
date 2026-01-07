@@ -339,7 +339,7 @@ export function BilletwebImportModal({
 
       {step === 'result' && importResult && (
         <div className="space-y-6">
-          <BilletwebImportResult result={importResult} />
+          <BilletwebImportResult result={importResult} editionId={editionId} />
 
           {/* Actions */}
           <div className="flex justify-end gap-3">
