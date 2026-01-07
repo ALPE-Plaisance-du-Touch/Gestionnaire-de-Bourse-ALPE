@@ -185,6 +185,13 @@ class ArticleRepository:
         """
         articles = await self.get_by_list_id(item_list_id, order_by_category=True)
 
+        # First pass: set all line numbers to negative values to avoid unique constraint conflicts
+        for index, article in enumerate(articles, start=1):
+            article.line_number = -index
+
+        await self.db.flush()
+
+        # Second pass: set final line numbers
         for index, article in enumerate(articles, start=1):
             article.line_number = index
 
