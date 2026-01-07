@@ -339,3 +339,80 @@ Les modèles `ItemList` et `Article` existent déjà dans `backend/app/models/`:
 8. **Frontend pages** (0.5.11, 0.5.12)
 9. **Frontend routing** (0.5.18)
 10. **Frontend tests** (0.5.19)
+
+---
+
+## Corrections à apporter (écarts spec/implémentation)
+
+### HAUTE PRIORITÉ
+
+#### FIX-001 : Validation des lots incorrecte
+- **Spec** : Les lots ne sont autorisés que pour les "bodys" ou "pyjamas" (taille ≤36 mois)
+- **Actuel** : Les lots peuvent être créés pour n'importe quelle catégorie de vêtements
+- **Fichiers** :
+  - `backend/app/services/article.py`
+  - `frontend/src/components/articles/ArticleForm.tsx`
+- [ ] Ajouter validation backend : lot uniquement si subcategory in ['body', 'pajama'] et size ≤36 mois
+- [ ] Ajouter validation frontend : masquer/désactiver option lot si conditions non remplies
+
+#### FIX-002 : Prix maximum incorrect
+- **Spec** : Pas de limite générale de prix (sauf poussettes 150€ max)
+- **Actuel** : Tous les articles limités à 100€ (`MAX_PRICE_DEFAULT = 100`)
+- **Fichiers** :
+  - `backend/app/schemas/article.py` : supprimer `MAX_PRICE_DEFAULT`
+  - `frontend/src/components/articles/ArticleForm.tsx` : supprimer max="100"
+- [ ] Backend : retirer la limite de 100€ par défaut
+- [ ] Frontend : retirer la limite max du champ prix (sauf poussettes)
+
+#### FIX-003 : Longueur description incorrecte
+- **Spec** : 100 caractères max (doit tenir sur les étiquettes)
+- **Actuel** : 255 caractères autorisés
+- **Fichiers** :
+  - `backend/app/schemas/article.py` : `max_length=255` → `max_length=100`
+  - `backend/app/models/article.py` : `String(255)` → `String(100)`
+  - `frontend/src/components/articles/ArticleForm.tsx` : `maxLength={255}` → `maxLength={100}`
+- [ ] Migration DB pour réduire la taille de la colonne description
+- [ ] Mettre à jour schemas backend
+- [ ] Mettre à jour frontend
+
+#### FIX-004 : Fonctionnalité "Dupliquer" manquante
+- **Spec** : Bouton pour copier les champs d'un article similaire
+- **Actuel** : Non implémenté
+- **Fichiers** :
+  - `frontend/src/components/articles/ArticleList.tsx` : ajouter bouton "Dupliquer"
+  - `frontend/src/pages/depositor/ListDetailPage.tsx` : gérer l'action de duplication
+- [ ] Ajouter bouton "Dupliquer" dans les actions de chaque article
+- [ ] Pré-remplir le formulaire avec les données de l'article (sauf description)
+
+### PRIORITÉ MOYENNE
+
+#### FIX-005 : Lignes 1-12 non réservées aux vêtements
+- **Spec** : Les lignes 1-12 sont réservées aux vêtements sur la liste
+- **Actuel** : N'importe quelle catégorie peut occuper les premières lignes
+- **Fichiers** :
+  - `backend/app/repositories/article.py` : `reorder_articles()` doit forcer vêtements en 1-12
+- [ ] Modifier la logique de réordonnement pour réserver lignes 1-12 aux vêtements
+- [ ] Si >12 vêtements (impossible normalement), erreur
+
+#### FIX-006 : Pas de modal d'avertissement pour articles interdits
+- **Spec** : Afficher proactivement la liste des articles interdits avant soumission
+- **Actuel** : Erreur seulement après soumission si article en liste noire
+- **Fichiers** :
+  - `frontend/src/components/articles/ArticleForm.tsx` : ajouter section info liste noire
+- [ ] Ajouter une section d'information avec la liste des articles interdits
+- [ ] Ou un lien/bouton "Voir les articles interdits" ouvrant un modal
+
+### PRIORITÉ BASSE (UX)
+
+#### FIX-007 : Indices de prix non affichés
+- **Spec** : Afficher des prix indicatifs pour guider le déposant
+- **Actuel** : Le backend a l'endpoint, mais le frontend ne l'utilise pas
+- **Fichiers** :
+  - `frontend/src/components/articles/ArticleForm.tsx`
+- [ ] Appeler l'API des prix indicatifs
+- [ ] Afficher une aide contextuelle selon la catégorie sélectionnée
+
+#### FIX-008 : Liens d'aide/FAQ manquants
+- **Spec** : Aide contextuelle accessible
+- **Actuel** : Pas de liens vers FAQ ou règlement
+- [ ] Ajouter liens vers règlement/FAQ dans le formulaire
