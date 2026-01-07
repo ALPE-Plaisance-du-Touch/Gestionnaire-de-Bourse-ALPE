@@ -137,6 +137,10 @@ export function ArticleForm({
       newErrors.category = `Maximum de vêtements atteint (${maxClothing})`;
     }
 
+    if (!conformityCertified) {
+      newErrors.conformityCertified = 'Vous devez certifier que l\'article est propre et en bon état';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -323,22 +327,25 @@ export function ArticleForm({
       </div>
 
       {/* Conformity certification */}
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+      <div className={`rounded-lg p-4 ${errors.conformityCertified ? 'bg-red-50 border border-red-300' : 'bg-green-50 border border-green-200'}`}>
         <label className="flex items-start gap-3">
           <input
             type="checkbox"
             checked={conformityCertified}
             onChange={(e) => setConformityCertified(e.target.checked)}
-            className="mt-1 h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+            className={`mt-1 h-4 w-4 border-gray-300 rounded ${errors.conformityCertified ? 'text-red-600 focus:ring-red-500' : 'text-green-600 focus:ring-green-500'}`}
           />
           <div>
-            <span className="text-sm font-medium text-green-800">
-              Je certifie que cet article est propre et en bon état
+            <span className={`text-sm font-medium ${errors.conformityCertified ? 'text-red-800' : 'text-green-800'}`}>
+              Je certifie que cet article est propre et en bon état *
             </span>
-            <p className="text-xs text-green-700 mt-1">
+            <p className={`text-xs mt-1 ${errors.conformityCertified ? 'text-red-700' : 'text-green-700'}`}>
               L'article ne présente pas de tache, trou, déchirure ou défaut majeur.
               Il est propre et prêt à être vendu.
             </p>
+            {errors.conformityCertified && (
+              <p className="mt-2 text-sm text-red-600 font-medium">{errors.conformityCertified}</p>
+            )}
           </div>
         </label>
       </div>
