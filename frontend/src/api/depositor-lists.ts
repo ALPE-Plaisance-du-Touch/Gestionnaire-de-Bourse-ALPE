@@ -11,6 +11,23 @@ import type {
 } from '@/types';
 
 /**
+ * Edition summary for depositor.
+ */
+export interface MyEditionSummary {
+  id: string;
+  name: string;
+  status: string;
+  listType: string;
+  startDatetime: string;
+  endDatetime: string;
+  declarationDeadline: string | null;
+}
+
+export interface MyEditionsResponse {
+  editions: MyEditionSummary[];
+}
+
+/**
  * API response types after Axios interceptor transforms keys to camelCase.
  */
 interface ItemListApiResponse {
@@ -99,6 +116,14 @@ function transformItemListSummary(data: ItemListSummaryApiResponse): ItemListSum
  * Depositor lists API endpoints.
  */
 export const depositorListsApi = {
+  /**
+   * Get all editions where the current user is registered as a depositor.
+   */
+  getMyEditions: async (): Promise<MyEditionsResponse> => {
+    const response = await apiClient.get<MyEditionsResponse>('/v1/depositor/my-editions');
+    return response.data;
+  },
+
   /**
    * Get all lists for the current depositor for a specific edition.
    */

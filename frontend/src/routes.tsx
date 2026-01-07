@@ -4,7 +4,7 @@ import { ProtectedRoute } from '@/components/auth';
 import { AuthProvider } from '@/contexts';
 import { LoginPage, ActivatePage, ForgotPasswordPage, ResetPasswordPage } from '@/pages/auth';
 import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, EditionDepositorsPage } from '@/pages/admin';
-import { MyListsPage, ListDetailPage } from '@/pages/depositor';
+import { MyEditionsPage, MyListsPage, ListDetailPage } from '@/pages/depositor';
 
 /**
  * Root layout that provides auth context to all routes.
@@ -127,6 +127,16 @@ export const router = createBrowserRouter([
         ),
       },
       // Depositor routes - article declaration
+      {
+        path: '/lists',
+        element: (
+          <ProtectedRoute>
+            <MainLayout>
+              <MyEditionsPage />
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
       {
         path: '/depositor/editions/:editionId/lists',
         element: (

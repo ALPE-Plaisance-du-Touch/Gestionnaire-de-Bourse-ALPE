@@ -1,8 +1,10 @@
 """Depositor item lists API endpoints."""
 
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 
 from app.dependencies import CurrentActiveUser, DBSession
 from app.exceptions import (
@@ -10,6 +12,7 @@ from app.exceptions import (
     EditionNotFoundError,
     ValidationError,
 )
+from app.repositories import EditionDepositorRepository, EditionRepository
 from app.schemas import (
     DepositorListsResponse,
     ItemListCreate,
@@ -29,12 +32,67 @@ from app.services.item_list import (
 router = APIRouter()
 
 
+class MyEditionSummary(BaseModel):
+    """Summary of an edition for the depositor."""
+
+    id: str
+    name: str
+    status: str
+    list_type: str
+    start_datetime: datetime
+    end_datetime: datetime
+    declaration_deadline: datetime | None = None
+
+
+class MyEditionsResponse(BaseModel):
+    """Response containing depositor's editions."""
+
+    editions: list[MyEditionSummary]
+
+
 def get_item_list_service(db: DBSession) -> ItemListService:
     """Get ItemListService instance."""
     return ItemListService(db)
 
 
 ItemListServiceDep = Annotated[ItemListService, Depends(get_item_list_service)]
+
+
+@router.get(
+    "/my-editions",
+    response_model=MyEditionsResponse,
+    summary="Get my editions",
+    description="Get all editions where the current user is registered as a depositor.",
+)
+async def get_my_editions(
+    db: DBSession,
+    current_user: CurrentActiveUser,
+):
+    """Get all editions where the user is registered as a depositor."""
+    depositor_repo = EditionDepositorRepository(db)
+    edition_repo = EditionRepository(db)
+
+    # Get all edition registrations for the user
+    registrations = await depositor_repo.list_by_user(current_user.id)
+
+    editions = []
+    for reg in registrations:
+        # Get edition details
+        edition = await edition_repo.get_by_id(reg.edition_id)
+        if edition:
+            editions.append(
+                MyEditionSummary(
+                    id=edition.id,
+                    name=edition.name,
+                    status=edition.status,
+                    list_type=reg.list_type,
+                    start_datetime=edition.start_datetime,
+                    end_datetime=edition.end_datetime,
+                    declaration_deadline=edition.declaration_deadline,
+                )
+            )
+
+    return MyEditionsResponse(editions=editions)
 
 
 @router.get(
