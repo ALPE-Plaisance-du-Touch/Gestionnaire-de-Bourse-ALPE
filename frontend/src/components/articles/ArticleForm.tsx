@@ -101,16 +101,23 @@ export function ArticleForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const isClothing = category === 'clothing';
+  const isShoes = category === 'shoes';
+  const showSizeAndGender = isClothing || isShoes;
   const subcategoryOptions = SUBCATEGORY_OPTIONS[category] ?? [];
   const maxClothing = constraints?.maxClothingPerList ?? 12;
   const canAddClothing = !article && (clothingCount < maxClothing || !isClothing);
 
-  // Reset subcategory when category changes
+  // Reset subcategory and size/gender when category changes
   useEffect(() => {
     if (!article) {
       setSubcategory('');
+      // Clear size and gender for non-clothing/shoes categories
+      if (!showSizeAndGender) {
+        setSize('');
+        setGender('');
+      }
     }
-  }, [category, article]);
+  }, [category, article, showSizeAndGender]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -157,10 +164,10 @@ export function ArticleForm({
       subcategory: subcategory || undefined,
       description: description.trim(),
       price: parseFloat(price),
-      size: size.trim() || undefined,
+      size: showSizeAndGender && size.trim() ? size.trim() : undefined,
       brand: brand.trim() || undefined,
       color: color.trim() || undefined,
-      gender: gender || undefined,
+      gender: showSizeAndGender && gender ? gender : undefined,
       isLot,
       lotQuantity: isLot ? parseInt(lotQuantity, 10) : undefined,
       conformityCertified,
@@ -219,8 +226,8 @@ export function ArticleForm({
         <p className="mt-1 text-xs text-gray-500">{description.length}/255 caractères</p>
       </div>
 
-      {/* Price */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Price, Size & Gender */}
+      <div className={`grid grid-cols-1 gap-4 ${showSizeAndGender ? 'md:grid-cols-3' : 'md:grid-cols-1 max-w-xs'}`}>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Prix (€) *
@@ -238,28 +245,32 @@ export function ArticleForm({
             <p className="mt-1 text-sm text-red-600">{errors.price}</p>
           )}
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Taille
-          </label>
-          <Input
-            type="text"
-            value={size}
-            onChange={(e) => setSize(e.target.value)}
-            placeholder="Ex: 12 mois, 38, M"
-            maxLength={50}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Genre
-          </label>
-          <Select
-            options={GENDER_OPTIONS}
-            value={gender}
-            onChange={(e) => setGender(e.target.value as ArticleGender | '')}
-          />
-        </div>
+        {showSizeAndGender && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Taille
+              </label>
+              <Input
+                type="text"
+                value={size}
+                onChange={(e) => setSize(e.target.value)}
+                placeholder="Ex: 12 mois, 38, M"
+                maxLength={50}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Genre
+              </label>
+              <Select
+                options={GENDER_OPTIONS}
+                value={gender}
+                onChange={(e) => setGender(e.target.value as ArticleGender | '')}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Brand & Color */}
