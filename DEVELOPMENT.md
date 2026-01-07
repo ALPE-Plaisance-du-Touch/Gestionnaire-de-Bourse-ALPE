@@ -18,7 +18,7 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.2 | Authentication System | ✅ Done | 100% |
 | 0.3 | Edition Management | ✅ Done | 100% |
 | 0.4 | Billetweb Import | ✅ Done | 100% |
-| 0.5 | Article Declaration | 🔄 In Progress | 0% |
+| 0.5 | Article Declaration | 🔄 In Progress | 50% |
 | 0.6 | Label Generation | 🔲 Not Started | 0% |
 | 0.7 | Sales & Checkout | 🔲 Not Started | 0% |
 | 0.8 | Payout Calculation | 🔲 Not Started | 0% |
@@ -195,31 +195,42 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 **Branch:** `feature/us-002-article-declaration`
 
-### Backend Tasks
-- [ ] **0.5.1** Implement item_list schemas
-- [ ] **0.5.2** Implement article schemas
-- [ ] **0.5.3** Implement item_list service
-  - [ ] Max 2 lists per depositor
-  - [ ] Max 24 articles per list (12 clothing)
-- [ ] **0.5.4** Implement article service
-  - [ ] Category validation
-  - [ ] Price validation (1€-150€)
-  - [ ] Lot handling
-- [ ] **0.5.5** Implement repositories
-- [ ] **0.5.6** Implement API endpoints
-- [ ] **0.5.7** Write tests
+### Backend Tasks ✅
+- [x] **0.5.1** Implement item_list schemas
+- [x] **0.5.2** Implement article schemas
+- [x] **0.5.3** Implement item_list service
+  - [x] Max 2 lists per depositor (4 for list_2000)
+  - [x] Max 24 articles per list (12 clothing)
+  - [x] Deadline validation
+- [x] **0.5.4** Implement article service
+  - [x] Category validation
+  - [x] Price validation (1€ min, 150€ max for strollers)
+  - [x] Lot handling (max 3 items, 36 months age limit)
+  - [x] Blacklisted items rejection
+  - [x] Category limits (1 coat, 1 handbag, 2 scarves, etc.)
+- [x] **0.5.5** Implement item_list repository
+- [x] **0.5.6** Implement article repository
+- [x] **0.5.7** Implement API endpoints
+  - [x] `GET/POST /depositor/editions/{id}/lists` - List management
+  - [x] `GET/POST/DELETE /depositor/lists/{id}` - List operations
+  - [x] `POST /depositor/lists/{id}/validate` - List validation
+  - [x] `GET/POST /depositor/lists/{id}/articles` - Article management
+  - [x] `PUT/DELETE /depositor/lists/{id}/articles/{id}` - Article operations
+  - [x] `GET /categories` - Category constraints
+  - [x] `GET /price-hints` - Indicative prices
+- [x] **0.5.8** Write backend tests (42 unit tests)
 
 ### Frontend Tasks
-- [ ] **0.5.8** Implement MyListsPage
-- [ ] **0.5.9** Implement ListDetailPage
-- [ ] **0.5.10** Implement ArticleForm
+- [ ] **0.5.9** Implement MyListsPage
+- [ ] **0.5.10** Implement ListDetailPage
+- [ ] **0.5.11** Implement ArticleForm
   - [ ] Category select
   - [ ] Price input with validation
   - [ ] Size/brand/color fields
   - [ ] Lot toggle
-- [ ] **0.5.11** Implement article list with edit/delete
-- [ ] **0.5.12** Deadline warnings
-- [ ] **0.5.13** Write tests
+- [ ] **0.5.12** Implement article list with edit/delete
+- [ ] **0.5.13** Deadline warnings
+- [ ] **0.5.14** Write tests
 
 ---
 
