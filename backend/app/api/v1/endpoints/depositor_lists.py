@@ -157,7 +157,26 @@ async def create_list(
             edition_id=edition_id,
             data=request,
         )
-        return ItemListResponse.model_validate(item_list)
+        # Build response manually to avoid lazy loading issues
+        # (new list has no articles, so counts are 0)
+        return ItemListResponse(
+            id=item_list.id,
+            number=item_list.number,
+            list_type=item_list.list_type,
+            label_color=item_list.label_color,
+            status=item_list.status,
+            is_validated=item_list.is_validated,
+            validated_at=item_list.validated_at,
+            checked_in_at=item_list.checked_in_at,
+            retrieved_at=item_list.retrieved_at,
+            labels_printed=item_list.labels_printed,
+            labels_printed_at=item_list.labels_printed_at,
+            article_count=0,
+            clothing_count=0,
+            edition_id=item_list.edition_id,
+            depositor_id=item_list.depositor_id,
+            created_at=item_list.created_at,
+        )
     except EditionNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -157,7 +157,7 @@ class ItemListRepository:
         await self.db.commit()
         await self.db.refresh(item_list)
 
-        return await self.get_by_id(item_list.id)
+        return await self.get_by_id(item_list.id, load_articles=True)
 
     async def delete(self, item_list: ItemList) -> None:
         """Delete an item list (only if draft with no articles)."""
