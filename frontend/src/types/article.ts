@@ -5,14 +5,19 @@
 export type ArticleCategory =
   | 'clothing'
   | 'shoes'
-  | 'accessories'
-  | 'toys'
-  | 'games'
-  | 'books'
   | 'nursery'
-  | 'stroller'
-  | 'car_seat'
+  | 'toys'
+  | 'books'
+  | 'accessories'
   | 'other';
+
+export type ArticleGender =
+  | 'girl'
+  | 'boy'
+  | 'unisex'
+  | 'adult_male'
+  | 'adult_female'
+  | 'adult_unisex';
 
 export type ArticleStatus =
   | 'draft'
@@ -25,40 +30,94 @@ export type ArticleStatus =
 
 export interface Article {
   id: string;
-  description: string;
+  lineNumber: number;
   category: ArticleCategory;
+  subcategory: string | null;
+  description: string;
+  price: number;
   size: string | null;
   brand: string | null;
   color: string | null;
-  price: number;
-  lineNumber: number;
+  gender: ArticleGender | null;
   isLot: boolean;
   lotQuantity: number | null;
   status: ArticleStatus;
   conformityCertified: boolean;
   barcode: string | null;
+  notes: string | null;
   itemListId: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface CreateArticleRequest {
-  description: string;
   category: ArticleCategory;
+  subcategory?: string;
+  description: string;
+  price: number;
   size?: string;
   brand?: string;
   color?: string;
-  price: number;
-  lineNumber: number;
+  gender?: ArticleGender;
   isLot?: boolean;
   lotQuantity?: number;
+  conformityCertified: boolean;
 }
 
 export interface UpdateArticleRequest {
   description?: string;
-  category?: ArticleCategory;
+  price?: number;
   size?: string;
   brand?: string;
   color?: string;
-  price?: number;
+  gender?: ArticleGender;
+  isLot?: boolean;
+  lotQuantity?: number;
+  conformityCertified?: boolean;
+}
+
+/**
+ * Category info for frontend display.
+ */
+export interface CategoryInfo {
+  id: string;
+  name: string;
+  nameFr: string;
+  maxPerList?: number;
+  maxPrice?: number;
+  isClothing: boolean;
+}
+
+/**
+ * Category constraints from backend.
+ */
+export interface CategoryConstraints {
+  categories: CategoryInfo[];
+  blacklisted: string[];
+  maxArticlesPerList: number;
+  maxClothingPerList: number;
+  minPrice: number;
+  maxPriceStroller: number;
+  maxLotSize: number;
+  maxLotAgeMonths: number;
+}
+
+/**
+ * Price hint for a category.
+ */
+export interface PriceHint {
+  category: string;
+  subcategory: string | null;
+  target: 'adult' | 'child';
+  minPrice: number;
+  maxPrice: number;
+}
+
+/**
+ * Response for article list with summary.
+ */
+export interface ArticleListResponse {
+  items: Article[];
+  total: number;
+  clothingCount: number;
+  categoryCounts: Record<string, number>;
 }
