@@ -63,9 +63,11 @@ class Article(Base, UUIDMixin, TimestampMixin):
     # Basic info
     description: Mapped[str] = mapped_column(String(255), nullable=False)
     category: Mapped[str] = mapped_column(String(50), nullable=False)
+    subcategory: Mapped[str | None] = mapped_column(String(50), nullable=True)
     size: Mapped[str | None] = mapped_column(String(50), nullable=True)
     brand: Mapped[str | None] = mapped_column(String(100), nullable=True)
     color: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    gender: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
     # Pricing
     price: Mapped[Decimal] = mapped_column(

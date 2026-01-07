@@ -25,7 +25,7 @@ from app.schemas.article import (
     MAX_PRICE_STROLLER,
     MIN_PRICE,
 )
-from app.services.item_list import ItemListService
+from app.services.item_list import ItemListNotFoundError, ItemListService
 
 
 # Categories that count as clothing
@@ -215,13 +215,30 @@ class ArticleService:
         """Get all articles for a list, ordered by category."""
         return await self.repository.get_by_list_id(list_id)
 
-    async def get_list_article_summary(self, list_id: str) -> dict:
+    async def get_list_article_summary(
+        self, list_id: str, *, depositor_id: str | None = None
+    ) -> dict:
         """
         Get article summary for a list.
 
+        Args:
+            list_id: List ID
+            depositor_id: If provided, verify the list belongs to this depositor
+
         Returns:
             dict with total, clothing_count, category_counts
+
+        Raises:
+            ItemListNotFoundError: If list not found or doesn't belong to depositor
         """
+        # Verify list exists and optionally check ownership
+        item_list = await self.list_repository.get_by_id(list_id)
+        if not item_list:
+            raise ItemListNotFoundError(list_id)
+
+        if depositor_id and item_list.depositor_id != depositor_id:
+            raise ItemListNotFoundError(list_id)
+
         articles = await self.repository.get_by_list_id(list_id)
         category_counts = await self.repository.get_category_counts(list_id)
         clothing_count = await self.repository.count_clothing(list_id)

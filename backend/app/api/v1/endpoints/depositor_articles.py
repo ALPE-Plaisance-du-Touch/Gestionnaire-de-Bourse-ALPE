@@ -54,19 +54,10 @@ async def get_list_articles(
 ):
     """Get all articles for a list."""
     try:
-        summary = await article_service.get_list_article_summary(list_id)
-
-        # Verify ownership through the list service
-        # The list check is implicit in get_list_article_summary
-        # But we should verify the user owns this list
-        if summary["articles"]:
-            first_article = summary["articles"][0]
-            item_list = first_article.item_list
-            if item_list and item_list.depositor_id != current_user.id:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Vous n'êtes pas autorisé à voir ces articles",
-                )
+        # Get summary with ownership verification
+        summary = await article_service.get_list_article_summary(
+            list_id, depositor_id=current_user.id
+        )
 
         return ArticleListResponse(
             items=[ArticleResponse.model_validate(a) for a in summary["articles"]],
