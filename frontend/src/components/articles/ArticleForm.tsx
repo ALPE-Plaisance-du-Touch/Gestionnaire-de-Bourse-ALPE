@@ -107,14 +107,16 @@ export function ArticleForm({
   const maxClothing = constraints?.maxClothingPerList ?? 12;
   const canAddClothing = !article && (clothingCount < maxClothing || !isClothing);
 
-  // Reset subcategory and size/gender when category changes
+  // Reset subcategory and clothing-specific fields when category changes
   useEffect(() => {
     if (!article) {
       setSubcategory('');
-      // Clear size and gender for non-clothing/shoes categories
+      // Clear clothing-specific fields for non-clothing/shoes categories
       if (!showSizeAndGender) {
         setSize('');
         setGender('');
+        setBrand('');
+        setColor('');
       }
     }
   }, [category, article, showSizeAndGender]);
@@ -165,8 +167,8 @@ export function ArticleForm({
       description: description.trim(),
       price: parseFloat(price),
       size: showSizeAndGender && size.trim() ? size.trim() : undefined,
-      brand: brand.trim() || undefined,
-      color: color.trim() || undefined,
+      brand: showSizeAndGender && brand.trim() ? brand.trim() : undefined,
+      color: showSizeAndGender && color.trim() ? color.trim() : undefined,
       gender: showSizeAndGender && gender ? gender : undefined,
       isLot,
       lotQuantity: isLot ? parseInt(lotQuantity, 10) : undefined,
@@ -273,33 +275,35 @@ export function ArticleForm({
         )}
       </div>
 
-      {/* Brand & Color */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Marque
-          </label>
-          <Input
-            type="text"
-            value={brand}
-            onChange={(e) => setBrand(e.target.value)}
-            placeholder="Ex: Petit Bateau, H&M"
-            maxLength={100}
-          />
+      {/* Brand & Color - only for clothing/shoes */}
+      {showSizeAndGender && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Marque
+            </label>
+            <Input
+              type="text"
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
+              placeholder="Ex: Petit Bateau, H&M"
+              maxLength={100}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Couleur
+            </label>
+            <Input
+              type="text"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              placeholder="Ex: Bleu marine"
+              maxLength={50}
+            />
+          </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Couleur
-          </label>
-          <Input
-            type="text"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-            placeholder="Ex: Bleu marine"
-            maxLength={50}
-          />
-        </div>
-      </div>
+      )}
 
       {/* Lot */}
       <div className="bg-gray-50 rounded-lg p-4">
