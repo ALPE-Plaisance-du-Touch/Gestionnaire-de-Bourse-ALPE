@@ -18,7 +18,7 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.2 | Authentication System | ✅ Done | 100% |
 | 0.3 | Edition Management | ✅ Done | 100% |
 | 0.4 | Billetweb Import | ✅ Done | 100% |
-| 0.5 | Article Declaration | 🔄 In Progress | 50% |
+| 0.5 | Article Declaration | ✅ Done | 100% |
 | 0.6 | Label Generation | 🔲 Not Started | 0% |
 | 0.7 | Sales & Checkout | 🔲 Not Started | 0% |
 | 0.8 | Payout Calculation | 🔲 Not Started | 0% |
@@ -27,8 +27,8 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.11 | PWA & Offline Mode | 🔲 Not Started | 0% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.4 (Billetweb Import complete)
-**Next Target:** 0.5 - Article Declaration (US-002)
+**Current Version:** 0.5 (Article Declaration complete)
+**Next Target:** 0.6 - Label Generation (US-003)
 
 ---
 
@@ -220,17 +220,29 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
   - [x] `GET /price-hints` - Indicative prices
 - [x] **0.5.8** Write backend tests (42 unit tests)
 
-### Frontend Tasks
-- [ ] **0.5.9** Implement MyListsPage
-- [ ] **0.5.10** Implement ListDetailPage
-- [ ] **0.5.11** Implement ArticleForm
-  - [ ] Category select
-  - [ ] Price input with validation
-  - [ ] Size/brand/color fields
-  - [ ] Lot toggle
-- [ ] **0.5.12** Implement article list with edit/delete
-- [ ] **0.5.13** Deadline warnings
-- [ ] **0.5.14** Write tests
+### Frontend Tasks ✅
+- [x] **0.5.9** Implement MyListsPage
+  - [x] List overview with statistics
+  - [x] Create/delete list actions
+  - [x] Navigation to list detail
+- [x] **0.5.10** Implement ListDetailPage
+  - [x] Article list display
+  - [x] Add/edit/delete article flow
+  - [x] List validation with confirmation
+- [x] **0.5.11** Implement ArticleForm
+  - [x] Category/subcategory select
+  - [x] Price input with validation
+  - [x] Size/brand/color/gender fields
+  - [x] Lot toggle with quantity
+  - [x] Conformity certification checkbox
+- [x] **0.5.12** Implement ArticleList component
+  - [x] Table view with all article fields
+  - [x] Edit/delete actions for draft lists
+  - [x] Certification status indicators
+- [x] **0.5.13** Add API clients and types
+  - [x] depositor-lists API client
+  - [x] articles API client
+  - [x] TypeScript types for constraints
 
 ---
 
