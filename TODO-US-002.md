@@ -9,21 +9,21 @@ Le déposant inscrit à une édition doit pouvoir créer ses listes (max 2) et y
 
 ## Critères d'acceptation (résumé)
 
-- [ ] AC-1 : Accès à la déclaration d'articles (espace déposant avec infos édition/créneaux)
-- [ ] AC-2 : Création d'une liste (max 2 par édition)
-- [ ] AC-3 : Ajout d'un article avec formulaire complet
-- [ ] AC-4 : Validation des contraintes par catégorie (1 manteau, 1 sac, 2 foulards, etc.)
-- [ ] AC-5 : Validation prix minimum (1€) et maximum (150€ poussettes)
-- [ ] AC-6 : Gestion des lots (vêtements enfant ≤36 mois, max 3 articles/lot)
-- [ ] AC-7 : Tri automatique des articles par catégorie
-- [ ] AC-8 : Blocage articles refusés (liste noire)
-- [ ] AC-9 : Déclaration de conformité qualité (case à cocher)
-- [ ] AC-10 : Limite 12 vêtements avec validation temps réel
-- [ ] AC-11 : Sauvegarde et modification de liste
-- [ ] AC-12 : Blocage après date limite
-- [ ] AC-13 : Aide contextuelle avec prix indicatifs
-- [ ] AC-14 : Récapitulatif avant validation finale + email confirmation
-- [ ] AC-15 : Indicateurs visuels de progression
+- [x] AC-1 : Accès à la déclaration d'articles (espace déposant avec infos édition/créneaux)
+- [x] AC-2 : Création d'une liste (max 2 par édition)
+- [x] AC-3 : Ajout d'un article avec formulaire complet
+- [x] AC-4 : Validation des contraintes par catégorie (1 manteau, 1 sac, 2 foulards, etc.)
+- [x] AC-5 : Validation prix minimum (1€) et maximum (150€ poussettes)
+- [x] AC-6 : Gestion des lots (vêtements enfant ≤36 mois, max 3 articles/lot)
+- [x] AC-7 : Tri automatique des articles par catégorie
+- [x] AC-8 : Blocage articles refusés (liste noire)
+- [x] AC-9 : Déclaration de conformité qualité (case à cocher)
+- [x] AC-10 : Limite 12 vêtements avec validation temps réel
+- [x] AC-11 : Sauvegarde et modification de liste
+- [x] AC-12 : Blocage après date limite
+- [ ] AC-13 : Aide contextuelle avec prix indicatifs (FIX-007)
+- [x] AC-14 : Récapitulatif avant validation finale (email confirmation non implémenté)
+- [x] AC-15 : Indicateurs visuels de progression
 - [ ] AC-16 : Aperçu et téléchargement PDF des listes
 
 ---
@@ -31,171 +31,173 @@ Le déposant inscrit à une édition doit pouvoir créer ses listes (max 2) et y
 ## Backend Tasks
 
 ### 0.5.1 Schemas Pydantic pour ItemList
-- [ ] `ItemListCreate` (list_type)
-- [ ] `ItemListUpdate` (status)
-- [ ] `ItemListResponse` (id, number, list_type, label_color, status, article_count, clothing_count, validated_at, etc.)
-- [ ] `ItemListDetailResponse` (with articles)
-- [ ] `ItemListValidateRequest` (confirmation_accepted)
+- [x] `ItemListCreate` (list_type)
+- [x] `ItemListUpdate` (status)
+- [x] `ItemListResponse` (id, number, list_type, label_color, status, article_count, clothing_count, validated_at, etc.)
+- [x] `ItemListDetailResponse` (with articles)
+- [x] `ItemListValidateRequest` (confirmation_accepted)
 
 ### 0.5.2 Schemas Pydantic pour Article
-- [ ] `ArticleCreate` (category, description, price, size, brand, color, is_lot, lot_quantity, conformity_certified)
-- [ ] `ArticleUpdate` (all fields optional)
-- [ ] `ArticleResponse` (id, line_number, category, description, price, size, brand, color, is_lot, lot_quantity, status, conformity_certified)
+- [x] `ArticleCreate` (category, description, price, size, brand, color, is_lot, lot_quantity, conformity_certified)
+- [x] `ArticleUpdate` (all fields optional)
+- [x] `ArticleResponse` (id, line_number, category, description, price, size, brand, color, is_lot, lot_quantity, status, conformity_certified)
 - [ ] `ArticleBulkCreateResponse` (created, errors)
 
 ### 0.5.3 Service ItemList
-- [ ] `create_list(depositor_id, edition_id, list_type)` - max 2 par édition
-- [ ] `get_depositor_lists(depositor_id, edition_id)` - listes du déposant pour une édition
-- [ ] `get_list_detail(list_id)` - avec articles triés par catégorie
-- [ ] `validate_list(list_id)` - passage en statut "validated", envoi email confirmation
-- [ ] `assign_list_number(edition_id, list_type)` - génération du numéro de liste selon le type
+- [x] `create_list(depositor_id, edition_id, list_type)` - max 2 par édition
+- [x] `get_depositor_lists(depositor_id, edition_id)` - listes du déposant pour une édition
+- [x] `get_list_detail(list_id)` - avec articles triés par catégorie
+- [x] `validate_list(list_id)` - passage en statut "validated" (email confirmation non implémenté)
+- [x] `assign_list_number(edition_id, list_type)` - génération du numéro de liste selon le type
 
 ### 0.5.4 Service Article
-- [ ] `add_article(list_id, article_data)` - avec validation contraintes
-- [ ] `update_article(article_id, article_data)` - si liste non validée
-- [ ] `delete_article(article_id)` - si liste non validée
-- [ ] `get_articles(list_id)` - triés par catégorie selon l'ordre défini
-- [ ] Validation règles métier :
-  - [ ] Max 24 articles par liste
-  - [ ] Max 12 vêtements par liste
-  - [ ] Prix minimum 1€
-  - [ ] Prix maximum 150€ (poussettes uniquement)
-  - [ ] Contraintes catégorie (1 manteau, 1 sac, 2 foulards, 1 tour de lit, 1 peluche, 5 livres adultes)
-  - [ ] Liste noire (sièges-autos, CD/DVD, casques, etc.)
-  - [ ] Lots : taille ≤36 mois, max 3 articles/lot
-- [ ] `reorder_articles(list_id)` - renumérotation automatique après ajout/suppression
+- [x] `add_article(list_id, article_data)` - avec validation contraintes
+- [x] `update_article(article_id, article_data)` - si liste non validée
+- [x] `delete_article(article_id)` - si liste non validée
+- [x] `get_articles(list_id)` - triés par catégorie selon l'ordre défini
+- [x] Validation règles métier :
+  - [x] Max 24 articles par liste
+  - [x] Max 12 vêtements par liste
+  - [x] Prix minimum 1€
+  - [x] Prix maximum 150€ (poussettes uniquement)
+  - [x] Contraintes catégorie (1 manteau, 1 sac, 2 foulards, 1 tour de lit, 1 peluche, 5 livres adultes)
+  - [x] Liste noire (sièges-autos, CD/DVD, casques, etc.)
+  - [x] Lots : taille ≤36 mois, max 3 articles/lot, bodys/pyjamas uniquement
+- [x] `reorder_articles(list_id)` - renumérotation automatique après ajout/suppression
 
 ### 0.5.5 Repository ItemList
-- [ ] `get_by_id(list_id)`
-- [ ] `get_by_depositor_and_edition(depositor_id, edition_id)`
-- [ ] `count_by_depositor_and_edition(depositor_id, edition_id)`
-- [ ] `create(list_data)`
-- [ ] `update(list_id, list_data)`
-- [ ] `get_next_list_number(edition_id, list_type)`
+- [x] `get_by_id(list_id)`
+- [x] `get_by_depositor_and_edition(depositor_id, edition_id)`
+- [x] `count_by_depositor_and_edition(depositor_id, edition_id)`
+- [x] `create(list_data)`
+- [x] `update(list_id, list_data)`
+- [x] `get_next_list_number(edition_id, list_type)`
 
 ### 0.5.6 Repository Article
-- [ ] `get_by_id(article_id)`
-- [ ] `get_by_list_id(list_id)` - triés par catégorie/ligne
-- [ ] `create(article_data)`
-- [ ] `update(article_id, article_data)`
-- [ ] `delete(article_id)`
-- [ ] `count_by_category(list_id, category)`
+- [x] `get_by_id(article_id)`
+- [x] `get_by_list_id(list_id)` - triés par catégorie/ligne
+- [x] `create(article_data)`
+- [x] `update(article_id, article_data)`
+- [x] `delete(article_id)`
+- [x] `count_by_category(list_id, category)`
 
 ### 0.5.7 API Endpoints
 
 #### ItemList endpoints
-- [ ] `GET /api/v1/depositor/editions/{edition_id}/lists` - mes listes pour cette édition
-- [ ] `POST /api/v1/depositor/editions/{edition_id}/lists` - créer une liste
-- [ ] `GET /api/v1/depositor/lists/{list_id}` - détail avec articles
-- [ ] `DELETE /api/v1/depositor/lists/{list_id}` - supprimer (si brouillon)
-- [ ] `POST /api/v1/depositor/lists/{list_id}/validate` - valider la liste
+- [x] `GET /api/v1/depositor/editions/{edition_id}/lists` - mes listes pour cette édition
+- [x] `POST /api/v1/depositor/editions/{edition_id}/lists` - créer une liste
+- [x] `GET /api/v1/depositor/lists/{list_id}` - détail avec articles
+- [x] `DELETE /api/v1/depositor/lists/{list_id}` - supprimer (si brouillon)
+- [x] `POST /api/v1/depositor/lists/{list_id}/validate` - valider la liste
 - [ ] `GET /api/v1/depositor/lists/{list_id}/preview` - aperçu pour PDF
 
 #### Article endpoints
-- [ ] `POST /api/v1/depositor/lists/{list_id}/articles` - ajouter un article
-- [ ] `PUT /api/v1/depositor/lists/{list_id}/articles/{article_id}` - modifier
-- [ ] `DELETE /api/v1/depositor/lists/{list_id}/articles/{article_id}` - supprimer
-- [ ] `GET /api/v1/depositor/lists/{list_id}/articles` - liste des articles
+- [x] `POST /api/v1/depositor/lists/{list_id}/articles` - ajouter un article
+- [x] `PUT /api/v1/depositor/lists/{list_id}/articles/{article_id}` - modifier
+- [x] `DELETE /api/v1/depositor/lists/{list_id}/articles/{article_id}` - supprimer
+- [x] `GET /api/v1/depositor/lists/{list_id}/articles` - liste des articles
 
 #### Endpoints annexes
-- [ ] `GET /api/v1/depositor/editions/{edition_id}/summary` - infos déposant pour l'édition (créneaux, listes)
-- [ ] `GET /api/v1/config/categories` - catégories, contraintes, liste noire
-- [ ] `GET /api/v1/config/price-hints` - grille prix indicatifs
+- [x] `GET /api/v1/depositor/editions/{edition_id}/summary` - infos déposant pour l'édition (créneaux, listes)
+- [x] `GET /api/v1/config/categories` - catégories, contraintes, liste noire
+- [x] `GET /api/v1/config/price-hints` - grille prix indicatifs
 
 ### 0.5.8 Tests Backend
-- [ ] Tests unitaires service ItemList
-- [ ] Tests unitaires service Article (validation contraintes)
+- [x] Tests unitaires service ItemList
+- [x] Tests unitaires service Article (validation contraintes)
 - [ ] Tests intégration endpoints listes
 - [ ] Tests intégration endpoints articles
-- [ ] Tests validation : max 2 listes, max 24 articles, max 12 vêtements
-- [ ] Tests validation : contraintes catégorie
-- [ ] Tests validation : liste noire
-- [ ] Tests validation : prix min/max
-- [ ] Tests validation : lots
+- [x] Tests validation : max 2 listes, max 24 articles, max 12 vêtements
+- [x] Tests validation : contraintes catégorie
+- [x] Tests validation : liste noire
+- [x] Tests validation : prix min/max
+- [x] Tests validation : lots
 
 ---
 
 ## Frontend Tasks
 
 ### 0.5.9 Types TypeScript
-- [ ] `ItemList`, `ItemListCreate`, `ItemListResponse`, `ItemListStatus`
-- [ ] `Article`, `ArticleCreate`, `ArticleUpdate`, `ArticleResponse`, `ArticleStatus`
-- [ ] `ArticleCategory`, `CategoryConstraints`, `BlacklistedCategories`
+- [x] `ItemList`, `ItemListCreate`, `ItemListResponse`, `ItemListStatus`
+- [x] `Article`, `ArticleCreate`, `ArticleUpdate`, `ArticleResponse`, `ArticleStatus`
+- [x] `ArticleCategory`, `CategoryConstraints`, `BlacklistedCategories`
 - [ ] `PriceHints`, `DepositorEditionSummary`
 
 ### 0.5.10 API Client
-- [ ] `itemListsApi.getMyLists(editionId)`
-- [ ] `itemListsApi.createList(editionId, data)`
-- [ ] `itemListsApi.getListDetail(listId)`
-- [ ] `itemListsApi.deleteList(listId)`
-- [ ] `itemListsApi.validateList(listId)`
+- [x] `itemListsApi.getMyLists(editionId)`
+- [x] `itemListsApi.createList(editionId, data)`
+- [x] `itemListsApi.getListDetail(listId)`
+- [x] `itemListsApi.deleteList(listId)`
+- [x] `itemListsApi.validateList(listId)`
 - [ ] `itemListsApi.getListPreview(listId)`
-- [ ] `articlesApi.addArticle(listId, data)`
-- [ ] `articlesApi.updateArticle(listId, articleId, data)`
-- [ ] `articlesApi.deleteArticle(listId, articleId)`
-- [ ] `configApi.getCategories()`
-- [ ] `configApi.getPriceHints()`
+- [x] `articlesApi.addArticle(listId, data)`
+- [x] `articlesApi.updateArticle(listId, articleId, data)`
+- [x] `articlesApi.deleteArticle(listId, articleId)`
+- [x] `configApi.getCategories()`
+- [ ] `configApi.getPriceHints()` - endpoint existe mais non utilisé dans le frontend
 
 ### 0.5.11 Page MyListsPage (`/lists`)
-- [ ] Récupération éditions actives où je suis inscrit
-- [ ] Affichage infos édition (nom, dates, créneau réservé)
-- [ ] Section "Mes listes" avec compteur (X / 2)
-- [ ] Bouton "Créer ma première liste" si aucune
-- [ ] Liste des listes existantes avec :
+- [x] Récupération éditions actives où je suis inscrit
+- [x] Affichage infos édition (nom, dates, créneau réservé)
+- [x] Section "Mes listes" avec compteur (X / 2)
+- [x] Bouton "Créer ma première liste" si aucune
+- [x] Liste des listes existantes avec :
   - Numéro, type, statut
   - Nombre d'articles (X / 24, Y vêtements / 12)
   - Actions : Voir, Supprimer (si brouillon)
-- [ ] Rappel visible règlement (2 listes max, 24 articles, 12 vêtements)
-- [ ] Indicateur date limite déclaration
-- [ ] Mode lecture seule si date limite dépassée
+- [x] Rappel visible règlement (2 listes max, 24 articles, 12 vêtements)
+- [x] Indicateur date limite déclaration
+- [x] Mode lecture seule si date limite dépassée
 
 ### 0.5.12 Page ListDetailPage (`/lists/:id`)
-- [ ] Affichage numéro et type de liste
-- [ ] Compteurs en temps réel :
+- [x] Affichage numéro et type de liste
+- [x] Compteurs en temps réel :
   - Articles : X / 24
   - Vêtements : Y / 12
   - Barre de progression visuelle
-- [ ] Tableau des articles triés par catégorie :
-  - Colonnes : N° | Catégorie | Genre | Taille | Description | Prix | Actions
-  - Groupement par catégorie avec headers visuels
-- [ ] Bouton "Nouvel article" (ouvre modal)
-- [ ] Actions par article : Modifier, Supprimer
-- [ ] Bouton "Valider ma liste" en bas
-- [ ] Indicateurs validation contraintes (✓/✗)
-- [ ] Message si date limite dépassée (lecture seule)
+- [x] Tableau des articles triés par catégorie :
+  - Colonnes : N° | Catégorie | Détails | Description | Prix | Certifié | Actions
+  - Groupement par catégorie
+- [x] Bouton "Nouvel article" (ouvre formulaire)
+- [x] Actions par article : Modifier, Dupliquer, Supprimer (icônes)
+- [x] Bouton "Valider ma liste" en bas
+- [x] Indicateurs validation contraintes (✓/✗)
+- [x] Message si date limite dépassée (lecture seule)
 
-### 0.5.13 Composant ArticleFormModal
-- [ ] Champs :
+### 0.5.13 Composant ArticleForm
+- [x] Champs :
   - Catégorie (select avec groupes)
+  - Sous-catégorie (select dynamique selon catégorie)
   - Genre (si vêtement) : Fille/Garçon/Mixte/Adulte Homme/Adulte Femme/Mixte Adulte
   - Taille (select dynamique selon catégorie)
-  - Marque (texte libre)
-  - Description (textarea)
+  - Marque (texte libre) - affiché seulement pour vêtements/chaussures
+  - Couleur (texte libre) - affiché seulement pour vêtements/chaussures
+  - Description (textarea, max 100 caractères)
   - Prix (input number, validation min 1€)
-  - Est un lot (toggle)
-  - Si lot : quantité (1-3), marque obligatoire
-- [ ] Case certification conformité obligatoire
-- [ ] Validation temps réel :
+  - Est un lot (toggle) - affiché seulement pour bodys/pyjamas
+  - Si lot : quantité (1-3)
+- [x] Case certification conformité obligatoire
+- [x] Validation temps réel :
   - Griser "Ajouter" si 12 vêtements atteints et catégorie vêtement
   - Message erreur explicite
-  - Prix indicatifs contextuels
-- [ ] Blocage catégories liste noire (modal explicative)
-- [ ] Modes : création / modification
+  - [ ] Prix indicatifs contextuels (FIX-007)
+- [x] Blocage catégories liste noire (erreur backend)
+- [x] Modes : création / modification / duplication
 
 ### 0.5.14 Composant CategorySelect
-- [ ] Liste des catégories avec icônes
-- [ ] Indication contraintes (ex: "Vêtements (8/12)")
-- [ ] Désactivation catégories si limite atteinte (manteau, sac, etc.)
+- [x] Liste des catégories
+- [x] Indication contraintes (ex: "Vêtements (8/12)")
+- [x] Désactivation catégories si limite atteinte (manteau, sac, etc.)
 - [ ] Tooltip avec règlement
 
 ### 0.5.15 Composant ListValidationModal
-- [ ] Récapitulatif :
+- [x] Récapitulatif :
   - Nombre total articles
   - Nombre vêtements
-  - Répartition par catégorie
-- [ ] Rappel consignes dépôt
-- [ ] Case finale acceptation conditions
-- [ ] Boutons : Annuler / Valider définitivement
+  - Total montant
+- [x] Rappel consignes dépôt
+- [x] Case finale acceptation conditions
+- [x] Boutons : Annuler / Valider définitivement
 
 ### 0.5.16 Composant ListPreviewModal
 - [ ] Aperçu visuel type "bon de commande"
@@ -204,22 +206,19 @@ Le déposant inscrit à une édition doit pouvoir créer ses listes (max 2) et y
 - [ ] Boutons : Fermer / Télécharger PDF / Imprimer
 
 ### 0.5.17 Composant ProgressIndicators
-- [ ] Barre progression articles (X/24)
-- [ ] Barre progression vêtements (Y/12)
-- [ ] Liste contraintes avec ✓/✗ :
-  - Max 2 listes
-  - Prix minimum respecté
-  - Contraintes catégorie
+- [x] Compteurs articles (X/24) et vêtements (Y/12) - dans ListDetailPage
+- [ ] Barres de progression visuelles
+- [ ] Liste contraintes avec ✓/✗
 
 ### 0.5.18 Routes et navigation
-- [ ] Route `/lists` - MyListsPage (ProtectedRoute depositor)
-- [ ] Route `/lists/:id` - ListDetailPage (ProtectedRoute depositor + owner check)
-- [ ] Navigation depuis Header (lien "Mes listes")
+- [x] Route `/lists` - MyListsPage (ProtectedRoute depositor)
+- [x] Route `/lists/:id` - ListDetailPage (ProtectedRoute depositor + owner check)
+- [x] Navigation depuis Header (lien "Mes listes")
 
 ### 0.5.19 Tests Frontend
 - [ ] Tests MyListsPage (affichage listes, création)
 - [ ] Tests ListDetailPage (tableau articles, compteurs)
-- [ ] Tests ArticleFormModal (validation, contraintes)
+- [ ] Tests ArticleForm (validation, contraintes)
 - [ ] Tests CategorySelect (limites, liste noire)
 - [ ] Tests ListValidationModal
 - [ ] Tests ProgressIndicators
@@ -344,55 +343,40 @@ Les modèles `ItemList` et `Article` existent déjà dans `backend/app/models/`:
 
 ## Corrections à apporter (écarts spec/implémentation)
 
-### HAUTE PRIORITÉ
+### HAUTE PRIORITÉ - ✅ COMPLÉTÉ
 
-#### FIX-001 : Validation des lots incorrecte
+#### FIX-001 : Validation des lots incorrecte ✅
 - **Spec** : Les lots ne sont autorisés que pour les "bodys" ou "pyjamas" (taille ≤36 mois)
-- **Actuel** : Les lots peuvent être créés pour n'importe quelle catégorie de vêtements
-- **Fichiers** :
-  - `backend/app/services/article.py`
-  - `frontend/src/components/articles/ArticleForm.tsx`
-- [ ] Ajouter validation backend : lot uniquement si subcategory in ['body', 'pajama'] et size ≤36 mois
-- [ ] Ajouter validation frontend : masquer/désactiver option lot si conditions non remplies
+- **Corrigé** : Validation backend et frontend implémentée
+- [x] Backend : lot uniquement si subcategory in ['body', 'pajama'] et size ≤36 mois
+- [x] Frontend : option lot masquée si conditions non remplies
 
-#### FIX-002 : Prix maximum incorrect
+#### FIX-002 : Prix maximum incorrect ✅
 - **Spec** : Pas de limite générale de prix (sauf poussettes 150€ max)
-- **Actuel** : Tous les articles limités à 100€ (`MAX_PRICE_DEFAULT = 100`)
-- **Fichiers** :
-  - `backend/app/schemas/article.py` : supprimer `MAX_PRICE_DEFAULT`
-  - `frontend/src/components/articles/ArticleForm.tsx` : supprimer max="100"
-- [ ] Backend : retirer la limite de 100€ par défaut
-- [ ] Frontend : retirer la limite max du champ prix (sauf poussettes)
+- **Corrigé** : Limite de 100€ supprimée
+- [x] Backend : limite de 100€ par défaut retirée
+- [x] Frontend : limite max du champ prix retirée (sauf poussettes)
 
-#### FIX-003 : Longueur description incorrecte
+#### FIX-003 : Longueur description incorrecte ✅
 - **Spec** : 100 caractères max (doit tenir sur les étiquettes)
-- **Actuel** : 255 caractères autorisés
-- **Fichiers** :
-  - `backend/app/schemas/article.py` : `max_length=255` → `max_length=100`
-  - `backend/app/models/article.py` : `String(255)` → `String(100)`
-  - `frontend/src/components/articles/ArticleForm.tsx` : `maxLength={255}` → `maxLength={100}`
-- [ ] Migration DB pour réduire la taille de la colonne description
-- [ ] Mettre à jour schemas backend
-- [ ] Mettre à jour frontend
+- **Corrigé** : Limite à 100 caractères
+- [x] Migration DB pour réduire la taille de la colonne description
+- [x] Schemas backend mis à jour
+- [x] Frontend mis à jour
 
-#### FIX-004 : Fonctionnalité "Dupliquer" manquante
+#### FIX-004 : Fonctionnalité "Dupliquer" manquante ✅
 - **Spec** : Bouton pour copier les champs d'un article similaire
-- **Actuel** : Non implémenté
-- **Fichiers** :
-  - `frontend/src/components/articles/ArticleList.tsx` : ajouter bouton "Dupliquer"
-  - `frontend/src/pages/depositor/ListDetailPage.tsx` : gérer l'action de duplication
-- [ ] Ajouter bouton "Dupliquer" dans les actions de chaque article
-- [ ] Pré-remplir le formulaire avec les données de l'article (sauf description)
+- **Corrigé** : Bouton dupliquer avec icône ajouté
+- [x] Bouton "Dupliquer" (icône) dans les actions de chaque article
+- [x] Formulaire pré-rempli avec les données de l'article (incluant sous-catégorie)
 
-### PRIORITÉ MOYENNE
+### PRIORITÉ MOYENNE - ✅ COMPLÉTÉ
 
-#### FIX-005 : Lignes 1-12 non réservées aux vêtements
+#### FIX-005 : Lignes 1-12 non réservées aux vêtements ✅
 - **Spec** : Les lignes 1-12 sont réservées aux vêtements sur la liste
-- **Actuel** : N'importe quelle catégorie peut occuper les premières lignes
-- **Fichiers** :
-  - `backend/app/repositories/article.py` : `reorder_articles()` doit forcer vêtements en 1-12
-- [ ] Modifier la logique de réordonnement pour réserver lignes 1-12 aux vêtements
-- [ ] Si >12 vêtements (impossible normalement), erreur
+- **Corrigé** : Logique de réordonnement mise à jour
+- [x] Vêtements en lignes 1-12, autres catégories à partir de 13
+- [x] Validation si >12 vêtements (impossible normalement)
 
 #### FIX-006 : Pas de modal d'avertissement pour articles interdits
 - **Spec** : Afficher proactivement la liste des articles interdits avant soumission
