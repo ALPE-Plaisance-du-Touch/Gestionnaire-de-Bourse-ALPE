@@ -119,8 +119,9 @@ export function ArticleForm({
   const canCreateLot = LOT_ALLOWED_SUBCATEGORIES.includes(subcategory);
 
   // Reset subcategory and clothing-specific fields when category changes
+  // But not on initial render when duplicating (sourceArticle exists)
   useEffect(() => {
-    if (!article) {
+    if (!article && !duplicateFrom) {
       setSubcategory('');
       // Clear clothing-specific fields for non-clothing/shoes categories
       if (!showSizeAndGender) {
@@ -130,15 +131,15 @@ export function ArticleForm({
         setColor('');
       }
     }
-  }, [category, article, showSizeAndGender]);
+  }, [category, article, duplicateFrom, showSizeAndGender]);
 
   // Reset lot when subcategory changes to one that doesn't allow lots
   useEffect(() => {
-    if (!article && !LOT_ALLOWED_SUBCATEGORIES.includes(subcategory)) {
+    if (!article && !duplicateFrom && !LOT_ALLOWED_SUBCATEGORIES.includes(subcategory)) {
       setIsLot(false);
       setLotQuantity('');
     }
-  }, [subcategory, article]);
+  }, [subcategory, article, duplicateFrom]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
