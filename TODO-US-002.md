@@ -105,8 +105,8 @@ Le déposant inscrit à une édition doit pouvoir créer ses listes (max 2) et y
 ### 0.5.8 Tests Backend
 - [x] Tests unitaires service ItemList
 - [x] Tests unitaires service Article (validation contraintes)
-- [ ] Tests intégration endpoints listes
-- [ ] Tests intégration endpoints articles
+- [x] Tests intégration endpoints listes (18 tests)
+- [x] Tests intégration endpoints articles (19 tests)
 - [x] Tests validation : max 2 listes, max 24 articles, max 12 vêtements
 - [x] Tests validation : contraintes catégorie
 - [x] Tests validation : liste noire
