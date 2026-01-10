@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import Response
 from pydantic import BaseModel
 
 from app.dependencies import CurrentActiveUser, DBSession
@@ -28,6 +29,7 @@ from app.services.item_list import (
     ListNotDraftError,
     MaxListsExceededError,
 )
+from app.services.pdf import generate_list_pdf
 
 router = APIRouter()
 
@@ -332,4 +334,54 @@ async def delete_list(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=e.message,
+        )
+
+
+@router.get(
+    "/lists/{list_id}/pdf",
+    response_class=Response,
+    summary="Download list as PDF",
+    description="Download the item list as a PDF document.",
+    responses={
+        200: {
+            "content": {"application/pdf": {}},
+            "description": "PDF document of the item list",
+        }
+    },
+)
+async def download_list_pdf(
+    list_id: str,
+    list_service: ItemListServiceDep,
+    current_user: CurrentActiveUser,
+):
+    """Generate and download a PDF of the item list."""
+    try:
+        item_list = await list_service.get_list(list_id, load_articles=True)
+
+        # Check ownership
+        if item_list.depositor_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Vous n'êtes pas autorisé à voir cette liste",
+            )
+
+        # Generate depositor name
+        depositor_name = f"{current_user.first_name} {current_user.last_name}"
+
+        # Generate PDF
+        pdf_content = generate_list_pdf(item_list, depositor_name)
+
+        # Return PDF response
+        filename = f"liste_{item_list.number}.pdf"
+        return Response(
+            content=pdf_content,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+            },
+        )
+    except ItemListNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Liste {list_id} non trouvée",
         )

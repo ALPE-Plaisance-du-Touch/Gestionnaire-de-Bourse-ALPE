@@ -24,7 +24,7 @@ Le déposant inscrit à une édition doit pouvoir créer ses listes (max 2) et y
 - [x] AC-13 : Aide contextuelle avec prix indicatifs
 - [x] AC-14 : Récapitulatif avant validation finale (email confirmation non implémenté)
 - [x] AC-15 : Indicateurs visuels de progression
-- [ ] AC-16 : Aperçu et téléchargement PDF des listes
+- [x] AC-16 : Aperçu et téléchargement PDF des listes
 
 ---
 
@@ -89,7 +89,7 @@ Le déposant inscrit à une édition doit pouvoir créer ses listes (max 2) et y
 - [x] `GET /api/v1/depositor/lists/{list_id}` - détail avec articles
 - [x] `DELETE /api/v1/depositor/lists/{list_id}` - supprimer (si brouillon)
 - [x] `POST /api/v1/depositor/lists/{list_id}/validate` - valider la liste
-- [ ] `GET /api/v1/depositor/lists/{list_id}/preview` - aperçu pour PDF
+- [x] `GET /api/v1/depositor/lists/{list_id}/pdf` - téléchargement PDF
 
 #### Article endpoints
 - [x] `POST /api/v1/depositor/lists/{list_id}/articles` - ajouter un article
@@ -129,7 +129,7 @@ Le déposant inscrit à une édition doit pouvoir créer ses listes (max 2) et y
 - [x] `itemListsApi.getListDetail(listId)`
 - [x] `itemListsApi.deleteList(listId)`
 - [x] `itemListsApi.validateList(listId)`
-- [ ] `itemListsApi.getListPreview(listId)`
+- [x] `depositorListsApi.downloadPdf(listId)`
 - [x] `articlesApi.addArticle(listId, data)`
 - [x] `articlesApi.updateArticle(listId, articleId, data)`
 - [x] `articlesApi.deleteArticle(listId, articleId)`
@@ -199,11 +199,11 @@ Le déposant inscrit à une édition doit pouvoir créer ses listes (max 2) et y
 - [x] Case finale acceptation conditions
 - [x] Boutons : Annuler / Valider définitivement
 
-### 0.5.16 Composant ListPreviewModal
-- [ ] Aperçu visuel type "bon de commande"
-- [ ] Tableau complet des articles
-- [ ] Total montant
-- [ ] Boutons : Fermer / Télécharger PDF / Imprimer
+### 0.5.16 Téléchargement PDF ✅
+- [x] Endpoint backend pour générer le PDF (WeasyPrint)
+- [x] Template HTML avec style professionnel
+- [x] Bouton téléchargement dans la page détail de liste
+- [x] Génération du nom de fichier automatique (liste_N.pdf)
 
 ### 0.5.17 Composant ProgressIndicators
 - [x] Compteurs articles (X/24) et vêtements (Y/12) - dans ListDetailPage

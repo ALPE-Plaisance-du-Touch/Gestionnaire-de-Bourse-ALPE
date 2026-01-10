@@ -31,6 +31,7 @@ export function ListDetailPage() {
   const [duplicatingArticle, setDuplicatingArticle] = useState<Article | null>(null);
   const [showValidateModal, setShowValidateModal] = useState(false);
   const [confirmationAccepted, setConfirmationAccepted] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   // Fetch list details
   const {
@@ -156,6 +157,27 @@ export function ListDetailPage() {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    if (!listId || !list) return;
+
+    setIsDownloadingPdf(true);
+    try {
+      const blob = await depositorListsApi.downloadPdf(listId);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `liste_${list.number}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
   if (!listId) {
     return (
       <div className="p-6">
@@ -224,11 +246,37 @@ export function ListDetailPage() {
               </span>
             )}
           </div>
-          {isDraft && canValidate && (
-            <Button onClick={handleValidateList} disabled={validateMutation.isPending}>
-              Valider la liste
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {articles.length > 0 && (
+              <Button
+                variant="outline"
+                onClick={handleDownloadPdf}
+                disabled={isDownloadingPdf}
+              >
+                {isDownloadingPdf ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Téléchargement...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    PDF
+                  </>
+                )}
+              </Button>
+            )}
+            {isDraft && canValidate && (
+              <Button onClick={handleValidateList} disabled={validateMutation.isPending}>
+                Valider la liste
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

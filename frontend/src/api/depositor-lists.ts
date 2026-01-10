@@ -185,4 +185,14 @@ export const depositorListsApi = {
   deleteList: async (listId: string): Promise<void> => {
     await apiClient.delete(`/v1/depositor/lists/${listId}`);
   },
+
+  /**
+   * Download a list as PDF.
+   */
+  downloadPdf: async (listId: string): Promise<Blob> => {
+    const response = await apiClient.get(`/v1/depositor/lists/${listId}/pdf`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
 };
