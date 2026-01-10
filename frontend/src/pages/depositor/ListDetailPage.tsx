@@ -60,6 +60,12 @@ export function ListDetailPage() {
     queryFn: () => articlesApi.getCategoryConstraints(),
   });
 
+  // Fetch price hints
+  const { data: priceHints } = useQuery({
+    queryKey: ['price-hints'],
+    queryFn: () => articlesApi.getPriceHints(),
+  });
+
   // Create article mutation
   const createMutation = useMutation({
     mutationFn: (data: CreateArticleRequest) => articlesApi.createArticle(listId!, data),
@@ -286,6 +292,7 @@ export function ListDetailPage() {
             article={editingArticle}
             duplicateFrom={duplicatingArticle}
             constraints={constraints}
+            priceHints={priceHints}
             clothingCount={clothingCount}
             onSubmit={handleArticleSubmit}
             onCancel={handleCancelForm}

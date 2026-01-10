@@ -21,7 +21,7 @@ Le déposant inscrit à une édition doit pouvoir créer ses listes (max 2) et y
 - [x] AC-10 : Limite 12 vêtements avec validation temps réel
 - [x] AC-11 : Sauvegarde et modification de liste
 - [x] AC-12 : Blocage après date limite
-- [ ] AC-13 : Aide contextuelle avec prix indicatifs (FIX-007)
+- [x] AC-13 : Aide contextuelle avec prix indicatifs
 - [x] AC-14 : Récapitulatif avant validation finale (email confirmation non implémenté)
 - [x] AC-15 : Indicateurs visuels de progression
 - [ ] AC-16 : Aperçu et téléchargement PDF des listes
@@ -180,7 +180,7 @@ Le déposant inscrit à une édition doit pouvoir créer ses listes (max 2) et y
 - [x] Validation temps réel :
   - Griser "Ajouter" si 12 vêtements atteints et catégorie vêtement
   - Message erreur explicite
-  - [ ] Prix indicatifs contextuels (FIX-007)
+  - [x] Prix indicatifs contextuels (FIX-007)
 - [x] Blocage catégories liste noire (erreur backend)
 - [x] Modes : création / modification / duplication
 
@@ -388,13 +388,11 @@ Les modèles `ItemList` et `Article` existent déjà dans `backend/app/models/`:
 
 ### PRIORITÉ BASSE (UX)
 
-#### FIX-007 : Indices de prix non affichés
+#### FIX-007 : Indices de prix non affichés ✅
 - **Spec** : Afficher des prix indicatifs pour guider le déposant
-- **Actuel** : Le backend a l'endpoint, mais le frontend ne l'utilise pas
-- **Fichiers** :
-  - `frontend/src/components/articles/ArticleForm.tsx`
-- [ ] Appeler l'API des prix indicatifs
-- [ ] Afficher une aide contextuelle selon la catégorie sélectionnée
+- **Corrigé** : Prix indicatifs affichés sous le champ prix
+- [x] Appeler l'API des prix indicatifs (via `articlesApi.getPriceHints()`)
+- [x] Afficher une aide contextuelle selon la catégorie/sous-catégorie/genre sélectionnés
 
 #### FIX-008 : Liens d'aide/FAQ manquants
 - **Spec** : Aide contextuelle accessible

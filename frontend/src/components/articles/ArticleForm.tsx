@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button, Input, Select } from '@/components/ui';
 import type {
   Article,
@@ -6,6 +6,7 @@ import type {
   ArticleGender,
   CreateArticleRequest,
   CategoryConstraints,
+  PriceHint,
 } from '@/types';
 
 const CATEGORY_OPTIONS = [
@@ -79,6 +80,7 @@ interface ArticleFormProps {
   article?: Article | null;
   duplicateFrom?: Article | null;
   constraints?: CategoryConstraints;
+  priceHints?: PriceHint[];
   clothingCount: number;
   onSubmit: (data: CreateArticleRequest) => void;
   onCancel: () => void;
@@ -89,6 +91,7 @@ export function ArticleForm({
   article,
   duplicateFrom,
   constraints,
+  priceHints = [],
   clothingCount,
   onSubmit,
   onCancel,
@@ -117,6 +120,29 @@ export function ArticleForm({
   const maxClothing = constraints?.maxClothingPerList ?? 12;
   const canAddClothing = !article && (clothingCount < maxClothing || !isClothing);
   const canCreateLot = LOT_ALLOWED_SUBCATEGORIES.includes(subcategory);
+
+  // Find matching price hint based on category, subcategory and gender
+  const priceHint = useMemo(() => {
+    if (!priceHints.length) return null;
+
+    // Determine if this is for adult or child based on gender
+    const isAdult = gender?.startsWith('adult_') ?? false;
+    const target = isAdult ? 'adult' : 'child';
+
+    // Try to find exact match with subcategory
+    if (subcategory) {
+      const exactMatch = priceHints.find(
+        h => h.category === category && h.subcategory === subcategory && h.target === target
+      );
+      if (exactMatch) return exactMatch;
+    }
+
+    // Fallback to category-only match
+    const categoryMatch = priceHints.find(
+      h => h.category === category && !h.subcategory && h.target === target
+    );
+    return categoryMatch ?? null;
+  }, [priceHints, category, subcategory, gender]);
 
   // Reset subcategory and clothing-specific fields when category changes
   // But not on initial render when duplicating (sourceArticle exists)
@@ -265,6 +291,14 @@ export function ArticleForm({
           />
           {errors.price && (
             <p className="mt-1 text-sm text-red-600">{errors.price}</p>
+          )}
+          {priceHint && (
+            <p className="mt-1 text-xs text-blue-600 flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              Prix indicatif : {priceHint.minPrice}€ - {priceHint.maxPrice}€
+            </p>
           )}
         </div>
         {showSizeAndGender && (
