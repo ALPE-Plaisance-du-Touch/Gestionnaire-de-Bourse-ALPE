@@ -154,7 +154,10 @@ function createApiClient(): AxiosInstance {
   client.interceptors.response.use(
     (response) => {
       // Transform response data: snake_case -> camelCase
-      if (response.data && typeof response.data === 'object') {
+      // Skip Blob/ArrayBuffer responses (e.g. PDF downloads)
+      if (response.data && typeof response.data === 'object'
+          && !(response.data instanceof Blob)
+          && !(response.data instanceof ArrayBuffer)) {
         response.data = keysToCamelCase(response.data);
       }
       return response;
