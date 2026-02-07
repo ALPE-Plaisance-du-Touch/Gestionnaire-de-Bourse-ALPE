@@ -6,3 +6,4 @@ export { depositSlotsApi } from './deposit-slots';
 export { billetwebApi } from './billetweb';
 export { depositorListsApi } from './depositor-lists';
 export { articlesApi } from './articles';
+export { labelsApi } from './labels';

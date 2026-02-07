@@ -19,7 +19,7 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.3 | Edition Management | ✅ Done | 100% |
 | 0.4 | Billetweb Import | ✅ Done | 100% |
 | 0.5 | Article Declaration | ✅ Done | 100% |
-| 0.6 | Label Generation | 🔲 Not Started | 0% |
+| 0.6 | Label Generation | 🔄 In Progress | 80% |
 | 0.7 | Sales & Checkout | 🔲 Not Started | 0% |
 | 0.8 | Payout Calculation | 🔲 Not Started | 0% |
 | 0.9 | Dashboard & Reports | 🔲 Not Started | 0% |
@@ -28,7 +28,7 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
 **Current Version:** 0.5 (Article Declaration complete)
-**Next Target:** 0.6 - Label Generation (US-003)
+**Next Target:** 0.6 - Label Generation (US-003) (in progress)
 
 ---
 
@@ -250,12 +250,29 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 **Branch:** `feature/us-003-label-generation`
 
-- [ ] **0.6.1** PDF generation service (WeasyPrint)
-- [ ] **0.6.2** Barcode generation
-- [ ] **0.6.3** Label template (HTML/CSS)
-- [ ] **0.6.4** Batch generation endpoint
-- [ ] **0.6.5** Download UI
-- [ ] **0.6.6** Write tests
+### Backend Tasks
+- [x] **0.6.1** Label generation service with QR codes (WeasyPrint + qrcode)
+  - [x] QR code generation (base64 PNG, version 3, error correction M)
+  - [x] Unique label code format: `EDI-{id[:8]}-L{list}-A{line:02d}`
+  - [x] Color mapping (8 colors by list number range)
+  - [x] PDF structure: cover page, separator, article list, label grid (3x4, 70x74mm)
+- [x] **0.6.2** Label schemas (LabelGenerationRequest, LabelStatsResponse)
+- [x] **0.6.3** API endpoints
+  - [x] `POST /editions/{id}/labels/generate` - Generate PDF (sync, StreamingResponse)
+  - [x] `GET /editions/{id}/labels/stats` - Label statistics
+- [x] **0.6.4** Repository extensions (by slot, by depositors, stats)
+- [x] **0.6.5** Unit tests for label service
+
+### Frontend Tasks
+- [x] **0.6.6** TypeScript types and API client (with blob download)
+- [x] **0.6.7** LabelsManagementPage
+  - [x] Stats cards (depositors, lists, labels)
+  - [x] Mode selector (complete, by slot, by selection)
+  - [x] Slot selector / depositor multi-select
+  - [x] PDF download with loading state
+- [x] **0.6.8** Route and navigation
+  - [x] `/editions/:id/labels` route (manager/admin)
+  - [x] Link from EditionDetailPage (visible for registrations_open/in_progress)
 
 ---
 

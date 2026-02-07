@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.models import Edition, ItemList, User
+from app.models.edition_depositor import EditionDepositor
 from app.models.item_list import LABEL_COLORS, ListStatus, ListType
 
 
@@ -217,6 +218,74 @@ class ItemListRepository:
 
         result = await self.db.execute(query)
         return list(result.unique().scalars().all())
+
+    async def get_lists_for_labels_by_slot(
+        self, edition_id: str, slot_id: str
+    ) -> list[ItemList]:
+        """Get validated lists for depositors assigned to a specific deposit slot."""
+        # Find depositor IDs assigned to this slot
+        dep_query = select(EditionDepositor.user_id).where(
+            EditionDepositor.edition_id == edition_id,
+            EditionDepositor.deposit_slot_id == slot_id,
+        )
+        dep_result = await self.db.execute(dep_query)
+        depositor_ids = [row[0] for row in dep_result.all()]
+
+        if not depositor_ids:
+            return []
+
+        query = (
+            select(ItemList)
+            .options(joinedload(ItemList.articles), joinedload(ItemList.depositor))
+            .where(ItemList.edition_id == edition_id)
+            .where(ItemList.is_validated == True)  # noqa: E712
+            .where(ItemList.depositor_id.in_(depositor_ids))
+            .order_by(ItemList.number)
+        )
+
+        result = await self.db.execute(query)
+        return list(result.unique().scalars().all())
+
+    async def get_lists_for_labels_by_depositors(
+        self, edition_id: str, depositor_ids: list[str]
+    ) -> list[ItemList]:
+        """Get validated lists for specific depositors."""
+        query = (
+            select(ItemList)
+            .options(joinedload(ItemList.articles), joinedload(ItemList.depositor))
+            .where(ItemList.edition_id == edition_id)
+            .where(ItemList.is_validated == True)  # noqa: E712
+            .where(ItemList.depositor_id.in_(depositor_ids))
+            .order_by(ItemList.number)
+        )
+
+        result = await self.db.execute(query)
+        return list(result.unique().scalars().all())
+
+    async def get_label_stats(self, edition_id: str) -> dict:
+        """Get label generation statistics for an edition."""
+        # Count validated lists
+        validated_query = (
+            select(ItemList)
+            .options(joinedload(ItemList.articles))
+            .where(ItemList.edition_id == edition_id)
+            .where(ItemList.is_validated == True)  # noqa: E712
+        )
+        result = await self.db.execute(validated_query)
+        validated_lists = list(result.unique().scalars().all())
+
+        total_lists = len(validated_lists)
+        total_labels = sum(len(il.articles) for il in validated_lists)
+        labels_generated = sum(1 for il in validated_lists if il.labels_printed)
+        depositor_ids = {il.depositor_id for il in validated_lists}
+
+        return {
+            "total_depositors": len(depositor_ids),
+            "total_lists": total_lists,
+            "total_labels": total_labels,
+            "labels_generated": labels_generated,
+            "labels_pending": total_lists - labels_generated,
+        }
 
     async def mark_labels_printed(self, item_list: ItemList) -> ItemList:
         """Mark labels as printed for a list."""

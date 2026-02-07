@@ -59,6 +59,11 @@ from app.schemas.invitation import (
     InvitationResendResponse,
     InvitationResponse,
 )
+from app.schemas.label import (
+    LabelGenerationMode,
+    LabelGenerationRequest,
+    LabelStatsResponse,
+)
 from app.schemas.item_list import (
     DepositorListsResponse,
     ItemListCreate,
@@ -137,6 +142,10 @@ __all__ = [
     "BulkInvitationResult",
     "BulkDeleteRequest",
     "BulkDeleteResult",
+    # Label
+    "LabelGenerationMode",
+    "LabelGenerationRequest",
+    "LabelStatsResponse",
     # ItemList
     "DepositorListsResponse",
     "ItemListCreate",

@@ -11,6 +11,7 @@ from app.api.v1.endpoints import (
     depositor_lists,
     editions,
     invitations,
+    labels,
 )
 
 api_router = APIRouter()
@@ -28,6 +29,7 @@ api_router.include_router(
     tags=["Billetweb Import"],
 )
 api_router.include_router(invitations.router, prefix="/invitations", tags=["Invitations"])
+api_router.include_router(labels.router, tags=["Labels"])
 
 # Depositor endpoints (article declaration)
 api_router.include_router(

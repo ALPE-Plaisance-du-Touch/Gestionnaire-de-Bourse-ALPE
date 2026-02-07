@@ -10,3 +10,4 @@ export * from './deposit-slot';
 export * from './billetweb';
 export * from './itemList';
 export * from './article';
+export * from './label';
