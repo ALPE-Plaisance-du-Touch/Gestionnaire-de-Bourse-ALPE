@@ -150,6 +150,23 @@ class DuplicateEmailError(AppException):
         )
 
 
+class PayoutNotFoundError(NotFoundError):
+    """Payout not found."""
+
+    def __init__(self, payout_id: str):
+        super().__init__(f"Payout {payout_id} not found")
+
+
+class PayoutAlreadyPaidError(AppException):
+    """Payout has already been paid."""
+
+    def __init__(self, payout_id: str):
+        super().__init__(
+            f"Payout {payout_id} has already been paid",
+            "PAYOUT_ALREADY_PAID",
+        )
+
+
 class RateLimitExceededError(AppException):
     """Too many requests."""
 

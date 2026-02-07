@@ -642,6 +642,27 @@ export function EditionDetailPage() {
           </div>
         )}
 
+        {/* Payouts link */}
+        {(edition.status === 'in_progress' || edition.status === 'closed') && (
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">Reversements</h3>
+                <p className="text-sm text-gray-500">Calculez et gerez les reversements aux deposants.</p>
+              </div>
+              <Link
+                to={`/editions/${edition.id}/payouts`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Gestion des reversements
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex justify-between items-center pt-4 border-t">
           <Button

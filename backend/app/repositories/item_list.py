@@ -200,6 +200,17 @@ class ItemListRepository:
 
         return lists, total
 
+    async def list_by_edition_with_articles(self, edition_id: str) -> list[ItemList]:
+        """Get all lists for an edition with articles loaded (for payout calculation)."""
+        query = (
+            select(ItemList)
+            .options(joinedload(ItemList.articles), joinedload(ItemList.depositor))
+            .where(ItemList.edition_id == edition_id)
+            .order_by(ItemList.number)
+        )
+        result = await self.db.execute(query)
+        return list(result.unique().scalars().all())
+
     async def get_lists_for_labels(
         self, edition_id: str, *, depositor_id: str | None = None
     ) -> list[ItemList]:

@@ -73,6 +73,13 @@ from app.schemas.sale import (
     ScanRequest,
     TopDepositorStats,
 )
+from app.schemas.payout import (
+    CalculatePayoutsResponse,
+    PayoutResponse,
+    PayoutStatsResponse,
+    RecordPaymentRequest,
+    UpdatePayoutNotesRequest,
+)
 from app.schemas.item_list import (
     DepositorListsResponse,
     ItemListCreate,
@@ -163,6 +170,12 @@ __all__ = [
     "ScanArticleResponse",
     "ScanRequest",
     "TopDepositorStats",
+    # Payout
+    "CalculatePayoutsResponse",
+    "PayoutResponse",
+    "PayoutStatsResponse",
+    "RecordPaymentRequest",
+    "UpdatePayoutNotesRequest",
     # ItemList
     "DepositorListsResponse",
     "ItemListCreate",

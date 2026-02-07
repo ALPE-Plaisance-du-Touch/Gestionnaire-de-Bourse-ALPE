@@ -6,3 +6,4 @@ export { EditionDetailPage } from './EditionDetailPage';
 export { EditionDepositorsPage } from './EditionDepositorsPage';
 export { LabelsManagementPage } from './LabelsManagementPage';
 export { LiveStatsPage } from './LiveStatsPage';
+export { PayoutsManagementPage } from './PayoutsManagementPage';
