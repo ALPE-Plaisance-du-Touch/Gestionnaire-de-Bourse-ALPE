@@ -19,7 +19,7 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.3 | Edition Management | ✅ Done | 100% |
 | 0.4 | Billetweb Import | ✅ Done | 100% |
 | 0.5 | Article Declaration | ✅ Done | 100% |
-| 0.6 | Label Generation | 🔄 In Progress | 80% |
+| 0.6 | Label Generation | ✅ Done | 100% |
 | 0.7 | Sales & Checkout | 🔲 Not Started | 0% |
 | 0.8 | Payout Calculation | 🔲 Not Started | 0% |
 | 0.9 | Dashboard & Reports | 🔲 Not Started | 0% |
@@ -27,8 +27,8 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.11 | PWA & Offline Mode | 🔲 Not Started | 0% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.5 (Article Declaration complete)
-**Next Target:** 0.6 - Label Generation (US-003) (in progress)
+**Current Version:** 0.6 (Label Generation complete)
+**Next Target:** 0.7 - Sales & Checkout (US-004)
 
 ---
 
@@ -246,7 +246,7 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
-## v0.6 - Label Generation (US-003)
+## v0.6 - Label Generation (US-003) ✅
 
 **Branch:** `feature/us-003-label-generation`
 
