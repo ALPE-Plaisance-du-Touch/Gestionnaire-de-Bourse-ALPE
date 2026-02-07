@@ -42,10 +42,10 @@ class ArticleRepository:
         return result.unique().scalar_one_or_none()
 
     async def get_by_barcode(self, barcode: str) -> Article | None:
-        """Get an article by barcode."""
+        """Get an article by barcode with item_list and depositor loaded."""
         result = await self.db.execute(
             select(Article)
-            .options(joinedload(Article.item_list))
+            .options(joinedload(Article.item_list).joinedload(ItemList.depositor))
             .where(Article.barcode == barcode)
         )
         return result.unique().scalar_one_or_none()

@@ -20,7 +20,7 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.4 | Billetweb Import | ✅ Done | 100% |
 | 0.5 | Article Declaration | ✅ Done | 100% |
 | 0.6 | Label Generation | ✅ Done | 100% |
-| 0.7 | Sales & Checkout | 🔲 Not Started | 0% |
+| 0.7 | Sales & Checkout | 🔄 In Progress | 80% |
 | 0.8 | Payout Calculation | 🔲 Not Started | 0% |
 | 0.9 | Dashboard & Reports | 🔲 Not Started | 0% |
 | 0.10 | Edition Closure | 🔲 Not Started | 0% |
@@ -281,26 +281,40 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 **Branch:** `feature/us-004-sales-checkout`
 
 ### Backend Tasks
-- [ ] **0.7.1** Implement sale schemas
-- [ ] **0.7.2** Implement sale service
-  - [ ] Barcode lookup
-  - [ ] Double-sale prevention
-  - [ ] Sale cancellation
-- [ ] **0.7.3** Implement sale repository
-- [ ] **0.7.4** Implement API endpoints
-- [ ] **0.7.5** Write tests
+- [x] **0.7.1** Sale schemas (ScanRequest, ScanArticleResponse, RegisterSaleRequest, SaleResponse, SaleStatsResponse)
+- [x] **0.7.2** Sale repository (CRUD, stats, top depositors)
+- [x] **0.7.3** Sale service
+  - [x] Barcode scan and article lookup
+  - [x] Sale registration with payment method
+  - [x] Double-sale prevention (UNIQUE constraint + application check)
+  - [x] Sale cancellation (< 5 min volunteer, > 5 min manager only)
+  - [x] Live stats aggregation
+- [x] **0.7.4** API endpoints
+  - [x] `POST /editions/{id}/sales/scan` - Scan article by barcode
+  - [x] `POST /editions/{id}/sales` - Register sale
+  - [x] `GET /editions/{id}/sales` - List sales (paginated)
+  - [x] `POST /editions/{id}/sales/{id}/cancel` - Cancel sale
+  - [x] `GET /editions/{id}/stats/sales-live` - Live statistics
+- [x] **0.7.5** Unit tests (14 tests: scan, register, cancel, response formatting)
 
 ### Frontend Tasks
-- [ ] **0.7.6** Implement ScanPage
-  - [ ] Camera barcode scanner
-  - [ ] Manual barcode input
-  - [ ] Article preview
-- [ ] **0.7.7** Implement CheckoutPage
-  - [ ] Cart management
-  - [ ] Payment method selection
-  - [ ] Receipt generation
-- [ ] **0.7.8** Implement SaleHistoryPage
-- [ ] **0.7.9** Write tests
+- [x] **0.7.6** TypeScript types and API client (sale.ts, sales.ts)
+- [x] **0.7.7** Sound utility (Web Audio API: success/error beeps)
+- [x] **0.7.8** QR Scanner component (html5-qrcode camera + manual input)
+- [x] **0.7.9** SalesPage (caisse)
+  - [x] QR camera scanner + manual barcode input
+  - [x] Article preview with label color
+  - [x] Payment method selection (Especes/CB/Cheque)
+  - [x] Sale registration with sound feedback
+  - [x] Recent sales list with cancel action
+- [x] **0.7.10** LiveStatsPage
+  - [x] Real-time stats (auto-refresh 10s)
+  - [x] Revenue by payment method
+  - [x] Top 5 depositors
+- [x] **0.7.11** Routing and navigation
+  - [x] `/editions/:id/sales` route (volunteer+)
+  - [x] `/editions/:id/stats` route (manager/admin)
+  - [x] Links from EditionDetailPage (visible for in_progress editions)
 
 ---
 

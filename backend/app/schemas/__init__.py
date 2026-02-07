@@ -64,6 +64,15 @@ from app.schemas.label import (
     LabelGenerationRequest,
     LabelStatsResponse,
 )
+from app.schemas.sale import (
+    CancelSaleRequest,
+    RegisterSaleRequest,
+    SaleResponse,
+    SaleStatsResponse,
+    ScanArticleResponse,
+    ScanRequest,
+    TopDepositorStats,
+)
 from app.schemas.item_list import (
     DepositorListsResponse,
     ItemListCreate,
@@ -146,6 +155,14 @@ __all__ = [
     "LabelGenerationMode",
     "LabelGenerationRequest",
     "LabelStatsResponse",
+    # Sale
+    "CancelSaleRequest",
+    "RegisterSaleRequest",
+    "SaleResponse",
+    "SaleStatsResponse",
+    "ScanArticleResponse",
+    "ScanRequest",
+    "TopDepositorStats",
     # ItemList
     "DepositorListsResponse",
     "ItemListCreate",
