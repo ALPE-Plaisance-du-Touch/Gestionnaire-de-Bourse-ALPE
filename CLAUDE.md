@@ -2,6 +2,18 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Global Preferences
+
+- Communicate with me in **French** unless I write in English
+- When I correct a mistake, update your auto memory so you don't repeat it
+
+### Rules
+- @.claude/rules/coding-style.md
+- @.claude/rules/git-workflow.md
+- @.claude/rules/task-management.md
+- @.claude/rules/code-quality.md
+- @.claude/rules/communication.md
+
 ## Project Overview
 
 "Gestionnaire de Bourse ALPE" is a web application to manage second-hand goods sales events organized by ALPE Plaisance du Touch (France). The target audience is depositors (sellers) and volunteer staff.
@@ -98,11 +110,6 @@ make db-shell         # MySQL CLI
 ```
 
 ## Development Workflow
-
-1. **Branch naming**: `feature/us-xxx-description` or `feature/description`
-2. **Commits**: Conventional Commits format (`feat:`, `fix:`, `docs:`, `chore:`)
-3. **Code language**: English (variable names, comments, commits)
-4. **Spec language**: French (all docs/ content)
 
 ### Starting a New User Story
 When beginning work on a new US, create a `TODO-US-XXX.md` file at project root with:

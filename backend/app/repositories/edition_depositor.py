@@ -158,3 +158,16 @@ class EditionDepositorRepository:
             .where(EditionDepositor.edition_id == edition_id)
         )
         return [row[0] for row in result.all()]
+
+    async def list_by_user(self, user_id: str) -> list[EditionDepositor]:
+        """Get all edition registrations for a user."""
+        from app.models import Edition
+
+        result = await self.db.execute(
+            select(EditionDepositor)
+            .options(joinedload(EditionDepositor.deposit_slot))
+            .join(Edition, Edition.id == EditionDepositor.edition_id)
+            .where(EditionDepositor.user_id == user_id)
+            .order_by(Edition.start_datetime.desc())
+        )
+        return list(result.unique().scalars().all())

@@ -17,8 +17,8 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.1 | Project Scaffolding | ✅ Done | 100% |
 | 0.2 | Authentication System | ✅ Done | 100% |
 | 0.3 | Edition Management | ✅ Done | 100% |
-| 0.4 | Billetweb Import | 🔲 Not Started | 0% |
-| 0.5 | Article Declaration | 🔲 Not Started | 0% |
+| 0.4 | Billetweb Import | ✅ Done | 100% |
+| 0.5 | Article Declaration | ✅ Done | 100% |
 | 0.6 | Label Generation | 🔲 Not Started | 0% |
 | 0.7 | Sales & Checkout | 🔲 Not Started | 0% |
 | 0.8 | Payout Calculation | 🔲 Not Started | 0% |
@@ -27,8 +27,8 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.11 | PWA & Offline Mode | 🔲 Not Started | 0% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.3 (Edition Management complete)
-**Next Target:** 0.4 - Billetweb Import (US-008)
+**Current Version:** 0.5 (Article Declaration complete)
+**Next Target:** 0.6 - Label Generation (US-003)
 
 ---
 
@@ -161,15 +161,33 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
-## v0.4 - Billetweb Import (US-008)
+## v0.4 - Billetweb Import (US-008) ✅
 
 **Branch:** `feature/us-008-billetweb-import`
 
-- [ ] **0.4.1** CSV parser service
-- [ ] **0.4.2** Import API endpoint
-- [ ] **0.4.3** Duplicate detection
-- [ ] **0.4.4** Import UI with preview
-- [ ] **0.4.5** Write tests
+### Backend Tasks ✅
+- [x] **0.4.1** CSV parser service (Billetweb format)
+- [x] **0.4.2** Import API endpoints
+  - [x] `POST /editions/{id}/billetweb/preview` - Preview import
+  - [x] `POST /editions/{id}/billetweb/import` - Execute import
+  - [x] `GET /editions/{id}/billetweb/stats` - Import statistics
+  - [x] `GET /editions/{id}/depositors` - List depositors
+- [x] **0.4.3** Duplicate detection (email, order ref)
+- [x] **0.4.4** EditionDepositor model and repository
+- [x] **0.4.5** BilletwebImportLog model for audit trail
+- [x] **0.4.6** Write tests (116 backend tests total)
+
+### Frontend Tasks ✅
+- [x] **0.4.7** BilletwebImportButton component
+- [x] **0.4.8** BilletwebImportModal with multi-step flow
+  - [x] File upload step
+  - [x] Preview step with stats and errors
+  - [x] Import execution step
+  - [x] Result display step
+- [x] **0.4.9** BilletwebPreviewStats component
+- [x] **0.4.10** BilletwebImportResult component
+- [x] **0.4.11** EditionDepositorsPage (`/editions/:id/depositors`)
+- [x] **0.4.12** Write tests (152 frontend tests total)
 
 ---
 
@@ -177,31 +195,54 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 **Branch:** `feature/us-002-article-declaration`
 
-### Backend Tasks
-- [ ] **0.5.1** Implement item_list schemas
-- [ ] **0.5.2** Implement article schemas
-- [ ] **0.5.3** Implement item_list service
-  - [ ] Max 2 lists per depositor
-  - [ ] Max 24 articles per list (12 clothing)
-- [ ] **0.5.4** Implement article service
-  - [ ] Category validation
-  - [ ] Price validation (1€-150€)
-  - [ ] Lot handling
-- [ ] **0.5.5** Implement repositories
-- [ ] **0.5.6** Implement API endpoints
-- [ ] **0.5.7** Write tests
+### Backend Tasks ✅
+- [x] **0.5.1** Implement item_list schemas
+- [x] **0.5.2** Implement article schemas
+- [x] **0.5.3** Implement item_list service
+  - [x] Max 2 lists per depositor (4 for list_2000)
+  - [x] Max 24 articles per list (12 clothing)
+  - [x] Deadline validation
+- [x] **0.5.4** Implement article service
+  - [x] Category validation
+  - [x] Price validation (1€ min, 150€ max for strollers)
+  - [x] Lot handling (max 3 items, 36 months age limit)
+  - [x] Blacklisted items rejection
+  - [x] Category limits (1 coat, 1 handbag, 2 scarves, etc.)
+- [x] **0.5.5** Implement item_list repository
+- [x] **0.5.6** Implement article repository
+- [x] **0.5.7** Implement API endpoints
+  - [x] `GET/POST /depositor/editions/{id}/lists` - List management
+  - [x] `GET/POST/DELETE /depositor/lists/{id}` - List operations
+  - [x] `POST /depositor/lists/{id}/validate` - List validation
+  - [x] `GET/POST /depositor/lists/{id}/articles` - Article management
+  - [x] `PUT/DELETE /depositor/lists/{id}/articles/{id}` - Article operations
+  - [x] `GET /categories` - Category constraints
+  - [x] `GET /price-hints` - Indicative prices
+- [x] **0.5.8** Write backend tests (42 unit tests)
 
-### Frontend Tasks
-- [ ] **0.5.8** Implement MyListsPage
-- [ ] **0.5.9** Implement ListDetailPage
-- [ ] **0.5.10** Implement ArticleForm
-  - [ ] Category select
-  - [ ] Price input with validation
-  - [ ] Size/brand/color fields
-  - [ ] Lot toggle
-- [ ] **0.5.11** Implement article list with edit/delete
-- [ ] **0.5.12** Deadline warnings
-- [ ] **0.5.13** Write tests
+### Frontend Tasks ✅
+- [x] **0.5.9** Implement MyListsPage
+  - [x] List overview with statistics
+  - [x] Create/delete list actions
+  - [x] Navigation to list detail
+- [x] **0.5.10** Implement ListDetailPage
+  - [x] Article list display
+  - [x] Add/edit/delete article flow
+  - [x] List validation with confirmation
+- [x] **0.5.11** Implement ArticleForm
+  - [x] Category/subcategory select
+  - [x] Price input with validation
+  - [x] Size/brand/color/gender fields
+  - [x] Lot toggle with quantity
+  - [x] Conformity certification checkbox
+- [x] **0.5.12** Implement ArticleList component
+  - [x] Table view with all article fields
+  - [x] Edit/delete actions for draft lists
+  - [x] Certification status indicators
+- [x] **0.5.13** Add API clients and types
+  - [x] depositor-lists API client
+  - [x] articles API client
+  - [x] TypeScript types for constraints
 
 ---
 
