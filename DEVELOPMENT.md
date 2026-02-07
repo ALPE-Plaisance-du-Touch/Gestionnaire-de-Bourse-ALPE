@@ -21,14 +21,14 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.5 | Article Declaration | ✅ Done | 100% |
 | 0.6 | Label Generation | ✅ Done | 100% |
 | 0.7 | Sales & Checkout | ✅ Done | 100% |
-| 0.8 | Payout Calculation | 🔲 Not Started | 0% |
+| 0.8 | Payout Calculation | ✅ Done | 100% |
 | 0.9 | Dashboard & Reports | 🔲 Not Started | 0% |
 | 0.10 | Edition Closure | 🔲 Not Started | 0% |
 | 0.11 | PWA & Offline Mode | 🔲 Not Started | 0% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.7 (Sales & Checkout complete)
-**Next Target:** 0.8 - Payout Calculation (US-005)
+**Current Version:** 0.8 (Payout Calculation complete)
+**Next Target:** 0.9 - Dashboard & Reports
 
 ---
 
@@ -318,17 +318,56 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
-## v0.8 - Payout Calculation (US-005)
+## v0.8 - Payout Calculation (US-005) ✅
 
 **Branch:** `feature/us-005-payout`
 
-- [ ] **0.8.1** Payout calculation service
-  - [ ] Commission (20%)
-  - [ ] List fees (1000/2000 types)
-- [ ] **0.8.2** Payout API endpoints
-- [ ] **0.8.3** Payout summary UI
-- [ ] **0.8.4** Export functionality
-- [ ] **0.8.5** Write tests
+### Backend Tasks ✅
+- [x] **0.8.1** Payout schemas (CalculatePayoutsResponse, PayoutResponse, RecordPaymentRequest, PayoutStatsResponse)
+- [x] **0.8.2** Payout repository (CRUD, bulk create, stats aggregation, unpaid cleanup)
+- [x] **0.8.3** Payout service
+  - [x] Calculate payouts per item list (commission + list fees)
+  - [x] Commission rate from edition (default 20%)
+  - [x] List fees: standard=0, list_1000=1EUR, list_2000=2.50EUR
+  - [x] Net amount clipped to 0 if negative
+  - [x] Record payment (cash/check/transfer)
+  - [x] Recalculate individual payout (preserves paid)
+  - [x] Update notes / mark absent
+  - [x] Stats aggregation with status breakdown
+- [x] **0.8.4** PDF receipt service (WeasyPrint bordereaux)
+  - [x] Single receipt with sold/unsold article tables
+  - [x] Calculation summary (gross, commission, fees, net)
+  - [x] Payment section with signatures
+  - [x] Bulk generation (all receipts in one PDF)
+- [x] **0.8.5** API endpoints (9 routes, manager/admin only)
+  - [x] `POST /editions/{id}/payouts/calculate` - Calculate all
+  - [x] `GET /editions/{id}/payouts` - List (paginated, filters)
+  - [x] `GET /editions/{id}/payouts/stats` - Statistics
+  - [x] `GET /editions/{id}/payouts/{pid}` - Detail
+  - [x] `GET /editions/{id}/payouts/{pid}/receipt` - Download PDF
+  - [x] `POST /editions/{id}/payouts/{pid}/pay` - Record payment
+  - [x] `PUT /editions/{id}/payouts/{pid}/notes` - Update notes
+  - [x] `POST /editions/{id}/payouts/{pid}/recalculate` - Recalculate
+  - [x] `POST /editions/{id}/payouts/receipts` - All receipts PDF
+- [x] **0.8.6** Unit tests (22 tests: fees, rounding, calculation, payment, recalculate)
+
+### Frontend Tasks ✅
+- [x] **0.8.7** TypeScript types and API client (with blob download for PDFs)
+- [x] **0.8.8** PaymentModal component
+  - [x] Payment method radio (Especes/Cheque/Virement)
+  - [x] Check number / transfer reference (required)
+  - [x] Optional notes
+- [x] **0.8.9** PayoutsManagementPage
+  - [x] Stats cards with polling 10s (total sales, commission, net, progress)
+  - [x] Calculate button + download all receipts
+  - [x] Status filter + depositor search
+  - [x] Paginated table (depositor, list, articles, amounts, status, actions)
+  - [x] Row coloring (green=paid, amber=ready)
+  - [x] Actions: PDF, Pay, Recalculate, Notes
+  - [x] Notes modal with absent marking
+- [x] **0.8.10** Routing and navigation
+  - [x] `/editions/:id/payouts` route (manager/admin)
+  - [x] Link from EditionDetailPage (visible for in_progress/closed)
 
 ---
 
