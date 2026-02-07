@@ -4,21 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Global Preferences
 
-### Language
-- Code, comments, commits, branch names: **English**
 - Communicate with me in **French** unless I write in English
-- Specification documents may be in French
-
-### Workflow Principles
-- Always read code before modifying it
-- Prefer editing existing files over creating new ones
-- Start with plan mode for non-trivial tasks
-- Keep subtasks small enough to complete within 50% context
-- Commit frequently upon task completion when asked
-
-### Corrections & Learning
 - When I correct a mistake, update your auto memory so you don't repeat it
-- If a pattern keeps failing, document it in memory with the solution
 
 ### Rules
 - @.claude/rules/coding-style.md
@@ -123,11 +110,6 @@ make db-shell         # MySQL CLI
 ```
 
 ## Development Workflow
-
-1. **Branch naming**: `feature/us-xxx-description` or `feature/description`
-2. **Commits**: Conventional Commits format (`feat:`, `fix:`, `docs:`, `chore:`)
-3. **Code language**: English (variable names, comments, commits)
-4. **Spec language**: French (all docs/ content)
 
 ### Starting a New User Story
 When beginning work on a new US, create a `TODO-US-XXX.md` file at project root with:
