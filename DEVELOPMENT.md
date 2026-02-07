@@ -20,15 +20,15 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.4 | Billetweb Import | ✅ Done | 100% |
 | 0.5 | Article Declaration | ✅ Done | 100% |
 | 0.6 | Label Generation | ✅ Done | 100% |
-| 0.7 | Sales & Checkout | 🔄 In Progress | 80% |
+| 0.7 | Sales & Checkout | ✅ Done | 100% |
 | 0.8 | Payout Calculation | 🔲 Not Started | 0% |
 | 0.9 | Dashboard & Reports | 🔲 Not Started | 0% |
 | 0.10 | Edition Closure | 🔲 Not Started | 0% |
 | 0.11 | PWA & Offline Mode | 🔲 Not Started | 0% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.6 (Label Generation complete)
-**Next Target:** 0.7 - Sales & Checkout (US-004)
+**Current Version:** 0.7 (Sales & Checkout complete)
+**Next Target:** 0.8 - Payout Calculation (US-005)
 
 ---
 
