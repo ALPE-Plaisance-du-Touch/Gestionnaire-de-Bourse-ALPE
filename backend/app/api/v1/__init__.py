@@ -12,6 +12,7 @@ from app.api.v1.endpoints import (
     editions,
     invitations,
     labels,
+    sales,
 )
 
 api_router = APIRouter()
@@ -30,6 +31,7 @@ api_router.include_router(
 )
 api_router.include_router(invitations.router, prefix="/invitations", tags=["Invitations"])
 api_router.include_router(labels.router, tags=["Labels"])
+api_router.include_router(sales.router, tags=["Sales"])
 
 # Depositor endpoints (article declaration)
 api_router.include_router(

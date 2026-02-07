@@ -6,6 +6,7 @@ from app.repositories.deposit_slot import DepositSlotRepository
 from app.repositories.edition import EditionRepository
 from app.repositories.edition_depositor import EditionDepositorRepository
 from app.repositories.item_list import ItemListRepository
+from app.repositories.sale import SaleRepository
 from app.repositories.user import UserRepository
 
 __all__ = [
@@ -15,5 +16,6 @@ __all__ = [
     "EditionDepositorRepository",
     "EditionRepository",
     "ItemListRepository",
+    "SaleRepository",
     "UserRepository",
 ]

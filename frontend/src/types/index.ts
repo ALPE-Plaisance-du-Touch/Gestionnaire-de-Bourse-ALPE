@@ -11,3 +11,4 @@ export * from './billetweb';
 export * from './itemList';
 export * from './article';
 export * from './label';
+export * from './sale';
