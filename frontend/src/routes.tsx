@@ -3,7 +3,7 @@ import { MainLayout } from '@/components/layout';
 import { ProtectedRoute } from '@/components/auth';
 import { AuthProvider } from '@/contexts';
 import { LoginPage, ActivatePage, ForgotPasswordPage, ResetPasswordPage } from '@/pages/auth';
-import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, EditionDepositorsPage } from '@/pages/admin';
+import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, EditionDepositorsPage, LabelsManagementPage } from '@/pages/admin';
 import { MyEditionsPage, MyListsPage, ListDetailPage } from '@/pages/depositor';
 
 /**
@@ -122,6 +122,16 @@ export const router = createBrowserRouter([
           <ProtectedRoute allowedRoles={['manager', 'administrator']}>
             <MainLayout>
               <EditionDepositorsPage />
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/editions/:id/labels',
+        element: (
+          <ProtectedRoute allowedRoles={['manager', 'administrator']}>
+            <MainLayout>
+              <LabelsManagementPage />
             </MainLayout>
           </ProtectedRoute>
         ),
