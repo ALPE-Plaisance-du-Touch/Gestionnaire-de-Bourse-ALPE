@@ -19,8 +19,12 @@
 - Prefer staging specific files over `git add -A` or `git add .`
 - Investigate unexpected state (unfamiliar files, branches) before deleting or overwriting
 
+## Remote Operations
+- **NEVER execute remote git commands directly** (`git push`, `git pull`, `git fetch`, `gh pr create`, `gh pr merge`, etc.)
+- Instead, provide the user with the exact command to run and let them execute it manually
+- This applies to ALL interactions with the remote repository without exception
+
 ## Pull Requests
 - Keep PR title under 70 characters
 - Include a Summary section with 1-3 bullet points
 - Include a Test Plan section
-- Never push to remote unless explicitly asked
