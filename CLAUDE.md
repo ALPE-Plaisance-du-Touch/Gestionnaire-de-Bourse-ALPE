@@ -2,6 +2,31 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Global Preferences
+
+### Language
+- Code, comments, commits, branch names: **English**
+- Communicate with me in **French** unless I write in English
+- Specification documents may be in French
+
+### Workflow Principles
+- Always read code before modifying it
+- Prefer editing existing files over creating new ones
+- Start with plan mode for non-trivial tasks
+- Keep subtasks small enough to complete within 50% context
+- Commit frequently upon task completion when asked
+
+### Corrections & Learning
+- When I correct a mistake, update your auto memory so you don't repeat it
+- If a pattern keeps failing, document it in memory with the solution
+
+### Rules
+- @.claude/rules/coding-style.md
+- @.claude/rules/git-workflow.md
+- @.claude/rules/task-management.md
+- @.claude/rules/code-quality.md
+- @.claude/rules/communication.md
+
 ## Project Overview
 
 "Gestionnaire de Bourse ALPE" is a web application to manage second-hand goods sales events organized by ALPE Plaisance du Touch (France). The target audience is depositors (sellers) and volunteer staff.
