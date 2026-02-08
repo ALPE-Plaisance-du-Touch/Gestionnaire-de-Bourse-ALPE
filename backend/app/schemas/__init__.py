@@ -44,6 +44,8 @@ from app.schemas.deposit_slot import (
     DepositSlotUpdate,
 )
 from app.schemas.edition import (
+    ClosureCheckItem,
+    ClosureCheckResponse,
     EditionCreate,
     EditionListResponse,
     EditionResponse,
@@ -153,6 +155,8 @@ __all__ = [
     "DepositSlotResponse",
     "DepositSlotListResponse",
     # Edition
+    "ClosureCheckItem",
+    "ClosureCheckResponse",
     "EditionCreate",
     "EditionUpdate",
     "EditionStatusUpdate",
