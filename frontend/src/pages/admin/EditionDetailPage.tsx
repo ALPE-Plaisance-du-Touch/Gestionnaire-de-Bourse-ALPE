@@ -2,7 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { editionsApi, billetwebApi, payoutsApi, ApiException } from '@/api';
-import { Button, Input } from '@/components/ui';
+import { Button, Input, Modal } from '@/components/ui';
 import { DepositSlotsEditor } from '@/components/editions';
 import { BilletwebImportButton } from '@/components/billetweb';
 import type { EditionStatus } from '@/types';
@@ -108,6 +108,7 @@ export function EditionDetailPage() {
   // UI state
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [closureModalOpen, setClosureModalOpen] = useState(false);
 
   // Fetch edition
   const { data: edition, isLoading, error: fetchError } = useQuery({
@@ -172,6 +173,31 @@ export function EditionDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['editions'] });
       queryClient.invalidateQueries({ queryKey: ['edition', id] });
+    },
+  });
+
+  const { data: closureCheck, isLoading: isClosureCheckLoading } = useQuery({
+    queryKey: ['closure-check', id],
+    queryFn: () => editionsApi.getClosureCheck(id!),
+    enabled: closureModalOpen && !!id,
+  });
+
+  const closureMutation = useMutation({
+    mutationFn: () => editionsApi.closeEdition(id!),
+    onSuccess: () => {
+      setClosureModalOpen(false);
+      setSuccess(true);
+      setError(null);
+      queryClient.invalidateQueries({ queryKey: ['editions'] });
+      queryClient.invalidateQueries({ queryKey: ['edition', id] });
+    },
+    onError: (err) => {
+      setClosureModalOpen(false);
+      if (err instanceof ApiException) {
+        setError(err.message);
+      } else {
+        setError('Une erreur est survenue lors de la cloture.');
+      }
     },
   });
 
@@ -662,6 +688,94 @@ export function EditionDetailPage() {
             </div>
           </div>
         )}
+
+        {/* Closure section */}
+        {edition.status === 'in_progress' && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-red-900">Cloture de l'edition</h3>
+                <p className="text-sm text-red-700">
+                  La cloture est definitive et irreversible. Verifiez les prerequis avant de confirmer.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="danger"
+                onClick={() => setClosureModalOpen(true)}
+              >
+                Cloturer l'edition
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Closure modal */}
+        <Modal
+          isOpen={closureModalOpen}
+          onClose={() => setClosureModalOpen(false)}
+          title="Cloture de l'edition"
+          size="lg"
+        >
+          <div className="space-y-4">
+            <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+              La cloture est definitive et irreversible. L'edition passera en lecture seule.
+            </div>
+
+            <h3 className="text-sm font-semibold text-gray-900">Prerequis</h3>
+
+            {isClosureCheckLoading ? (
+              <div className="animate-pulse space-y-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-8 bg-gray-200 rounded" />
+                ))}
+              </div>
+            ) : closureCheck ? (
+              <ul className="space-y-2">
+                {closureCheck.checks.map((check, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    {check.passed ? (
+                      <svg className="w-5 h-5 text-green-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    )}
+                    <div>
+                      <span className={`text-sm font-medium ${check.passed ? 'text-green-800' : 'text-red-800'}`}>
+                        {check.label}
+                      </span>
+                      {check.detail && (
+                        <p className="text-xs text-gray-500">{check.detail}</p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setClosureModalOpen(false)}
+              >
+                Annuler
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                disabled={!closureCheck?.canClose || closureMutation.isPending}
+                isLoading={closureMutation.isPending}
+                onClick={() => closureMutation.mutate()}
+              >
+                Confirmer la cloture
+              </Button>
+            </div>
+          </div>
+        </Modal>
 
         {/* Closure report */}
         {edition.status === 'closed' && (
