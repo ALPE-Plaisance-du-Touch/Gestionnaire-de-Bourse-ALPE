@@ -13,3 +13,4 @@ export * from './article';
 export * from './label';
 export * from './sale';
 export * from './payout';
+export * from './dashboard';

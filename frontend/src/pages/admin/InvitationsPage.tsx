@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invitationsApi } from '@/api';
 import { Button, Select } from '@/components/ui';
@@ -233,6 +234,9 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
           />
         </div>
         <div className="flex gap-2">
+          <Link to="/admin/invitations/stats">
+            <Button variant="outline">Statistiques</Button>
+          </Link>
           <Button variant="outline" onClick={onBulkCreateClick}>
             Invitations en masse
           </Button>

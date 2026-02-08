@@ -7,3 +7,5 @@ export { EditionDepositorsPage } from './EditionDepositorsPage';
 export { LabelsManagementPage } from './LabelsManagementPage';
 export { LiveStatsPage } from './LiveStatsPage';
 export { PayoutsManagementPage } from './PayoutsManagementPage';
+export { PayoutDashboardPage } from './PayoutDashboardPage';
+export { InvitationStatsPage } from './InvitationStatsPage';

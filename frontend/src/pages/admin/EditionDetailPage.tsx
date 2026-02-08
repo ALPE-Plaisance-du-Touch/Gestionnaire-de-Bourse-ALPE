@@ -1,7 +1,7 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { editionsApi, billetwebApi, ApiException } from '@/api';
+import { editionsApi, billetwebApi, payoutsApi, ApiException } from '@/api';
 import { Button, Input } from '@/components/ui';
 import { DepositSlotsEditor } from '@/components/editions';
 import { BilletwebImportButton } from '@/components/billetweb';
@@ -659,6 +659,42 @@ export function EditionDetailPage() {
                 </svg>
                 Gestion des reversements
               </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Closure report */}
+        {edition.status === 'closed' && (
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">Rapport de cloture</h3>
+                <p className="text-sm text-gray-500">Telecharger le rapport PDF recapitulatif de l'edition.</p>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    const blob = await payoutsApi.downloadClosureReport(edition.id);
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Rapport_cloture_${edition.name.replace(/\s+/g, '_')}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                  } catch {
+                    setError('Erreur lors du telechargement du rapport de cloture.');
+                  }
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Rapport de cloture (PDF)
+              </button>
             </div>
           </div>
         )}

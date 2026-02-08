@@ -232,5 +232,36 @@ class EmailService:
         )
 
 
+    async def send_payout_reminder_email(
+        self,
+        to_email: str,
+        first_name: str | None = None,
+        net_amount: str = "0.00",
+        edition_name: str | None = None,
+        location: str | None = None,
+    ) -> bool:
+        """Send a reminder email to an absent depositor about their payout."""
+        html_template = self.jinja_env.get_template("payout_reminder.html")
+        text_template = self.jinja_env.get_template("payout_reminder.txt")
+
+        context = {
+            "first_name": first_name or "Deposant",
+            "net_amount": net_amount,
+            "edition_name": edition_name or "Bourse ALPE",
+            "location": location,
+            "support_email": settings.support_email,
+        }
+
+        html_content = html_template.render(**context)
+        text_content = text_template.render(**context)
+
+        return await self._send_email(
+            to_email=to_email,
+            subject=f"Rappel : votre reversement de {net_amount} EUR est disponible",
+            html_content=html_content,
+            text_content=text_content,
+        )
+
+
 # Singleton instance
 email_service = EmailService()

@@ -2,7 +2,7 @@
 
 from decimal import Decimal
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import case, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -159,3 +159,76 @@ class SaleRepository:
             }
             for first_name, last_name, articles_sold, total_revenue in result.all()
         ]
+
+    async def get_category_stats(self, edition_id: str) -> list[dict]:
+        """Get sales stats grouped by article category."""
+        sellable_statuses = (ArticleStatus.ON_SALE.value, ArticleStatus.SOLD.value)
+
+        # Total articles and sold articles per category
+        result = await self.db.execute(
+            select(
+                Article.category,
+                func.count().label("total_articles"),
+                func.sum(
+                    case((Article.status == ArticleStatus.SOLD.value, 1), else_=0)
+                ).label("sold_articles"),
+                func.coalesce(
+                    func.sum(
+                        case((Article.status == ArticleStatus.SOLD.value, Article.price), else_=0)
+                    ),
+                    0,
+                ).label("total_revenue"),
+            )
+            .join(ItemList, Article.item_list_id == ItemList.id)
+            .where(
+                ItemList.edition_id == edition_id,
+                Article.status.in_(sellable_statuses),
+            )
+            .group_by(Article.category)
+            .order_by(func.count().desc())
+        )
+
+        stats = []
+        for category, total_articles, sold_articles, total_revenue in result.all():
+            sell_through = (sold_articles / total_articles * 100) if total_articles > 0 else 0.0
+            stats.append({
+                "category": category,
+                "total_articles": total_articles,
+                "sold_articles": sold_articles,
+                "sell_through_rate": round(sell_through, 1),
+                "total_revenue": Decimal(str(total_revenue)),
+            })
+        return stats
+
+    async def get_price_distribution(self, edition_id: str) -> list[dict]:
+        """Get article count by price range."""
+        sellable_statuses = (ArticleStatus.ON_SALE.value, ArticleStatus.SOLD.value)
+
+        price_range = case(
+            (Article.price < 5, "0-5"),
+            (Article.price < 10, "5-10"),
+            (Article.price < 20, "10-20"),
+            (Article.price < 50, "20-50"),
+            else_="50+",
+        )
+
+        result = await self.db.execute(
+            select(
+                price_range.label("price_range"),
+                func.count().label("count"),
+            )
+            .join(ItemList, Article.item_list_id == ItemList.id)
+            .where(
+                ItemList.edition_id == edition_id,
+                Article.status.in_(sellable_statuses),
+            )
+            .group_by(price_range)
+        )
+
+        # Ensure all ranges are present, in order
+        range_order = ["0-5", "5-10", "10-20", "20-50", "50+"]
+        range_counts = {r: 0 for r in range_order}
+        for price_range_val, count in result.all():
+            range_counts[price_range_val] = count
+
+        return [{"range": r, "count": range_counts[r]} for r in range_order]

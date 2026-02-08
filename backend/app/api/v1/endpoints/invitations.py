@@ -82,6 +82,47 @@ async def list_invitations(
     ]
 
 
+@router.get(
+    "/stats",
+    summary="Get invitation statistics",
+)
+async def get_invitation_stats_endpoint(
+    invitation_service: InvitationServiceDep,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Get detailed invitation statistics."""
+    from app.schemas.invitation_stats import InvitationStatsResponse
+
+    stats = await invitation_service.get_invitation_stats()
+    return InvitationStatsResponse(**stats)
+
+
+@router.get(
+    "/export-excel",
+    summary="Export invitations as Excel file",
+)
+async def export_invitations_excel_endpoint(
+    invitation_service: InvitationServiceDep,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Export invitations as an Excel file with 3 sheets."""
+    from io import BytesIO
+
+    from fastapi.responses import StreamingResponse
+
+    from app.services.invitation_excel import generate_invitation_excel
+
+    users = await invitation_service.list_invitations()
+    stats = await invitation_service.get_invitation_stats()
+    excel_bytes = generate_invitation_excel(users, stats)
+
+    return StreamingResponse(
+        BytesIO(excel_bytes),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": 'attachment; filename="Export_Invitations.xlsx"'},
+    )
+
+
 @router.post(
     "",
     response_model=InvitationResponse,
