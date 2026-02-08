@@ -22,13 +22,13 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.6 | Label Generation | ✅ Done | 100% |
 | 0.7 | Sales & Checkout | ✅ Done | 100% |
 | 0.8 | Payout Calculation | ✅ Done | 100% |
-| 0.9 | Dashboard & Reports | 🔲 Not Started | 0% |
+| 0.9 | Dashboard & Reports | ✅ Done | 100% |
 | 0.10 | Edition Closure | 🔲 Not Started | 0% |
 | 0.11 | PWA & Offline Mode | 🔲 Not Started | 0% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.8 (Payout Calculation complete)
-**Next Target:** 0.9 - Dashboard & Reports
+**Current Version:** 0.9 (Dashboard & Reports complete)
+**Next Target:** 0.10 - Edition Closure
 
 ---
 
@@ -371,13 +371,27 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
-## v0.9 - Dashboard & Reports
+## v0.9 - Dashboard & Reports ✅
 
 **Branch:** `feature/dashboard`
 
-- [ ] **0.9.1** Sales statistics API
-- [ ] **0.9.2** Dashboard UI with charts
-- [ ] **0.9.3** Export reports (CSV/PDF)
+### Backend Tasks ✅
+- [x] **0.9.1** Payout dashboard service (category stats, price distribution, top depositors)
+- [x] **0.9.2** Excel export - payouts (4 sheets: depositors recap, sales detail, unsold, stats)
+- [x] **0.9.3** Excel export - invitations (3 sheets: full list, stats, to relaunch)
+- [x] **0.9.4** Invitation statistics service (activation rate, delays, daily evolution)
+- [x] **0.9.5** Closure report PDF (WeasyPrint - edition stats, depositor recap)
+- [x] **0.9.6** Email reminder for absent depositors
+- [x] **0.9.7** API endpoints (dashboard, exports, reminder, closure report, invitation stats)
+- [x] **0.9.8** Unit tests (10 dashboard service tests)
+
+### Frontend Tasks ✅
+- [x] **0.9.9** PayoutDashboardPage with recharts (category BarChart, price distribution, top 10)
+- [x] **0.9.10** InvitationStatsPage with recharts (daily evolution LineChart, list type breakdown)
+- [x] **0.9.11** Excel export and reminder buttons on PayoutsManagementPage
+- [x] **0.9.12** Closure report button on EditionDetailPage
+- [x] **0.9.13** Statistics link on InvitationsPage
+- [x] **0.9.14** Routing for dashboard and invitation stats pages
 
 ---
 
