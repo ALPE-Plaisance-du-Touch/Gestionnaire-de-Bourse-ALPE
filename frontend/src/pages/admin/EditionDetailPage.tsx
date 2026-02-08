@@ -201,6 +201,23 @@ export function EditionDetailPage() {
     },
   });
 
+  const archiveMutation = useMutation({
+    mutationFn: () => editionsApi.archiveEdition(id!),
+    onSuccess: () => {
+      setSuccess(true);
+      setError(null);
+      queryClient.invalidateQueries({ queryKey: ['editions'] });
+      queryClient.invalidateQueries({ queryKey: ['edition', id] });
+    },
+    onError: (err) => {
+      if (err instanceof ApiException) {
+        setError(err.message);
+      } else {
+        setError("Une erreur est survenue lors de l'archivage.");
+      }
+    },
+  });
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -809,6 +826,33 @@ export function EditionDetailPage() {
                 </svg>
                 Rapport de cloture (PDF)
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Archive section */}
+        {edition.status === 'closed' && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">Archivage</h3>
+                <p className="text-sm text-gray-500">
+                  Archiver cette edition pour la retirer de la liste active.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={archiveMutation.isPending}
+                isLoading={archiveMutation.isPending}
+                onClick={() => {
+                  if (window.confirm("Etes-vous sur de vouloir archiver cette edition ? Cette action est irreversible.")) {
+                    archiveMutation.mutate();
+                  }
+                }}
+              >
+                Archiver l'edition
+              </Button>
             </div>
           </div>
         )}
