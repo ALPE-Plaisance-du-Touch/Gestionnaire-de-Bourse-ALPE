@@ -232,6 +232,38 @@ class EmailService:
         )
 
 
+    async def send_edition_closed_email(
+        self,
+        to_email: str,
+        edition_name: str,
+        closed_by_name: str,
+        closed_at: str,
+        total_sales: str = "0.00",
+        total_depositors: int = 0,
+    ) -> bool:
+        """Send a notification email when an edition is closed."""
+        html_template = self.jinja_env.get_template("edition_closed.html")
+        text_template = self.jinja_env.get_template("edition_closed.txt")
+
+        context = {
+            "edition_name": edition_name,
+            "closed_by_name": closed_by_name,
+            "closed_at": closed_at,
+            "total_sales": total_sales,
+            "total_depositors": total_depositors,
+            "support_email": settings.support_email,
+        }
+
+        html_content = html_template.render(**context)
+        text_content = text_template.render(**context)
+
+        return await self._send_email(
+            to_email=to_email,
+            subject=f"Edition cloturee : {edition_name}",
+            html_content=html_content,
+            text_content=text_content,
+        )
+
     async def send_payout_reminder_email(
         self,
         to_email: str,

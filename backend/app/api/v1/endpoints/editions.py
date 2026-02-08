@@ -1,9 +1,12 @@
 """Edition API endpoints."""
 
+import logging
 import math
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import DBSession, require_role
 from app.exceptions import (
@@ -12,7 +15,9 @@ from app.exceptions import (
     ValidationError,
 )
 from app.models import User
+from app.models.user import Role
 from app.schemas import (
+    ClosureCheckResponse,
     EditionCreate,
     EditionListResponse,
     EditionResponse,
@@ -20,6 +25,9 @@ from app.schemas import (
     EditionUpdate,
 )
 from app.services import EditionService
+from app.services.email import email_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -191,6 +199,131 @@ async def update_edition_status(
     except ValidationError as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=e.message,
+        )
+
+
+@router.get(
+    "/{edition_id}/closure-check",
+    response_model=ClosureCheckResponse,
+    summary="Check closure prerequisites",
+    description="Check if an edition can be closed. Admin only.",
+)
+async def check_closure_prerequisites(
+    edition_id: str,
+    edition_service: EditionServiceDep,
+    current_user: Annotated[User, Depends(require_role(["administrator"]))],
+):
+    """Check all prerequisites for closing an edition."""
+    try:
+        return await edition_service.check_closure_prerequisites(edition_id)
+    except EditionNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} not found",
+        )
+
+
+async def _notify_managers_of_closure(
+    db: AsyncSession,
+    edition_name: str,
+    closed_by_name: str,
+    closed_at: str,
+    total_sales: str,
+    total_depositors: int,
+):
+    """Background task to send closure notification to managers and admins."""
+    result = await db.execute(
+        select(User).join(Role).where(
+            Role.name.in_(["manager", "administrator"]),
+            User.is_active.is_(True),
+        )
+    )
+    managers = result.scalars().all()
+
+    for manager in managers:
+        try:
+            await email_service.send_edition_closed_email(
+                to_email=manager.email,
+                edition_name=edition_name,
+                closed_by_name=closed_by_name,
+                closed_at=closed_at,
+                total_sales=total_sales,
+                total_depositors=total_depositors,
+            )
+        except Exception as e:
+            logger.error(f"Failed to notify {manager.email} of closure: {e}")
+
+
+@router.post(
+    "/{edition_id}/close",
+    response_model=EditionResponse,
+    summary="Close an edition",
+    description="Close an edition after verifying prerequisites. Admin only.",
+)
+async def close_edition(
+    edition_id: str,
+    edition_service: EditionServiceDep,
+    db: DBSession,
+    background_tasks: BackgroundTasks,
+    current_user: Annotated[User, Depends(require_role(["administrator"]))],
+):
+    """Close an edition definitively."""
+    try:
+        edition = await edition_service.close_edition(edition_id, current_user)
+
+        # Send notification emails in background
+        from app.repositories.payout import PayoutRepository
+        payout_repo = PayoutRepository(db)
+        stats = await payout_repo.get_stats(edition_id)
+        depositor_count = len(edition.depositors) if edition.depositors else 0
+
+        background_tasks.add_task(
+            _notify_managers_of_closure,
+            db,
+            edition.name,
+            f"{current_user.first_name} {current_user.last_name}",
+            edition.closed_at.strftime("%d/%m/%Y a %H:%M") if edition.closed_at else "",
+            f"{stats['total_sales']:.2f}",
+            depositor_count,
+        )
+
+        return EditionResponse.model_validate(edition)
+    except EditionNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} not found",
+        )
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=e.message,
+        )
+
+
+@router.post(
+    "/{edition_id}/archive",
+    response_model=EditionResponse,
+    summary="Archive a closed edition",
+    description="Archive a closed edition. Admin only.",
+)
+async def archive_edition(
+    edition_id: str,
+    edition_service: EditionServiceDep,
+    current_user: Annotated[User, Depends(require_role(["administrator"]))],
+):
+    """Archive a closed edition."""
+    try:
+        edition = await edition_service.archive_edition(edition_id)
+        return EditionResponse.model_validate(edition)
+    except EditionNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} not found",
+        )
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
             detail=e.message,
         )
 

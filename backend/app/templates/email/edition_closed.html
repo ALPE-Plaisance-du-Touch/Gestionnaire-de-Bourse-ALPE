@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edition cloturee - Bourse ALPE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #dc2626;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            background-color: #f9fafb;
+            padding: 30px;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+        }
+        .stats-box {
+            background-color: #eff6ff;
+            border: 1px solid #3b82f6;
+            padding: 16px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .stats-box table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .stats-box td {
+            padding: 4px 8px;
+        }
+        .stats-box td:last-child {
+            text-align: right;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+            font-size: 12px;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Bourse ALPE</h1>
+        <p>Edition cloturee</p>
+    </div>
+
+    <div class="content">
+        <p>Bonjour,</p>
+
+        <p>L'edition <strong>{{ edition_name }}</strong> a ete cloturee par <strong>{{ closed_by_name }}</strong> le {{ closed_at }}.</p>
+
+        <div class="stats-box">
+            <table>
+                <tr>
+                    <td>Deposants</td>
+                    <td>{{ total_depositors }}</td>
+                </tr>
+                <tr>
+                    <td>Total des ventes</td>
+                    <td>{{ total_sales }} EUR</td>
+                </tr>
+            </table>
+        </div>
+
+        <p>L'edition est desormais en lecture seule. Le rapport de cloture est disponible en telechargement depuis la page de detail de l'edition.</p>
+    </div>
+
+    <div class="footer">
+        <p>ALPE Plaisance du Touch</p>
+        <p>Cet email a ete envoye automatiquement, merci de ne pas y repondre.</p>
+        <p>Besoin d'aide ? Contactez-nous : <a href="mailto:{{ support_email }}">{{ support_email }}</a></p>
+    </div>
+</body>
+</html>
