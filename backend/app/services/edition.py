@@ -12,7 +12,9 @@ from app.exceptions import (
 from app.models import Edition, User
 from app.models.edition import EditionStatus
 from app.repositories import EditionRepository
+from app.repositories.payout import PayoutRepository
 from app.schemas import EditionCreate, EditionUpdate
+from app.schemas.edition import ClosureCheckItem, ClosureCheckResponse
 
 
 class EditionService:
@@ -228,6 +230,83 @@ class EditionService:
             )
 
         await self.repository.delete(edition)
+
+    async def check_closure_prerequisites(
+        self, edition_id: str
+    ) -> ClosureCheckResponse:
+        """Check all prerequisites for closing an edition."""
+        edition = await self.get_edition(edition_id)
+        checks: list[ClosureCheckItem] = []
+
+        # Check 1: Edition must be in_progress
+        checks.append(ClosureCheckItem(
+            label="Edition en cours",
+            passed=edition.status == EditionStatus.IN_PROGRESS.value,
+            detail="L'edition doit etre en statut 'En cours'" if edition.status != EditionStatus.IN_PROGRESS.value else None,
+        ))
+
+        # Check 2: Retrieval end date must be passed
+        retrieval_passed = (
+            edition.retrieval_end_datetime is not None
+            and datetime.now() > edition.retrieval_end_datetime
+        )
+        checks.append(ClosureCheckItem(
+            label="Periode de recuperation terminee",
+            passed=retrieval_passed,
+            detail="La date de fin de recuperation n'est pas encore passee" if not retrieval_passed else None,
+        ))
+
+        # Check 3 & 4: Payout stats
+        payout_repo = PayoutRepository(self.db)
+        stats = await payout_repo.get_stats(edition_id)
+
+        payouts_calculated = stats["total_payouts"] > 0
+        checks.append(ClosureCheckItem(
+            label="Reversements calcules",
+            passed=payouts_calculated,
+            detail="Aucun reversement n'a ete calcule" if not payouts_calculated else None,
+        ))
+
+        all_final = (
+            payouts_calculated
+            and stats["payouts_pending"] == 0
+            and stats["payouts_ready"] == 0
+        )
+        checks.append(ClosureCheckItem(
+            label="Tous les paiements finalises",
+            passed=all_final,
+            detail=f"{stats['payouts_pending'] + stats['payouts_ready']} paiement(s) en attente" if not all_final else None,
+        ))
+
+        can_close = all(c.passed for c in checks)
+        return ClosureCheckResponse(can_close=can_close, checks=checks)
+
+    async def close_edition(
+        self, edition_id: str, user: User
+    ) -> Edition:
+        """Close an edition after validating prerequisites."""
+        check = await self.check_closure_prerequisites(edition_id)
+        if not check.can_close:
+            failed = [c.label for c in check.checks if not c.passed]
+            raise ValidationError(
+                f"Impossible de cloturer : {', '.join(failed)}",
+                field="status",
+            )
+
+        edition = await self.get_edition(edition_id)
+        return await self.repository.close_edition(edition, user.id)
+
+    async def archive_edition(self, edition_id: str) -> Edition:
+        """Archive a closed edition."""
+        edition = await self.get_edition(edition_id)
+
+        if edition.status != EditionStatus.CLOSED.value:
+            raise ValidationError(
+                "Seules les editions cloturees peuvent etre archivees",
+                field="status",
+            )
+
+        return await self.repository.archive_edition(edition)
 
     async def get_active_edition(self) -> Edition | None:
         """
