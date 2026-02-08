@@ -302,6 +302,91 @@ class InvitationService:
 
         return True
 
+    async def get_invitation_stats(self) -> dict:
+        """Get detailed invitation statistics."""
+        all_users = await self.list_invitations()
+        now = datetime.now(timezone.utc)
+
+        total = len(all_users)
+        activated = 0
+        pending = 0
+        expired = 0
+        activation_delays = []
+        relaunch_count = 0
+        activated_after_relaunch = 0
+        daily_sent: dict[str, int] = {}
+        daily_activated: dict[str, int] = {}
+
+        for user in all_users:
+            status = self._compute_status(user, now)
+
+            if status == "activated":
+                activated += 1
+                if user.created_at and user.updated_at:
+                    delay = (user.updated_at - user.created_at).total_seconds() / 86400
+                    activation_delays.append(delay)
+                # Heuristic: if updated_at is much later than created_at, likely a resend
+                if user.created_at and user.updated_at:
+                    days_diff = (user.updated_at - user.created_at).total_seconds() / 86400
+                    if days_diff > 7:
+                        activated_after_relaunch += 1
+            elif status == "expired":
+                expired += 1
+            elif status == "pending":
+                pending += 1
+
+            # Count resends (approximation: pending/expired with updated_at >> created_at)
+            if user.created_at and user.updated_at:
+                if (user.updated_at - user.created_at).total_seconds() > 3600:
+                    relaunch_count += 1
+
+            # Daily evolution
+            if user.created_at:
+                day = user.created_at.strftime("%Y-%m-%d")
+                daily_sent[day] = daily_sent.get(day, 0) + 1
+            if status == "activated" and user.updated_at:
+                day = user.updated_at.strftime("%Y-%m-%d")
+                daily_activated[day] = daily_activated.get(day, 0) + 1
+
+        activation_rate = (activated / total * 100) if total > 0 else 0.0
+        expiration_rate = (expired / total * 100) if total > 0 else 0.0
+        avg_delay = sum(activation_delays) / len(activation_delays) if activation_delays else 0.0
+
+        # Build daily evolution
+        all_days = sorted(set(list(daily_sent.keys()) + list(daily_activated.keys())))
+        daily_evolution = [
+            {"date": day, "sent": daily_sent.get(day, 0), "activated": daily_activated.get(day, 0)}
+            for day in all_days
+        ]
+
+        return {
+            "total": total,
+            "activated": activated,
+            "pending": pending,
+            "expired": expired,
+            "activation_rate": round(activation_rate, 1),
+            "avg_activation_delay_days": round(avg_delay, 1),
+            "expiration_rate": round(expiration_rate, 1),
+            "relaunch_count": relaunch_count,
+            "activated_after_relaunch": activated_after_relaunch,
+            "by_list_type": [],
+            "daily_evolution": daily_evolution,
+        }
+
+    @staticmethod
+    def _compute_status(user: User, now: datetime) -> str:
+        if user.is_active and user.password_hash:
+            return "activated"
+        if not user.invitation_token:
+            return "cancelled"
+        if user.invitation_expires_at:
+            expires = user.invitation_expires_at
+            if expires.tzinfo is None:
+                expires = expires.replace(tzinfo=timezone.utc)
+            if now > expires:
+                return "expired"
+        return "pending"
+
     async def bulk_delete_invitations(self, invitation_ids: list[str]) -> dict:
         """Delete multiple invitations at once.
 

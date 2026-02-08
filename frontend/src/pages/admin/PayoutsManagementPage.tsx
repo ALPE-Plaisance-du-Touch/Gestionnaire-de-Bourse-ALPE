@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { payoutsApi } from '@/api';
 import { Button } from '@/components/ui';
@@ -32,6 +32,7 @@ const LIST_TYPE_LABELS: Record<string, string> = {
 
 export function PayoutsManagementPage() {
   const { id: editionId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
@@ -165,6 +166,28 @@ export function PayoutsManagementPage() {
     }
   };
 
+  // Export Excel
+  const handleExportExcel = async () => {
+    try {
+      const blob = await payoutsApi.exportExcel(editionId!);
+      downloadBlob(blob, 'Reversements_export.xlsx');
+    } catch {
+      setErrorMessage('Erreur lors du telechargement de l\'export Excel.');
+    }
+  };
+
+  // Send reminder
+  const reminderMutation = useMutation({
+    mutationFn: (payoutId: string) => payoutsApi.sendReminder(editionId!, payoutId),
+    onSuccess: (data) => {
+      setSuccessMessage(data.message || 'Email de relance envoye.');
+      setErrorMessage('');
+    },
+    onError: (error: Error) => {
+      setErrorMessage(error.message || 'Erreur lors de l\'envoi de la relance.');
+    },
+  });
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearch(searchInput);
@@ -247,6 +270,19 @@ export function PayoutsManagementPage() {
             disabled={!stats || stats.totalPayouts === 0}
           >
             Tous les bordereaux (PDF)
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleExportExcel}
+            disabled={!stats || stats.totalPayouts === 0}
+          >
+            Exporter Excel
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate(`/editions/${editionId}/payouts/dashboard`)}
+          >
+            Statistiques detaillees
           </Button>
 
           <div className="ml-auto flex items-end gap-4">
@@ -395,6 +431,18 @@ export function PayoutsManagementPage() {
                                 disabled={recalculateMutation.isPending}
                               >
                                 Recalc
+                              </button>
+                            </>
+                          )}
+                          {payout.notes?.startsWith('Absent') && payout.status !== 'paid' && (
+                            <>
+                              <span className="text-gray-300">|</span>
+                              <button
+                                onClick={() => reminderMutation.mutate(payout.id)}
+                                className="text-purple-600 hover:text-purple-800 text-xs font-medium"
+                                disabled={reminderMutation.isPending}
+                              >
+                                Relancer
                               </button>
                             </>
                           )}

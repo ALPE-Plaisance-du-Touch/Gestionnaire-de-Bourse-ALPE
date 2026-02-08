@@ -2,6 +2,7 @@ import { apiClient } from './client';
 import type {
   CalculatePayoutsResult,
   PaginatedPayoutsResponse,
+  PayoutDashboardData,
   PayoutResponse,
   PayoutStats,
   RecordPaymentRequest,
@@ -92,6 +93,36 @@ export const payoutsApi = {
       `/v1/editions/${editionId}/payouts/receipts`,
       {},
       { responseType: 'blob', timeout: 120000 },
+    );
+    return response.data as Blob;
+  },
+
+  getDashboard: async (editionId: string): Promise<PayoutDashboardData> => {
+    const response = await apiClient.get(
+      `/v1/editions/${editionId}/payouts/dashboard`,
+    );
+    return response.data as PayoutDashboardData;
+  },
+
+  exportExcel: async (editionId: string): Promise<Blob> => {
+    const response = await apiClient.get(
+      `/v1/editions/${editionId}/payouts/export-excel`,
+      { responseType: 'blob', timeout: 60000 },
+    );
+    return response.data as Blob;
+  },
+
+  sendReminder: async (editionId: string, payoutId: string): Promise<{ message: string }> => {
+    const response = await apiClient.post(
+      `/v1/editions/${editionId}/payouts/${payoutId}/remind`,
+    );
+    return response.data;
+  },
+
+  downloadClosureReport: async (editionId: string): Promise<Blob> => {
+    const response = await apiClient.get(
+      `/v1/editions/${editionId}/closure-report`,
+      { responseType: 'blob', timeout: 60000 },
     );
     return response.data as Blob;
   },

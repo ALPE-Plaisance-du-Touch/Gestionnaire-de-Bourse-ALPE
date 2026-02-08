@@ -7,6 +7,7 @@ import type {
   BulkDeleteResult,
   InvitationResendResponse,
   InvitationStatusFilter,
+  InvitationStatsData,
 } from '@/types';
 
 /**
@@ -85,5 +86,18 @@ export const invitationsApi = {
       deleted: response.data.deleted,
       notFound: response.data.not_found,
     };
+  },
+
+  getStats: async (): Promise<InvitationStatsData> => {
+    const response = await apiClient.get('/v1/invitations/stats');
+    return response.data as InvitationStatsData;
+  },
+
+  exportExcel: async (): Promise<Blob> => {
+    const response = await apiClient.get(
+      '/v1/invitations/export-excel',
+      { responseType: 'blob', timeout: 60000 },
+    );
+    return response.data as Blob;
   },
 };

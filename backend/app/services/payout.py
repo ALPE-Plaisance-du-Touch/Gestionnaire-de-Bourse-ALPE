@@ -19,11 +19,16 @@ from app.models.article import ArticleStatus
 from app.models.item_list import ListStatus
 from app.models.payout import PayoutMethod, PayoutStatus
 from app.repositories import EditionRepository, ItemListRepository, PayoutRepository
+from app.repositories.sale import SaleRepository
 from app.schemas.payout import (
     CalculatePayoutsResponse,
+    CategoryStats,
+    PayoutDashboardResponse,
     PayoutResponse,
     PayoutStatsResponse,
+    PriceRangeStats,
 )
+from app.schemas.sale import TopDepositorStats
 
 # List fees by type
 LIST_FEES = {
@@ -403,3 +408,71 @@ async def generate_all_receipts(
     pdf_bytes = generate_bulk_receipts_pdf(full_payouts, edition)
 
     return pdf_bytes, filename
+
+
+async def get_payout_dashboard(
+    edition_id: str, db: AsyncSession
+) -> PayoutDashboardResponse:
+    edition_repo = EditionRepository(db)
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise EditionNotFoundError(edition_id)
+
+    payout_repo = PayoutRepository(db)
+    sale_repo = SaleRepository(db)
+
+    stats = await payout_repo.get_stats(edition_id)
+    top_depositors_raw = await sale_repo.get_top_depositors(edition_id, limit=10)
+    category_stats_raw = await sale_repo.get_category_stats(edition_id)
+    price_distribution_raw = await sale_repo.get_price_distribution(edition_id)
+
+    total_articles = stats["total_articles"]
+    sold_articles = stats["sold_articles"]
+    sell_through_rate = (sold_articles / total_articles * 100) if total_articles > 0 else 0.0
+    total_payouts = stats["total_payouts"]
+    payouts_paid = stats["payouts_paid"]
+    payment_progress = (payouts_paid / total_payouts * 100) if total_payouts > 0 else 0.0
+
+    return PayoutDashboardResponse(
+        total_sales=stats["total_sales"],
+        total_commission=stats["total_commission"],
+        total_list_fees=stats["total_list_fees"],
+        total_net=stats["total_net"],
+        total_articles=total_articles,
+        sold_articles=sold_articles,
+        unsold_articles=stats["unsold_articles"],
+        sell_through_rate=round(sell_through_rate, 1),
+        total_payouts=total_payouts,
+        payouts_paid=payouts_paid,
+        payment_progress_percent=round(payment_progress, 1),
+        category_stats=[CategoryStats(**cs) for cs in category_stats_raw],
+        top_depositors=[TopDepositorStats(**td) for td in top_depositors_raw],
+        price_distribution=[PriceRangeStats(**pr) for pr in price_distribution_raw],
+    )
+
+
+async def generate_payout_excel_export(
+    edition_id: str, db: AsyncSession
+) -> tuple[bytes, str]:
+    from app.services.payout_excel import generate_payout_excel
+
+    edition_repo = EditionRepository(db)
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise EditionNotFoundError(edition_id)
+
+    payout_repo = PayoutRepository(db)
+    payouts, _ = await payout_repo.list_by_edition(edition_id, offset=0, limit=10000)
+
+    # Reload each payout with articles
+    full_payouts = []
+    for p in payouts:
+        full_payout = await payout_repo.get_by_id(p.id)
+        full_payouts.append(full_payout)
+
+    stats = await payout_repo.get_stats(edition_id)
+    excel_bytes = generate_payout_excel(full_payouts, edition, stats)
+
+    edition_name = edition.name.replace(" ", "_") if edition.name else "Edition"
+    filename = f"Export_Reversements_{edition_name}.xlsx"
+    return excel_bytes, filename

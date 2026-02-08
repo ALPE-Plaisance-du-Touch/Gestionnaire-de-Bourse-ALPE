@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rappel - Reversement Bourse ALPE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #d97706;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            background-color: #f9fafb;
+            padding: 30px;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+        }
+        .amount {
+            display: inline-block;
+            background-color: #ecfdf5;
+            border: 2px solid #10b981;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #065f46;
+            margin: 16px 0;
+        }
+        .info-box {
+            background-color: #eff6ff;
+            border: 1px solid #3b82f6;
+            padding: 16px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+            font-size: 12px;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Bourse ALPE</h1>
+        <p>Rappel - Reversement disponible</p>
+    </div>
+
+    <div class="content">
+        <p>Bonjour {{ first_name }},</p>
+
+        <p>Nous vous rappelons que votre reversement pour la <strong>{{ edition_name }}</strong> est disponible.</p>
+
+        <p style="text-align: center;">
+            <span class="amount">{{ net_amount }} EUR</span>
+        </p>
+
+        <p>Vos invendus sont egalement a votre disposition.</p>
+
+        {% if location %}
+        <div class="info-box">
+            <strong>Lieu de retrait :</strong> {{ location }}
+        </div>
+        {% endif %}
+
+        <p style="margin-top: 20px;">Merci de vous presenter pour recuperer votre reversement et vos invendus dans les meilleurs delais.</p>
+    </div>
+
+    <div class="footer">
+        <p>ALPE Plaisance du Touch</p>
+        <p>Cet email a ete envoye automatiquement, merci de ne pas y repondre.</p>
+        <p>Besoin d'aide ? Contactez-nous : <a href="mailto:{{ support_email }}">{{ support_email }}</a></p>
+    </div>
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 
@@ -16,6 +16,7 @@ from app.exceptions import (
 from app.models import User
 from app.schemas.payout import (
     CalculatePayoutsResponse,
+    PayoutDashboardResponse,
     PayoutResponse,
     PayoutStatsResponse,
     RecordPaymentRequest,
@@ -24,7 +25,9 @@ from app.schemas.payout import (
 from app.services.payout import (
     calculate_payouts,
     generate_all_receipts,
+    generate_payout_excel_export,
     generate_receipt,
+    get_payout_dashboard,
     get_payout_detail,
     get_payout_stats,
     list_payouts,
@@ -93,6 +96,82 @@ async def get_payout_stats_endpoint(
         return await get_payout_stats(edition_id, db)
     except EditionNotFoundError:
         raise HTTPException(status_code=404, detail="Edition not found")
+
+
+@router.get(
+    "/editions/{edition_id}/payouts/dashboard",
+    response_model=PayoutDashboardResponse,
+    summary="Get detailed payout dashboard statistics",
+)
+async def get_payout_dashboard_endpoint(
+    edition_id: str,
+    db: DBSession,
+    current_user: ManagerRole,
+):
+    try:
+        return await get_payout_dashboard(edition_id, db)
+    except EditionNotFoundError:
+        raise HTTPException(status_code=404, detail="Edition not found")
+
+
+@router.get(
+    "/editions/{edition_id}/payouts/export-excel",
+    summary="Export payouts as Excel file",
+)
+async def export_payouts_excel_endpoint(
+    edition_id: str,
+    db: DBSession,
+    current_user: ManagerRole,
+):
+    try:
+        excel_bytes, filename = await generate_payout_excel_export(edition_id, db)
+    except EditionNotFoundError:
+        raise HTTPException(status_code=404, detail="Edition not found")
+
+    return StreamingResponse(
+        BytesIO(excel_bytes),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.get(
+    "/editions/{edition_id}/closure-report",
+    summary="Download edition closure report PDF",
+)
+async def download_closure_report_endpoint(
+    edition_id: str,
+    db: DBSession,
+    current_user: ManagerRole,
+):
+    from app.repositories import EditionRepository, PayoutRepository
+    from app.services.closure_report_pdf import generate_closure_report_pdf
+
+    edition_repo = EditionRepository(db)
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+
+    payout_repo = PayoutRepository(db)
+    stats = await payout_repo.get_stats(edition_id)
+    payouts_list, _ = await payout_repo.list_by_edition(edition_id, offset=0, limit=10000)
+
+    full_payouts = []
+    for p in payouts_list:
+        full_payout = await payout_repo.get_by_id(p.id)
+        full_payouts.append(full_payout)
+
+    closed_by = f"{current_user.first_name} {current_user.last_name}"
+    pdf_bytes = generate_closure_report_pdf(edition, stats, full_payouts, closed_by)
+
+    edition_name = edition.name.replace(" ", "_") if edition.name else "Edition"
+    filename = f"Rapport_Cloture_{edition_name}.pdf"
+
+    return StreamingResponse(
+        BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.get(
@@ -200,6 +279,50 @@ async def recalculate_payout_endpoint(
         raise HTTPException(status_code=404, detail="Payout not found")
     except PayoutAlreadyPaidError as e:
         raise HTTPException(status_code=409, detail=e.message)
+
+
+@router.post(
+    "/editions/{edition_id}/payouts/{payout_id}/remind",
+    summary="Send reminder email to absent depositor",
+)
+async def send_payout_reminder_endpoint(
+    edition_id: str,
+    payout_id: str,
+    background_tasks: BackgroundTasks,
+    db: DBSession,
+    current_user: ManagerRole,
+):
+    from app.repositories import EditionRepository, PayoutRepository
+    from app.services.email import email_service
+
+    payout_repo = PayoutRepository(db)
+    payout = await payout_repo.get_by_id(payout_id)
+    if not payout:
+        raise HTTPException(status_code=404, detail="Payout not found")
+
+    edition_repo = EditionRepository(db)
+    edition = await edition_repo.get_by_id(edition_id)
+
+    depositor = payout.depositor
+    background_tasks.add_task(
+        email_service.send_payout_reminder_email,
+        to_email=depositor.email,
+        first_name=depositor.first_name,
+        net_amount=f"{payout.net_amount:.2f}",
+        edition_name=edition.name if edition else None,
+        location=getattr(edition, "location", None),
+    )
+
+    # Track reminder in notes
+    from datetime import datetime
+    reminder_note = f"Relance envoyee le {datetime.now().strftime('%d/%m/%Y')}"
+    if payout.notes:
+        payout.notes = f"{payout.notes} | {reminder_note}"
+    else:
+        payout.notes = reminder_note
+    await db.commit()
+
+    return {"message": "Email de relance envoye"}
 
 
 @router.post(
