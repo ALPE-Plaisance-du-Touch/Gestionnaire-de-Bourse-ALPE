@@ -8,3 +8,4 @@ export { depositorListsApi } from './depositor-lists';
 export { articlesApi } from './articles';
 export { labelsApi } from './labels';
 export { salesApi } from './sales';
+export { payoutsApi } from './payouts';
