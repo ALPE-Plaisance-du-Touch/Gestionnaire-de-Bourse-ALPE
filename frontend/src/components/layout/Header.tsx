@@ -103,9 +103,12 @@ export function Header() {
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <>
-                <span className="text-sm text-gray-600">
+                <Link
+                  to="/profile"
+                  className="text-sm text-gray-600 hover:text-gray-900"
+                >
                   Bonjour, <strong>{displayName}</strong>
-                </span>
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="text-sm text-gray-600 hover:text-gray-900"

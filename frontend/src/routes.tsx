@@ -6,6 +6,7 @@ import { LoginPage, ActivatePage, ForgotPasswordPage, ResetPasswordPage } from '
 import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, EditionDepositorsPage, LabelsManagementPage, LiveStatsPage, PayoutsManagementPage, PayoutDashboardPage, InvitationStatsPage } from '@/pages/admin';
 import { MyEditionsPage, MyListsPage, ListDetailPage } from '@/pages/depositor';
 import { SalesPage } from '@/pages/volunteer/SalesPage';
+import { ProfilePage, PrivacyPolicyPage } from '@/pages/account';
 
 /**
  * Root layout that provides auth context to all routes.
@@ -86,6 +87,14 @@ export const router = createBrowserRouter([
       {
         path: '/reset-password',
         element: <ResetPasswordPage />,
+      },
+      {
+        path: '/privacy',
+        element: (
+          <MainLayout>
+            <PrivacyPolicyPage />
+          </MainLayout>
+        ),
       },
 
       // Protected routes - any authenticated user
@@ -204,6 +213,18 @@ export const router = createBrowserRouter([
           <ProtectedRoute>
             <MainLayout>
               <ListDetailPage />
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+
+      // Account routes - any authenticated user
+      {
+        path: '/profile',
+        element: (
+          <ProtectedRoute>
+            <MainLayout>
+              <ProfilePage />
             </MainLayout>
           </ProtectedRoute>
         ),
