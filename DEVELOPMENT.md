@@ -25,9 +25,10 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.9 | Dashboard & Reports | ✅ Done | 100% |
 | 0.10 | Edition Closure | ✅ Done | 100% |
 | 0.11 | PWA & Offline Mode | ✅ Done | 100% |
+| 0.12 | GDPR & Audit Logging | ✅ Done | 100% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.11 (PWA & Offline Mode complete)
+**Current Version:** 0.12 (GDPR & Audit Logging complete)
 **Next Target:** 1.0.0 - Production Release
 
 ---
@@ -445,9 +446,34 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
+## v0.12 - GDPR & Audit Logging ✅
+
+**Branch:** `feature/rgpd-security`
+
+### GDPR - User Data Rights ✅
+- [x] **0.12.1** Backend: GDPR service (JSON data export, account anonymization)
+- [x] **0.12.2** Backend: endpoints `/users/me/export`, `DELETE /users/me`, `PATCH /users/me`
+- [x] **0.12.3** Backend: migration `deleted_at`, `anonymized_at` on User model
+- [x] **0.12.4** Frontend: Profile page (edit name, phone, address)
+- [x] **0.12.5** Frontend: Privacy policy page + footer link
+- [x] **0.12.6** Frontend: "Delete my account" button with confirmation + prior export
+
+### Audit Logging ✅
+- [x] **0.12.7** Backend: `AuditLog` model (timestamp, user_id, role, ip, user_agent, action, entity, result)
+- [x] **0.12.8** Backend: migration + `log_action()` service (never-raise design)
+- [x] **0.12.9** Backend: audit integration on auth, profile, export, and deletion endpoints
+- [x] **0.12.10** Frontend: AuditLogPage (paginated list, filters by action/user/date)
+
+### Tests & Docs ✅
+- [x] **0.12.11** Unit tests GDPR (5 tests: export, anonymization, timestamps)
+- [x] **0.12.12** Unit tests audit logging (8 tests: creation, filtering, pagination, error resilience)
+- [x] **0.12.13** Update DEVELOPMENT.md
+
+---
+
 ## v1.0.0 - Production Release
 
-**Prerequisites:** All versions 0.1 through 0.11 completed and tested.
+**Prerequisites:** All versions 0.1 through 0.12 completed and tested.
 
 - [ ] **1.0.1** Final integration testing
 - [ ] **1.0.2** Performance optimization
