@@ -48,6 +48,21 @@ class SaleResponse(BaseModel):
     can_cancel: bool
 
 
+class CatalogArticleResponse(BaseModel):
+    article_id: str
+    barcode: str
+    description: str
+    category: str
+    size: str | None = None
+    price: Decimal
+    brand: str | None = None
+    is_lot: bool
+    lot_quantity: int | None = None
+    list_number: int
+    depositor_name: str
+    label_color: str | None = None
+
+
 class CancelSaleRequest(BaseModel):
     reason: str | None = None
 

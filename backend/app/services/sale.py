@@ -15,6 +15,7 @@ from app.models.article import ArticleStatus
 from app.models.sale import PaymentMethod
 from app.repositories import ArticleRepository, EditionRepository, SaleRepository
 from app.schemas.sale import (
+    CatalogArticleResponse,
     SaleResponse,
     SaleStatsResponse,
     ScanArticleResponse,
@@ -172,6 +173,36 @@ async def get_live_stats(
         **stats,
         top_depositors=top_depositors,
     )
+
+
+async def get_article_catalog(
+    edition_id: str, db: AsyncSession
+) -> list[CatalogArticleResponse]:
+    edition_repo = EditionRepository(db)
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise EditionNotFoundError(edition_id)
+
+    article_repo = ArticleRepository(db)
+    articles = await article_repo.get_on_sale_for_edition(edition_id)
+
+    return [
+        CatalogArticleResponse(
+            article_id=a.id,
+            barcode=a.barcode or "",
+            description=a.description,
+            category=a.category,
+            size=a.size,
+            price=a.price,
+            brand=a.brand,
+            is_lot=a.is_lot,
+            lot_quantity=a.lot_quantity,
+            list_number=a.item_list.number,
+            depositor_name=f"{a.item_list.depositor.first_name} {a.item_list.depositor.last_name}",
+            label_color=a.item_list.label_color,
+        )
+        for a in articles
+    ]
 
 
 def _sale_to_response(sale: Sale, current_user: User) -> SaleResponse:

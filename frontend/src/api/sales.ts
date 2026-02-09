@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import type { ScanArticleResponse, RegisterSaleRequest, SaleResponse, SaleStats } from '@/types';
+import type { CachedArticle } from '@/services/db';
 
 interface PaginatedSalesResponse {
   items: SaleResponse[];
@@ -53,5 +54,12 @@ export const salesApi = {
       `/v1/editions/${editionId}/stats/sales-live`,
     );
     return response.data as SaleStats;
+  },
+
+  getArticleCatalog: async (editionId: string): Promise<CachedArticle[]> => {
+    const response = await apiClient.get(
+      `/v1/editions/${editionId}/articles/catalog`,
+    );
+    return response.data as CachedArticle[];
   },
 };

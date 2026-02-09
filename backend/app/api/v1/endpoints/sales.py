@@ -15,6 +15,7 @@ from app.exceptions import (
 from app.models import User
 from app.schemas.sale import (
     CancelSaleRequest,
+    CatalogArticleResponse,
     RegisterSaleRequest,
     SaleResponse,
     SaleStatsResponse,
@@ -23,6 +24,7 @@ from app.schemas.sale import (
 )
 from app.services.sale import (
     cancel_sale,
+    get_article_catalog,
     get_live_stats,
     register_sale,
     scan_article,
@@ -38,6 +40,22 @@ def get_sale_repository(db: DBSession) -> SaleRepository:
 
 
 SaleRepoDep = Annotated[SaleRepository, Depends(get_sale_repository)]
+
+
+@router.get(
+    "/editions/{edition_id}/articles/catalog",
+    response_model=list[CatalogArticleResponse],
+    summary="Get full article catalog for offline caching",
+)
+async def get_article_catalog_endpoint(
+    edition_id: str,
+    db: DBSession,
+    current_user: Annotated[User, Depends(require_role(["volunteer", "manager", "administrator"]))],
+):
+    try:
+        return await get_article_catalog(edition_id, db)
+    except EditionNotFoundError:
+        raise HTTPException(status_code=404, detail="Edition not found")
 
 
 @router.post(
