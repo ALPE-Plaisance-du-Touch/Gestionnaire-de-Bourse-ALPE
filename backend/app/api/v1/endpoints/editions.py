@@ -15,6 +15,7 @@ from app.exceptions import (
     ValidationError,
 )
 from app.models import User
+from app.models.edition_depositor import EditionDepositor
 from app.models.user import Role
 from app.schemas import (
     ClosureCheckResponse,
@@ -355,3 +356,65 @@ async def delete_edition(
             status_code=status.HTTP_409_CONFLICT,
             detail=e.message,
         )
+
+
+@router.post(
+    "/{edition_id}/deadline-reminder",
+    summary="Send deadline reminder",
+    description="Send a deadline reminder email to all depositors of this edition.",
+)
+async def send_deadline_reminder(
+    edition_id: str,
+    edition_service: EditionServiceDep,
+    db: DBSession,
+    background_tasks: BackgroundTasks,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Send deadline reminder emails to all depositors."""
+    try:
+        edition = await edition_service.get_edition(edition_id)
+    except EditionNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} not found",
+        )
+
+    if not edition.declaration_deadline:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Aucune date limite de declaration configuree pour cette edition",
+        )
+
+    deadline_str = edition.declaration_deadline.strftime("%d/%m/%Y")
+
+    # Get all depositors with their user info
+    from sqlalchemy.orm import joinedload
+
+    result = await db.execute(
+        select(EditionDepositor)
+        .options(joinedload(EditionDepositor.user))
+        .where(EditionDepositor.edition_id == edition_id)
+    )
+    depositors = list(result.unique().scalars().all())
+
+    if not depositors:
+        return {"emails_queued": 0, "message": "Aucun deposant inscrit a cette edition"}
+
+    async def _send_reminders():
+        sent = 0
+        for dep in depositors:
+            try:
+                await email_service.send_deadline_reminder(
+                    to_email=dep.user.email,
+                    first_name=dep.user.first_name or "Deposant",
+                    edition_name=edition.name,
+                    deadline=deadline_str,
+                )
+                sent += 1
+            except Exception as e:
+                logger.error(f"Failed to send deadline reminder to {dep.user.email}: {e}")
+        logger.info(f"Deadline reminders sent: {sent}/{len(depositors)}")
+
+    background_tasks.add_task(_send_reminders)
+
+    return {"emails_queued": len(depositors), "message": f"Envoi de {len(depositors)} rappels en cours"}

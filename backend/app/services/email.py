@@ -295,6 +295,37 @@ class EmailService:
         )
 
 
+    async def send_deadline_reminder(
+        self,
+        to_email: str,
+        first_name: str,
+        edition_name: str,
+        deadline: str,
+    ) -> bool:
+        """Send a deadline reminder email to a depositor."""
+        lists_url = f"{settings.frontend_url}/my-lists"
+
+        html_template = self.jinja_env.get_template("deadline_reminder.html")
+        text_template = self.jinja_env.get_template("deadline_reminder.txt")
+
+        context = {
+            "first_name": first_name or "Deposant",
+            "edition_name": edition_name,
+            "deadline": deadline,
+            "lists_url": lists_url,
+            "support_email": settings.support_email,
+        }
+
+        html_content = html_template.render(**context)
+        text_content = text_template.render(**context)
+
+        return await self._send_email(
+            to_email=to_email,
+            subject=f"Rappel : date limite de declaration - {edition_name}",
+            html_content=html_content,
+            text_content=text_content,
+        )
+
     async def send_sale_conflict_email(
         self,
         to_email: str,
