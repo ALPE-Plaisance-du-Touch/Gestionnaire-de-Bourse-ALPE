@@ -21,6 +21,8 @@ from app.schemas.sale import (
     SaleStatsResponse,
     ScanArticleResponse,
     ScanRequest,
+    SyncSalesRequest,
+    SyncSalesResponse,
 )
 from app.services.sale import (
     cancel_sale,
@@ -28,6 +30,7 @@ from app.services.sale import (
     get_live_stats,
     register_sale,
     scan_article,
+    sync_offline_sales,
     _sale_to_response,
 )
 from app.repositories import SaleRepository
@@ -140,6 +143,23 @@ async def list_sales_endpoint(
         "per_page": per_page,
         "pages": (total + per_page - 1) // per_page if per_page > 0 else 0,
     }
+
+
+@router.post(
+    "/editions/{edition_id}/sales/sync",
+    response_model=SyncSalesResponse,
+    summary="Sync offline sales batch",
+)
+async def sync_sales_endpoint(
+    edition_id: str,
+    request: SyncSalesRequest,
+    db: DBSession,
+    current_user: Annotated[User, Depends(require_role(["volunteer", "manager", "administrator"]))],
+):
+    try:
+        return await sync_offline_sales(edition_id, request.sales, current_user, db)
+    except EditionNotFoundError:
+        raise HTTPException(status_code=404, detail="Edition not found")
 
 
 @router.post(

@@ -62,4 +62,34 @@ export const salesApi = {
     );
     return response.data as CachedArticle[];
   },
+
+  syncSales: async (editionId: string, sales: SyncSalePayload[]): Promise<SyncSalesResult> => {
+    const response = await apiClient.post(
+      `/v1/editions/${editionId}/sales/sync`,
+      { sales },
+    );
+    return response.data as SyncSalesResult;
+  },
 };
+
+export interface SyncSalePayload {
+  clientId: string;
+  articleId: string;
+  paymentMethod: string;
+  registerNumber: number;
+  soldAt: string;
+}
+
+export interface SyncSaleResultItem {
+  clientId: string;
+  status: 'synced' | 'conflict' | 'error';
+  serverSaleId?: string;
+  errorMessage?: string;
+}
+
+export interface SyncSalesResult {
+  synced: number;
+  conflicts: number;
+  errors: number;
+  results: SyncSaleResultItem[];
+}
