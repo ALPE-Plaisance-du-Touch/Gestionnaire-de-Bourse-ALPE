@@ -51,6 +51,7 @@ class DepositSlotResponse(BaseModel):
     max_capacity: int
     reserved_for_locals: bool
     description: str | None = None
+    registered_count: int = 0
     created_at: datetime
 
 

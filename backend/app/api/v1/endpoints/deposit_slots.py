@@ -8,6 +8,7 @@ from app.dependencies import DBSession, require_role
 from app.exceptions import EditionNotFoundError, ValidationError
 from app.models import User
 from app.repositories import DepositSlotRepository
+from app.repositories.edition_depositor import EditionDepositorRepository
 from app.schemas import (
     DepositSlotCreate,
     DepositSlotListResponse,
@@ -41,6 +42,7 @@ DepositSlotRepoDep = Annotated[DepositSlotRepository, Depends(get_deposit_slot_r
 )
 async def list_deposit_slots(
     edition_id: str,
+    db: DBSession,
     edition_service: EditionServiceDep,
     repo: DepositSlotRepoDep,
     current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
@@ -57,8 +59,15 @@ async def list_deposit_slots(
 
     slots, total = await repo.list_by_edition(edition_id)
 
+    ed_repo = EditionDepositorRepository(db)
+    items = []
+    for s in slots:
+        data = DepositSlotResponse.model_validate(s)
+        data.registered_count = await ed_repo.count_by_slot(s.id)
+        items.append(data)
+
     return DepositSlotListResponse(
-        items=[DepositSlotResponse.model_validate(s) for s in slots],
+        items=items,
         total=total,
     )
 
