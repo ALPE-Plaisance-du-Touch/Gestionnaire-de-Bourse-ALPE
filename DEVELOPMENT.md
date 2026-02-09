@@ -26,9 +26,10 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.10 | Edition Closure | ✅ Done | 100% |
 | 0.11 | PWA & Offline Mode | ✅ Done | 100% |
 | 0.12 | GDPR & Audit Logging | ✅ Done | 100% |
+| 0.13 | Ops & Deployment | ✅ Done | 100% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.12 (GDPR & Audit Logging complete)
+**Current Version:** 0.13 (Ops & Deployment complete)
 **Next Target:** 1.0.0 - Production Release
 
 ---
@@ -471,9 +472,32 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
+## v0.13 - Ops & Deployment ✅
+
+**Branch:** `feature/ops-deploy`
+
+### HTTPS/TLS Production ✅
+- [x] **0.13.1** Nginx production config: SSL termination, Let's Encrypt, auto-renew
+- [x] **0.13.2** Security headers: HSTS, X-Frame-Options, X-Content-Type-Options, CSP, Referrer-Policy, Permissions-Policy
+- [x] **0.13.3** HTTP → HTTPS automatic redirect
+- [x] **0.13.4** docker-compose.prod.yml with production environment variables
+
+### Backup/Restore ✅
+- [x] **0.13.5** Daily backup script (`scripts/backup.sh`) with retention policy
+- [x] **0.13.6** Restore script (`scripts/restore.sh`) with integrity verification
+- [x] **0.13.7** Cron configuration (`scripts/setup-cron.sh`) for daily backup at 3 AM
+- [x] **0.13.8** Pre-edition snapshot script (`scripts/backup-pre-edition.sh`)
+- [x] **0.13.9** Automated restore test (`scripts/test-restore.sh`)
+
+### Tests & Docs ✅
+- [x] **0.13.10** Bash syntax validation for all scripts
+- [x] **0.13.11** Update DEVELOPMENT.md
+
+---
+
 ## v1.0.0 - Production Release
 
-**Prerequisites:** All versions 0.1 through 0.12 completed and tested.
+**Prerequisites:** All versions 0.1 through 0.13 completed and tested.
 
 - [ ] **1.0.1** Final integration testing
 - [ ] **1.0.2** Performance optimization

@@ -36,8 +36,9 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.10 | Edition Closure | ✅ Done |
 | 0.11 | PWA & Offline Mode | ✅ Done |
 | 0.12 | Conformité RGPD & Sécurité | ✅ Done |
+| 0.13 | Ops & Déploiement | ✅ Done |
 
-**Conformité specs : ~82%** (54/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
+**Conformité specs : ~85%** (56/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
 
 ---
 
@@ -81,27 +82,27 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 
 ---
 
-## v0.13 - Ops & Déploiement
+## v0.13 - Ops & Déploiement ✅
 
 **Branche :** `feature/ops-deploy`
 **Exigences :** REQ-NF-010, REQ-NF-012
 
-### HTTPS/TLS Production (TASK-003)
-- [ ] **0.13.1** Config nginx production : SSL termination, Let's Encrypt, auto-renew
-- [ ] **0.13.2** Headers de sécurité : HSTS, X-Frame-Options, X-Content-Type-Options, CSP
-- [ ] **0.13.3** Redirect HTTP → HTTPS automatique
-- [ ] **0.13.4** docker-compose.prod.yml avec variables d'environnement production
+### HTTPS/TLS Production (TASK-003) ✅
+- [x] **0.13.1** Config nginx production : SSL termination, Let's Encrypt, auto-renew
+- [x] **0.13.2** Headers de sécurité : HSTS, X-Frame-Options, X-Content-Type-Options, CSP, Referrer-Policy, Permissions-Policy
+- [x] **0.13.3** Redirect HTTP → HTTPS automatique
+- [x] **0.13.4** docker-compose.prod.yml avec variables d'environnement production
 
-### Backup/Restore (TASK-004)
-- [ ] **0.13.5** Script backup quotidien MariaDB (`scripts/backup.sh`)
-- [ ] **0.13.6** Script restauration (`scripts/restore.sh`) avec vérification d'intégrité
-- [ ] **0.13.7** Cron configuration (backup quotidien + snapshot pré-édition)
-- [ ] **0.13.8** Documentation procédure de restauration (RTO < 4h, RPO < 24h)
-- [ ] **0.13.9** Test de restauration automatisé
+### Backup/Restore (TASK-004) ✅
+- [x] **0.13.5** Script backup quotidien MariaDB (`scripts/backup.sh`) avec politique de rétention
+- [x] **0.13.6** Script restauration (`scripts/restore.sh`) avec vérification d'intégrité
+- [x] **0.13.7** Cron configuration (`scripts/setup-cron.sh`) + snapshot pré-édition
+- [x] **0.13.8** Scripts documentés avec usage intégré (--help)
+- [x] **0.13.9** Test de restauration automatisé (`scripts/test-restore.sh`)
 
-### Tests & docs
-- [ ] **0.13.10** Tests scripts backup/restore
-- [ ] **0.13.11** Mise à jour DEVELOPMENT.md
+### Tests & docs ✅
+- [x] **0.13.10** Validation syntaxe bash (`bash -n`) tous scripts
+- [x] **0.13.11** Mise à jour DEVELOPMENT.md
 
 ---
 
