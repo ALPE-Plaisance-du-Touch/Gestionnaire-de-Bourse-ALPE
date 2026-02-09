@@ -27,9 +27,10 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.11 | PWA & Offline Mode | ✅ Done | 100% |
 | 0.12 | GDPR & Audit Logging | ✅ Done | 100% |
 | 0.13 | Ops & Deployment | ✅ Done | 100% |
+| 0.14 | Special Lists & Business Rules | ✅ Done | 100% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.13 (Ops & Deployment complete)
+**Current Version:** 0.14 (Special Lists & Business Rules complete)
 **Next Target:** 1.0.0 - Production Release
 
 ---
@@ -495,9 +496,38 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
+## v0.14 - Special Lists & Business Rules (REQ-F-011, REQ-F-014, REQ-F-015) ✅
+
+**Branch:** `feature/special-lists`
+
+### Slot Capacity & Preview Enrichment ✅
+- [x] **0.14.9** Slot capacity check during Billetweb import (warning if over capacity)
+- [x] **0.14.4** List type breakdown (standard/1000/2000) in preview response
+
+### Deposit Slot Occupancy ✅
+- [x] **0.14.10** Registered count in deposit slot API response
+- [x] **0.14.10** Occupancy display ("X / Y places") with color coding in DepositSlotsEditor
+
+### Deadline Reminder ✅
+- [x] **0.14.7** Email template (HTML + text) for deadline reminder
+- [x] **0.14.7** `send_deadline_reminder()` in email service
+- [x] **0.14.7** POST `/editions/{id}/deadline-reminder` endpoint
+
+### Frontend Business Rules ✅
+- [x] **0.14.8** Deadline warning banner on MyListsPage and ListDetailPage
+- [x] **0.14.4** Auto-detect list type from depositor registration on list creation
+- [x] **0.14.4** Slot occupancy bars and list type breakdown in Billetweb preview
+
+### Tests & Docs ✅
+- [x] **0.14.11** Unit tests for slot capacity schemas and tarif mapping
+- [x] **0.14.11** Unit tests for deadline reminder email
+- [x] **0.14.12** Update DEVELOPMENT.md
+
+---
+
 ## v1.0.0 - Production Release
 
-**Prerequisites:** All versions 0.1 through 0.13 completed and tested.
+**Prerequisites:** All versions 0.1 through 0.14 completed and tested.
 
 - [ ] **1.0.1** Final integration testing
 - [ ] **1.0.2** Performance optimization

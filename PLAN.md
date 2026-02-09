@@ -112,24 +112,24 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 **Exigences :** REQ-F-011, REQ-F-014, REQ-F-015
 
 ### Listes spéciales 1000/2000 (TASK-009)
-- [ ] **0.14.1** Backend : numérotation automatique (standard 100-600, ALPE 1000+, amis 2000+)
-- [ ] **0.14.2** Backend : frais de liste (1 EUR liste 1000, 5 EUR pour 2 listes 2000)
-- [ ] **0.14.3** Backend : créneaux réservés Plaisançois (mercredi 20h-22h, vendredi 9h30-12h)
-- [ ] **0.14.4** Frontend : sélection type de liste dans import Billetweb + invitation manuelle
-- [ ] **0.14.5** Frontend : couleurs étiquettes par type (blanc standard, blanc ALPE, rose amis)
+- [x] **0.14.1** Backend : numérotation automatique (standard 100-600, ALPE 1000+, amis 2000+)
+- [x] **0.14.2** Backend : frais de liste (1 EUR liste 1000, 5 EUR pour 2 listes 2000)
+- [x] **0.14.3** Backend : créneaux réservés Plaisançois (mercredi 20h-22h, vendredi 9h30-12h)
+- [x] **0.14.4** Frontend : sélection type de liste dans import Billetweb + invitation manuelle
+- [x] **0.14.5** Frontend : couleurs étiquettes par type (blanc standard, blanc ALPE, rose amis)
 
 ### Date limite déclaration articles (TASK-011)
-- [ ] **0.14.6** Backend : vérification date limite dans les endpoints articles (create/update/delete)
-- [ ] **0.14.7** Backend : email rappel automatique 3 jours avant la date limite
-- [ ] **0.14.8** Frontend : bannière d'avertissement sur la page de déclaration si < 3 jours
+- [x] **0.14.6** Backend : vérification date limite dans les endpoints articles (create/update/delete)
+- [x] **0.14.7** Backend : email rappel automatique 3 jours avant la date limite
+- [x] **0.14.8** Frontend : bannière d'avertissement sur la page de déclaration si < 3 jours
 
 ### Capacité créneaux de dépôt (TASK-008)
-- [ ] **0.14.9** Backend : vérification capacité dans l'import Billetweb (pas de surréservation)
-- [ ] **0.14.10** Frontend : affichage places restantes sur chaque créneau
+- [x] **0.14.9** Backend : vérification capacité dans l'import Billetweb (pas de surréservation)
+- [x] **0.14.10** Frontend : affichage places restantes sur chaque créneau
 
 ### Tests & docs
-- [ ] **0.14.11** Tests unitaires listes spéciales, date limite, capacité
-- [ ] **0.14.12** Mise à jour DEVELOPMENT.md
+- [x] **0.14.11** Tests unitaires listes spéciales, date limite, capacité
+- [x] **0.14.12** Mise à jour DEVELOPMENT.md
 
 ---
 
