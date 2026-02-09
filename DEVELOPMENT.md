@@ -28,9 +28,10 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.12 | GDPR & Audit Logging | ✅ Done | 100% |
 | 0.13 | Ops & Deployment | ✅ Done | 100% |
 | 0.14 | Special Lists & Business Rules | ✅ Done | 100% |
+| 0.15 | Secondary Features | ✅ Done | 100% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.14 (Special Lists & Business Rules complete)
+**Current Version:** 0.15 (Secondary Features complete)
 **Next Target:** 1.0.0 - Production Release
 
 ---
@@ -525,9 +526,39 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
+## v0.15 - Secondary Features (TASK-006, TASK-007, TASK-010, TASK-012) ✅
+
+**Branch:** `feature/secondary-features`
+
+### Private Sale for Schools (TASK-010) ✅
+- [x] **0.15.1** Backend: `is_private_sale` flag on Sale model + migration
+- [x] **0.15.1** Backend: auto-detection in `register_sale()` and `sync_offline_sales()` (Friday 17h-18h)
+- [x] **0.15.1** Backend: `is_private_sale` field in SaleResponse schema
+- [x] **0.15.2** Frontend: PrivateSaleBanner component on SalesPage (informational, no access restriction)
+
+### List PDF Download (TASK-007) ✅
+- [x] **0.15.7** Backend: `GET /depositor/lists/{id}/pdf` endpoint (ownership check + StreamingResponse)
+- [x] **0.15.8** Frontend: `downloadListPdf()` API method with blob response
+- [x] **0.15.8** Frontend: "Telecharger PDF" button on ListDetailPage
+
+### Bulk Payout Reminder (TASK-012) ✅
+- [x] **0.15.3** Backend: `POST /editions/{id}/payouts/bulk-remind` endpoint (unpaid payouts, BackgroundTasks)
+- [x] **0.15.4** Frontend: `sendBulkReminder()` API method
+- [x] **0.15.4** Frontend: "Relancer tous les absents" button on PayoutsManagementPage
+
+### Price Hints (TASK-006) ✅ (already implemented in v0.5)
+- [x] **0.15.5** Backend: `PriceHint` schema + `get_price_hints()` + `GET /price-hints` endpoint
+- [x] **0.15.6** Frontend: price hint tooltip in ArticleForm
+
+### Tests & Docs ✅
+- [x] **0.15.9** Unit tests: private sale detection (8 tests), schema validation (4 tests) — 12 new tests
+- [x] **0.15.10** Update PLAN.md and DEVELOPMENT.md
+
+---
+
 ## v1.0.0 - Production Release
 
-**Prerequisites:** All versions 0.1 through 0.14 completed and tested.
+**Prerequisites:** All versions 0.1 through 0.15 completed and tested.
 
 - [ ] **1.0.1** Final integration testing
 - [ ] **1.0.2** Performance optimization

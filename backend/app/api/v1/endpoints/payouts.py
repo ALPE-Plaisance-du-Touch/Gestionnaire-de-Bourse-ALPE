@@ -326,6 +326,72 @@ async def send_payout_reminder_endpoint(
 
 
 @router.post(
+    "/editions/{edition_id}/payouts/bulk-remind",
+    summary="Send reminder emails to all unpaid depositors",
+)
+async def send_bulk_payout_reminders(
+    edition_id: str,
+    background_tasks: BackgroundTasks,
+    db: DBSession,
+    current_user: ManagerRole,
+):
+    from datetime import datetime
+
+    from sqlalchemy import select
+    from sqlalchemy.orm import joinedload
+
+    from app.models import ItemList
+    from app.models.payout import Payout
+    from app.repositories import EditionRepository
+    from app.services.email import email_service
+
+    edition_repo = EditionRepository(db)
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+
+    # Get all unpaid payouts (pending or ready) with depositor info
+    result = await db.execute(
+        select(Payout)
+        .options(joinedload(Payout.depositor))
+        .where(
+            Payout.item_list_id.in_(
+                select(ItemList.id).where(ItemList.edition_id == edition_id)
+            ),
+            Payout.status.in_(["pending", "ready"]),
+            Payout.paid_at.is_(None),
+        )
+    )
+    payouts = list(result.unique().scalars().all())
+
+    if not payouts:
+        return {"emails_queued": 0, "message": "Aucun deposant a relancer"}
+
+    reminder_note = f"Relance bulk le {datetime.now().strftime('%d/%m/%Y')}"
+    for payout in payouts:
+        depositor = payout.depositor
+        background_tasks.add_task(
+            email_service.send_payout_reminder_email,
+            to_email=depositor.email,
+            first_name=depositor.first_name,
+            net_amount=f"{payout.net_amount:.2f}",
+            edition_name=edition.name,
+            location=edition.location,
+        )
+        if payout.notes:
+            payout.notes = f"{payout.notes} | {reminder_note}"
+        else:
+            payout.notes = reminder_note
+
+    await db.commit()
+
+    return {
+        "emails_queued": len(payouts),
+        "message": f"{len(payouts)} email(s) de relance envoye(s)",
+    }
+
+
+@router.post(
     "/editions/{edition_id}/payouts/receipts",
     summary="Generate all receipts as a single PDF",
 )

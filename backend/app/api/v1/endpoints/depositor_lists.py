@@ -1,9 +1,11 @@
 """Depositor item lists API endpoints."""
 
 from datetime import datetime
+from io import BytesIO
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from app.dependencies import CurrentActiveUser, DBSession
@@ -333,3 +335,42 @@ async def delete_list(
             status_code=status.HTTP_409_CONFLICT,
             detail=e.message,
         )
+
+
+@router.get(
+    "/lists/{list_id}/pdf",
+    summary="Download list as PDF",
+    description="Download the item list as a PDF document.",
+)
+async def download_list_pdf(
+    list_id: str,
+    list_service: ItemListServiceDep,
+    current_user: CurrentActiveUser,
+):
+    """Download the item list as a PDF."""
+    from app.services.pdf import generate_list_pdf
+
+    try:
+        item_list = await list_service.get_list(list_id, load_articles=True)
+    except ItemListNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Liste {list_id} non trouvée",
+        )
+
+    if item_list.depositor_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Vous n'êtes pas autorisé à accéder à cette liste",
+        )
+
+    depositor_name = f"{current_user.first_name} {current_user.last_name}"
+    pdf_bytes = generate_list_pdf(item_list, depositor_name)
+
+    return StreamingResponse(
+        BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="liste-{item_list.number}.pdf"',
+        },
+    )

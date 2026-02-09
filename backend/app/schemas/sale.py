@@ -46,6 +46,7 @@ class SaleResponse(BaseModel):
     depositor_name: str
     list_number: int
     can_cancel: bool
+    is_private_sale: bool = False
 
 
 class CatalogArticleResponse(BaseModel):

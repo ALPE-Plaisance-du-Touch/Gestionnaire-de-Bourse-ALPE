@@ -119,6 +119,13 @@ export const payoutsApi = {
     return response.data;
   },
 
+  sendBulkReminder: async (editionId: string): Promise<{ emailsQueued: number; message: string }> => {
+    const response = await apiClient.post(
+      `/v1/editions/${editionId}/payouts/bulk-remind`,
+    );
+    return response.data;
+  },
+
   downloadClosureReport: async (editionId: string): Promise<Blob> => {
     const response = await apiClient.get(
       `/v1/editions/${editionId}/closure-report`,

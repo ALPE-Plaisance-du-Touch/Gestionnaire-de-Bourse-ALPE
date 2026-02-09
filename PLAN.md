@@ -37,6 +37,8 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.11 | PWA & Offline Mode | ✅ Done |
 | 0.12 | Conformité RGPD & Sécurité | ✅ Done |
 | 0.13 | Ops & Déploiement | ✅ Done |
+| 0.14 | Listes spéciales & Règles métier | ✅ Done |
+| 0.15 | Fonctionnalités secondaires | ✅ Done |
 
 **Conformité specs : ~85%** (56/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
 
@@ -48,8 +50,8 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 |---------|-----|-----------|----------|
 | 0.12 | Conformité RGPD & Sécurité | Droits utilisateurs RGPD, audit logging, headers sécurité | Haute |
 | 0.13 | Ops & Déploiement | HTTPS/TLS production, backup/restore automatisé | Haute |
-| 0.14 | Listes spéciales & Règles métier | Listes 1000/2000, date limite déclaration, capacité créneaux | Moyenne |
-| 0.15 | Fonctionnalités secondaires | Vente privée écoles, rappel récupération, aide tarifaire, prévisualisation | Moyenne |
+| 0.14 | Listes spéciales & Règles métier | Listes 1000/2000, date limite déclaration, capacité créneaux | ✅ Done |
+| 0.15 | Fonctionnalités secondaires | Vente privée écoles, rappel récupération, aide tarifaire, prévisualisation | ✅ Done |
 | 0.16 | Accessibilité & UX | WCAG 2.1 AA, indicateur mot de passe, UX scanner, détection déposant | Moyenne |
 | 0.17 | Améliorations gestion | Override annulation, export Excel invitations, archivage auto, relance bulk | Basse |
 | 1.0.0 | Feature Freeze & Production | Bug fixes, tests intégration, perf, audit, release | - |
@@ -133,29 +135,29 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 
 ---
 
-## v0.15 - Fonctionnalités secondaires
+## v0.15 - Fonctionnalités secondaires ✅
 
 **Branche :** `feature/secondary-features`
 
-### Vente privée écoles (TASK-010)
-- [ ] **0.15.1** Backend : flag `is_school_sale` sur Sale, mode vente privée (vendredi 17h-18h)
-- [ ] **0.15.2** Frontend : mode "Vente écoles" sur la page caisse avec restriction horaire
+### Vente privée écoles (TASK-010) ✅
+- [x] **0.15.1** Backend : flag `is_private_sale` sur Sale, migration, détection auto vendredi 17h-18h
+- [x] **0.15.2** Frontend : bannière "Vente privée écoles/ALAE" sur la page caisse
 
-### Rappel récupération déposants absents (TASK-012)
-- [ ] **0.15.3** Backend : endpoint/cron envoi email rappel 3 jours après fin récupération
-- [ ] **0.15.4** Templates email rappel récupération (HTML + texte)
+### Rappel récupération déposants absents (TASK-012) ✅
+- [x] **0.15.3** Backend : endpoint bulk remind (`POST /payouts/bulk-remind`) + relance individuelle existante
+- [x] **0.15.4** Frontend : bouton "Relancer tous les absents" sur PayoutsManagementPage
 
-### Aide tarifaire articles (TASK-006)
-- [ ] **0.15.5** Backend : table `price_hints` (catégorie, état, prix min/max suggéré)
-- [ ] **0.15.6** Frontend : tooltip/aide contextuelle dans le formulaire de déclaration d'article
+### Aide tarifaire articles (TASK-006) ✅ (déjà implémenté en v0.5)
+- [x] **0.15.5** Backend : `PriceHint` schema + `get_price_hints()` + endpoint `GET /price-hints`
+- [x] **0.15.6** Frontend : tooltip aide tarifaire dans ArticleForm
 
-### Prévisualisation liste déposant (TASK-007)
-- [ ] **0.15.7** Frontend : modal de prévisualisation de la liste (récapitulatif visuel)
-- [ ] **0.15.8** Frontend : bouton export PDF de la liste depuis la modal
+### Prévisualisation liste déposant (TASK-007) ✅
+- [x] **0.15.7** Backend : endpoint `GET /lists/{id}/pdf` pour téléchargement PDF
+- [x] **0.15.8** Frontend : bouton "Télécharger PDF" sur ListDetailPage
 
-### Tests & docs
-- [ ] **0.15.9** Tests unitaires vente écoles, rappel, aide tarifaire
-- [ ] **0.15.10** Mise à jour DEVELOPMENT.md
+### Tests & docs ✅
+- [x] **0.15.9** Tests unitaires vente privée (8 tests), schemas PDF (4 tests)
+- [x] **0.15.10** Mise à jour DEVELOPMENT.md
 
 ---
 

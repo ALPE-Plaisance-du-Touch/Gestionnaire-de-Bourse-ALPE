@@ -185,4 +185,15 @@ export const depositorListsApi = {
   deleteList: async (listId: string): Promise<void> => {
     await apiClient.delete(`/v1/depositor/lists/${listId}`);
   },
+
+  /**
+   * Download list as PDF.
+   */
+  downloadListPdf: async (listId: string): Promise<Blob> => {
+    const response = await apiClient.get(
+      `/v1/depositor/lists/${listId}/pdf`,
+      { responseType: 'blob', timeout: 30000 },
+    );
+    return response.data as Blob;
+  },
 };

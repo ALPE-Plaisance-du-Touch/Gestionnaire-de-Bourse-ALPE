@@ -161,6 +161,9 @@ export function SalesPage() {
         </div>
       </div>
 
+      {/* Private sale banner */}
+      <PrivateSaleBanner />
+
       {/* Offline banner */}
       <div className="mb-4">
         <OfflineBanner isOnline={isOnline} pendingCount={pendingCount} lastSyncCount={lastSyncCount} conflicts={conflicts} />
@@ -363,6 +366,22 @@ function SaleItem({
           </button>
         )}
       </div>
+    </div>
+  );
+}
+
+function PrivateSaleBanner() {
+  const now = new Date();
+  const isFriday = now.getDay() === 5;
+  const hour = now.getHours();
+  const isPrivateSaleTime = isFriday && hour >= 17 && hour < 18;
+
+  if (!isPrivateSaleTime) return null;
+
+  return (
+    <div className="mb-4 bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800 px-4 py-3 rounded-r-lg">
+      <p className="font-medium">Vente privee ecoles/ALAE en cours (17h-18h)</p>
+      <p className="text-sm mt-1">Les ventes effectuees pendant ce creneau sont automatiquement marquees comme ventes privees.</p>
     </div>
   );
 }
