@@ -2,11 +2,12 @@
 
 import logging
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 
 from app.dependencies import CurrentActiveUser, DBSession
 from app.schemas import MessageResponse, UserResponse, UserSelfUpdate
+from app.services.audit import log_action
 from app.services.gdpr import GDPRService
 
 logger = logging.getLogger(__name__)
@@ -48,6 +49,7 @@ async def update_profile(
     data: UserSelfUpdate,
     current_user: CurrentActiveUser,
     db: DBSession,
+    req: Request,
 ):
     """Update the current user's profile."""
     from app.repositories import UserRepository
@@ -61,6 +63,11 @@ async def update_profile(
         )
 
     user = await user_repo.update(current_user, **updates)
+    await log_action(
+        db, action="profile_updated", request=req, user=current_user,
+        entity_type="user", entity_id=current_user.id,
+        detail=", ".join(updates.keys()),
+    )
     return UserResponse(
         id=user.id,
         email=user.email,
@@ -85,10 +92,15 @@ async def update_profile(
 async def export_personal_data(
     current_user: CurrentActiveUser,
     db: DBSession,
+    req: Request,
 ):
     """Export all user personal data for GDPR right of access/portability."""
     gdpr_service = GDPRService(db)
     data = await gdpr_service.export_user_data(current_user)
+    await log_action(
+        db, action="data_exported", request=req, user=current_user,
+        entity_type="user", entity_id=current_user.id,
+    )
     return JSONResponse(
         content=data,
         headers={
@@ -107,8 +119,14 @@ async def export_personal_data(
 async def delete_account(
     current_user: CurrentActiveUser,
     db: DBSession,
+    req: Request,
 ):
     """Delete (anonymize) the current user's account for GDPR right to erasure."""
+    user_id = current_user.id
+    await log_action(
+        db, action="account_deleted", request=req, user=current_user,
+        entity_type="user", entity_id=user_id,
+    )
     gdpr_service = GDPRService(db)
     await gdpr_service.delete_account(current_user)
     return MessageResponse(message="Your account has been deleted and personal data anonymized.")

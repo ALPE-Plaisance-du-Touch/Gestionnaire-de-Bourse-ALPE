@@ -110,6 +110,10 @@ from app.schemas.user import (
     UserSelfUpdate,
     UserUpdate,
 )
+from app.schemas.audit import (
+    AuditLogListResponse,
+    AuditLogResponse,
+)
 
 __all__ = [
     # Article
@@ -213,4 +217,7 @@ __all__ = [
     "UserSelfUpdate",
     "UserResponse",
     "UserListResponse",
+    # Audit
+    "AuditLogResponse",
+    "AuditLogListResponse",
 ]

@@ -10,6 +10,7 @@ from app.models.item_list import ItemList
 from app.models.article import Article
 from app.models.sale import Sale
 from app.models.payout import Payout
+from app.models.audit_log import AuditLog
 
 __all__ = [
     "Base",
@@ -23,4 +24,5 @@ __all__ = [
     "Article",
     "Sale",
     "Payout",
+    "AuditLog",
 ]
