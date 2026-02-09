@@ -188,6 +188,25 @@ export function PayoutsManagementPage() {
     },
   });
 
+  // Bulk reminder
+  const bulkReminderMutation = useMutation({
+    mutationFn: () => payoutsApi.sendBulkReminder(editionId!),
+    onSuccess: (data) => {
+      setSuccessMessage(data.message || `${data.emailsQueued} email(s) de relance envoye(s).`);
+      setErrorMessage('');
+      queryClient.invalidateQueries({ queryKey: ['payouts'] });
+    },
+    onError: (error: Error) => {
+      setErrorMessage(error.message || 'Erreur lors de l\'envoi des relances.');
+    },
+  });
+
+  const handleBulkReminder = () => {
+    if (confirm('Envoyer un email de relance a tous les deposants non payes ?')) {
+      bulkReminderMutation.mutate();
+    }
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearch(searchInput);
@@ -283,6 +302,14 @@ export function PayoutsManagementPage() {
             onClick={() => navigate(`/editions/${editionId}/payouts/dashboard`)}
           >
             Statistiques detaillees
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleBulkReminder}
+            disabled={bulkReminderMutation.isPending || !stats || stats.totalPayouts === 0}
+            className="text-purple-600 border-purple-300 hover:bg-purple-50"
+          >
+            {bulkReminderMutation.isPending ? 'Envoi en cours...' : 'Relancer tous les absents'}
           </Button>
 
           <div className="ml-auto flex items-end gap-4">
