@@ -46,6 +46,19 @@ export interface TopDepositorStats {
   totalRevenue: number;
 }
 
+export interface OfflineSaleDisplay {
+  id: string;
+  articleId: string;
+  articleDescription: string;
+  articleBarcode: string;
+  price: number;
+  paymentMethod: string;
+  soldAt: string;
+  depositorName: string;
+  listNumber: number;
+  isOffline: true;
+}
+
 export interface SaleStats {
   totalArticlesSold: number;
   totalRevenue: number;
