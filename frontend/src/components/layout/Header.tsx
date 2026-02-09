@@ -42,7 +42,7 @@ export function Header() {
           </Link>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-6" aria-label="Navigation principale">
             {isAuthenticated ? (
               <>
                 <Link
