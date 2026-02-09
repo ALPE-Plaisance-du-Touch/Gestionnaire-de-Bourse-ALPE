@@ -29,9 +29,10 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.13 | Ops & Deployment | ✅ Done | 100% |
 | 0.14 | Special Lists & Business Rules | ✅ Done | 100% |
 | 0.15 | Secondary Features | ✅ Done | 100% |
+| 0.16 | Accessibility & UX | ✅ Done | 100% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.15 (Secondary Features complete)
+**Current Version:** 0.16 (Accessibility & UX complete)
 **Next Target:** 1.0.0 - Production Release
 
 ---
@@ -556,9 +557,38 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
+## v0.16 - Accessibility & UX (REQ-NF-004, TASK-005, TASK-015, TASK-016, TASK-019) ✅
+
+**Branch:** `feature/a11y-ux`
+
+### WCAG 2.1 AA (TASK-005) ✅
+- [x] **0.16.1** Skip link + ARIA landmarks (aria-label on nav, id on main)
+- [x] **0.16.2** Keyboard navigation for admin dropdown menu (ArrowUp/Down, Escape, role="menu")
+- [x] **0.16.3** Contrast audit (TailwindCSS defaults are WCAG AA compliant)
+- [x] **0.16.4** Explicit labels on all form fields (QR scanner manual input)
+
+### Password Strength Indicator (TASK-019) ✅
+- [x] **0.16.6** PasswordStrengthIndicator component (4 criteria, 3-level bar, checklist)
+- [x] **0.16.6** Integration on ActivatePage and ResetPasswordPage
+
+### QR Scanner UX (TASK-015) ✅
+- [x] **0.16.7** 5-second timeout hint ("Difficulty scanning? Use manual input below")
+- [x] **0.16.7** Visible label for manual barcode input
+- [x] **0.16.7** Non-blocking format validation warning
+
+### Depositor Detection (TASK-016) ✅
+- [x] **0.16.8** Backend: `GET /v1/invitations/lookup?email=` endpoint (participation history)
+- [x] **0.16.9** Frontend: debounced lookup in InvitationCreateModal with pre-fill banner
+
+### Tests & Docs ✅
+- [x] **0.16.10** Unit tests: depositor lookup + invitation status computation (8 tests)
+- [x] **0.16.11** Update PLAN.md and DEVELOPMENT.md
+
+---
+
 ## v1.0.0 - Production Release
 
-**Prerequisites:** All versions 0.1 through 0.15 completed and tested.
+**Prerequisites:** All versions 0.1 through 0.16 completed and tested.
 
 - [ ] **1.0.1** Final integration testing
 - [ ] **1.0.2** Performance optimization
