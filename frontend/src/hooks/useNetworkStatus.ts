@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 
 const HEALTHCHECK_INTERVAL = 10_000; // 10 seconds
-const HEALTHCHECK_URL = '/api/v1/config/public';
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
+const HEALTHCHECK_URL = `${API_BASE}/v1`;
 
 export function useNetworkStatus() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -18,7 +19,7 @@ export function useNetworkStatus() {
     const checkHealth = async () => {
       try {
         const res = await fetch(HEALTHCHECK_URL, {
-          method: 'HEAD',
+          method: 'GET',
           cache: 'no-store',
         });
         setIsOnline(res.ok);
@@ -27,6 +28,7 @@ export function useNetworkStatus() {
       }
     };
 
+    checkHealth();
     intervalRef.current = setInterval(checkHealth, HEALTHCHECK_INTERVAL);
 
     return () => {
