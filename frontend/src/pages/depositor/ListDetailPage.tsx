@@ -31,6 +31,7 @@ export function ListDetailPage() {
   const [duplicatingArticle, setDuplicatingArticle] = useState<Article | null>(null);
   const [showValidateModal, setShowValidateModal] = useState(false);
   const [confirmationAccepted, setConfirmationAccepted] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   // Fetch list details
   const {
@@ -154,6 +155,26 @@ export function ListDetailPage() {
     setDuplicatingArticle(null);
   };
 
+  const handleDownloadPdf = async () => {
+    if (!listId) return;
+    setIsDownloadingPdf(true);
+    try {
+      const blob = await depositorListsApi.downloadListPdf(listId);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `liste-${list?.number ?? listId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      // Error handled silently - user sees nothing downloaded
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
   const handleValidateList = () => {
     setShowValidateModal(true);
   };
@@ -233,6 +254,13 @@ export function ListDetailPage() {
             )}
           </div>
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handleDownloadPdf}
+              disabled={isDownloadingPdf || articles.length === 0}
+            >
+              {isDownloadingPdf ? 'Telechargement...' : 'Telecharger PDF'}
+            </Button>
             {isDraft && canValidate && (
               <Button onClick={handleValidateList} disabled={validateMutation.isPending}>
                 Valider la liste
