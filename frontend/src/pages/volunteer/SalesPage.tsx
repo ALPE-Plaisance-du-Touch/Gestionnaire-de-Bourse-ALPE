@@ -24,6 +24,8 @@ export function SalesPage() {
   const {
     isOnline,
     pendingCount,
+    lastSyncCount,
+    conflicts,
     scanArticle: offlineScan,
     registerSale: offlineRegister,
     getOfflineSales,
@@ -40,6 +42,13 @@ export function SalesPage() {
   useEffect(() => {
     getOfflineSales().then(setOfflineSalesList);
   }, [getOfflineSales, pendingCount]);
+
+  // Invalidate server sales after sync
+  useEffect(() => {
+    if (lastSyncCount > 0) {
+      queryClient.invalidateQueries({ queryKey: ['sales', editionId] });
+    }
+  }, [lastSyncCount, queryClient, editionId]);
 
   // Recent sales list (only fetched when online)
   const { data: recentSales } = useQuery({
@@ -154,7 +163,7 @@ export function SalesPage() {
 
       {/* Offline banner */}
       <div className="mb-4">
-        <OfflineBanner isOnline={isOnline} pendingCount={pendingCount} />
+        <OfflineBanner isOnline={isOnline} pendingCount={pendingCount} lastSyncCount={lastSyncCount} conflicts={conflicts} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

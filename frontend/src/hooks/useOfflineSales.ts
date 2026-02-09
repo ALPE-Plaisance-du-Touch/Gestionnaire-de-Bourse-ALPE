@@ -3,6 +3,7 @@ import { salesApi } from '@/api';
 import { useNetworkStatus } from './useNetworkStatus';
 import { prefetchCatalog, lookupByBarcode } from '@/services/catalogCache';
 import { storeOfflineSale, getPendingSales, getPendingCount } from '@/services/offlineSales';
+import { syncPendingSales } from '@/services/syncService';
 import type { ScanArticleResponse } from '@/types';
 import type { CachedArticle } from '@/services/db';
 
@@ -16,7 +17,11 @@ export function useOfflineSales({ editionId }: UseOfflineSalesOptions) {
   const { isOnline } = useNetworkStatus();
   const [pendingCount, setPendingCount] = useState(0);
   const [catalogReady, setCatalogReady] = useState(false);
+  const [lastSyncCount, setLastSyncCount] = useState(0);
+  const [conflicts, setConflicts] = useState<string[]>([]);
+  const [syncing, setSyncing] = useState(false);
   const prefetchedRef = useRef(false);
+  const prevOnlineRef = useRef(isOnline);
 
   // Prefetch catalog when online
   useEffect(() => {
@@ -41,6 +46,28 @@ export function useOfflineSales({ editionId }: UseOfflineSalesOptions) {
   useEffect(() => {
     refreshPendingCount();
   }, [refreshPendingCount]);
+
+  // Auto-sync when going from offline to online
+  useEffect(() => {
+    const wasOffline = !prevOnlineRef.current;
+    prevOnlineRef.current = isOnline;
+
+    if (isOnline && wasOffline && editionId && pendingCount > 0 && !syncing) {
+      setSyncing(true);
+      syncPendingSales(editionId)
+        .then((result) => {
+          setLastSyncCount(result.synced);
+          setConflicts(result.conflicts);
+          refreshPendingCount();
+          // Clear sync message after 10s
+          setTimeout(() => setLastSyncCount(0), 10_000);
+        })
+        .catch(() => {
+          // Sync failed, will retry on next online transition
+        })
+        .finally(() => setSyncing(false));
+    }
+  }, [isOnline, editionId, pendingCount, syncing, refreshPendingCount]);
 
   // Scan article: online -> API, offline -> IndexedDB
   const scanArticle = useCallback(async (barcode: string): Promise<ScanArticleResponse> => {
@@ -108,6 +135,9 @@ export function useOfflineSales({ editionId }: UseOfflineSalesOptions) {
     isOnline,
     pendingCount,
     catalogReady,
+    lastSyncCount,
+    conflicts,
+    syncing,
     scanArticle,
     registerSale,
     getOfflineSales,
