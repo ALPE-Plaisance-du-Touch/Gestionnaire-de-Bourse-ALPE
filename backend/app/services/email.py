@@ -295,5 +295,38 @@ class EmailService:
         )
 
 
+    async def send_sale_conflict_email(
+        self,
+        to_email: str,
+        edition_name: str,
+        seller_name: str,
+        synced_count: int,
+        conflict_count: int,
+        error_count: int,
+        conflicts: list[str],
+    ) -> bool:
+        html_template = self.jinja_env.get_template("sale_conflict.html")
+        text_template = self.jinja_env.get_template("sale_conflict.txt")
+
+        context = {
+            "edition_name": edition_name,
+            "seller_name": seller_name,
+            "synced_count": synced_count,
+            "conflict_count": conflict_count,
+            "error_count": error_count,
+            "conflicts": conflicts,
+        }
+
+        html_content = html_template.render(**context)
+        text_content = text_template.render(**context)
+
+        return await self._send_email(
+            to_email=to_email,
+            subject=f"Conflits de synchronisation - {edition_name}",
+            html_content=html_content,
+            text_content=text_content,
+        )
+
+
 # Singleton instance
 email_service = EmailService()

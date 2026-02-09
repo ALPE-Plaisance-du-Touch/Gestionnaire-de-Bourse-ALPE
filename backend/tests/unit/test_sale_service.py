@@ -9,11 +9,14 @@ from app.models import User
 from app.models.article import Article, ArticleStatus
 from app.models.item_list import ItemList
 from app.models.sale import Sale, PaymentMethod
+from app.schemas.sale import OfflineSaleItem
 from app.services.sale import (
     scan_article,
     register_sale,
     cancel_sale,
     get_live_stats,
+    get_article_catalog,
+    sync_offline_sales,
     CANCEL_TIME_LIMIT,
     _sale_to_response,
 )
@@ -263,3 +266,196 @@ class TestCancelSale:
             await cancel_sale("sale-xyz", manager, db)
 
             MockSaleRepo.return_value.delete.assert_called_once_with(sale)
+
+
+class TestSyncOfflineSales:
+    @pytest.mark.asyncio
+    async def test_sync_nominal(self):
+        db = AsyncMock()
+        seller = _make_user()
+        article = _make_article()
+
+        items = [
+            OfflineSaleItem(
+                client_id="client-1",
+                article_id="article-abc",
+                payment_method="cash",
+                register_number=1,
+                sold_at=datetime.now(),
+            ),
+        ]
+
+        with patch("app.services.sale.EditionRepository") as MockEditionRepo, \
+             patch("app.services.sale.ArticleRepository") as MockArticleRepo, \
+             patch("app.services.sale.SaleRepository") as MockSaleRepo:
+            MockEditionRepo.return_value.get_by_id = AsyncMock(return_value=MagicMock())
+            MockArticleRepo.return_value.get_by_id = AsyncMock(return_value=article)
+            MockSaleRepo.return_value.get_by_article_id = AsyncMock(return_value=None)
+            MockSaleRepo.return_value.create = AsyncMock()
+
+            result = await sync_offline_sales("edition-123", items, seller, db)
+
+            assert result.synced == 1
+            assert result.conflicts == 0
+            assert result.errors == 0
+            assert result.results[0].status == "synced"
+            assert result.results[0].client_id == "client-1"
+
+    @pytest.mark.asyncio
+    async def test_sync_conflict_article_already_sold(self):
+        db = AsyncMock()
+        seller = _make_user()
+        article = _make_article(status=ArticleStatus.SOLD.value)
+
+        items = [
+            OfflineSaleItem(
+                client_id="client-1",
+                article_id="article-abc",
+                payment_method="cash",
+                register_number=1,
+                sold_at=datetime.now(),
+            ),
+        ]
+
+        existing_sale = MagicMock(spec=Sale)
+
+        with patch("app.services.sale.EditionRepository") as MockEditionRepo, \
+             patch("app.services.sale.ArticleRepository") as MockArticleRepo, \
+             patch("app.services.sale.SaleRepository") as MockSaleRepo:
+            MockEditionRepo.return_value.get_by_id = AsyncMock(return_value=MagicMock())
+            MockArticleRepo.return_value.get_by_id = AsyncMock(return_value=article)
+            MockSaleRepo.return_value.get_by_article_id = AsyncMock(return_value=existing_sale)
+
+            result = await sync_offline_sales("edition-123", items, seller, db)
+
+            assert result.synced == 0
+            assert result.conflicts == 1
+            assert result.results[0].status == "conflict"
+
+    @pytest.mark.asyncio
+    async def test_sync_error_article_not_found(self):
+        db = AsyncMock()
+        seller = _make_user()
+
+        items = [
+            OfflineSaleItem(
+                client_id="client-1",
+                article_id="nonexistent",
+                payment_method="cash",
+                register_number=1,
+                sold_at=datetime.now(),
+            ),
+        ]
+
+        with patch("app.services.sale.EditionRepository") as MockEditionRepo, \
+             patch("app.services.sale.ArticleRepository") as MockArticleRepo, \
+             patch("app.services.sale.SaleRepository"):
+            MockEditionRepo.return_value.get_by_id = AsyncMock(return_value=MagicMock())
+            MockArticleRepo.return_value.get_by_id = AsyncMock(return_value=None)
+
+            result = await sync_offline_sales("edition-123", items, seller, db)
+
+            assert result.synced == 0
+            assert result.errors == 1
+            assert result.results[0].status == "error"
+            assert "not found" in result.results[0].error_message
+
+    @pytest.mark.asyncio
+    async def test_sync_edition_not_found(self):
+        db = AsyncMock()
+        seller = _make_user()
+
+        with patch("app.services.sale.EditionRepository") as MockEditionRepo:
+            MockEditionRepo.return_value.get_by_id = AsyncMock(return_value=None)
+
+            with pytest.raises(EditionNotFoundError):
+                await sync_offline_sales("bad-id", [], seller, db)
+
+    @pytest.mark.asyncio
+    async def test_sync_mixed_results(self):
+        db = AsyncMock()
+        seller = _make_user()
+        article_ok = _make_article(id="art-ok")
+        article_sold = _make_article(id="art-sold", status=ArticleStatus.SOLD.value)
+
+        items = [
+            OfflineSaleItem(
+                client_id="ok-1",
+                article_id="art-ok",
+                payment_method="card",
+                register_number=2,
+                sold_at=datetime.now(),
+            ),
+            OfflineSaleItem(
+                client_id="conflict-1",
+                article_id="art-sold",
+                payment_method="cash",
+                register_number=1,
+                sold_at=datetime.now(),
+            ),
+            OfflineSaleItem(
+                client_id="error-1",
+                article_id="nonexistent",
+                payment_method="cash",
+                register_number=1,
+                sold_at=datetime.now(),
+            ),
+        ]
+
+        existing_sale = MagicMock(spec=Sale)
+
+        async def mock_get_by_id(article_id):
+            if article_id == "art-ok":
+                return article_ok
+            if article_id == "art-sold":
+                return article_sold
+            return None
+
+        async def mock_get_by_article_id(article_id):
+            if article_id == "art-sold":
+                return existing_sale
+            return None
+
+        with patch("app.services.sale.EditionRepository") as MockEditionRepo, \
+             patch("app.services.sale.ArticleRepository") as MockArticleRepo, \
+             patch("app.services.sale.SaleRepository") as MockSaleRepo:
+            MockEditionRepo.return_value.get_by_id = AsyncMock(return_value=MagicMock())
+            MockArticleRepo.return_value.get_by_id = AsyncMock(side_effect=mock_get_by_id)
+            MockSaleRepo.return_value.get_by_article_id = AsyncMock(side_effect=mock_get_by_article_id)
+            MockSaleRepo.return_value.create = AsyncMock()
+
+            result = await sync_offline_sales("edition-123", items, seller, db)
+
+            assert result.synced == 1
+            assert result.conflicts == 1
+            assert result.errors == 1
+
+
+class TestGetArticleCatalog:
+    @pytest.mark.asyncio
+    async def test_catalog_returns_on_sale_articles(self):
+        db = AsyncMock()
+        article = _make_article()
+
+        with patch("app.services.sale.EditionRepository") as MockEditionRepo, \
+             patch("app.services.sale.ArticleRepository") as MockArticleRepo:
+            MockEditionRepo.return_value.get_by_id = AsyncMock(return_value=MagicMock())
+            MockArticleRepo.return_value.get_on_sale_for_edition = AsyncMock(return_value=[article])
+
+            result = await get_article_catalog("edition-123", db)
+
+            assert len(result) == 1
+            assert result[0].article_id == "article-abc"
+            assert result[0].barcode == "010001"
+            assert result[0].depositor_name == "Marie Martin"
+            assert result[0].list_number == 100
+
+    @pytest.mark.asyncio
+    async def test_catalog_edition_not_found(self):
+        db = AsyncMock()
+
+        with patch("app.services.sale.EditionRepository") as MockEditionRepo:
+            MockEditionRepo.return_value.get_by_id = AsyncMock(return_value=None)
+
+            with pytest.raises(EditionNotFoundError):
+                await get_article_catalog("bad-id", db)

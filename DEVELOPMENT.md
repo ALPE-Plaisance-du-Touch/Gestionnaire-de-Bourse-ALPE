@@ -24,11 +24,11 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.8 | Payout Calculation | ✅ Done | 100% |
 | 0.9 | Dashboard & Reports | ✅ Done | 100% |
 | 0.10 | Edition Closure | ✅ Done | 100% |
-| 0.11 | PWA & Offline Mode | 🔲 Not Started | 0% |
+| 0.11 | PWA & Offline Mode | ✅ Done | 100% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.10 (Edition Closure complete)
-**Next Target:** 0.11 - PWA & Offline Mode
+**Current Version:** 0.11 (PWA & Offline Mode complete)
+**Next Target:** 1.0.0 - Production Release
 
 ---
 
@@ -418,21 +418,30 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
-## v0.11 - PWA & Offline Mode
+## v0.11 - PWA & Offline Mode (US-004 AC-12/AC-13) ✅
 
 **Branch:** `feature/pwa-offline`
 
-### Service Worker Setup
-- [ ] **0.11.1** Workbox configuration
-- [ ] **0.11.2** App manifest
-- [ ] **0.11.3** Install prompt
+### PWA Setup ✅
+- [x] **0.11.1** VitePWA plugin with Workbox (service worker, runtime caching for API)
+- [x] **0.11.2** App manifest (name, icons, theme color, standalone display)
+- [x] **0.11.3** Service worker registration with update prompt and nginx no-cache rule
 
-### Offline Sales
-- [ ] **0.11.4** IndexedDB setup
-- [ ] **0.11.5** Offline sale storage
-- [ ] **0.11.6** Sync service
-- [ ] **0.11.7** Conflict resolution
-- [ ] **0.11.8** Offline indicator UI
+### Backend Tasks ✅
+- [x] **0.11.4** Article catalog endpoint (`GET /editions/{id}/articles/catalog`) for offline caching
+- [x] **0.11.5** Batch sync endpoint (`POST /editions/{id}/sales/sync`) with first-write-wins conflict resolution
+- [x] **0.11.6** Conflict notification email to managers (HTML + text templates)
+- [x] **0.11.7** Unit tests (sync nominal, conflict, error, mixed results, catalog)
+
+### Frontend Tasks ✅
+- [x] **0.11.8** IndexedDB schema (3 stores: articles, pendingSales, syncMeta) via `idb`
+- [x] **0.11.9** Catalog cache service (prefetch, barcode lookup, article removal)
+- [x] **0.11.10** Offline sales service (store, limit 50, mark synced/conflict, cleanup)
+- [x] **0.11.11** Network status hook (browser events + active healthcheck every 10s)
+- [x] **0.11.12** OfflineBanner component (offline/sync/conflict states)
+- [x] **0.11.13** useOfflineSales hook (scan/register routing, auto-sync on reconnect)
+- [x] **0.11.14** SalesPage integration (offline scan via IndexedDB, offline sale queue, merged sales list, disabled cancel offline)
+- [x] **0.11.15** Sync service (batch sync, status updates, conflict display)
 
 ---
 

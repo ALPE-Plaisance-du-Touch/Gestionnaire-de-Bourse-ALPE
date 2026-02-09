@@ -294,6 +294,37 @@ async def sync_offline_sales(
         ))
         synced += 1
 
+    # Send conflict notification email to managers
+    if conflicts > 0:
+        from app.services.email import email_service
+        from app.repositories import UserRepository
+
+        user_repo = UserRepository(db)
+        managers, _ = await user_repo.list_users(role="manager", is_active=True, limit=100)
+        admins, _ = await user_repo.list_users(role="administrator", is_active=True, limit=100)
+        recipients = managers + admins
+
+        conflict_details = [
+            r.error_message or "Conflit"
+            for r in results
+            if r.status == "conflict"
+        ]
+        seller_name = f"{seller.first_name} {seller.last_name}"
+
+        for recipient in recipients:
+            try:
+                await email_service.send_sale_conflict_email(
+                    to_email=recipient.email,
+                    edition_name=edition.name,
+                    seller_name=seller_name,
+                    synced_count=synced,
+                    conflict_count=conflicts,
+                    error_count=errors,
+                    conflicts=conflict_details,
+                )
+            except Exception:
+                pass  # Don't fail sync because of email error
+
     return SyncSalesResponse(
         synced=synced,
         conflicts=conflicts,
