@@ -3,9 +3,10 @@ import { MainLayout } from '@/components/layout';
 import { ProtectedRoute } from '@/components/auth';
 import { AuthProvider } from '@/contexts';
 import { LoginPage, ActivatePage, ForgotPasswordPage, ResetPasswordPage } from '@/pages/auth';
-import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, EditionDepositorsPage, LabelsManagementPage, LiveStatsPage, PayoutsManagementPage, PayoutDashboardPage, InvitationStatsPage } from '@/pages/admin';
+import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, EditionDepositorsPage, LabelsManagementPage, LiveStatsPage, PayoutsManagementPage, PayoutDashboardPage, InvitationStatsPage, AuditLogPage } from '@/pages/admin';
 import { MyEditionsPage, MyListsPage, ListDetailPage } from '@/pages/depositor';
 import { SalesPage } from '@/pages/volunteer/SalesPage';
+import { ProfilePage, PrivacyPolicyPage } from '@/pages/account';
 
 /**
  * Root layout that provides auth context to all routes.
@@ -86,6 +87,14 @@ export const router = createBrowserRouter([
       {
         path: '/reset-password',
         element: <ResetPasswordPage />,
+      },
+      {
+        path: '/privacy',
+        element: (
+          <MainLayout>
+            <PrivacyPolicyPage />
+          </MainLayout>
+        ),
       },
 
       // Protected routes - any authenticated user
@@ -209,6 +218,18 @@ export const router = createBrowserRouter([
         ),
       },
 
+      // Account routes - any authenticated user
+      {
+        path: '/profile',
+        element: (
+          <ProtectedRoute>
+            <MainLayout>
+              <ProfilePage />
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+
       // Admin routes - manager or administrator only
       {
         path: '/admin',
@@ -244,6 +265,16 @@ export const router = createBrowserRouter([
           <ProtectedRoute allowedRoles={['manager', 'administrator']}>
             <MainLayout>
               <EditionsPageWrapper />
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin/audit-logs',
+        element: (
+          <ProtectedRoute allowedRoles={['administrator']}>
+            <MainLayout>
+              <AuditLogPage />
             </MainLayout>
           </ProtectedRoute>
         ),

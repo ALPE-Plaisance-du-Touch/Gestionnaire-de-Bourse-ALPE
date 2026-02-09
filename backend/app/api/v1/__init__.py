@@ -3,6 +3,7 @@
 from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
+    audit,
     auth,
     billetweb,
     config,
@@ -14,10 +15,12 @@ from app.api.v1.endpoints import (
     labels,
     payouts,
     sales,
+    users,
 )
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["Auth"])
+api_router.include_router(users.router, prefix="/users", tags=["Users"])
 api_router.include_router(config.router, tags=["Config"])
 api_router.include_router(editions.router, prefix="/editions", tags=["Editions"])
 api_router.include_router(
@@ -34,6 +37,7 @@ api_router.include_router(invitations.router, prefix="/invitations", tags=["Invi
 api_router.include_router(labels.router, tags=["Labels"])
 api_router.include_router(sales.router, tags=["Sales"])
 api_router.include_router(payouts.router, tags=["Payouts"])
+api_router.include_router(audit.router, prefix="/audit-logs", tags=["Audit Logs"])
 
 # Depositor endpoints (article declaration)
 api_router.include_router(

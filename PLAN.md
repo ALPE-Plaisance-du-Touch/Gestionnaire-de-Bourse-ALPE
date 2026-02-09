@@ -35,8 +35,9 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.9 | Dashboard & Reports | ✅ Done |
 | 0.10 | Edition Closure | ✅ Done |
 | 0.11 | PWA & Offline Mode | ✅ Done |
+| 0.12 | Conformité RGPD & Sécurité | ✅ Done |
 
-**Conformité specs : 79%** (52/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
+**Conformité specs : ~82%** (54/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
 
 ---
 
@@ -54,29 +55,29 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 
 ---
 
-## v0.12 - Conformité RGPD & Sécurité
+## v0.12 - Conformité RGPD & Sécurité ✅
 
 **Branche :** `feature/rgpd-security`
 **Exigences :** REQ-NF-003, REQ-NF-009
 
-### RGPD - Droits utilisateurs (TASK-001)
-- [ ] **0.12.1** Backend : service GDPR (export données JSON, anonymisation compte)
-- [ ] **0.12.2** Backend : endpoints `/users/me/export`, `DELETE /users/me`, `PATCH /users/me/profile`
-- [ ] **0.12.3** Backend : migration `deleted_at`, `anonymized_at` sur User
-- [ ] **0.12.4** Frontend : page Profil (édition nom, prénom, téléphone, adresse)
-- [ ] **0.12.5** Frontend : page Politique de confidentialité + lien dans le footer
-- [ ] **0.12.6** Frontend : bouton "Supprimer mon compte" avec confirmation + export préalable
+### RGPD - Droits utilisateurs (TASK-001) ✅
+- [x] **0.12.1** Backend : service GDPR (export données JSON, anonymisation compte)
+- [x] **0.12.2** Backend : endpoints `/users/me/export`, `DELETE /users/me`, `PATCH /users/me`
+- [x] **0.12.3** Backend : migration `deleted_at`, `anonymized_at` sur User
+- [x] **0.12.4** Frontend : page Profil (édition nom, prénom, téléphone, adresse)
+- [x] **0.12.5** Frontend : page Politique de confidentialité + lien dans le footer
+- [x] **0.12.6** Frontend : bouton "Supprimer mon compte" avec confirmation + export préalable
 
-### Audit Logging (TASK-002)
-- [ ] **0.12.7** Backend : modèle `AuditLog` (timestamp, user_id, role, ip, user_agent, action, entity, result)
-- [ ] **0.12.8** Backend : migration + service `audit_service.log_action()`
-- [ ] **0.12.9** Backend : intégration aux endpoints sensibles (auth, editions, sales, payouts, invitations)
-- [ ] **0.12.10** Frontend : page admin AuditLogPage (liste paginée, filtres par action/utilisateur/date)
+### Audit Logging (TASK-002) ✅
+- [x] **0.12.7** Backend : modèle `AuditLog` (timestamp, user_id, role, ip, user_agent, action, entity, result)
+- [x] **0.12.8** Backend : migration + service `log_action()` (never-raise design)
+- [x] **0.12.9** Backend : intégration aux endpoints sensibles (auth, profil, export, suppression)
+- [x] **0.12.10** Frontend : page admin AuditLogPage (liste paginée, filtres par action/utilisateur/date)
 
-### Tests & docs
-- [ ] **0.12.11** Tests unitaires GDPR (export, anonymisation, suppression)
-- [ ] **0.12.12** Tests unitaires audit logging
-- [ ] **0.12.13** Mise à jour DEVELOPMENT.md
+### Tests & docs ✅
+- [x] **0.12.11** Tests unitaires GDPR (5 tests : export, anonymisation, timestamps)
+- [x] **0.12.12** Tests unitaires audit logging (8 tests : création, filtrage, pagination, résilience)
+- [x] **0.12.13** Mise à jour DEVELOPMENT.md
 
 ---
 

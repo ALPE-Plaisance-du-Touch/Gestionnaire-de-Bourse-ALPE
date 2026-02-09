@@ -90,6 +90,15 @@ export function Header() {
                           >
                             Invitations
                           </Link>
+                          {user.role === 'administrator' && (
+                            <Link
+                              to="/admin/audit-logs"
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              onClick={() => setIsAdminMenuOpen(false)}
+                            >
+                              Journal d'audit
+                            </Link>
+                          )}
                         </div>
                       </div>
                     )}
@@ -103,9 +112,12 @@ export function Header() {
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <>
-                <span className="text-sm text-gray-600">
+                <Link
+                  to="/profile"
+                  className="text-sm text-gray-600 hover:text-gray-900"
+                >
                   Bonjour, <strong>{displayName}</strong>
-                </span>
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="text-sm text-gray-600 hover:text-gray-900"

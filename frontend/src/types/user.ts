@@ -10,12 +10,20 @@ export interface User {
   firstName: string;
   lastName: string;
   phone: string | null;
+  address: string | null;
   role: UserRole;
   isActive: boolean;
   isVerified: boolean;
   isLocalResident: boolean;
   createdAt: string;
   lastLoginAt: string | null;
+}
+
+export interface UserProfileUpdate {
+  firstName?: string;
+  lastName?: string;
+  phone?: string | null;
+  address?: string | null;
 }
 
 export interface LoginRequest {

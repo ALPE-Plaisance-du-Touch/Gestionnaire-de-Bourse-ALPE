@@ -2,7 +2,7 @@
 
 import logging
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Response, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response, status
 
 from app.dependencies import AuthServiceDep, CurrentActiveUser, DBSession
 from app.exceptions import (
@@ -22,6 +22,7 @@ from app.schemas import (
     TokenValidationResponse,
     UserResponse,
 )
+from app.services.audit import log_action
 from app.services.email import email_service
 
 logger = logging.getLogger(__name__)
@@ -38,11 +39,16 @@ router = APIRouter()
 async def login(
     request: LoginRequest,
     auth_service: AuthServiceDep,
+    db: DBSession,
+    req: Request,
 ):
     """Authenticate a user and return access/refresh tokens."""
     try:
-        return await auth_service.login(request)
+        result = await auth_service.login(request)
+        await log_action(db, action="login", request=req, detail=request.email)
+        return result
     except AuthenticationError as e:
+        await log_action(db, action="login_failed", request=req, detail=request.email, result="failure")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=e.message,
@@ -79,17 +85,11 @@ async def refresh_token(
 )
 async def logout(
     current_user: CurrentActiveUser,
+    db: DBSession,
+    req: Request,
 ):
-    """Logout the current user.
-
-    Note: With stateless JWT, we cannot truly invalidate tokens server-side
-    without additional infrastructure (token blacklist). The client should
-    discard the tokens. For enhanced security, consider implementing a
-    token blacklist or using shorter token expiration times.
-    """
-    # In a production system, you might want to:
-    # 1. Add the token to a blacklist (Redis)
-    # 2. Clear the refresh token from the database
+    """Logout the current user."""
+    await log_action(db, action="logout", request=req, user=current_user)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -122,10 +122,13 @@ async def validate_invitation_token(
 async def activate_account(
     request: ActivateAccountRequest,
     auth_service: AuthServiceDep,
+    db: DBSession,
+    req: Request,
 ):
     """Activate a user account via invitation token."""
     try:
         user = await auth_service.activate_account(request)
+        await log_action(db, action="account_activated", request=req, user=user, entity_type="user", entity_id=user.id)
         return UserResponse(
             id=user.id,
             email=user.email,
@@ -220,10 +223,13 @@ async def request_password_reset(
 async def reset_password(
     request: PasswordReset,
     auth_service: AuthServiceDep,
+    db: DBSession,
+    req: Request,
 ):
     """Reset password using a valid reset token."""
     try:
         await auth_service.reset_password(request.token, request.password)
+        await log_action(db, action="password_reset", request=req)
         return MessageResponse(message="Password has been reset successfully.")
     except InvalidTokenError as e:
         raise HTTPException(
