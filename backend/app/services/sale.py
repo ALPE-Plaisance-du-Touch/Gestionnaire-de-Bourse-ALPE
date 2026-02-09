@@ -29,6 +29,11 @@ from app.schemas.sale import (
 CANCEL_TIME_LIMIT = timedelta(minutes=5)
 
 
+def _is_private_sale_time(sold_at: datetime) -> bool:
+    """Check if the sale was made during private sale hours (Friday 17h-18h)."""
+    return sold_at.weekday() == 4 and 17 <= sold_at.hour < 18
+
+
 async def scan_article(
     edition_id: str, barcode: str, db: AsyncSession
 ) -> ScanArticleResponse:
@@ -108,14 +113,16 @@ async def register_sale(
         raise ArticleAlreadySoldError(article_id)
 
     # Create sale
+    sold_at = datetime.now()
     sale = Sale(
-        sold_at=datetime.now(),
+        sold_at=sold_at,
         price=article.price,
         payment_method=payment_method,
         register_number=register_number,
         edition_id=edition_id,
         article_id=article_id,
         seller_id=seller.id,
+        is_private_sale=_is_private_sale_time(sold_at),
     )
     await sale_repo.create(sale)
 
@@ -281,6 +288,7 @@ async def sync_offline_sales(
             seller_id=seller.id,
             is_offline_sale=True,
             synced_at=datetime.now(),
+            is_private_sale=_is_private_sale_time(item.sold_at),
         )
         await sale_repo.create(sale)
 
@@ -353,4 +361,5 @@ def _sale_to_response(sale: Sale, current_user: User) -> SaleResponse:
         depositor_name=f"{depositor.first_name} {depositor.last_name}",
         list_number=sale.article.item_list.number,
         can_cancel=can_cancel,
+        is_private_sale=sale.is_private_sale,
     )
