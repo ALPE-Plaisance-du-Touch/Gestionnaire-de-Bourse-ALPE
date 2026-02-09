@@ -293,6 +293,25 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
 }
 
 /**
+ * Badge showing slot occupancy with color coding.
+ */
+function OccupancyBadge({ registered, max }: { registered: number; max: number }) {
+  const ratio = max > 0 ? registered / max : 0;
+  let colorClass = 'text-gray-500';
+  if (ratio >= 0.9) {
+    colorClass = 'text-red-600 font-medium';
+  } else if (ratio >= 0.75) {
+    colorClass = 'text-orange-600 font-medium';
+  }
+
+  return (
+    <span className={`text-xs ${colorClass}`}>
+      {registered} / {max} places
+    </span>
+  );
+}
+
+/**
  * Card displaying a single deposit slot.
  */
 function SlotCard({
@@ -323,9 +342,7 @@ function SlotCard({
           </span>
         </div>
         <div className="flex items-center gap-3 mt-1">
-          <span className="text-xs text-gray-500">
-            {slot.maxCapacity} places
-          </span>
+          <OccupancyBadge registered={slot.registeredCount} max={slot.maxCapacity} />
           {slot.reservedForLocals && (
             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
               Plaisançois

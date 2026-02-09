@@ -15,10 +15,13 @@ from app.models.billetweb_import_log import BilletwebImportLog
 from app.models.edition_depositor import EditionDepositor
 from app.models.item_list import ListType
 from app.repositories import DepositSlotRepository, UserRepository
+from app.repositories.edition_depositor import EditionDepositorRepository
 from app.schemas.billetweb import (
     BilletwebPreviewResponse,
     BilletwebPreviewStats,
     BilletwebRowError,
+    ListTypeBreakdown,
+    SlotOccupancy,
 )
 from app.services.invitation import InvitationService
 
@@ -507,6 +510,44 @@ class BilletwebImportService:
                 f"{already_registered} déposant(s) déjà inscrit(s) à cette édition seront ignorés."
             )
 
+        # Compute slot occupancy and list type breakdown
+        ed_repo = EditionDepositorRepository(self.db)
+        slot_occupancy = []
+        incoming_per_slot: dict[str, int] = {}
+        list_type_counts = ListTypeBreakdown()
+
+        # Count incoming per slot from parsed rows (excluding already registered)
+        for row in result.parsed_rows:
+            seance_normalized = self._normalize_for_comparison(row.seance)
+            sid = result.slot_mapping.get(seance_normalized)
+            if sid:
+                incoming_per_slot[sid] = incoming_per_slot.get(sid, 0) + 1
+            # Count by list type
+            if row.list_type == ListType.LIST_1000.value:
+                list_type_counts.list_1000 += 1
+            elif row.list_type == ListType.LIST_2000.value:
+                list_type_counts.list_2000 += 1
+            else:
+                list_type_counts.standard += 1
+
+        for slot in deposit_slots:
+            current = await ed_repo.count_by_slot(slot.id)
+            incoming = incoming_per_slot.get(slot.id, 0)
+            over = (current + incoming) > slot.max_capacity
+            desc = slot.description or f"{slot.start_datetime.strftime('%A %d %B %Hh')}-{slot.end_datetime.strftime('%Hh')}"
+            slot_occupancy.append(SlotOccupancy(
+                slot_id=slot.id,
+                slot_description=desc,
+                current=current,
+                incoming=incoming,
+                max_capacity=slot.max_capacity,
+                over_capacity=over,
+            ))
+            if over:
+                result.warnings.append(
+                    f"Créneau « {desc} » : capacité dépassée ({current + incoming}/{slot.max_capacity})."
+                )
+
         return BilletwebPreviewResponse(
             stats=result.stats,
             errors=result.errors,
@@ -516,6 +557,8 @@ class BilletwebImportService:
                 s.description or f"{s.start_datetime.strftime('%A %d %B %Hh')}-{s.end_datetime.strftime('%Hh')}"
                 for s in deposit_slots
             ],
+            slot_occupancy=slot_occupancy,
+            list_type_breakdown=list_type_counts,
         )
 
     async def import_file(
@@ -562,6 +605,30 @@ class BilletwebImportService:
                 f"Le fichier contient {len(result.errors)} erreur(s). "
                 "Corrigez le fichier ou utilisez l'option 'ignorer les erreurs'."
             )
+
+        # Check slot capacity before importing
+        ed_repo = EditionDepositorRepository(self.db)
+        slot_map = {s.id: s for s in deposit_slots}
+        incoming_per_slot: dict[str, int] = {}
+        for row in result.parsed_rows:
+            seance_normalized = self._normalize_for_comparison(row.seance)
+            sid = result.slot_mapping.get(seance_normalized)
+            if sid:
+                incoming_per_slot[sid] = incoming_per_slot.get(sid, 0) + 1
+
+        for sid, incoming in incoming_per_slot.items():
+            slot = slot_map.get(sid)
+            if slot:
+                current = await ed_repo.count_by_slot(sid)
+                if current + incoming > slot.max_capacity:
+                    desc = slot.description or f"{slot.start_datetime.strftime('%d/%m %Hh')}"
+                    msg = (
+                        f"Créneau « {desc} » : capacité dépassée "
+                        f"({current + incoming}/{slot.max_capacity})."
+                    )
+                    if not ignore_errors:
+                        raise ValueError(msg)
+                    logger.warning(msg)
 
         # Create import log
         import_log = BilletwebImportLog(

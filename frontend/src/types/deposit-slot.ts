@@ -10,6 +10,7 @@ export interface DepositSlot {
   maxCapacity: number;
   reservedForLocals: boolean;
   description: string | null;
+  registeredCount: number;
   createdAt: string;
 }
 

@@ -54,6 +54,14 @@ export function ListDetailPage() {
     enabled: !!listId,
   });
 
+  // Fetch edition info (for deadline banner)
+  const { data: editionsResponse } = useQuery({
+    queryKey: ['my-editions'],
+    queryFn: () => depositorListsApi.getMyEditions(),
+  });
+
+  const edition = editionsResponse?.editions.find((e) => e.id === list?.editionId);
+
   // Fetch category constraints
   const { data: constraints } = useQuery({
     queryKey: ['category-constraints'],
@@ -234,6 +242,11 @@ export function ListDetailPage() {
         </div>
       </div>
 
+      {/* Deadline banner */}
+      {edition?.declarationDeadline && isDraft && (
+        <DeadlineBanner deadline={edition.declarationDeadline} />
+      )}
+
       {/* Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow p-4">
@@ -400,4 +413,29 @@ export function ListDetailPage() {
       )}
     </div>
   );
+}
+
+function DeadlineBanner({ deadline }: { deadline: string }) {
+  const now = new Date();
+  const deadlineDate = new Date(deadline);
+  const diffMs = deadlineDate.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return (
+      <div className="mb-4 bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-lg">
+        La date limite de declaration est depassee. Vous ne pouvez plus modifier vos listes.
+      </div>
+    );
+  }
+
+  if (diffDays <= 3) {
+    return (
+      <div className="mb-4 bg-orange-50 border border-orange-300 text-orange-800 px-4 py-3 rounded-lg">
+        Il vous reste {diffDays} jour{diffDays > 1 ? 's' : ''} pour finaliser vos articles.
+      </div>
+    );
+  }
+
+  return null;
 }

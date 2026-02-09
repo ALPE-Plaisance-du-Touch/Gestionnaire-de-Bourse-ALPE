@@ -5,7 +5,7 @@ interface BilletwebPreviewTableProps {
 }
 
 export function BilletwebPreviewTable({ preview }: BilletwebPreviewTableProps) {
-  const { stats, errors, warnings, canImport } = preview;
+  const { stats, errors, warnings, canImport, slotOccupancy, listTypeBreakdown } = preview;
 
   return (
     <div className="space-y-6">
@@ -52,6 +52,62 @@ export function BilletwebPreviewTable({ preview }: BilletwebPreviewTableProps) {
           </div>
         </div>
       </div>
+
+      {/* List type breakdown */}
+      {(listTypeBreakdown.standard > 0 || listTypeBreakdown.list_1000 > 0 || listTypeBreakdown.list_2000 > 0) && (
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h4 className="font-medium text-gray-700 mb-3">Repartition par type</h4>
+          <div className="grid grid-cols-3 gap-4 text-sm">
+            <div className="bg-white p-3 rounded border">
+              <p className="text-gray-500">Standard</p>
+              <p className="text-xl font-semibold text-gray-900">{listTypeBreakdown.standard}</p>
+            </div>
+            <div className="bg-white p-3 rounded border">
+              <p className="text-gray-500">Liste 1000</p>
+              <p className="text-xl font-semibold text-blue-600">{listTypeBreakdown.list_1000}</p>
+            </div>
+            <div className="bg-white p-3 rounded border">
+              <p className="text-gray-500">Liste 2000</p>
+              <p className="text-xl font-semibold text-purple-600">{listTypeBreakdown.list_2000}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Slot occupancy */}
+      {slotOccupancy.length > 0 && (
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h4 className="font-medium text-gray-700 mb-3">Occupation creneaux</h4>
+          <div className="space-y-3">
+            {slotOccupancy.map((slot) => {
+              const total = slot.current + slot.incoming;
+              const ratio = slot.maxCapacity > 0 ? total / slot.maxCapacity : 0;
+              const barColor = slot.overCapacity ? 'bg-red-500' : ratio >= 0.75 ? 'bg-orange-500' : 'bg-green-500';
+
+              return (
+                <div key={slot.slotId} className="bg-white p-3 rounded border">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-gray-700">{slot.slotDescription}</span>
+                    <span className={slot.overCapacity ? 'text-red-600 font-medium' : 'text-gray-600'}>
+                      {total} / {slot.maxCapacity}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className={`${barColor} h-2 rounded-full transition-all`}
+                      style={{ width: `${Math.min(ratio * 100, 100)}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>{slot.current} inscrits + {slot.incoming} nouveaux</span>
+                    {slot.overCapacity && <span className="text-red-600">Depassement !</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Warnings */}
       {warnings.length > 0 && (

@@ -26,12 +26,29 @@ export interface BilletwebPreviewStats {
   errorsCount: number;
 }
 
+export interface SlotOccupancy {
+  slotId: string;
+  slotDescription: string;
+  current: number;
+  incoming: number;
+  maxCapacity: number;
+  overCapacity: boolean;
+}
+
+export interface ListTypeBreakdown {
+  standard: number;
+  list_1000: number;
+  list_2000: number;
+}
+
 export interface BilletwebPreviewResponse {
   stats: BilletwebPreviewStats;
   errors: BilletwebRowError[];
   warnings: string[];
   canImport: boolean;
   availableSlots: string[];
+  slotOccupancy: SlotOccupancy[];
+  listTypeBreakdown: ListTypeBreakdown;
 }
 
 // --- Import Types ---

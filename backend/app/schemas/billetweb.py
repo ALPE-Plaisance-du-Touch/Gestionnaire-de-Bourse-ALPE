@@ -41,6 +41,25 @@ class BilletwebPreviewStats(BaseModel):
     errors_count: int = Field(..., description="Number of rows with blocking errors")
 
 
+class SlotOccupancy(BaseModel):
+    """Occupancy info for a deposit slot."""
+
+    slot_id: str
+    slot_description: str
+    current: int = Field(..., description="Already registered depositors")
+    incoming: int = Field(..., description="New depositors from this import")
+    max_capacity: int
+    over_capacity: bool = Field(..., description="True if current + incoming > max_capacity")
+
+
+class ListTypeBreakdown(BaseModel):
+    """Breakdown of depositors by list type."""
+
+    standard: int = 0
+    list_1000: int = 0
+    list_2000: int = 0
+
+
 class BilletwebPreviewResponse(BaseModel):
     """Response for preview endpoint."""
 
@@ -56,6 +75,12 @@ class BilletwebPreviewResponse(BaseModel):
     can_import: bool = Field(..., description="Whether import can proceed (no blocking errors)")
     available_slots: list[str] = Field(
         default_factory=list, description="List of configured slot names for reference"
+    )
+    slot_occupancy: list[SlotOccupancy] = Field(
+        default_factory=list, description="Occupancy per deposit slot"
+    )
+    list_type_breakdown: ListTypeBreakdown = Field(
+        default_factory=ListTypeBreakdown, description="Depositors by list type"
     )
 
 
