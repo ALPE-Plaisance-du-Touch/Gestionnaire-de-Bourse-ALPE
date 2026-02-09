@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conflits de synchronisation - Bourse ALPE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f59e0b;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            background-color: #f9fafb;
+            padding: 30px;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+        }
+        .conflict-box {
+            background-color: #fef3c7;
+            border: 1px solid #f59e0b;
+            padding: 16px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .conflict-box ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+        .conflict-box li {
+            margin: 4px 0;
+        }
+        .stats {
+            margin: 16px 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+            font-size: 12px;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Bourse ALPE</h1>
+        <p>Conflits de synchronisation</p>
+    </div>
+
+    <div class="content">
+        <p>Bonjour,</p>
+
+        <p>Lors de la synchronisation des ventes hors-ligne pour l'edition <strong>{{ edition_name }}</strong>, <strong>{{ conflict_count }}</strong> conflit(s) ont ete detecte(s).</p>
+
+        <div class="stats">
+            <p>Synchronisation effectuee par <strong>{{ seller_name }}</strong> :</p>
+            <ul>
+                <li><strong>{{ synced_count }}</strong> vente(s) synchronisee(s) avec succes</li>
+                <li><strong>{{ conflict_count }}</strong> conflit(s) (article deja vendu par une autre caisse)</li>
+                <li><strong>{{ error_count }}</strong> erreur(s)</li>
+            </ul>
+        </div>
+
+        <div class="conflict-box">
+            <strong>Details des conflits :</strong>
+            <ul>
+                {% for conflict in conflicts %}
+                <li>{{ conflict }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <p>Les conflits sont resolus par la regle "premier arrive, premier servi" : la vente enregistree en premier sur le serveur est conservee.</p>
+    </div>
+
+    <div class="footer">
+        <p>ALPE Plaisance du Touch</p>
+        <p>Cet email a ete envoye automatiquement, merci de ne pas y repondre.</p>
+    </div>
+</body>
+</html>

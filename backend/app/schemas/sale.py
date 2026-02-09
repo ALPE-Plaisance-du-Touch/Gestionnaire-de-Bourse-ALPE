@@ -48,6 +48,47 @@ class SaleResponse(BaseModel):
     can_cancel: bool
 
 
+class CatalogArticleResponse(BaseModel):
+    article_id: str
+    barcode: str
+    description: str
+    category: str
+    size: str | None = None
+    price: Decimal
+    brand: str | None = None
+    is_lot: bool
+    lot_quantity: int | None = None
+    list_number: int
+    depositor_name: str
+    label_color: str | None = None
+
+
+class OfflineSaleItem(BaseModel):
+    client_id: str
+    article_id: str
+    payment_method: str
+    register_number: int = 1
+    sold_at: datetime
+
+
+class SyncSalesRequest(BaseModel):
+    sales: list[OfflineSaleItem]
+
+
+class SyncSaleResult(BaseModel):
+    client_id: str
+    status: str  # "synced" | "conflict" | "error"
+    server_sale_id: str | None = None
+    error_message: str | None = None
+
+
+class SyncSalesResponse(BaseModel):
+    synced: int
+    conflicts: int
+    errors: int
+    results: list[SyncSaleResult]
+
+
 class CancelSaleRequest(BaseModel):
     reason: str | None = None
 

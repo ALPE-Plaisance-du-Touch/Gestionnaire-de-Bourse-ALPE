@@ -15,9 +15,13 @@ from app.models.article import ArticleStatus
 from app.models.sale import PaymentMethod
 from app.repositories import ArticleRepository, EditionRepository, SaleRepository
 from app.schemas.sale import (
+    CatalogArticleResponse,
+    OfflineSaleItem,
     SaleResponse,
     SaleStatsResponse,
     ScanArticleResponse,
+    SyncSaleResult,
+    SyncSalesResponse,
     TopDepositorStats,
 )
 
@@ -171,6 +175,161 @@ async def get_live_stats(
     return SaleStatsResponse(
         **stats,
         top_depositors=top_depositors,
+    )
+
+
+async def get_article_catalog(
+    edition_id: str, db: AsyncSession
+) -> list[CatalogArticleResponse]:
+    edition_repo = EditionRepository(db)
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise EditionNotFoundError(edition_id)
+
+    article_repo = ArticleRepository(db)
+    articles = await article_repo.get_on_sale_for_edition(edition_id)
+
+    return [
+        CatalogArticleResponse(
+            article_id=a.id,
+            barcode=a.barcode or "",
+            description=a.description,
+            category=a.category,
+            size=a.size,
+            price=a.price,
+            brand=a.brand,
+            is_lot=a.is_lot,
+            lot_quantity=a.lot_quantity,
+            list_number=a.item_list.number,
+            depositor_name=f"{a.item_list.depositor.first_name} {a.item_list.depositor.last_name}",
+            label_color=a.item_list.label_color,
+        )
+        for a in articles
+    ]
+
+
+async def sync_offline_sales(
+    edition_id: str,
+    sales: list[OfflineSaleItem],
+    seller: User,
+    db: AsyncSession,
+) -> SyncSalesResponse:
+    edition_repo = EditionRepository(db)
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise EditionNotFoundError(edition_id)
+
+    article_repo = ArticleRepository(db)
+    sale_repo = SaleRepository(db)
+    valid_methods = {m.value for m in PaymentMethod}
+
+    results: list[SyncSaleResult] = []
+    synced = 0
+    conflicts = 0
+    errors = 0
+
+    for item in sales:
+        # Validate payment method
+        if item.payment_method not in valid_methods:
+            results.append(SyncSaleResult(
+                client_id=item.client_id,
+                status="error",
+                error_message=f"Invalid payment method: {item.payment_method}",
+            ))
+            errors += 1
+            continue
+
+        # Check article exists
+        article = await article_repo.get_by_id(item.article_id)
+        if not article:
+            results.append(SyncSaleResult(
+                client_id=item.client_id,
+                status="error",
+                error_message="Article not found",
+            ))
+            errors += 1
+            continue
+
+        if article.item_list.edition_id != edition_id:
+            results.append(SyncSaleResult(
+                client_id=item.client_id,
+                status="error",
+                error_message="Article does not belong to this edition",
+            ))
+            errors += 1
+            continue
+
+        # Check if already sold (first-write-wins conflict)
+        existing = await sale_repo.get_by_article_id(item.article_id)
+        if existing or article.is_sold:
+            results.append(SyncSaleResult(
+                client_id=item.client_id,
+                status="conflict",
+                error_message="Article already sold by another register",
+            ))
+            conflicts += 1
+            continue
+
+        # Create the sale
+        sale = Sale(
+            sold_at=item.sold_at,
+            price=article.price,
+            payment_method=item.payment_method,
+            register_number=item.register_number,
+            edition_id=edition_id,
+            article_id=item.article_id,
+            seller_id=seller.id,
+            is_offline_sale=True,
+            synced_at=datetime.now(),
+        )
+        await sale_repo.create(sale)
+
+        article.status = ArticleStatus.SOLD.value
+        await db.commit()
+
+        results.append(SyncSaleResult(
+            client_id=item.client_id,
+            status="synced",
+            server_sale_id=sale.id,
+        ))
+        synced += 1
+
+    # Send conflict notification email to managers
+    if conflicts > 0:
+        from app.services.email import email_service
+        from app.repositories import UserRepository
+
+        user_repo = UserRepository(db)
+        managers, _ = await user_repo.list_users(role="manager", is_active=True, limit=100)
+        admins, _ = await user_repo.list_users(role="administrator", is_active=True, limit=100)
+        recipients = managers + admins
+
+        conflict_details = [
+            r.error_message or "Conflit"
+            for r in results
+            if r.status == "conflict"
+        ]
+        seller_name = f"{seller.first_name} {seller.last_name}"
+
+        for recipient in recipients:
+            try:
+                await email_service.send_sale_conflict_email(
+                    to_email=recipient.email,
+                    edition_name=edition.name,
+                    seller_name=seller_name,
+                    synced_count=synced,
+                    conflict_count=conflicts,
+                    error_count=errors,
+                    conflicts=conflict_details,
+                )
+            except Exception:
+                pass  # Don't fail sync because of email error
+
+    return SyncSalesResponse(
+        synced=synced,
+        conflicts=conflicts,
+        errors=errors,
+        results=results,
     )
 
 

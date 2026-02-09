@@ -258,6 +258,19 @@ class ArticleRepository:
         )
         return dict(result.all())
 
+    async def get_on_sale_for_edition(self, edition_id: str) -> list[Article]:
+        """Get all articles with status ON_SALE for a given edition."""
+        result = await self.db.execute(
+            select(Article)
+            .join(Article.item_list)
+            .options(
+                joinedload(Article.item_list).joinedload(ItemList.depositor)
+            )
+            .where(ItemList.edition_id == edition_id)
+            .where(Article.status == ArticleStatus.ON_SALE.value)
+        )
+        return list(result.unique().scalars().all())
+
     async def get_subcategory_counts(self, item_list_id: str) -> dict[str, int]:
         """Get count of articles per subcategory for a list."""
         result = await self.db.execute(

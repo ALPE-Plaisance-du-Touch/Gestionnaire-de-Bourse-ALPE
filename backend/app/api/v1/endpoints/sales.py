@@ -15,17 +15,22 @@ from app.exceptions import (
 from app.models import User
 from app.schemas.sale import (
     CancelSaleRequest,
+    CatalogArticleResponse,
     RegisterSaleRequest,
     SaleResponse,
     SaleStatsResponse,
     ScanArticleResponse,
     ScanRequest,
+    SyncSalesRequest,
+    SyncSalesResponse,
 )
 from app.services.sale import (
     cancel_sale,
+    get_article_catalog,
     get_live_stats,
     register_sale,
     scan_article,
+    sync_offline_sales,
     _sale_to_response,
 )
 from app.repositories import SaleRepository
@@ -38,6 +43,22 @@ def get_sale_repository(db: DBSession) -> SaleRepository:
 
 
 SaleRepoDep = Annotated[SaleRepository, Depends(get_sale_repository)]
+
+
+@router.get(
+    "/editions/{edition_id}/articles/catalog",
+    response_model=list[CatalogArticleResponse],
+    summary="Get full article catalog for offline caching",
+)
+async def get_article_catalog_endpoint(
+    edition_id: str,
+    db: DBSession,
+    current_user: Annotated[User, Depends(require_role(["volunteer", "manager", "administrator"]))],
+):
+    try:
+        return await get_article_catalog(edition_id, db)
+    except EditionNotFoundError:
+        raise HTTPException(status_code=404, detail="Edition not found")
 
 
 @router.post(
@@ -122,6 +143,23 @@ async def list_sales_endpoint(
         "per_page": per_page,
         "pages": (total + per_page - 1) // per_page if per_page > 0 else 0,
     }
+
+
+@router.post(
+    "/editions/{edition_id}/sales/sync",
+    response_model=SyncSalesResponse,
+    summary="Sync offline sales batch",
+)
+async def sync_sales_endpoint(
+    edition_id: str,
+    request: SyncSalesRequest,
+    db: DBSession,
+    current_user: Annotated[User, Depends(require_role(["volunteer", "manager", "administrator"]))],
+):
+    try:
+        return await sync_offline_sales(edition_id, request.sales, current_user, db)
+    except EditionNotFoundError:
+        raise HTTPException(status_code=404, detail="Edition not found")
 
 
 @router.post(

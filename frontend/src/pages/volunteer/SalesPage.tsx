@@ -1,10 +1,13 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { salesApi } from '@/api';
 import { QrScanner } from '@/components/sales/QrScanner';
+import { OfflineBanner } from '@/components/ui/OfflineBanner';
+import { useOfflineSales } from '@/hooks/useOfflineSales';
 import { playSuccessBeep, playErrorBeep } from '@/utils/sound';
-import type { ScanArticleResponse, SaleResponse } from '@/types';
+import type { ScanArticleResponse, SaleResponse, OfflineSaleDisplay } from '@/types';
+import type { PendingSale } from '@/services/db';
 
 type PaymentMethod = 'cash' | 'card' | 'check';
 
@@ -18,22 +21,46 @@ export function SalesPage() {
   const { id: editionId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
 
+  const {
+    isOnline,
+    pendingCount,
+    lastSyncCount,
+    conflicts,
+    scanArticle: offlineScan,
+    registerSale: offlineRegister,
+    getOfflineSales,
+    refreshPendingCount,
+  } = useOfflineSales({ editionId });
+
   const [scannedArticle, setScannedArticle] = useState<ScanArticleResponse | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [offlineSalesList, setOfflineSalesList] = useState<PendingSale[]>([]);
 
-  // Recent sales list
+  // Load offline sales for display
+  useEffect(() => {
+    getOfflineSales().then(setOfflineSalesList);
+  }, [getOfflineSales, pendingCount]);
+
+  // Invalidate server sales after sync
+  useEffect(() => {
+    if (lastSyncCount > 0) {
+      queryClient.invalidateQueries({ queryKey: ['sales', editionId] });
+    }
+  }, [lastSyncCount, queryClient, editionId]);
+
+  // Recent sales list (only fetched when online)
   const { data: recentSales } = useQuery({
     queryKey: ['sales', editionId, 'recent'],
     queryFn: () => salesApi.listSales(editionId!, { perPage: 20 }),
-    enabled: !!editionId,
-    refetchInterval: 5000,
+    enabled: !!editionId && isOnline,
+    refetchInterval: isOnline ? 5000 : false,
   });
 
-  // Scan mutation
+  // Scan mutation (works online and offline via hook)
   const scanMutation = useMutation({
-    mutationFn: (barcode: string) => salesApi.scanArticle(editionId!, barcode),
+    mutationFn: (barcode: string) => offlineScan(barcode),
     onSuccess: (data) => {
       setScannedArticle(data);
       setScanError(null);
@@ -48,35 +75,35 @@ export function SalesPage() {
         );
       }
     },
-    onError: (error: Error & { status?: number }) => {
+    onError: (error: Error) => {
       setScannedArticle(null);
-      setScanError('Article non trouve');
+      setScanError(error.message || 'Article non trouve');
       playErrorBeep();
     },
   });
 
-  // Register sale mutation
+  // Register sale mutation (works online and offline via hook)
   const registerMutation = useMutation({
-    mutationFn: (params: { articleId: string; paymentMethod: PaymentMethod }) =>
-      salesApi.registerSale(editionId!, {
-        articleId: params.articleId,
-        paymentMethod: params.paymentMethod,
-        registerNumber: 1,
-      }),
+    mutationFn: (params: { article: ScanArticleResponse; paymentMethod: PaymentMethod }) =>
+      offlineRegister(params.article, params.paymentMethod),
     onSuccess: (data) => {
       playSuccessBeep();
-      setSuccessMessage(`Vente enregistree ! ${data.articleDescription} - ${Number(data.price).toFixed(2)} EUR`);
+      const suffix = data.isOffline ? ' (hors-ligne)' : '';
+      setSuccessMessage(`Vente enregistree${suffix} ! ${data.description} - ${data.price.toFixed(2)} EUR`);
       setScannedArticle(null);
       setSelectedPayment(null);
-      queryClient.invalidateQueries({ queryKey: ['sales', editionId] });
+      if (!data.isOffline) {
+        queryClient.invalidateQueries({ queryKey: ['sales', editionId] });
+      }
+      refreshPendingCount();
     },
-    onError: (error: Error & { message?: string }) => {
+    onError: (error: Error) => {
       playErrorBeep();
       setScanError(error.message || 'Erreur lors de l\'enregistrement de la vente');
     },
   });
 
-  // Cancel mutation
+  // Cancel mutation (only available when online)
   const cancelMutation = useMutation({
     mutationFn: (saleId: string) => salesApi.cancelSale(editionId!, saleId),
     onSuccess: () => {
@@ -93,14 +120,31 @@ export function SalesPage() {
   const handleRegister = () => {
     if (scannedArticle && selectedPayment) {
       registerMutation.mutate({
-        articleId: scannedArticle.articleId,
+        article: scannedArticle,
         paymentMethod: selectedPayment,
       });
     }
   };
 
-  const sales = recentSales?.items || [];
-  const sessionTotal = sales.reduce((sum, s) => sum + Number(s.price), 0);
+  // Merge server sales with offline pending sales for display
+  const serverSales = recentSales?.items || [];
+  const offlineDisplaySales: OfflineSaleDisplay[] = offlineSalesList
+    .filter(s => s.status === 'pending')
+    .map(s => ({
+      id: s.id,
+      articleId: s.articleId,
+      articleDescription: s.articleDescription,
+      articleBarcode: s.barcode,
+      price: s.price,
+      paymentMethod: s.paymentMethod,
+      soldAt: s.soldAt,
+      depositorName: '',
+      listNumber: 0,
+      isOffline: true as const,
+    }));
+
+  const allSales = [...offlineDisplaySales, ...serverSales];
+  const sessionTotal = allSales.reduce((sum, s) => sum + Number(s.price), 0);
 
   return (
     <div>
@@ -115,6 +159,11 @@ export function SalesPage() {
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Caisse</h1>
         </div>
+      </div>
+
+      {/* Offline banner */}
+      <div className="mb-4">
+        <OfflineBanner isOnline={isOnline} pendingCount={pendingCount} lastSyncCount={lastSyncCount} conflicts={conflicts} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -217,21 +266,26 @@ export function SalesPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Ventes recentes</h2>
             <div className="text-sm text-gray-500">
-              {sales.length} vente{sales.length !== 1 ? 's' : ''} &middot; {sessionTotal.toFixed(2)} EUR
+              {allSales.length} vente{allSales.length !== 1 ? 's' : ''} &middot; {sessionTotal.toFixed(2)} EUR
             </div>
           </div>
 
-          {sales.length === 0 ? (
+          {allSales.length === 0 ? (
             <p className="text-gray-500 text-center py-8">Aucune vente enregistree</p>
           ) : (
             <div className="space-y-2 max-h-[600px] overflow-y-auto">
-              {sales.map((sale: SaleResponse) => (
-                <SaleItem
-                  key={sale.id}
-                  sale={sale}
-                  onCancel={() => cancelMutation.mutate(sale.id)}
-                  cancelling={cancelMutation.isPending}
-                />
+              {allSales.map((sale) => (
+                'isOffline' in sale ? (
+                  <OfflineSaleItem key={sale.id} sale={sale} />
+                ) : (
+                  <SaleItem
+                    key={sale.id}
+                    sale={sale}
+                    onCancel={() => cancelMutation.mutate(sale.id)}
+                    cancelling={cancelMutation.isPending}
+                    cancelDisabled={!isOnline}
+                  />
+                )
               ))}
             </div>
           )}
@@ -241,14 +295,41 @@ export function SalesPage() {
   );
 }
 
+function OfflineSaleItem({ sale }: { sale: OfflineSaleDisplay }) {
+  const soldAt = new Date(sale.soldAt);
+  const time = soldAt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+  return (
+    <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">{time}</span>
+          <span className="text-sm font-medium text-gray-900 truncate">{sale.articleDescription}</span>
+        </div>
+        <div className="flex items-center gap-2 mt-0.5">
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-orange-200 text-orange-800">
+            Hors-ligne
+          </span>
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-700">
+            {PAYMENT_LABELS[sale.paymentMethod as PaymentMethod] || sale.paymentMethod}
+          </span>
+        </div>
+      </div>
+      <span className="font-semibold text-gray-900 ml-3">{Number(sale.price).toFixed(2)} EUR</span>
+    </div>
+  );
+}
+
 function SaleItem({
   sale,
   onCancel,
   cancelling,
+  cancelDisabled,
 }: {
   sale: SaleResponse;
   onCancel: () => void;
   cancelling: boolean;
+  cancelDisabled: boolean;
 }) {
   const soldAt = new Date(sale.soldAt);
   const time = soldAt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -271,7 +352,7 @@ function SaleItem({
       </div>
       <div className="flex items-center gap-3 ml-3">
         <span className="font-semibold text-gray-900">{Number(sale.price).toFixed(2)} EUR</span>
-        {sale.canCancel && (
+        {sale.canCancel && !cancelDisabled && (
           <button
             type="button"
             onClick={onCancel}
