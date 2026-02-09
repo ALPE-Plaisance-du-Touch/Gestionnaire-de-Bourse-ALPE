@@ -1,14 +1,16 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useRef, useEffect, useCallback, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invitationsApi, ApiException } from '@/api';
 import { Button, Input, Modal, Select } from '@/components/ui';
-import type { ListType } from '@/types';
+import type { DepositorLookup, ListType } from '@/types';
 
 const LIST_TYPE_OPTIONS = [
   { value: 'standard', label: 'Standard (100-600)' },
   { value: 'list_1000', label: 'Liste 1000 (membres ALPE)' },
   { value: 'list_2000', label: 'Liste 2000 (famille/amis)' },
 ];
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface InvitationCreateModalProps {
   isOpen: boolean;
@@ -24,6 +26,9 @@ export function InvitationCreateModal({ isOpen, onClose }: InvitationCreateModal
   const [listType, setListType] = useState<ListType>('standard');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [lookup, setLookup] = useState<DepositorLookup | null>(null);
+  const [isLookingUp, setIsLookingUp] = useState(false);
+  const lookupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const createMutation = useMutation({
     mutationFn: invitationsApi.createInvitation,
@@ -45,6 +50,46 @@ export function InvitationCreateModal({ isOpen, onClose }: InvitationCreateModal
     },
   });
 
+  // Debounced depositor lookup
+  const debouncedLookup = useCallback((emailValue: string) => {
+    if (lookupTimerRef.current) {
+      clearTimeout(lookupTimerRef.current);
+    }
+    setLookup(null);
+
+    if (!emailValue || !EMAIL_REGEX.test(emailValue)) {
+      setIsLookingUp(false);
+      return;
+    }
+
+    setIsLookingUp(true);
+    lookupTimerRef.current = setTimeout(async () => {
+      const result = await invitationsApi.lookupDepositor(emailValue);
+      setLookup(result);
+      setIsLookingUp(false);
+    }, 500);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (lookupTimerRef.current) {
+        clearTimeout(lookupTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    debouncedLookup(value);
+  };
+
+  const handlePrefill = () => {
+    if (!lookup?.found) return;
+    if (lookup.firstName) setFirstName(lookup.firstName);
+    if (lookup.lastName) setLastName(lookup.lastName);
+    if (lookup.preferredListType) setListType(lookup.preferredListType as ListType);
+  };
+
   const resetForm = () => {
     setEmail('');
     setFirstName('');
@@ -52,6 +97,8 @@ export function InvitationCreateModal({ isOpen, onClose }: InvitationCreateModal
     setListType('standard');
     setError(null);
     setSuccess(false);
+    setLookup(null);
+    setIsLookingUp(false);
   };
 
   const handleClose = () => {
@@ -64,7 +111,7 @@ export function InvitationCreateModal({ isOpen, onClose }: InvitationCreateModal
     setError(null);
 
     // Basic email validation
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!email || !EMAIL_REGEX.test(email)) {
       setError('Veuillez saisir une adresse email valide.');
       return;
     }
@@ -110,11 +157,38 @@ export function InvitationCreateModal({ isOpen, onClose }: InvitationCreateModal
             label="Adresse email"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => handleEmailChange(e.target.value)}
             placeholder="deposant@example.com"
             required
             autoFocus
           />
+
+          {/* Depositor lookup result */}
+          {isLookingUp && (
+            <p className="text-xs text-gray-400">Recherche du deposant...</p>
+          )}
+          {lookup?.found && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-lg text-sm">
+              <div className="flex items-center justify-between">
+                <span>
+                  Deposant existant : <strong>{lookup.firstName} {lookup.lastName}</strong>
+                  {lookup.participationCount ? ` (${lookup.participationCount} participation${lookup.participationCount > 1 ? 's' : ''})` : ''}
+                </span>
+                <button
+                  type="button"
+                  onClick={handlePrefill}
+                  className="text-xs font-medium text-green-800 underline hover:text-green-900"
+                >
+                  Pre-remplir
+                </button>
+              </div>
+              {lookup.lastEditionName && (
+                <p className="text-xs mt-0.5 text-green-600">
+                  Derniere participation : {lookup.lastEditionName}
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <Input
