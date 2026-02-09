@@ -35,6 +35,9 @@ export interface Edition {
   commissionRate: number | null;
   createdAt: string;
   createdBy: EditionCreator | null;
+  closedAt: string | null;
+  closedBy: EditionCreator | null;
+  archivedAt: string | null;
 }
 
 export interface CreateEditionRequest {
@@ -59,6 +62,17 @@ export interface UpdateEditionRequest {
   retrievalStartDatetime?: string;
   retrievalEndDatetime?: string;
   commissionRate?: number;
+}
+
+export interface ClosureCheckItem {
+  label: string;
+  passed: boolean;
+  detail: string | null;
+}
+
+export interface ClosureCheckResponse {
+  canClose: boolean;
+  checks: ClosureCheckItem[];
 }
 
 export interface EditionListResponse {

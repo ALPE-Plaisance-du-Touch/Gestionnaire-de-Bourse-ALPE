@@ -23,12 +23,12 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.7 | Sales & Checkout | ✅ Done | 100% |
 | 0.8 | Payout Calculation | ✅ Done | 100% |
 | 0.9 | Dashboard & Reports | ✅ Done | 100% |
-| 0.10 | Edition Closure | 🔲 Not Started | 0% |
+| 0.10 | Edition Closure | ✅ Done | 100% |
 | 0.11 | PWA & Offline Mode | 🔲 Not Started | 0% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.9 (Dashboard & Reports complete)
-**Next Target:** 0.10 - Edition Closure
+**Current Version:** 0.10 (Edition Closure complete)
+**Next Target:** 0.11 - PWA & Offline Mode
 
 ---
 
@@ -395,14 +395,26 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
-## v0.10 - Edition Closure (US-009)
+## v0.10 - Edition Closure (US-009) ✅
 
 **Branch:** `feature/us-009-edition-closure`
 
-- [ ] **0.10.1** Closure validation service
-- [ ] **0.10.2** Final payout generation
-- [ ] **0.10.3** Archive functionality
-- [ ] **0.10.4** Closure UI
+### Backend Tasks ✅
+- [x] **0.10.1** Edition model: closure fields (closed_at, closed_by_id, archived_at) + migration
+- [x] **0.10.2** Closure schemas (ClosureCheckItem, ClosureCheckResponse, EditionResponse updated)
+- [x] **0.10.3** Closure validation service (4 prerequisites: status, retrieval date, payouts calculated, all finalized)
+- [x] **0.10.4** Repository: close_edition(), archive_edition()
+- [x] **0.10.5** API endpoints (GET closure-check, POST close, POST archive) with admin guard
+- [x] **0.10.6** Email notification on closure (HTML + text templates)
+- [x] **0.10.7** Read-only guard on recalculate_payout for closed editions
+- [x] **0.10.8** Unit tests (9 tests: prerequisites, close, archive)
+
+### Frontend Tasks ✅
+- [x] **0.10.9** TypeScript types (closedAt, closedBy, archivedAt, ClosureCheckResponse)
+- [x] **0.10.10** API client methods (getClosureCheck, closeEdition, archiveEdition)
+- [x] **0.10.11** Closure button + modal with prerequisite checklist on EditionDetailPage
+- [x] **0.10.12** Archive button on EditionDetailPage (closed editions)
+- [x] **0.10.13** EditionsListPage: includeArchived filter for archived status
 
 ---
 

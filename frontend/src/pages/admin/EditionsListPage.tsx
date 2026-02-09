@@ -56,7 +56,12 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
     queryKey: ['editions', statusFilter === 'all' ? undefined : statusFilter],
     queryFn: () =>
       editionsApi.getEditions(
-        statusFilter === 'all' ? undefined : { status: statusFilter }
+        statusFilter === 'all'
+          ? undefined
+          : {
+              status: statusFilter,
+              includeArchived: statusFilter === 'archived',
+            }
       ),
   });
 

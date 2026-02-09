@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import type {
+  ClosureCheckResponse,
   Edition,
   EditionListResponse,
   CreateEditionRequest,
@@ -34,6 +35,14 @@ interface EditionApiResponse {
     lastName: string;
     email: string;
   } | null;
+  closedAt: string | null;
+  closedBy: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  } | null;
+  archivedAt: string | null;
 }
 
 interface EditionListApiResponse {
@@ -68,6 +77,9 @@ function transformEdition(data: EditionApiResponse): Edition {
     commissionRate: data.commissionRate !== null ? parseFloat(data.commissionRate) : null,
     createdAt: data.createdAt,
     createdBy: data.createdBy,
+    closedAt: data.closedAt,
+    closedBy: data.closedBy,
+    archivedAt: data.archivedAt,
   };
 }
 
@@ -163,5 +175,20 @@ export const editionsApi = {
    */
   deleteEdition: async (editionId: string): Promise<void> => {
     await apiClient.delete(`/v1/editions/${editionId}`);
+  },
+
+  getClosureCheck: async (editionId: string): Promise<ClosureCheckResponse> => {
+    const response = await apiClient.get<ClosureCheckResponse>(`/v1/editions/${editionId}/closure-check`);
+    return response.data;
+  },
+
+  closeEdition: async (editionId: string): Promise<Edition> => {
+    const response = await apiClient.post<EditionApiResponse>(`/v1/editions/${editionId}/close`);
+    return transformEdition(response.data);
+  },
+
+  archiveEdition: async (editionId: string): Promise<Edition> => {
+    const response = await apiClient.post<EditionApiResponse>(`/v1/editions/${editionId}/archive`);
+    return transformEdition(response.data);
   },
 };

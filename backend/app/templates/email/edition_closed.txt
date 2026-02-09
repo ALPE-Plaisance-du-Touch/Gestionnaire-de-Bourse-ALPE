@@ -1,0 +1,16 @@
+Bourse ALPE - Edition cloturee
+
+Bonjour,
+
+L'edition {{ edition_name }} a ete cloturee par {{ closed_by_name }} le {{ closed_at }}.
+
+Statistiques :
+- Deposants : {{ total_depositors }}
+- Total des ventes : {{ total_sales }} EUR
+
+L'edition est desormais en lecture seule. Le rapport de cloture est disponible en telechargement depuis la page de detail de l'edition.
+
+---
+ALPE Plaisance du Touch
+Cet email a ete envoye automatiquement, merci de ne pas y repondre.
+Besoin d'aide ? Contactez-nous : {{ support_email }}

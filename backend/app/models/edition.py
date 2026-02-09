@@ -92,6 +92,15 @@ class Edition(Base, UUIDMixin, TimestampMixin):
     )
     created_by: Mapped["User | None"] = relationship("User", foreign_keys=[created_by_id])
 
+    # Closure tracking
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    closed_by_id: Mapped[str | None] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=True,
+    )
+    closed_by: Mapped["User | None"] = relationship("User", foreign_keys=[closed_by_id])
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
     # Relationships
     deposit_slots: Mapped[list["DepositSlot"]] = relationship(
         "DepositSlot", back_populates="edition", cascade="all, delete-orphan"

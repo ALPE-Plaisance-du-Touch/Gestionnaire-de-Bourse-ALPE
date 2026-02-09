@@ -1,5 +1,7 @@
 """Edition repository for database operations."""
 
+from datetime import datetime
+
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -19,7 +21,7 @@ class EditionRepository:
         """Get an edition by ID."""
         result = await self.db.execute(
             select(Edition)
-            .options(joinedload(Edition.created_by))
+            .options(joinedload(Edition.created_by), joinedload(Edition.closed_by))
             .where(Edition.id == edition_id)
         )
         return result.scalar_one_or_none()
@@ -84,6 +86,23 @@ class EditionRepository:
         await self.db.refresh(edition)
         return edition
 
+    async def close_edition(self, edition: Edition, user_id: str) -> Edition:
+        """Close an edition and record closure metadata."""
+        edition.status = EditionStatus.CLOSED.value
+        edition.closed_at = datetime.now()
+        edition.closed_by_id = user_id
+        await self.db.commit()
+        await self.db.refresh(edition)
+        return await self.get_by_id(edition.id)
+
+    async def archive_edition(self, edition: Edition) -> Edition:
+        """Archive a closed edition."""
+        edition.status = EditionStatus.ARCHIVED.value
+        edition.archived_at = datetime.now()
+        await self.db.commit()
+        await self.db.refresh(edition)
+        return await self.get_by_id(edition.id)
+
     async def delete(self, edition: Edition) -> None:
         """Delete an edition."""
         await self.db.delete(edition)
@@ -98,7 +117,9 @@ class EditionRepository:
         limit: int = 20,
     ) -> tuple[list[Edition], int]:
         """List editions with filtering and pagination."""
-        query = select(Edition).options(joinedload(Edition.created_by))
+        query = select(Edition).options(
+            joinedload(Edition.created_by), joinedload(Edition.closed_by)
+        )
 
         # Apply filters
         if status:

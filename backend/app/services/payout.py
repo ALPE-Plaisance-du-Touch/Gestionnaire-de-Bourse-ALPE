@@ -9,6 +9,7 @@ from sqlalchemy.orm import joinedload
 from app.services.payout_pdf import generate_bulk_receipts_pdf, generate_single_receipt_pdf
 
 from app.exceptions import (
+    EditionClosedError,
     EditionNotFoundError,
     PayoutAlreadyPaidError,
     PayoutNotFoundError,
@@ -285,6 +286,10 @@ async def recalculate_payout(
     # Get edition for commission rate
     edition_repo = EditionRepository(db)
     edition = await edition_repo.get_by_id(payout.item_list.edition_id)
+
+    if edition.is_closed:
+        raise EditionClosedError(payout.item_list.edition_id)
+
     commission_rate = edition.commission_rate or Decimal("0.20")
 
     # Recalculate from articles

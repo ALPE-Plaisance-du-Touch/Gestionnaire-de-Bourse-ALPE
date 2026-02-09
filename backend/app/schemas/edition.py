@@ -106,6 +106,26 @@ class EditionResponse(BaseModel):
     created_at: datetime
     created_by: CreatorResponse | None = None
 
+    # Closure tracking
+    closed_at: datetime | None = None
+    closed_by: CreatorResponse | None = None
+    archived_at: datetime | None = None
+
+
+class ClosureCheckItem(BaseModel):
+    """Single prerequisite check result."""
+
+    label: str
+    passed: bool
+    detail: str | None = None
+
+
+class ClosureCheckResponse(BaseModel):
+    """Response for edition closure prerequisite check."""
+
+    can_close: bool
+    checks: list[ClosureCheckItem]
+
 
 class EditionListResponse(BaseModel):
     """Response schema for paginated edition list."""
