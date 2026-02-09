@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts';
 import { Button, Input } from '@/components/ui';
+import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { ApiException, apiClient } from '@/api/client';
 import { useConfig } from '@/hooks';
 
@@ -353,9 +354,7 @@ export function ActivatePage() {
                 required
                 autoComplete="new-password"
               />
-              {passwordError && (
-                <p className="mt-1 text-sm text-amber-600">{passwordError}</p>
-              )}
+              <PasswordStrengthIndicator password={password} />
 
               <div className="mt-4">
                 <Input
