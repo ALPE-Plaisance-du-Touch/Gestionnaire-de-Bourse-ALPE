@@ -90,6 +90,15 @@ export function Header() {
                           >
                             Invitations
                           </Link>
+                          {user.role === 'administrator' && (
+                            <Link
+                              to="/admin/audit-logs"
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              onClick={() => setIsAdminMenuOpen(false)}
+                            >
+                              Journal d'audit
+                            </Link>
+                          )}
                         </div>
                       </div>
                     )}
