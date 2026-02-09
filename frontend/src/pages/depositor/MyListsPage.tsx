@@ -44,6 +44,14 @@ export function MyListsPage() {
   const [listToDelete, setListToDelete] = useState<ItemListSummary | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
+  // Fetch edition info (for deadline and list type)
+  const { data: editionsResponse } = useQuery({
+    queryKey: ['my-editions'],
+    queryFn: () => depositorListsApi.getMyEditions(),
+  });
+
+  const edition = editionsResponse?.editions.find((e) => e.id === editionId);
+
   // Fetch lists
   const {
     data: listsResponse,
@@ -57,7 +65,7 @@ export function MyListsPage() {
 
   // Create list mutation
   const createMutation = useMutation({
-    mutationFn: () => depositorListsApi.createList(editionId!),
+    mutationFn: () => depositorListsApi.createList(editionId!, { listType: edition?.listType || 'standard' }),
     onSuccess: (newList) => {
       queryClient.invalidateQueries({ queryKey: ['depositor-lists', editionId] });
       setIsCreating(false);
@@ -175,6 +183,9 @@ export function MyListsPage() {
           {createMutation.isPending ? 'Création...' : 'Nouvelle liste'}
         </Button>
       </div>
+
+      {/* Deadline banner */}
+      {edition?.declarationDeadline && <DeadlineBanner deadline={edition.declarationDeadline} />}
 
       {/* Info messages */}
       {!canCreateMore && lists.length > 0 && (
@@ -343,4 +354,31 @@ export function MyListsPage() {
       )}
     </div>
   );
+}
+
+function DeadlineBanner({ deadline }: { deadline: string }) {
+  const now = new Date();
+  const deadlineDate = new Date(deadline);
+  const diffMs = deadlineDate.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return (
+      <div className="mb-4 bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-lg">
+        La date limite de declaration est depassee ({formatDate(deadline)}).
+        Vous ne pouvez plus modifier vos listes.
+      </div>
+    );
+  }
+
+  if (diffDays <= 3) {
+    return (
+      <div className="mb-4 bg-orange-50 border border-orange-300 text-orange-800 px-4 py-3 rounded-lg">
+        Il vous reste {diffDays} jour{diffDays > 1 ? 's' : ''} pour finaliser vos articles
+        (date limite : {formatDate(deadline)}).
+      </div>
+    );
+  }
+
+  return null;
 }
