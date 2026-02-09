@@ -14,10 +14,12 @@ from app.api.v1.endpoints import (
     labels,
     payouts,
     sales,
+    users,
 )
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["Auth"])
+api_router.include_router(users.router, prefix="/users", tags=["Users"])
 api_router.include_router(config.router, tags=["Config"])
 api_router.include_router(editions.router, prefix="/editions", tags=["Editions"])
 api_router.include_router(

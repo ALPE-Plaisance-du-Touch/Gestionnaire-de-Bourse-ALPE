@@ -71,6 +71,10 @@ class User(Base, UUIDMixin, TimestampMixin):
     # Last login tracking
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
+    # GDPR
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    anonymized_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
     # Relationships
     item_lists: Mapped[list["ItemList"]] = relationship(
         "ItemList", back_populates="depositor"

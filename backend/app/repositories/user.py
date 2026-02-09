@@ -205,6 +205,7 @@ class UserRepository:
 
     async def anonymize(self, user: User) -> User:
         """Anonymize a user for GDPR compliance."""
+        now = datetime.now(timezone.utc)
         user.email = f"deleted_{user.id}@anonymized.local"
         user.first_name = "Utilisateur"
         user.last_name = "Supprimé"
@@ -214,6 +215,8 @@ class UserRepository:
         user.is_active = False
         user.invitation_token = None
         user.invitation_expires_at = None
+        user.deleted_at = now
+        user.anonymized_at = now
 
         await self.db.commit()
         return user
