@@ -57,3 +57,12 @@ export interface BulkDeleteResult {
   deleted: number;
   notFound: number;
 }
+
+export interface DepositorLookup {
+  found: boolean;
+  firstName?: string;
+  lastName?: string;
+  participationCount?: number;
+  lastEditionName?: string;
+  preferredListType?: string;
+}

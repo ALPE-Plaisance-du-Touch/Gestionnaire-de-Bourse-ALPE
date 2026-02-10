@@ -5,6 +5,7 @@ import type {
   InvitationCreateResponse,
   BulkInvitationResult,
   BulkDeleteResult,
+  DepositorLookup,
   InvitationResendResponse,
   InvitationStatusFilter,
   InvitationStatsData,
@@ -99,5 +100,14 @@ export const invitationsApi = {
       { responseType: 'blob', timeout: 60000 },
     );
     return response.data as Blob;
+  },
+
+  lookupDepositor: async (email: string): Promise<DepositorLookup | null> => {
+    try {
+      const response = await apiClient.get('/v1/invitations/lookup', { params: { email } });
+      return response.data as DepositorLookup;
+    } catch {
+      return null;
+    }
   },
 };

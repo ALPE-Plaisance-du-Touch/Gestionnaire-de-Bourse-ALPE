@@ -5,10 +5,14 @@ from datetime import datetime, timezone
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
+from sqlalchemy import func, select
+from sqlalchemy.orm import joinedload
 
 from app.dependencies import DBSession, require_role
 from app.exceptions import DuplicateEmailError, InvalidTokenError
 from app.models import User
+from app.models.edition import Edition
+from app.models.edition_depositor import EditionDepositor
 from app.schemas import (
     BulkDeleteRequest,
     BulkDeleteResult,
@@ -296,3 +300,54 @@ async def delete_invitation(
             detail="Invitation not found",
         )
     logger.info(f"Invitation {invitation_id} deleted by {current_user.email}")
+
+
+ManagerRole = Annotated[User, Depends(require_role(["manager", "administrator"]))]
+
+
+@router.get(
+    "/lookup",
+    summary="Lookup existing depositor by email",
+    description="Search for an existing depositor by email to pre-fill invitation form.",
+)
+async def lookup_depositor(
+    db: DBSession,
+    current_user: ManagerRole,
+    email: str = Query(..., description="Email address to look up"),
+):
+    """Look up a depositor by email and return participation history."""
+    result = await db.execute(
+        select(User).where(func.lower(User.email) == email.lower())
+    )
+    user = result.scalar_one_or_none()
+
+    if not user:
+        return {"found": False}
+
+    # Get participation history
+    result = await db.execute(
+        select(EditionDepositor)
+        .options(joinedload(EditionDepositor.edition))
+        .where(EditionDepositor.user_id == user.id)
+        .order_by(EditionDepositor.created_at.desc())
+    )
+    registrations = list(result.unique().scalars().all())
+
+    participation_count = len(registrations)
+    last_edition_name = None
+    preferred_list_type = "standard"
+
+    if registrations:
+        last_reg = registrations[0]
+        if last_reg.edition:
+            last_edition_name = last_reg.edition.name
+        preferred_list_type = last_reg.list_type
+
+    return {
+        "found": True,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "participation_count": participation_count,
+        "last_edition_name": last_edition_name,
+        "preferred_list_type": preferred_list_type,
+    }

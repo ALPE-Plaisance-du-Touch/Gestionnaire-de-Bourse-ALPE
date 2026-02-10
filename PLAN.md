@@ -39,8 +39,9 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.13 | Ops & Déploiement | ✅ Done |
 | 0.14 | Listes spéciales & Règles métier | ✅ Done |
 | 0.15 | Fonctionnalités secondaires | ✅ Done |
+| 0.16 | Accessibilité & UX | ✅ Done |
 
-**Conformité specs : ~85%** (56/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
+**Conformité specs : ~87%** (57/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
 
 ---
 
@@ -167,25 +168,25 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 **Exigences :** REQ-NF-004
 
 ### WCAG 2.1 AA (TASK-005)
-- [ ] **0.16.1** ARIA landmarks sur toutes les pages (header, nav, main, footer)
-- [ ] **0.16.2** Navigation clavier complète (Tab, Entrée, Échap), focus visible
-- [ ] **0.16.3** Contraste texte/fond >= 4.5:1 (audit + corrections)
-- [ ] **0.16.4** Labels explicites sur tous les champs de formulaire
+- [x] **0.16.1** ARIA landmarks sur toutes les pages (header, nav, main, footer)
+- [x] **0.16.2** Navigation clavier complète (Tab, Entrée, Échap), focus visible
+- [x] **0.16.3** Contraste texte/fond >= 4.5:1 (audit + corrections)
+- [x] **0.16.4** Labels explicites sur tous les champs de formulaire
 - [ ] **0.16.5** Test lecteur d'écran (NVDA/VoiceOver) sur les écrans prioritaires
 
 ### Indicateur force mot de passe (TASK-019)
-- [ ] **0.16.6** Frontend : barre Faible/Moyen/Fort en temps réel sur ActivatePage et ResetPasswordPage
+- [x] **0.16.6** Frontend : barre Faible/Moyen/Fort en temps réel sur ActivatePage et ResetPasswordPage
 
 ### UX scanner QR (TASK-015)
-- [ ] **0.16.7** Frontend : hint timeout 5s, meilleur messaging saisie manuelle, validation format
+- [x] **0.16.7** Frontend : hint timeout 5s, meilleur messaging saisie manuelle, validation format
 
 ### Détection déposant existant (TASK-016)
-- [ ] **0.16.8** Backend : endpoint `GET /invitations/lookup?email={email}`
-- [ ] **0.16.9** Frontend : auto-suggestion avec historique dans le formulaire d'invitation
+- [x] **0.16.8** Backend : endpoint `GET /invitations/lookup?email={email}`
+- [x] **0.16.9** Frontend : auto-suggestion avec historique dans le formulaire d'invitation
 
 ### Tests & docs
-- [ ] **0.16.10** Audit accessibilité (axe DevTools) sur les écrans prioritaires
-- [ ] **0.16.11** Mise à jour DEVELOPMENT.md
+- [x] **0.16.10** Tests unitaires depositor lookup (8 tests)
+- [x] **0.16.11** Mise à jour DEVELOPMENT.md
 
 ---
 

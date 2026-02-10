@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Button, Input } from '@/components/ui';
+import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { apiClient, ApiException } from '@/api/client';
 import { useConfig } from '@/hooks';
 
@@ -191,9 +192,7 @@ export function ResetPasswordPage() {
               autoComplete="new-password"
               autoFocus
             />
-            {passwordError && (
-              <p className="mt-1 text-sm text-amber-600">{passwordError}</p>
-            )}
+            <PasswordStrengthIndicator password={password} />
 
             <Input
               label="Confirmer le mot de passe"
