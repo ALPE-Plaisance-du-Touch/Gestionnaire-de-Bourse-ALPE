@@ -1,0 +1,67 @@
+{
+  "_description": "Valid edition fixtures for E2E testing",
+
+  "active_edition": {
+    "name": "Bourse Printemps 2026",
+    "description": "Bourse de printemps ALPE Plaisance du Touch",
+    "location": "Salle des fetes, 1 Place de la Mairie, Plaisance du Touch",
+    "status": "in_progress",
+    "start_datetime": "2026-03-14T09:00:00",
+    "end_datetime": "2026-03-15T18:00:00",
+    "declaration_deadline": "2026-02-21T23:59:00",
+    "deposit_start_datetime": "2026-03-11T09:30:00",
+    "deposit_end_datetime": "2026-03-13T22:00:00",
+    "sale_start_datetime": "2026-03-14T09:00:00",
+    "sale_end_datetime": "2026-03-15T13:00:00",
+    "retrieval_start_datetime": "2026-03-16T18:30:00",
+    "retrieval_end_datetime": "2026-03-16T19:30:00",
+    "commission_rate": "0.20"
+  },
+
+  "draft_edition": {
+    "name": "Bourse Automne 2026",
+    "description": "Bourse d'automne ALPE",
+    "location": "Salle des fetes, Plaisance du Touch",
+    "status": "draft"
+  },
+
+  "configured_edition": {
+    "name": "Bourse Printemps 2027",
+    "description": "Prochaine edition",
+    "location": "Salle des fetes, Plaisance du Touch",
+    "status": "configured",
+    "start_datetime": "2027-03-13T09:00:00",
+    "end_datetime": "2027-03-14T18:00:00",
+    "declaration_deadline": "2027-02-20T23:59:00",
+    "deposit_start_datetime": "2027-03-10T09:30:00",
+    "deposit_end_datetime": "2027-03-12T22:00:00",
+    "sale_start_datetime": "2027-03-13T09:00:00",
+    "sale_end_datetime": "2027-03-14T13:00:00",
+    "retrieval_start_datetime": "2027-03-15T18:30:00",
+    "retrieval_end_datetime": "2027-03-15T19:30:00",
+    "commission_rate": "0.20"
+  },
+
+  "closed_edition": {
+    "name": "Bourse Automne 2025",
+    "description": "Edition cloturee",
+    "location": "Salle des fetes, Plaisance du Touch",
+    "status": "closed",
+    "start_datetime": "2025-10-18T09:00:00",
+    "end_datetime": "2025-10-19T18:00:00",
+    "commission_rate": "0.20",
+    "closed_at": "2025-10-22T10:00:00"
+  },
+
+  "old_closed_edition": {
+    "name": "Bourse Printemps 2024",
+    "description": "Edition cloturee il y a plus d'un an",
+    "location": "Salle des fetes, Plaisance du Touch",
+    "status": "closed",
+    "start_datetime": "2024-03-16T09:00:00",
+    "end_datetime": "2024-03-17T18:00:00",
+    "commission_rate": "0.20",
+    "closed_at": "2024-03-20T10:00:00",
+    "_note": "Should show 'A archiver' badge (> 1 year since closed)"
+  }
+}

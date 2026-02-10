@@ -1,0 +1,42 @@
+{
+  "_description": "Payout fixtures for manager scenarios (G-16..G-24)",
+
+  "payment_cash": {
+    "payment_method": "cash",
+    "notes": "Paiement en especes lors de la restitution",
+    "_scenario": "G-17: Enregistrer un paiement (especes)"
+  },
+
+  "payment_check": {
+    "payment_method": "check",
+    "payment_reference": "CHQ-12345",
+    "notes": "Cheque n.12345 Banque Populaire",
+    "_scenario": "G-18: Enregistrer un paiement (cheque)"
+  },
+
+  "payment_transfer": {
+    "payment_method": "transfer",
+    "payment_reference": "VIR-2026-03-20",
+    "notes": "Virement prevu le 20/03/2026",
+    "_scenario": "Paiement par virement"
+  },
+
+  "expected_calculation": {
+    "_description": "Expected values for a depositor with 59 EUR in sales",
+    "gross_amount": "59.00",
+    "commission_rate": "0.20",
+    "commission_amount": "11.80",
+    "net_amount": "47.20",
+    "_note": "Formula: net = gross * (1 - commission_rate)"
+  },
+
+  "expected_calculation_1000": {
+    "_description": "Expected values for a list_1000 depositor with 30 EUR in sales, 2 lists",
+    "gross_amount": "30.00",
+    "commission_rate": "0.20",
+    "commission_amount": "6.00",
+    "list_fees": "2.00",
+    "net_amount": "22.00",
+    "_note": "Formula: net = gross * 0.80 - list_fees (1 EUR per list_1000)"
+  }
+}

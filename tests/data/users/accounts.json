@@ -1,0 +1,95 @@
+{
+  "_description": "Test user accounts matching TESTING_STRATEGY.md section 1.2",
+
+  "admin": {
+    "email": "admin@alpe-bourse.fr",
+    "password": "Admin123!",
+    "first_name": "Sophie",
+    "last_name": "Martin",
+    "phone": "0561234567",
+    "role": "administrator",
+    "is_active": true,
+    "is_verified": true
+  },
+
+  "manager": {
+    "email": "manager@alpe-bourse.fr",
+    "password": "Manager123!",
+    "first_name": "Pierre",
+    "last_name": "Dupont",
+    "phone": "0561234568",
+    "role": "manager",
+    "is_active": true,
+    "is_verified": true
+  },
+
+  "volunteer": {
+    "email": "volunteer@alpe-bourse.fr",
+    "password": "Volunteer123!",
+    "first_name": "Marie",
+    "last_name": "Leblanc",
+    "phone": "0561234569",
+    "role": "volunteer",
+    "is_active": true,
+    "is_verified": true
+  },
+
+  "depositor_standard": {
+    "email": "deposant@example.com",
+    "password": "Deposant123!",
+    "first_name": "Jean",
+    "last_name": "Durand",
+    "phone": "0612345678",
+    "role": "depositor",
+    "is_active": true,
+    "is_verified": true,
+    "list_type": "standard"
+  },
+
+  "depositor_1000": {
+    "email": "adherent@alpe-bourse.fr",
+    "password": "Adherent123!",
+    "first_name": "Claire",
+    "last_name": "Moreau",
+    "phone": "0612345679",
+    "role": "depositor",
+    "is_active": true,
+    "is_verified": true,
+    "is_local_resident": true,
+    "list_type": "list_1000"
+  },
+
+  "depositor_2000": {
+    "email": "ami-adherent@example.com",
+    "password": "Ami12345!",
+    "first_name": "Luc",
+    "last_name": "Bernard",
+    "phone": "0612345680",
+    "role": "depositor",
+    "is_active": true,
+    "is_verified": true,
+    "list_type": "list_2000"
+  },
+
+  "inactive_user": {
+    "email": "inactif@example.com",
+    "password": null,
+    "first_name": "Paul",
+    "last_name": "Petit",
+    "role": "depositor",
+    "is_active": false,
+    "is_verified": false,
+    "_note": "Invitation pending, no password set yet"
+  },
+
+  "expired_invitation": {
+    "email": "expire@example.com",
+    "password": null,
+    "first_name": "Anne",
+    "last_name": "Robert",
+    "role": "depositor",
+    "is_active": false,
+    "is_verified": false,
+    "_note": "Invitation token expired (> 7 days)"
+  }
+}

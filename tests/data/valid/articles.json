@@ -1,0 +1,128 @@
+{
+  "_description": "Valid article fixtures for depositor test scenarios (D-04 to D-09)",
+
+  "clothing_item": {
+    "description": "Pull bleu marine rayures - 4 ans",
+    "category": "clothing",
+    "subcategory": null,
+    "size": "4 ans",
+    "brand": "Petit Bateau",
+    "gender": "mixed",
+    "price": "5.00",
+    "is_lot": false,
+    "conformity_certified": true
+  },
+
+  "toy_item": {
+    "description": "Puzzle 50 pieces animaux de la ferme",
+    "category": "toys",
+    "subcategory": null,
+    "size": null,
+    "brand": "Ravensburger",
+    "gender": null,
+    "price": "3.00",
+    "is_lot": false,
+    "conformity_certified": true
+  },
+
+  "book_item": {
+    "description": "Le Petit Prince - Saint-Exupery",
+    "category": "books",
+    "subcategory": null,
+    "size": null,
+    "brand": null,
+    "gender": null,
+    "price": "2.00",
+    "is_lot": false,
+    "conformity_certified": true
+  },
+
+  "shoe_item": {
+    "description": "Bottes de pluie jaunes - 28",
+    "category": "shoes",
+    "subcategory": null,
+    "size": "28",
+    "brand": "Aigle",
+    "gender": "mixed",
+    "price": "8.00",
+    "is_lot": false,
+    "conformity_certified": true
+  },
+
+  "childcare_item": {
+    "description": "Poussette canne pliable",
+    "category": "childcare",
+    "subcategory": "stroller",
+    "size": null,
+    "brand": "Chicco",
+    "gender": null,
+    "price": "45.00",
+    "is_lot": false,
+    "conformity_certified": true
+  },
+
+  "lot_bodys": {
+    "description": "Lot 3 bodys manches courtes 18 mois",
+    "category": "clothing",
+    "subcategory": "bodys",
+    "size": "18 mois",
+    "brand": "Petit Bateau",
+    "gender": "mixed",
+    "price": "4.00",
+    "is_lot": true,
+    "lot_quantity": 3,
+    "conformity_certified": true,
+    "_note": "Lot: counts as 1 article in list (D-06)"
+  },
+
+  "coat_item": {
+    "description": "Manteau hiver capuche - 6 ans",
+    "category": "clothing",
+    "subcategory": "coat",
+    "size": "6 ans",
+    "brand": "Zara",
+    "gender": "girl",
+    "price": "15.00",
+    "is_lot": false,
+    "conformity_certified": true,
+    "_note": "Max 1 per list (D-E06 tests second coat error)"
+  },
+
+  "accessory_item": {
+    "description": "Sac a dos licorne enfant",
+    "category": "accessories",
+    "subcategory": null,
+    "size": null,
+    "brand": null,
+    "gender": "girl",
+    "price": "6.00",
+    "is_lot": false,
+    "conformity_certified": true
+  },
+
+  "minimum_price_item": {
+    "description": "Barrette cheveux papillon",
+    "category": "accessories",
+    "subcategory": null,
+    "size": null,
+    "brand": null,
+    "gender": "girl",
+    "price": "1.00",
+    "is_lot": false,
+    "conformity_certified": true,
+    "_note": "Minimum valid price"
+  },
+
+  "max_price_stroller": {
+    "description": "Poussette double jumeaux",
+    "category": "childcare",
+    "subcategory": "stroller",
+    "size": null,
+    "brand": "Bugaboo",
+    "gender": null,
+    "price": "150.00",
+    "is_lot": false,
+    "conformity_certified": true,
+    "_note": "Maximum valid price (stroller only)"
+  }
+}
