@@ -195,23 +195,23 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 **Branche :** `feature/management-enhancements`
 
 ### Override annulation vente par gestionnaire (TASK-017)
-- [ ] **0.17.1** Backend : paramètre `manager_override` sur `cancel_sale()`, bypass limite 5 min
+- [x] **0.17.1** Backend : bypass limite 5 min pour managers (déjà implémenté dans cancel_sale())
 - [ ] **0.17.2** Frontend : page SalesManagementPage (liste ventes, filtre, annulation manager)
 
-### Export Excel statistiques invitations (TASK-014)
-- [ ] **0.17.3** Backend : endpoint `GET /invitations/export-excel` (3 onglets)
-- [ ] **0.17.4** Frontend : bouton "Exporter Excel" sur InvitationStatsPage
+### Export Excel statistiques invitations (TASK-014) ✅ (déjà implémenté en v0.9)
+- [x] **0.17.3** Backend : endpoint `GET /invitations/export-excel` (3 onglets)
+- [x] **0.17.4** Frontend : bouton "Exporter Excel" sur InvitationStatsPage
 
 ### Archivage automatisé éditions (TASK-018)
-- [ ] **0.17.5** Frontend : onglets Actives / Clôturées / Archivées sur EditionsListPage
+- [ ] **0.17.5** Frontend : bouton "Archiver" + badge "À archiver" sur EditionsListPage
 - [ ] **0.17.6** Badge "À archiver" sur les éditions clôturées > 1 an
 
 ### Relance invitations en masse (TASK-020)
 - [ ] **0.17.7** Backend : endpoint `POST /invitations/bulk-resend`
-- [ ] **0.17.8** Frontend : sélection checkbox + bouton "Relancer la sélection" sur InvitationsPage
+- [ ] **0.17.8** Frontend : bouton "Relancer la sélection" sur InvitationsPage
 
-### Renforcement prérequis clôture (TASK-013)
-- [ ] **0.17.9** Backend : vérification reversements calculés + paiements finalisés dans closure check
+### Renforcement prérequis clôture (TASK-013) ✅ (déjà implémenté en v0.10)
+- [x] **0.17.9** Backend : vérification reversements calculés + paiements finalisés dans closure check
 
 ### Tests & docs
 - [ ] **0.17.10** Tests unitaires pour chaque fonctionnalité
