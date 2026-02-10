@@ -57,17 +57,17 @@
 | AUTH-E08 | Activation sans CGU | PASS | Bouton desactive |
 | AUTH-E09 | Mots de passe differents | PASS | "Les mots de passe ne correspondent pas" |
 | AUTH-E10 | Reset avec token expire | SKIP | Pas de fixture token reset expire en BDD |
-| AUTH-E11 | Connexion compte inactif | SKIP | Compte active par AUTH-02, pas de 2e inactif |
+| AUTH-E11 | Connexion compte inactif | PASS | lucas.moreau (invite Billetweb non active) → "Identifiants incorrects" |
 | AUTH-EC01 | Double soumission | PASS | Bouton desactive pendant la requete |
-| AUTH-EC02 | Mot de passe caracteres speciaux | SKIP | Pas de compte avec ce mot de passe en BDD |
+| AUTH-EC02 | Mot de passe caracteres speciaux | PASS | Compte lucas.moreau active avec P@$w0rd!#, connexion OK |
 | AUTH-EC03 | Email case-insensitive | PASS | Admin@ALPE-bourse.FR → connexion OK |
 | AUTH-EC04 | XSS dans champs login | PASS | Validation HTML5 bloque |
 | AUTH-EC05 | Injection SQL | PASS | Validation HTML5 bloque les espaces |
 | AUTH-EC06 | Email tres long | PASS | Bouton reste desactive |
 | AUTH-EC07 | Session expiree | N/A | Necessite attente 8-24h |
-| AUTH-EC08 | Re-activer compte deja actif | SKIP | Similaire a AUTH-E06 |
+| AUTH-EC08 | Re-activer compte deja actif | PASS | Token consomme de camille.leclerc → "Lien invalide" |
 
-**Bilan : 17/17 PASS, 3 SKIP, 1 N/A**
+**Bilan : 20/20 PASS, 0 SKIP, 1 N/A**
 
 ---
 
@@ -85,7 +85,7 @@
 | D-07 | Modifier un article | PASS | Prix modifie 5€→7€ |
 | D-08 | Supprimer un article | PASS | Ecart : confirm() natif au lieu de modal |
 | D-09 | Valider la liste | PASS | Modal avec checkbox, liste verrouillee apres validation |
-| D-10 | Telecharger PDF de la liste | SKIP | Non verifie (contenu PDF non testable via MCP) |
+| D-10 | Telecharger PDF de la liste | PASS | GET pdf → 200, content-type: application/pdf, filename: liste-101.pdf |
 | D-11 | Modifier son profil | PASS | Telephone et adresse mis a jour |
 | D-12 | Supprimer une liste brouillon | PASS | Modal confirmation + suppression OK |
 | D-13 | Supprimer son compte RGPD | SKIP | Fonctionnalite non implementee |
@@ -112,7 +112,7 @@
 | D-EC07 | Validation concurrente | N/A | Sessions concurrentes non testables |
 | D-EC08 | Navigation pendant sauvegarde | N/A | Non testable via MCP |
 
-**Bilan : 27/27 PASS (dont 1 FIXED), 5 SKIP, 2 N/A**
+**Bilan : 28/28 PASS (dont 1 FIXED), 4 SKIP, 2 N/A**
 **Note** : Edition passee en `registrations_open` pour debloquer les tests de listes/articles. Les SKIP restants concernent des fonctionnalites non implementees (RGPD, date limite).
 
 ---
@@ -155,11 +155,11 @@
 | G-04 | Importer CSV Billetweb | PASS | Preview (10 lignes, 8 a traiter, 2 ignores, 0 erreurs) + import (7 invitations, 1 associe). Ecart : modal sans overflow-y, bouton Importer inaccessible sur petit ecran |
 | G-05 | Consulter deposants d'une edition | PASS | 8 deposants, filtre par type (Liste 1000 → 2 resultats), creneaux et villes corrects |
 | G-06 | Creer invitation individuelle | PASS | Invitation creee, compteur mis a jour |
-| G-07 | Invitations en masse | SKIP | Non teste (necessiterait CSV d'invitations) |
+| G-07 | Invitations en masse | PASS | CSV 3 lignes (standard, list_1000, list_2000) → 3 creees, 0 doublons. Total 12→15 |
 | G-08 | Relancer une invitation | PASS | Ecart : confirm() natif au lieu de modal |
 | G-09 | Relancer invitations en masse | PASS | Modal confirmation, 1 relancee sur 5 selectionnees |
 | G-10 | Supprimer une invitation | PASS | Modal confirmation + suppression OK |
-| G-11 | Supprimer invitations en masse | SKIP | Non teste (risque de supprimer les donnees de test) |
+| G-11 | Supprimer invitations en masse | PASS | 3 selectionnees, modal confirmation, "3 invitations supprimees avec succes". Total 15→12 |
 | G-12 | Exporter invitations Excel | PASS | Telechargement declenche sans erreur |
 | G-13 | Etiquettes par creneau | PASS | Mode disponible, aucun deposant affecte a un creneau (pas d'import Billetweb) |
 | G-14 | Etiquettes (toutes) | PASS | "PDF genere avec succes !" pour 7 etiquettes |
@@ -189,14 +189,14 @@
 | G-E08 | Gestionnaire cloture edition | PASS | Bouton "Cloturer" absent pour gestionnaire |
 | G-E09 | Gestionnaire journaux audit | PASS | "Acces refuse" affiche correctement |
 | G-EC01 | Import CSV 500 lignes | SKIP | Fonctionnalite non implementee |
-| G-EC02 | Commission 0% | SKIP | Necessite edition brouillon dediee |
-| G-EC03 | Commission 100% | SKIP | Necessite edition brouillon dediee |
+| G-EC02 | Commission 0% | PASS | Bourse Automne 2026 (brouillon) → commission 0% sauvegardee OK |
+| G-EC03 | Commission 100% | PASS | Bourse Automne 2026 → commission 100% sauvegardee OK, remise a 20% |
 | G-EC04 | Recalcul apres annulation | SKIP | Pas de ventes/reversements en BDD |
 | G-EC05 | Etiquettes sans liste validee | PASS | Mode selection : "Aucun deposant inscrit" |
 | G-EC06 | Relance masse statuts mixtes | PASS | 5 selectionnees, 1 relancee (seule pending), 4 activees ignorees |
 
-**Bilan : 24/24 PASS, 21 SKIP**
-**Note** : Import Billetweb teste avec CSV factice (10 lignes). Les SKIP restants concernent des fonctionnalites non implementees (reversements, ventes) ou des pre-requis specifiques.
+**Bilan : 28/28 PASS, 17 SKIP**
+**Note** : Import Billetweb teste avec CSV factice (10 lignes). Invitations en masse CSV et suppression en masse testees. Les SKIP restants concernent des fonctionnalites non implementees (reversements, ventes) ou des pre-requis specifiques.
 
 ---
 
@@ -218,7 +218,7 @@
 | A-E03 | Nom edition en doublon | PASS | "Une edition avec ce nom existe deja" |
 | A-E04 | Archiver edition non-cloturee | PASS | Bouton masque sur editions non-cloturees |
 | A-E05 | Cloturer reversements non payes | SKIP | Fonctionnalite non implementee |
-| A-E06 | Activer 2e edition | SKIP | Transition de statut via UI non testee |
+| A-E06 | Activer 2e edition | SKIP | REQ-F-019 (contrainte unicite) non implementee. Brouillon→Configure OK malgre edition active |
 | A-EC01 | Archiver edition > 1 an | PASS | Badge "A archiver" + archivage OK |
 | A-EC02 | Consulter edition archivee | PASS | Filtre OK. Ecart : bouton "Modifier" visible |
 | A-EC03 | Cloture avec 0 vente | SKIP | Fonctionnalite non implementee |
@@ -232,15 +232,15 @@
 | Categorie | PASS | FIXED | FAIL | SKIP | N/A | Total |
 |-----------|------|-------|------|------|-----|-------|
 | Visiteur | 8 | 0 | 0 | 0 | 0 | 8 |
-| Authentification | 17 | 0 | 0 | 3 | 1 | 21 |
-| Deposant | 26 | 1 | 0 | 5 | 2 | 34 |
+| Authentification | 20 | 0 | 0 | 0 | 1 | 21 |
+| Deposant | 27 | 1 | 0 | 4 | 2 | 34 |
 | Benevole | 2 | 0 | 0 | 9 | 5 | 16 |
-| Gestionnaire | 24 | 0 | 0 | 21 | 0 | 45 |
+| Gestionnaire | 28 | 0 | 0 | 17 | 0 | 45 |
 | Administrateur | 10 | 0 | 0 | 7 | 0 | 17 |
-| **TOTAL** | **87** | **1** | **0** | **45** | **8** | **141** |
+| **TOTAL** | **95** | **1** | **0** | **37** | **8** | **141** |
 
-**Taux de reussite (tests executes)** : 88/88 = **100%**
-**Couverture** : 88/141 = **62%** (limites par les fonctionnalites non implementees et les pre-requis manquants)
+**Taux de reussite (tests executes)** : 96/96 = **100%**
+**Couverture** : 96/141 = **68%** (limites par les fonctionnalites non implementees et les pre-requis manquants)
 
 ---
 
