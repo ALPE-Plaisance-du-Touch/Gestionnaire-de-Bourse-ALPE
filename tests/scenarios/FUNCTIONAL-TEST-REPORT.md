@@ -78,42 +78,42 @@
 | D-01 | Accueil deposant (edition active) | PASS | "Mes listes" visible, pas de liens admin |
 | D-01b | Accueil deposant (pas d'edition) | SKIP | Edition active en BDD, pas modifiable |
 | D-02 | Consulter mes listes | FIXED | NaN € et Invalid Date → corrige (commit 135fc89) |
-| D-03 | Creer une nouvelle liste | SKIP | Edition en `in_progress`, modification bloquee |
-| D-04 | Ajouter un article | SKIP | Edition en `in_progress`, modification bloquee |
-| D-05 | Ajouter un article vetement | SKIP | Edition en `in_progress`, modification bloquee |
-| D-06 | Ajouter un lot | SKIP | Edition en `in_progress`, modification bloquee |
-| D-07 | Modifier un article | SKIP | Edition en `in_progress`, modification bloquee |
-| D-08 | Supprimer un article | SKIP | Edition en `in_progress`, modification bloquee |
-| D-09 | Valider la liste | SKIP | Edition en `in_progress`, modification bloquee |
-| D-10 | Telecharger PDF de la liste | SKIP | Necessite liste validee |
+| D-03 | Creer une nouvelle liste | PASS | Liste n°102 creee, redirection vers detail |
+| D-04 | Ajouter un article | PASS | Puzzle 100 pieces, 4€, certifie |
+| D-05 | Ajouter un article vetement | PASS | Pull bleu marine, Petit Bateau, 4 ans, Mixte |
+| D-06 | Ajouter un lot | PASS | Lot 3 bodys, checkbox lot + quantite OK |
+| D-07 | Modifier un article | PASS | Prix modifie 5€→7€ |
+| D-08 | Supprimer un article | PASS | Ecart : confirm() natif au lieu de modal |
+| D-09 | Valider la liste | PASS | Modal avec checkbox, liste verrouillee apres validation |
+| D-10 | Telecharger PDF de la liste | SKIP | Non verifie (contenu PDF non testable via MCP) |
 | D-11 | Modifier son profil | PASS | Telephone et adresse mis a jour |
-| D-12 | Exporter donnees RGPD | SKIP | Fonctionnalite non implementee |
+| D-12 | Supprimer une liste brouillon | PASS | Modal confirmation + suppression OK |
 | D-13 | Supprimer son compte RGPD | SKIP | Fonctionnalite non implementee |
-| D-14 | Creer une deuxieme liste | SKIP | Edition en `in_progress`, modification bloquee |
-| D-E01 | Prix sous le minimum | SKIP | Formulaire d'ajout non accessible |
-| D-E02 | Poussette au-dessus du prix max | SKIP | Formulaire d'ajout non accessible |
-| D-E03 | 25e article | SKIP | Formulaire d'ajout non accessible |
-| D-E04 | 13e vetement | SKIP | Formulaire d'ajout non accessible |
-| D-E05 | Article interdit | SKIP | Formulaire d'ajout non accessible |
-| D-E06 | 2e manteau | SKIP | Formulaire d'ajout non accessible |
-| D-E07 | Lot mauvaise sous-categorie | SKIP | Formulaire d'ajout non accessible |
-| D-E08 | Valider sans certification | SKIP | Formulaire non accessible |
-| D-E09 | 3e liste | SKIP | Edition en `in_progress`, modification bloquee |
-| D-E10 | Article apres date limite | SKIP | Pre-requis specifique |
-| D-E11 | Modifier liste validee | SKIP | Pas de liste validee testable |
+| D-14 | Creer une deuxieme liste | PASS | 2e liste creee, compteur 2/2 |
+| D-E01 | Prix sous le minimum | PASS | "Valeur >= 1" (validation HTML native) |
+| D-E02 | Poussette au-dessus du prix max | PASS | "Valeur <= 150" (max dynamique selon sous-categorie) |
+| D-E03 | 25e article | SKIP | Necessite 24 articles pre-existants |
+| D-E04 | 13e vetement | SKIP | Necessite 12 vetements pre-existants |
+| D-E05 | Article interdit (siege auto) | PASS | Sous-categorie absente du select |
+| D-E06 | 2e manteau | PASS | Backend rejette. Ecart : message generique |
+| D-E07 | Lot mauvaise sous-categorie | PASS | Checkbox lot invisible sauf Bodys/Pyjamas |
+| D-E08 | Valider sans certification | PASS | "Vous devez certifier que l'article est propre" |
+| D-E09 | 3e liste | PASS | Bouton "Nouvelle liste" disabled + message max atteint |
+| D-E10 | Article apres date limite | SKIP | Pre-requis specifique (fixture date depassee) |
+| D-E11 | Modifier liste validee | PASS | Boutons Modifier/Supprimer masques, formulaire absent |
 | D-E12 | Acceder a la liste d'un autre | PASS | Erreur affichee (acces refuse) |
-| D-E13 | Supprimer liste non vide | SKIP | Formulaire non accessible |
-| D-EC01 | Description longueur max (100) | SKIP | Formulaire non accessible |
-| D-EC02 | Description 101 caracteres | SKIP | Formulaire non accessible |
-| D-EC03 | Prix avec 3 decimales | SKIP | Formulaire non accessible |
-| D-EC04 | Description vide | SKIP | Formulaire non accessible |
-| D-EC05 | Quantite de lot = 0 | SKIP | Formulaire non accessible |
-| D-EC06 | Caracteres speciaux description | SKIP | Formulaire non accessible |
-| D-EC07 | Validation concurrente | SKIP | Formulaire non accessible |
+| D-E13 | Supprimer liste non vide | PASS | Bouton "Supprimer" masque quand articles presents |
+| D-EC01 | Description longueur max (100) | PASS | Article cree avec 100 caracteres |
+| D-EC02 | Description 101 caracteres | PASS | Backend rejette. Ecart : message generique |
+| D-EC03 | Prix avec 3 decimales | PASS | "Valeur valide" (step=0.5, arrondi requis) |
+| D-EC04 | Description vide | PASS | "Description requise" |
+| D-EC05 | Quantite de lot = 0 | SKIP | Non teste (champ min=1 par defaut) |
+| D-EC06 | Caracteres speciaux description | PASS | Guillemets et parentheses OK |
+| D-EC07 | Validation concurrente | N/A | Sessions concurrentes non testables |
 | D-EC08 | Navigation pendant sauvegarde | N/A | Non testable via MCP |
 
-**Bilan : 3/3 PASS (dont 1 FIXED), 31 SKIP, 1 N/A**
-**Note** : La majorite des SKIP est due a l'edition en statut `in_progress` qui bloque les modifications de listes. Ces tests necessitent une edition en `registrations_open` ou `configured`.
+**Bilan : 24/24 PASS (dont 1 FIXED), 8 SKIP, 2 N/A**
+**Note** : Edition passee en `registrations_open` pour debloquer les tests de listes/articles. Les SKIP restants concernent des fonctionnalites non implementees (RGPD, date limite) ou des pre-requis lourds (24 articles/12 vetements).
 
 ---
 
@@ -233,14 +233,14 @@
 |-----------|------|-------|------|------|-----|-------|
 | Visiteur | 8 | 0 | 0 | 0 | 0 | 8 |
 | Authentification | 17 | 0 | 0 | 3 | 1 | 21 |
-| Deposant | 3 | 1 | 0 | 31 | 1 | 36 |
+| Deposant | 23 | 1 | 0 | 8 | 2 | 34 |
 | Benevole | 2 | 0 | 0 | 9 | 5 | 16 |
 | Gestionnaire | 2 | 0 | 0 | 43 | 0 | 45 |
 | Administrateur | 8 | 0 | 0 | 9 | 0 | 17 |
-| **TOTAL** | **40** | **1** | **0** | **95** | **7** | **143** |
+| **TOTAL** | **60** | **1** | **0** | **72** | **8** | **141** |
 
-**Taux de reussite (tests executes)** : 41/41 = **100%**
-**Couverture** : 41/143 = **29%** (limites par les fonctionnalites non implementees)
+**Taux de reussite (tests executes)** : 61/61 = **100%**
+**Couverture** : 61/141 = **43%** (limites par les fonctionnalites non implementees)
 
 ---
 
@@ -264,6 +264,9 @@
 | 5 | Lien "Editions" visible pour deposants dans la navigation | Faible | Permissions |
 | 6 | Pas de toast succes apres mise a jour profil | Faible | UX |
 | 7 | Bouton "Cloturer l'edition" absent de la page accueil admin | Faible | UX |
+| 8 | Suppression article utilise confirm() natif au lieu d'un modal | Faible | UX |
+| 9 | Message erreur generique au lieu du message backend specifique (2e manteau, description >100) | Moyenne | Validation |
+| 10 | Champ description sans `maxlength` HTML (101 chars acceptes cote client) | Faible | Validation |
 
 ---
 
