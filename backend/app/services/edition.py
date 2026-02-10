@@ -200,11 +200,22 @@ class EditionService:
                 field="status",
             )
 
-        # Additional validation for specific transitions
-        if new_status == EditionStatus.CONFIGURED:
-            # For now, no additional validation required for US-006
-            # US-007 will add validation for required configuration fields
-            pass
+        # REQ-F-019: Enforce single active edition constraint
+        active_statuses = [
+            EditionStatus.CONFIGURED,
+            EditionStatus.REGISTRATIONS_OPEN,
+            EditionStatus.IN_PROGRESS,
+        ]
+        if new_status in active_statuses:
+            other = await self.repository.get_any_active_edition(
+                exclude_id=edition.id
+            )
+            if other:
+                raise ValidationError(
+                    f"Une bourse est déjà active ({other.name}). "
+                    "Clôturez-la avant d'en activer une autre.",
+                    field="status",
+                )
 
         return await self.repository.update_status(edition, new_status)
 
@@ -310,9 +321,9 @@ class EditionService:
 
     async def get_active_edition(self) -> Edition | None:
         """
-        Get the currently active edition.
+        Get the currently active edition (any non-draft, non-closed status).
 
-        Returns:
-            Active edition or None
+        Returns the highest-priority active edition:
+        in_progress > registrations_open > configured.
         """
-        return await self.repository.get_active_edition()
+        return await self.repository.get_any_active_edition()

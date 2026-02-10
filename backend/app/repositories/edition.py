@@ -150,3 +150,32 @@ class EditionRepository:
             .limit(1)
         )
         return result.scalar_one_or_none()
+
+    async def get_any_active_edition(
+        self, *, exclude_id: str | None = None
+    ) -> Edition | None:
+        """Get any edition in an active status (configured, registrations_open, or in_progress).
+
+        Returns the highest-priority active edition (in_progress > registrations_open > configured).
+        """
+        active_statuses = [
+            EditionStatus.IN_PROGRESS.value,
+            EditionStatus.REGISTRATIONS_OPEN.value,
+            EditionStatus.CONFIGURED.value,
+        ]
+        query = (
+            select(Edition)
+            .options(joinedload(Edition.created_by), joinedload(Edition.closed_by))
+            .where(Edition.status.in_(active_statuses))
+        )
+        if exclude_id:
+            query = query.where(Edition.id != exclude_id)
+
+        result = await self.db.execute(query)
+        editions = list(result.scalars().all())
+        if not editions:
+            return None
+
+        # Return highest-priority: in_progress > registrations_open > configured
+        priority = {s: i for i, s in enumerate(active_statuses)}
+        return min(editions, key=lambda e: priority.get(e.status, 99))
