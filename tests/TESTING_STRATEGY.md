@@ -41,6 +41,10 @@ Campagne de tests E2E concue pour execution via Claude Code + Chrome DevTools MC
 | ID | Parcours | Entree | Etapes | Sortie |
 |----|----------|--------|--------|--------|
 | V-01 | Consulter la politique de confidentialite | `/privacy` | Naviguer, lire le contenu | Page statique affichee |
+| V-02 | Consulter la page d'accueil avec edition active | `/` | Naviguer vers la racine | Presentation ALPE + prochaine bourse affichee (nom, dates, lieu) |
+| V-03 | Consulter la page d'accueil sans edition active | `/` | Naviguer vers la racine (aucune edition publiee) | Message "Aucune bourse n'est programmee pour le moment." |
+| V-04 | Cliquer sur "Se connecter" depuis l'accueil | `/` | Cliquer sur le bouton "Se connecter" | Redirection vers `/login` |
+| V-05 | Acceder a la politique de confidentialite depuis l'accueil | `/` | Cliquer sur le lien politique de confidentialite | Navigation vers `/privacy` |
 
 #### Parcours d'erreur
 | ID | Parcours | Declencheur | Attendu |
@@ -97,19 +101,20 @@ Campagne de tests E2E concue pour execution via Claude Code + Chrome DevTools MC
 #### Parcours nominaux
 | ID | Parcours | Entree | Etapes | Sortie |
 |----|----------|--------|--------|--------|
-| D-01 | Consulter mes editions | `/lists` | Se connecter, voir la liste des editions | Editions avec inscription active affichees |
-| D-02 | Creer une nouvelle liste | `/depositor/editions/:id/lists` | Cliquer "Nouvelle liste" | Liste creee, redirection vers le detail |
-| D-03 | Ajouter un article a la liste | `/depositor/lists/:id` | Remplir categorie, description, prix, certifier, valider | Article ajoute, compteurs mis a jour |
-| D-04 | Ajouter un article vetement | `/depositor/lists/:id` | Categorie=vetement, remplir taille/marque/genre | Compteur vetements incremente |
-| D-05 | Ajouter un lot | `/depositor/lists/:id` | Cocher "lot", selectionner body/pyjama, quantite=3 | Lot cree, compte comme 1 article |
-| D-06 | Modifier un article | `/depositor/lists/:id` | Cliquer modifier, changer le prix, sauvegarder | Article mis a jour |
-| D-07 | Supprimer un article | `/depositor/lists/:id` | Cliquer supprimer, confirmer | Article supprime, compteurs decrementes |
-| D-08 | Valider la liste | `/depositor/lists/:id` | Tous les articles certifies, cliquer "Valider", accepter la checkbox | Liste validee, articles verrouilles |
-| D-09 | Telecharger le PDF de la liste | `/depositor/lists/:id` | Cliquer "Telecharger PDF" | PDF telecharge avec etiquettes |
-| D-10 | Modifier son profil | `/profile` | Modifier nom/telephone/adresse, sauvegarder | Profil mis a jour |
-| D-11 | Exporter ses donnees personnelles (RGPD) | `/profile` | Cliquer "Exporter mes donnees" | Fichier JSON telecharge |
-| D-12 | Supprimer son compte (RGPD) | `/profile` | Cliquer supprimer, confirmer | Compte anonymise |
-| D-13 | Creer une deuxieme liste | `/depositor/editions/:id/lists` | Cliquer "Nouvelle liste" a nouveau | Deuxieme liste creee (max 2) |
+| D-01 | Consulter la page d'accueil en tant que deposant | `/` | Se connecter, naviguer vers l'accueil | Message de bienvenue + lien "Mes listes" |
+| D-02 | Consulter mes editions | `/lists` | Se connecter, voir la liste des editions | Editions avec inscription active affichees |
+| D-03 | Creer une nouvelle liste | `/depositor/editions/:id/lists` | Cliquer "Nouvelle liste" | Liste creee, redirection vers le detail |
+| D-04 | Ajouter un article a la liste | `/depositor/lists/:id` | Remplir categorie, description, prix, certifier, valider | Article ajoute, compteurs mis a jour |
+| D-05 | Ajouter un article vetement | `/depositor/lists/:id` | Categorie=vetement, remplir taille/marque/genre | Compteur vetements incremente |
+| D-06 | Ajouter un lot | `/depositor/lists/:id` | Cocher "lot", selectionner body/pyjama, quantite=3 | Lot cree, compte comme 1 article |
+| D-07 | Modifier un article | `/depositor/lists/:id` | Cliquer modifier, changer le prix, sauvegarder | Article mis a jour |
+| D-08 | Supprimer un article | `/depositor/lists/:id` | Cliquer supprimer, confirmer | Article supprime, compteurs decrementes |
+| D-09 | Valider la liste | `/depositor/lists/:id` | Tous les articles certifies, cliquer "Valider", accepter la checkbox | Liste validee, articles verrouilles |
+| D-10 | Telecharger le PDF de la liste | `/depositor/lists/:id` | Cliquer "Telecharger PDF" | PDF telecharge avec etiquettes |
+| D-11 | Modifier son profil | `/profile` | Modifier nom/telephone/adresse, sauvegarder | Profil mis a jour |
+| D-12 | Exporter ses donnees personnelles (RGPD) | `/profile` | Cliquer "Exporter mes donnees" | Fichier JSON telecharge |
+| D-13 | Supprimer son compte (RGPD) | `/profile` | Cliquer supprimer, confirmer | Compte anonymise |
+| D-14 | Creer une deuxieme liste | `/depositor/editions/:id/lists` | Cliquer "Nouvelle liste" a nouveau | Deuxieme liste creee (max 2) |
 
 #### Parcours d'erreur
 | ID | Parcours | Declencheur | Attendu |
@@ -327,19 +332,20 @@ La connexion ne fonctionne plus → Donnees retirees des listes actives
 
 | Fonctionnalite | Visiteur | Auth | Deposant | Benevole | Gestionnaire | Admin |
 |----------------|----------|------|----------|----------|--------------|-------|
+| Page d'accueil | V-02 a V-05 | - | D-01 | - | - | - |
 | Consulter la politique de confidentialite | V-01 | - | - | - | - | - |
 | Connexion | - | AUTH-01 | - | - | - | - |
 | Activation de compte | - | AUTH-02 | - | - | - | - |
 | Reinitialisation du mot de passe | - | AUTH-03, AUTH-04 | - | - | - | - |
 | Deconnexion | - | AUTH-05 | - | - | - | - |
-| Consulter mes editions | - | - | D-01 | - | - | - |
-| Creer une liste | - | - | D-02, D-13 | - | - | - |
-| Ajouter un article | - | - | D-03 a D-06 | - | - | - |
-| Valider une liste | - | - | D-08 | - | - | - |
-| Telecharger le PDF | - | - | D-09 | - | - | - |
-| Modifier le profil | - | - | D-10 | - | - | - |
-| Export RGPD | - | - | D-11 | - | - | - |
-| Suppression RGPD | - | - | D-12 | - | - | - |
+| Consulter mes editions | - | - | D-02 | - | - | - |
+| Creer une liste | - | - | D-03, D-14 | - | - | - |
+| Ajouter un article | - | - | D-04 a D-07 | - | - | - |
+| Valider une liste | - | - | D-09 | - | - | - |
+| Telecharger le PDF | - | - | D-10 | - | - | - |
+| Modifier le profil | - | - | D-11 | - | - | - |
+| Export RGPD | - | - | D-12 | - | - | - |
+| Suppression RGPD | - | - | D-13 | - | - | - |
 | Scanner un article | - | - | - | B-01, B-06 | - | - |
 | Enregistrer une vente | - | - | - | B-02 a B-04 | - | - |
 | Annuler une vente (5 min) | - | - | - | B-05 | - | - |
@@ -365,11 +371,11 @@ La connexion ne fonctionne plus → Donnees retirees des listes actives
 
 | Type de test | IDs | Nombre |
 |--------------|-----|--------|
-| Parcours nominaux | V-01, AUTH-01 a AUTH-05, D-01 a A-07 | 68 |
+| Parcours nominaux | V-01 a V-05, AUTH-01 a AUTH-05, D-01 a A-07 | 73 |
 | Parcours d'erreur | V-E01 a V-E04, AUTH-E01 a AUTH-E11, D-E01 a A-E05 | 47 |
 | Cas limites | AUTH-EC01 a AUTH-EC08, D-EC01 a A-EC03 | 30 |
 | Workflows | W-01 a W-07 | 7 |
-| **Total** | | **152** |
+| **Total** | | **157** |
 
 ### 4.3 Couverture par page
 
@@ -379,11 +385,12 @@ La connexion ne fonctionne plus → Donnees retirees des listes actives
 | `/activate` | AUTH-02 | AUTH-E04 a E09 | AUTH-EC08 | W-02 |
 | `/forgot-password` | AUTH-03 | - | - | - |
 | `/reset-password` | AUTH-04 | AUTH-E10 | - | - |
+| `/` | V-02 a V-05, D-01 | - | - | - |
 | `/privacy` | V-01 | - | - | - |
-| `/lists` | D-01 | - | - | W-01, W-02 |
-| `/depositor/editions/:id/lists` | D-02, D-13 | D-E09, E10 | - | W-01, W-02 |
-| `/depositor/lists/:id` | D-03 a D-09 | D-E01 a E13 | D-EC01 a EC08 | W-01, W-02 |
-| `/profile` | D-10 a D-12 | - | - | W-07 |
+| `/lists` | D-02 | - | - | W-01, W-02 |
+| `/depositor/editions/:id/lists` | D-03, D-14 | D-E09, E10 | - | W-01, W-02 |
+| `/depositor/lists/:id` | D-04 a D-10 | D-E01 a E13 | D-EC01 a EC08 | W-01, W-02 |
+| `/profile` | D-11 a D-13 | - | - | W-07 |
 | `/editions` | G-01 | - | - | W-01 |
 | `/editions/:id` | G-02 a G-04, G-30 | G-E04, E05 | - | W-01, W-05 |
 | `/editions/:id/depositors` | G-05 | - | - | W-05 |

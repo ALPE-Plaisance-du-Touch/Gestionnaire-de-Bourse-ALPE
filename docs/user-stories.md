@@ -2361,3 +2361,83 @@ test_scenarios:
   - T-US010-24 : Suppression en masse invitations sélectionnées (OK, confirmation, rapport)
 ```
 
+## US-011 — Consulter la page d'accueil de la plateforme
+
+```yaml
+id: US-011
+title: Consulter la page d'accueil de la plateforme
+actor: visiteur | deposant | benevole | gestionnaire | administrateur
+benefit: "...pour comprendre le fonctionnement de la bourse et connaître les prochaines dates"
+as_a: "En tant que visiteur ou utilisateur de la plateforme"
+i_want: "Je veux consulter une page d'accueil qui présente la bourse ALPE et ses prochaines dates"
+so_that: "Afin de comprendre le service proposé et savoir quand participer"
+
+# Contexte métier
+notes: |
+  - La page d'accueil est le point d'entrée principal de l'application
+  - Elle doit être accessible sans authentification (partie publique)
+  - Elle présente l'association ALPE et le concept de la bourse aux vêtements
+  - Elle affiche les informations de la prochaine édition (si elle existe)
+  - Pour les utilisateurs connectés, elle peut afficher un résumé de leur situation
+
+acceptance_criteria:
+  # AC-1 : Affichage de la page d'accueil pour un visiteur
+  - GIVEN je suis un visiteur non authentifié
+    WHEN j'accède à la page d'accueil (`/`)
+    THEN je vois :
+      • Un en-tête avec le nom de la plateforme "Bourse aux vêtements ALPE"
+      • Une section de présentation de l'association ALPE Plaisance du Touch :
+        - Description courte : organisation de bourses aux vêtements et articles de puériculture
+        - Fonctionnement : dépôt d'articles, vente, reversement au déposant
+        - Commission : 20% prélevés par l'association
+      • Une section "Prochaine bourse" affichant (si une édition est publiée) :
+        - Nom de l'édition (ex: "Bourse Printemps 2026")
+        - Dates de vente (ex: "Samedi 14 et dimanche 15 mars 2026")
+        - Lieu (ex: "Salle des fêtes, Plaisance-du-Touch")
+        - Date limite de déclaration des articles
+      • Si aucune édition n'est publiée : message "Aucune bourse n'est programmée pour le moment."
+      • Un bouton "Se connecter" redirigeant vers `/login`
+      • Un lien vers la politique de confidentialité (`/privacy`)
+
+  # AC-2 : Affichage pour un utilisateur connecté
+  - GIVEN je suis connecté (quel que soit mon rôle)
+    WHEN j'accède à la page d'accueil (`/`)
+    THEN je vois les mêmes informations publiques qu'un visiteur
+    AND un message de bienvenue personnalisé : "Bonjour [Prénom] !"
+    AND selon mon rôle :
+      • Déposant : un lien "Mes listes" vers `/lists`
+      • Bénévole : un lien "Caisse" vers l'interface de vente
+      • Gestionnaire/Admin : un lien "Administration" vers `/editions`
+
+  # AC-3 : Informations de la prochaine édition
+  - GIVEN une édition existe avec un statut visible (configurée, inscriptions ouvertes, ou en cours)
+    WHEN la page d'accueil est chargée
+    THEN la section "Prochaine bourse" affiche les données de cette édition
+    AND les dates sont formatées en français (ex: "samedi 14 mars 2026")
+    AND si les inscriptions sont ouvertes, un message le précise
+
+  # AC-4 : Responsive et accessibilité
+  - GIVEN j'accède à la page d'accueil sur un appareil mobile
+    WHEN la page se charge
+    THEN la mise en page est adaptée (responsive)
+    AND la page est conforme WCAG 2.1 AA (contraste, navigation clavier, landmarks ARIA)
+    AND le temps de chargement est inférieur à 2 secondes
+
+business_rules:
+  - La page d'accueil est accessible sans authentification
+  - L'édition affichée est la prochaine édition publiée (statut ≠ brouillon, ≠ archivée)
+  - Si plusieurs éditions sont actives, afficher la plus proche dans le temps
+  - Les informations affichées sont en lecture seule (aucune action de modification)
+  - Le bouton "Se connecter" n'est pas affiché si l'utilisateur est déjà connecté
+
+test_scenarios:
+  - T-US011-01 : Page d'accueil visiteur avec édition active (OK, infos édition affichées)
+  - T-US011-02 : Page d'accueil visiteur sans édition active (OK, message "Aucune bourse programmée")
+  - T-US011-03 : Page d'accueil déposant connecté (OK, bienvenue + lien "Mes listes")
+  - T-US011-04 : Page d'accueil admin connecté (OK, bienvenue + lien "Administration")
+  - T-US011-05 : Responsive mobile (OK, mise en page adaptée)
+  - T-US011-06 : Accessibilité WCAG 2.1 AA (OK, landmarks, contraste, clavier)
+  - T-US011-07 : Lien "Se connecter" redirige vers /login (OK)
+  - T-US011-08 : Lien politique de confidentialité accessible (OK)
+```
+

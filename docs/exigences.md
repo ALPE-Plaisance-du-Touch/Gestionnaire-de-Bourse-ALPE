@@ -44,6 +44,21 @@ links:
   - **Priorité :** Must have
   - **Responsable validation :** Administrateur ALPE
 
+## Page d'accueil
+
+- REQ-F-019 — Le système DOIT afficher une page d'accueil informative présentant la plateforme et la prochaine édition de bourse. (US-011)
+  - **Critères d'acceptation :**
+    - Page accessible sans authentification (route `/`)
+    - Présentation de l'association ALPE et du fonctionnement de la bourse (dépôt, vente, reversement, commission 20%)
+    - Affichage de la prochaine édition publiée (nom, dates de vente, lieu, date limite de déclaration)
+    - Message adapté si aucune édition n'est programmée
+    - Bouton "Se connecter" pour les visiteurs non authentifiés
+    - Message de bienvenue personnalisé et liens contextuels selon le rôle pour les utilisateurs connectés
+    - Lien vers la politique de confidentialité
+    - Page responsive et conforme WCAG 2.1 AA
+  - **Priorité :** Should have
+  - **Responsable validation :** Gestionnaire + Administrateur ALPE
+
 ## Gestion des utilisateurs
 
 - REQ-F-001 — Le système DOIT permettre la création de compte déposant via activation d'invitation. (US-001)
