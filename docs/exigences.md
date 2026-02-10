@@ -46,17 +46,31 @@ links:
 
 ## Page d'accueil
 
-- REQ-F-019 — Le système DOIT afficher une page d'accueil informative présentant la plateforme et la prochaine édition de bourse. (US-011)
+- REQ-F-019 — Le système DOIT afficher une page d'accueil informative et DOIT garantir qu'une seule édition de bourse peut être active à la fois. (US-011)
   - **Critères d'acceptation :**
     - Page accessible sans authentification (route `/`)
-    - Présentation de l'association ALPE et du fonctionnement de la bourse (dépôt, vente, reversement, commission 20%)
-    - Affichage de la prochaine édition publiée (nom, dates de vente, lieu, date limite de déclaration)
-    - Message adapté si aucune édition n'est programmée
-    - Bouton "Se connecter" pour les visiteurs non authentifiés
-    - Message de bienvenue personnalisé et liens contextuels selon le rôle pour les utilisateurs connectés
-    - Lien vers la politique de confidentialité
+    - **Visiteur non authentifié :**
+      - Présentation de l'association ALPE et du fonctionnement de la bourse (dépôt, vente, reversement, commission 20%)
+      - Si une édition est active : affichage de ses informations (nom, dates de vente, lieu, date limite de déclaration)
+      - Si aucune édition n'est active : message « Aucune bourse n'est programmée pour le moment. »
+      - Bouton « Se connecter » visible
+      - Lien vers la politique de confidentialité
+    - **Utilisateur connecté avec édition active :**
+      - La page d'accueil EST la bourse en cours (affichage des détails de l'édition active)
+      - Liens contextuels selon le rôle :
+        - Déposant : « Mes listes », « Mon profil »
+        - Bénévole : « Scanner des articles », « Statistiques en direct »
+        - Gestionnaire : « Gérer les invitations », « Gérer les ventes », « Étiquettes »
+        - Administrateur : tous les liens gestionnaire + « Clôturer l'édition »
+    - **Utilisateur connecté sans édition active :**
+      - Message « Aucune bourse n'est en cours actuellement. »
+      - Si administrateur : lien « Créer une nouvelle édition »
+    - **Contrainte d'unicité d'édition active :**
+      - Une seule édition peut avoir un statut actif (≠ brouillon, ≠ clôturée, ≠ archivée) à un instant donné
+      - Le système DOIT bloquer toute tentative d'activer une deuxième édition tant qu'une autre est active
+      - Message d'erreur explicite en cas de violation : « Une bourse est déjà en cours ([nom de l'édition]). Clôturez-la avant d'en activer une autre. »
     - Page responsive et conforme WCAG 2.1 AA
-  - **Priorité :** Should have
+  - **Priorité :** Should have (page d'accueil) / Must have (contrainte d'unicité)
   - **Responsable validation :** Gestionnaire + Administrateur ALPE
 
 ## Gestion des utilisateurs

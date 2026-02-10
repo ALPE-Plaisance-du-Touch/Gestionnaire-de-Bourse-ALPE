@@ -2377,8 +2377,10 @@ notes: |
   - La page d'accueil est le point d'entrée principal de l'application
   - Elle doit être accessible sans authentification (partie publique)
   - Elle présente l'association ALPE et le concept de la bourse aux vêtements
-  - Elle affiche les informations de la prochaine édition (si elle existe)
-  - Pour les utilisateurs connectés, elle peut afficher un résumé de leur situation
+  - Contrainte système : une seule édition peut être active à la fois (statut ≠ brouillon, ≠ clôturée, ≠ archivée)
+  - Pour les visiteurs : présentation de l'association + informations sur la bourse active
+  - Pour les utilisateurs connectés : la page d'accueil EST la bourse en cours (accès direct aux fonctionnalités)
+  - S'il n'y a pas de bourse active, un message clair l'indique
 
 acceptance_criteria:
   # AC-1 : Affichage de la page d'accueil pour un visiteur
@@ -2390,33 +2392,44 @@ acceptance_criteria:
         - Description courte : organisation de bourses aux vêtements et articles de puériculture
         - Fonctionnement : dépôt d'articles, vente, reversement au déposant
         - Commission : 20% prélevés par l'association
-      • Une section "Prochaine bourse" affichant (si une édition est publiée) :
+      • Si une bourse est active :
         - Nom de l'édition (ex: "Bourse Printemps 2026")
         - Dates de vente (ex: "Samedi 14 et dimanche 15 mars 2026")
         - Lieu (ex: "Salle des fêtes, Plaisance-du-Touch")
         - Date limite de déclaration des articles
-      • Si aucune édition n'est publiée : message "Aucune bourse n'est programmée pour le moment."
+        - Statut courant (inscriptions ouvertes, en cours, etc.)
+      • Si aucune bourse n'est active : message "Aucune bourse n'est programmée pour le moment."
       • Un bouton "Se connecter" redirigeant vers `/login`
       • Un lien vers la politique de confidentialité (`/privacy`)
 
-  # AC-2 : Affichage pour un utilisateur connecté
+  # AC-2 : Affichage pour un utilisateur connecté — bourse active
   - GIVEN je suis connecté (quel que soit mon rôle)
+    AND une bourse est active
     WHEN j'accède à la page d'accueil (`/`)
-    THEN je vois les mêmes informations publiques qu'un visiteur
-    AND un message de bienvenue personnalisé : "Bonjour [Prénom] !"
-    AND selon mon rôle :
-      • Déposant : un lien "Mes listes" vers `/lists`
-      • Bénévole : un lien "Caisse" vers l'interface de vente
-      • Gestionnaire/Admin : un lien "Administration" vers `/editions`
+    THEN la page d'accueil est centrée sur la bourse en cours :
+      • Nom et dates de la bourse active en évidence
+      • Message de bienvenue personnalisé : "Bonjour [Prénom] !"
+      • Selon mon rôle, accès direct aux fonctionnalités de la bourse :
+        - Déposant : lien "Mes listes" vers `/depositor/editions/:id/lists`, statut de mes listes (brouillon/validée)
+        - Bénévole : lien "Caisse" vers `/editions/:id/sales`
+        - Gestionnaire : liens "Invitations", "Étiquettes", "Reversements" vers les pages de gestion de l'édition
+        - Admin : mêmes liens que gestionnaire + "Gestion des éditions"
 
-  # AC-3 : Informations de la prochaine édition
-  - GIVEN une édition existe avec un statut visible (configurée, inscriptions ouvertes, ou en cours)
-    WHEN la page d'accueil est chargée
-    THEN la section "Prochaine bourse" affiche les données de cette édition
-    AND les dates sont formatées en français (ex: "samedi 14 mars 2026")
-    AND si les inscriptions sont ouvertes, un message le précise
+  # AC-3 : Affichage pour un utilisateur connecté — pas de bourse active
+  - GIVEN je suis connecté (quel que soit mon rôle)
+    AND aucune bourse n'est active
+    WHEN j'accède à la page d'accueil (`/`)
+    THEN je vois :
+      • Message de bienvenue personnalisé : "Bonjour [Prénom] !"
+      • Message : "Aucune bourse n'est en cours actuellement."
+      • Admin uniquement : lien "Créer une nouvelle édition" vers `/editions`
 
-  # AC-4 : Responsive et accessibilité
+  # AC-4 : Contrainte d'unicité de la bourse active
+  - GIVEN une édition est déjà dans un statut actif (configurée, inscriptions_ouvertes, ou en_cours)
+    WHEN un administrateur tente d'activer une autre édition (passage au-delà de brouillon)
+    THEN le système bloque l'opération avec un message : "Une bourse est déjà active ([nom]). Clôturez-la avant d'en activer une autre."
+
+  # AC-5 : Responsive et accessibilité
   - GIVEN j'accède à la page d'accueil sur un appareil mobile
     WHEN la page se charge
     THEN la mise en page est adaptée (responsive)
@@ -2424,20 +2437,24 @@ acceptance_criteria:
     AND le temps de chargement est inférieur à 2 secondes
 
 business_rules:
-  - La page d'accueil est accessible sans authentification
-  - L'édition affichée est la prochaine édition publiée (statut ≠ brouillon, ≠ archivée)
-  - Si plusieurs éditions sont actives, afficher la plus proche dans le temps
-  - Les informations affichées sont en lecture seule (aucune action de modification)
+  - La page d'accueil est accessible sans authentification (partie publique)
+  - Une seule édition peut être active à la fois (statut configurée, inscriptions_ouvertes, ou en_cours)
+  - Le système empêche l'activation d'une seconde édition si une est déjà active
+  - Pour les connectés, la page d'accueil est la bourse en cours (pas une page de présentation statique)
+  - S'il n'y a pas de bourse active, un message clair le signale à tous les utilisateurs
+  - Les informations affichées sont en lecture seule (aucune action de modification directe)
   - Le bouton "Se connecter" n'est pas affiché si l'utilisateur est déjà connecté
 
 test_scenarios:
-  - T-US011-01 : Page d'accueil visiteur avec édition active (OK, infos édition affichées)
-  - T-US011-02 : Page d'accueil visiteur sans édition active (OK, message "Aucune bourse programmée")
-  - T-US011-03 : Page d'accueil déposant connecté (OK, bienvenue + lien "Mes listes")
-  - T-US011-04 : Page d'accueil admin connecté (OK, bienvenue + lien "Administration")
-  - T-US011-05 : Responsive mobile (OK, mise en page adaptée)
-  - T-US011-06 : Accessibilité WCAG 2.1 AA (OK, landmarks, contraste, clavier)
-  - T-US011-07 : Lien "Se connecter" redirige vers /login (OK)
-  - T-US011-08 : Lien politique de confidentialité accessible (OK)
+  - T-US011-01 : Page d'accueil visiteur avec bourse active (OK, infos édition affichées)
+  - T-US011-02 : Page d'accueil visiteur sans bourse active (OK, message "Aucune bourse programmée")
+  - T-US011-03 : Page d'accueil déposant connecté avec bourse active (OK, bienvenue + lien "Mes listes" vers l'édition)
+  - T-US011-04 : Page d'accueil gestionnaire connecté avec bourse active (OK, liens gestion édition)
+  - T-US011-05 : Page d'accueil admin connecté sans bourse active (OK, lien "Créer une édition")
+  - T-US011-06 : Tentative d'activer 2 éditions simultanément (KO, erreur "bourse déjà active")
+  - T-US011-07 : Responsive mobile (OK, mise en page adaptée)
+  - T-US011-08 : Accessibilité WCAG 2.1 AA (OK, landmarks, contraste, clavier)
+  - T-US011-09 : Lien "Se connecter" redirige vers /login (OK)
+  - T-US011-10 : Lien politique de confidentialité accessible (OK)
 ```
 

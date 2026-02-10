@@ -41,8 +41,8 @@ Campagne de tests E2E concue pour execution via Claude Code + Chrome DevTools MC
 | ID | Parcours | Entree | Etapes | Sortie |
 |----|----------|--------|--------|--------|
 | V-01 | Consulter la politique de confidentialite | `/privacy` | Naviguer, lire le contenu | Page statique affichee |
-| V-02 | Consulter la page d'accueil avec edition active | `/` | Naviguer vers la racine | Presentation ALPE + prochaine bourse affichee (nom, dates, lieu) |
-| V-03 | Consulter la page d'accueil sans edition active | `/` | Naviguer vers la racine (aucune edition publiee) | Message "Aucune bourse n'est programmee pour le moment." |
+| V-02 | Consulter la page d'accueil avec edition active | `/` | Naviguer vers la racine | Presentation ALPE + edition active affichee (nom, dates, lieu) + bouton "Se connecter" |
+| V-03 | Consulter la page d'accueil sans edition active | `/` | Naviguer vers la racine (aucune edition active) | Message "Aucune bourse n'est programmee pour le moment." + bouton "Se connecter" |
 | V-04 | Cliquer sur "Se connecter" depuis l'accueil | `/` | Cliquer sur le bouton "Se connecter" | Redirection vers `/login` |
 | V-05 | Acceder a la politique de confidentialite depuis l'accueil | `/` | Cliquer sur le lien politique de confidentialite | Navigation vers `/privacy` |
 
@@ -101,7 +101,8 @@ Campagne de tests E2E concue pour execution via Claude Code + Chrome DevTools MC
 #### Parcours nominaux
 | ID | Parcours | Entree | Etapes | Sortie |
 |----|----------|--------|--------|--------|
-| D-01 | Consulter la page d'accueil en tant que deposant | `/` | Se connecter, naviguer vers l'accueil | Message de bienvenue + lien "Mes listes" |
+| D-01 | Consulter la page d'accueil en tant que deposant (edition active) | `/` | Se connecter, naviguer vers l'accueil | Page = bourse en cours (details edition) + liens "Mes listes", "Mon profil" |
+| D-01b | Consulter la page d'accueil en tant que deposant (pas d'edition) | `/` | Se connecter (aucune edition active) | Message "Aucune bourse n'est en cours actuellement." |
 | D-02 | Consulter mes editions | `/lists` | Se connecter, voir la liste des editions | Editions avec inscription active affichees |
 | D-03 | Creer une nouvelle liste | `/depositor/editions/:id/lists` | Cliquer "Nouvelle liste" | Liste creee, redirection vers le detail |
 | D-04 | Ajouter un article a la liste | `/depositor/lists/:id` | Remplir categorie, description, prix, certifier, valider | Article ajoute, compteurs mis a jour |
@@ -254,6 +255,8 @@ Campagne de tests E2E concue pour execution via Claude Code + Chrome DevTools MC
 | A-05 | Consulter les journaux d'audit | `/admin/audit-logs` | Naviguer vers les journaux d'audit | Piste d'audit complete affichee |
 | A-06 | Filtrer les journaux d'audit | `/admin/audit-logs` | Filtrer par action/utilisateur/date | Resultats filtres |
 | A-07 | Telecharger le rapport de cloture | `/editions/:id` | Cliquer "Rapport de cloture" sur une edition cloturee | Rapport PDF telecharge |
+| A-08 | Consulter la page d'accueil en tant qu'admin (edition active) | `/` | Se connecter en tant qu'admin | Page = bourse en cours + liens gestionnaire + "Cloturer l'edition" |
+| A-09 | Consulter la page d'accueil en tant qu'admin (pas d'edition) | `/` | Se connecter (aucune edition active) | Message "Aucune bourse n'est en cours" + lien "Creer une nouvelle edition" |
 
 #### Parcours d'erreur
 | ID | Parcours | Declencheur | Attendu |
@@ -263,6 +266,7 @@ Campagne de tests E2E concue pour execution via Claude Code + Chrome DevTools MC
 | A-E03 | Creer une edition avec un nom en doublon | Meme nom qu'une edition existante | Erreur "Nom deja utilise" |
 | A-E04 | Archiver une edition non cloturee | Edition en cours | Bouton archiver masque |
 | A-E05 | Cloturer avec des reversements non payes | Reversements pas tous payes | Avertissement dans la verification de cloture |
+| A-E06 | Activer une 2e edition alors qu'une est deja active | Edition deja active existe | Erreur "Une bourse est deja en cours ([nom]). Cloturez-la avant d'en activer une autre." |
 
 #### Cas limites
 | ID | Parcours | Scenario | Attendu |
@@ -332,7 +336,7 @@ La connexion ne fonctionne plus → Donnees retirees des listes actives
 
 | Fonctionnalite | Visiteur | Auth | Deposant | Benevole | Gestionnaire | Admin |
 |----------------|----------|------|----------|----------|--------------|-------|
-| Page d'accueil | V-02 a V-05 | - | D-01 | - | - | - |
+| Page d'accueil | V-02 a V-05 | - | D-01, D-01b | - | - | A-08, A-09 |
 | Consulter la politique de confidentialite | V-01 | - | - | - | - | - |
 | Connexion | - | AUTH-01 | - | - | - | - |
 | Activation de compte | - | AUTH-02 | - | - | - | - |
@@ -366,16 +370,17 @@ La connexion ne fonctionne plus → Donnees retirees des listes actives
 | Archiver une edition | - | - | - | - | - | A-04 |
 | Consulter les journaux d'audit | - | - | - | - | - | A-05, A-06 |
 | Rapport de cloture | - | - | - | - | - | A-07 |
+| Contrainte edition unique | - | - | - | - | - | A-E06 |
 
 ### 4.2 Couverture par type de test
 
 | Type de test | IDs | Nombre |
 |--------------|-----|--------|
-| Parcours nominaux | V-01 a V-05, AUTH-01 a AUTH-05, D-01 a A-07 | 73 |
-| Parcours d'erreur | V-E01 a V-E04, AUTH-E01 a AUTH-E11, D-E01 a A-E05 | 47 |
+| Parcours nominaux | V-01 a V-05, AUTH-01 a AUTH-05, D-01 a A-09 | 76 |
+| Parcours d'erreur | V-E01 a V-E04, AUTH-E01 a AUTH-E11, D-E01 a A-E06 | 48 |
 | Cas limites | AUTH-EC01 a AUTH-EC08, D-EC01 a A-EC03 | 30 |
 | Workflows | W-01 a W-07 | 7 |
-| **Total** | | **157** |
+| **Total** | | **161** |
 
 ### 4.3 Couverture par page
 
@@ -385,7 +390,7 @@ La connexion ne fonctionne plus → Donnees retirees des listes actives
 | `/activate` | AUTH-02 | AUTH-E04 a E09 | AUTH-EC08 | W-02 |
 | `/forgot-password` | AUTH-03 | - | - | - |
 | `/reset-password` | AUTH-04 | AUTH-E10 | - | - |
-| `/` | V-02 a V-05, D-01 | - | - | - |
+| `/` | V-02 a V-05, D-01, D-01b, A-08, A-09 | A-E06 | - | - |
 | `/privacy` | V-01 | - | - | - |
 | `/lists` | D-02 | - | - | W-01, W-02 |
 | `/depositor/editions/:id/lists` | D-03, D-14 | D-E09, E10 | - | W-01, W-02 |
