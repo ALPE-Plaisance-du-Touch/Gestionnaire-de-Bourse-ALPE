@@ -1,10 +1,13 @@
 """Public configuration API endpoints."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
-from app.schemas import CategoryConstraintsResponse, CategoryInfo, PriceHintsResponse
+from app.models.base import get_db_session
+from app.repositories import EditionRepository
+from app.schemas import ActiveEditionResponse, CategoryConstraintsResponse, CategoryInfo, EditionResponse, PriceHintsResponse
 from app.schemas.article import (
     BLACKLISTED_ITEMS,
     MAX_ARTICLES_PER_LIST,
@@ -69,3 +72,22 @@ async def get_price_hints_endpoint():
     """Get price hints for articles."""
     hints = get_price_hints()
     return PriceHintsResponse(hints=hints)
+
+
+@router.get(
+    "/active-edition",
+    response_model=ActiveEditionResponse,
+    summary="Get active edition",
+    description="Get the currently active edition (public, no authentication required).",
+)
+async def get_active_edition(
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Get the active edition for homepage display."""
+    repo = EditionRepository(db)
+    edition = await repo.get_any_active_edition()
+    if not edition:
+        return ActiveEditionResponse(active_edition=None)
+    return ActiveEditionResponse(
+        active_edition=EditionResponse.model_validate(edition)
+    )

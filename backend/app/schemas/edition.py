@@ -135,3 +135,9 @@ class EditionListResponse(BaseModel):
     page: int
     limit: int
     pages: int
+
+
+class ActiveEditionResponse(BaseModel):
+    """Response for the public active edition endpoint."""
+
+    active_edition: EditionResponse | None = None
