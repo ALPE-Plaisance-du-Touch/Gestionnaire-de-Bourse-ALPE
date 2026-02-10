@@ -1,445 +1,445 @@
-# Testing Strategy - Gestionnaire de Bourse ALPE
+# Strategie de test - Gestionnaire de Bourse ALPE
 
-E2E test campaign designed for execution via Claude Code + Chrome DevTools MCP.
+Campagne de tests E2E concue pour execution via Claude Code + Chrome DevTools MCP.
 
-**Application URL**: `http://localhost:5173` (frontend) / `http://localhost:8000` (backend API)
+**URL de l'application** : `http://localhost:5173` (frontend) / `http://localhost:8000` (API backend)
 
 ---
 
-## 1. User Profile Map
+## 1. Cartographie des profils utilisateurs
 
-### 1.1 Roles & Permissions
+### 1.1 Roles et permissions
 
 | Role | Code | Permissions | Restrictions |
 |------|------|-------------|--------------|
-| **Visitor** | (none) | View privacy policy | No access to any protected or auth route |
-| **Depositor** | `depositor` | Login, activate account, reset password + declare articles, validate lists, download PDF labels, view sales results, edit profile, export/delete personal data (GDPR) | Cannot access admin pages, cannot scan/sell, cannot manage editions |
-| **Volunteer** | `volunteer` | All depositor permissions + scan articles, register sales, cancel sales (within 5 min), view live stats, offline sales sync | Cannot configure editions, cannot manage invitations/payouts |
-| **Manager** | `manager` | All volunteer permissions + configure editions, import Billetweb CSV, manage invitations, generate labels, calculate/record payouts, manage sales (cancel without time limit) | Cannot create/close/archive editions, cannot view audit logs |
-| **Administrator** | `administrator` | Full access: all manager permissions + create editions, close editions, archive editions, view audit logs, manage user roles | None |
+| **Visiteur** | (aucun) | Consulter la politique de confidentialite | Aucun acces aux routes protegees ou d'authentification |
+| **Deposant** | `depositor` | Connexion, activation de compte, reinitialisation de mot de passe + declarer des articles, valider des listes, telecharger les etiquettes PDF, consulter les resultats de vente, modifier son profil, exporter/supprimer ses donnees personnelles (RGPD) | Pas d'acces aux pages admin, ne peut pas scanner/vendre, ne peut pas gerer les editions |
+| **Benevole** | `volunteer` | Toutes les permissions deposant + scanner des articles, enregistrer des ventes, annuler des ventes (sous 5 min), consulter les statistiques en direct, synchronisation hors-ligne | Ne peut pas configurer les editions, ne peut pas gerer les invitations/reversements |
+| **Gestionnaire** | `manager` | Toutes les permissions benevole + configurer les editions, importer le CSV Billetweb, gerer les invitations, generer les etiquettes, calculer/enregistrer les reversements, gerer les ventes (annulation sans limite de temps) | Ne peut pas creer/cloturer/archiver les editions, pas d'acces aux journaux d'audit |
+| **Administrateur** | `administrator` | Acces complet : toutes les permissions gestionnaire + creer des editions, cloturer des editions, archiver des editions, consulter les journaux d'audit, gerer les roles utilisateurs | Aucune |
 
-### 1.2 Test User Accounts
+### 1.2 Comptes utilisateurs de test
 
-| Profile | Email | Password | Role | State |
-|---------|-------|----------|------|-------|
-| Admin | `admin@alpe-bourse.fr` | `Admin123!` | administrator | Active |
-| Manager | `manager@alpe-bourse.fr` | `Manager123!` | manager | Active |
-| Volunteer | `volunteer@alpe-bourse.fr` | `Volunteer123!` | volunteer | Active |
-| Depositor (standard) | `deposant@example.com` | `Deposant123!` | depositor | Active |
-| Depositor (list 1000) | `adherent@alpe-bourse.fr` | `Adherent123!` | depositor | Active, local resident |
-| Depositor (list 2000) | `ami-adherent@example.com` | `Ami12345!` | depositor | Active |
-| Inactive user | `inactif@example.com` | (none) | depositor | Inactive, pending invitation |
-| Expired invitation | `expire@example.com` | (none) | depositor | Inactive, expired token |
-
----
-
-## 2. Journey Map per Profile
-
-### 2.1 Visitor (Unauthenticated, no account)
-
-#### Happy Paths
-| ID | Journey | Entry | Steps | Exit |
-|----|---------|-------|-------|------|
-| V-01 | View privacy policy | `/privacy` | Navigate, read content | Static page displayed |
-
-#### Error Paths
-| ID | Journey | Trigger | Expected |
-|----|---------|---------|----------|
-| V-E01 | Access protected route | Navigate to `/editions` | Redirect to `/login` |
-| V-E02 | Access login page | Navigate to `/login` | Login form displayed (public auth page) |
-| V-E03 | Access admin page | Navigate to `/admin/invitations` | Redirect to `/login` |
-| V-E04 | Access depositor page | Navigate to `/lists` | Redirect to `/login` |
+| Profil | Email | Mot de passe | Role | Etat |
+|--------|-------|--------------|------|------|
+| Admin | `admin@alpe-bourse.fr` | `Admin123!` | administrator | Actif |
+| Gestionnaire | `manager@alpe-bourse.fr` | `Manager123!` | manager | Actif |
+| Benevole | `volunteer@alpe-bourse.fr` | `Volunteer123!` | volunteer | Actif |
+| Deposant (standard) | `deposant@example.com` | `Deposant123!` | depositor | Actif |
+| Deposant (liste 1000) | `adherent@alpe-bourse.fr` | `Adherent123!` | depositor | Actif, resident local |
+| Deposant (liste 2000) | `ami-adherent@example.com` | `Ami12345!` | depositor | Actif |
+| Utilisateur inactif | `inactif@example.com` | (aucun) | depositor | Inactif, invitation en attente |
+| Invitation expiree | `expire@example.com` | (aucun) | depositor | Inactif, token expire |
 
 ---
 
-### 2.2 Authentication (all roles, pre-login / account management)
+## 2. Cartographie des parcours par profil
 
-#### Happy Paths
-| ID | Journey | Entry | Steps | Exit |
-|----|---------|-------|-------|------|
-| AUTH-01 | Login with valid credentials | `/login` | Fill email + password, submit | Redirect to `/` |
-| AUTH-02 | Activate account via invitation link | `/activate?token=xxx` | Token validated, fill form, submit | Redirect to `/login` with success |
-| AUTH-03 | Request password reset | `/forgot-password` | Fill email, submit | Success message shown |
-| AUTH-04 | Reset password with valid token | `/reset-password?token=xxx` | Fill new password + confirm, submit | Redirect to `/login` |
-| AUTH-05 | Logout | Any authenticated page | Click "Deconnexion" | Redirect to `/login` |
+### 2.1 Visiteur (non authentifie, sans compte)
 
-#### Error Paths
-| ID | Journey | Trigger | Expected |
-|----|---------|---------|----------|
-| AUTH-E01 | Login with wrong password | Invalid password | Error message "Identifiants invalides" |
-| AUTH-E02 | Login with unknown email | Unknown email | Error message "Identifiants invalides" (no enumeration) |
-| AUTH-E03 | Login with empty fields | Submit empty form | Validation messages |
-| AUTH-E04 | Activate with expired token | Token > 7 days old | Error "Lien expire" |
-| AUTH-E05 | Activate with invalid token | Garbage token | Error "Lien invalide" |
-| AUTH-E06 | Activate with already-used token | Re-visit activation link | Redirect to login |
-| AUTH-E07 | Activate with weak password | "123" | Validation error, strength indicator red |
-| AUTH-E08 | Activate without accepting terms | Checkbox unchecked | Submit blocked |
-| AUTH-E09 | Activate with mismatched passwords | pw != confirm | Validation error |
-| AUTH-E10 | Reset password with expired token | Expired reset token | Error message |
-| AUTH-E11 | Login with inactive account | Account not yet activated | Error message |
+#### Parcours nominaux
+| ID | Parcours | Entree | Etapes | Sortie |
+|----|----------|--------|--------|--------|
+| V-01 | Consulter la politique de confidentialite | `/privacy` | Naviguer, lire le contenu | Page statique affichee |
 
-#### Edge Cases
-| ID | Journey | Scenario | Expected |
-|----|---------|----------|----------|
-| AUTH-EC01 | Double-submit login | Click submit rapidly twice | No duplicate request, single redirect |
-| AUTH-EC02 | Password with special chars | Password: `P@$$w0rd!#%^` | Accepted |
-| AUTH-EC03 | Email case sensitivity | Login with `Admin@ALPE-bourse.FR` | Works (case-insensitive) |
-| AUTH-EC04 | XSS in login fields | `<script>alert(1)</script>` in email | Sanitized, no XSS |
-| AUTH-EC05 | SQL injection in login | `' OR 1=1 --` | Rejected, no injection |
-| AUTH-EC06 | Very long email | 256-char email | Validation error |
-| AUTH-EC07 | Session expired during use | JWT token expires mid-session | Redirect to `/login` |
-| AUTH-EC08 | Re-activate already active account | Visit activate URL of active user | Error or redirect |
+#### Parcours d'erreur
+| ID | Parcours | Declencheur | Attendu |
+|----|----------|-------------|---------|
+| V-E01 | Acceder a une route protegee | Naviguer vers `/editions` | Redirection vers `/login` |
+| V-E02 | Acceder a la page de connexion | Naviguer vers `/login` | Formulaire de connexion affiche (page auth publique) |
+| V-E03 | Acceder a une page admin | Naviguer vers `/admin/invitations` | Redirection vers `/login` |
+| V-E04 | Acceder a une page deposant | Naviguer vers `/lists` | Redirection vers `/login` |
 
 ---
 
-### 2.3 Depositor
+### 2.2 Authentification (tous roles, pre-connexion / gestion de compte)
 
-#### Happy Paths
-| ID | Journey | Entry | Steps | Exit |
-|----|---------|-------|-------|------|
-| D-01 | View my editions | `/lists` | Login, see list of editions | Editions with active registration shown |
-| D-02 | Create a new list | `/depositor/editions/:id/lists` | Click "Nouvelle liste" | List created, redirect to list detail |
-| D-03 | Add article to list | `/depositor/lists/:id` | Fill category, description, price, certify, submit | Article added, counters updated |
-| D-04 | Add clothing article | `/depositor/lists/:id` | Category=clothing, fill size/brand/gender | Clothing counter incremented |
-| D-05 | Add lot article | `/depositor/lists/:id` | Check "lot", select body/pajama, quantity=3 | Lot created, counts as 1 article |
-| D-06 | Edit article | `/depositor/lists/:id` | Click edit, modify price, save | Article updated |
-| D-07 | Delete article | `/depositor/lists/:id` | Click delete, confirm | Article removed, counters decremented |
-| D-08 | Validate list | `/depositor/lists/:id` | All articles certified, click "Valider", accept checkbox | List validated, articles locked |
-| D-09 | Download list PDF | `/depositor/lists/:id` | Click "Telecharger PDF" | PDF downloaded with labels |
-| D-10 | Edit profile | `/profile` | Edit name/phone/address, save | Profile updated |
-| D-11 | Export personal data (GDPR) | `/profile` | Click "Exporter mes donnees" | JSON file downloaded |
-| D-12 | Delete account (GDPR) | `/profile` | Click delete, confirm | Account anonymized |
-| D-13 | Create second list | `/depositor/editions/:id/lists` | Click "Nouvelle liste" again | Second list created (max 2) |
+#### Parcours nominaux
+| ID | Parcours | Entree | Etapes | Sortie |
+|----|----------|--------|--------|--------|
+| AUTH-01 | Connexion avec identifiants valides | `/login` | Saisir email + mot de passe, valider | Redirection vers `/` |
+| AUTH-02 | Activer un compte via lien d'invitation | `/activate?token=xxx` | Token valide, remplir le formulaire, valider | Redirection vers `/login` avec succes |
+| AUTH-03 | Demander la reinitialisation du mot de passe | `/forgot-password` | Saisir email, valider | Message de succes affiche |
+| AUTH-04 | Reinitialiser le mot de passe avec token valide | `/reset-password?token=xxx` | Saisir nouveau mot de passe + confirmation, valider | Redirection vers `/login` |
+| AUTH-05 | Deconnexion | Toute page authentifiee | Cliquer "Deconnexion" | Redirection vers `/login` |
 
-#### Error Paths
-| ID | Journey | Trigger | Expected |
-|----|---------|---------|----------|
-| D-E01 | Add article below min price | Price = 0.50 | Error "Prix minimum 1.00 EUR" |
-| D-E02 | Add stroller above max price | Stroller at 200 EUR | Error "Prix maximum 150.00 EUR" |
-| D-E03 | Add 25th article | List already has 24 articles | Error "Maximum 24 articles" |
-| D-E04 | Add 13th clothing item | 12 clothing already | Error "Maximum 12 vetements" |
-| D-E05 | Add blacklisted item | Category = car_seat | Error "Article interdit" |
-| D-E06 | Add 2nd coat | Already 1 coat | Error "Maximum 1 manteau" |
-| D-E07 | Add lot with wrong subcategory | Lot of t-shirts | Error "Lots uniquement pour bodys/pyjamas" |
-| D-E08 | Validate without certification | Article not certified | Validation button disabled |
-| D-E09 | Create 3rd list | Already has 2 lists | Button disabled/hidden |
-| D-E10 | Add article after deadline | Declaration deadline passed | Error banner, form disabled |
-| D-E11 | Edit validated list | List status = validated | Edit buttons hidden |
-| D-E12 | Access another depositor's list | Modify URL with foreign list ID | 403 Forbidden |
-| D-E13 | Delete non-empty list | List has articles | Delete button hidden |
+#### Parcours d'erreur
+| ID | Parcours | Declencheur | Attendu |
+|----|----------|-------------|---------|
+| AUTH-E01 | Connexion avec mauvais mot de passe | Mot de passe invalide | Message d'erreur "Identifiants invalides" |
+| AUTH-E02 | Connexion avec email inconnu | Email inconnu | Message d'erreur "Identifiants invalides" (pas d'enumeration) |
+| AUTH-E03 | Connexion avec champs vides | Valider formulaire vide | Messages de validation |
+| AUTH-E04 | Activation avec token expire | Token > 7 jours | Erreur "Lien expire" |
+| AUTH-E05 | Activation avec token invalide | Token aleatoire | Erreur "Lien invalide" |
+| AUTH-E06 | Activation avec token deja utilise | Revisiter le lien d'activation | Redirection vers login |
+| AUTH-E07 | Activation avec mot de passe faible | "123" | Erreur de validation, indicateur de force rouge |
+| AUTH-E08 | Activation sans accepter les CGU | Case non cochee | Validation bloquee |
+| AUTH-E09 | Activation avec mots de passe differents | mdp != confirmation | Erreur de validation |
+| AUTH-E10 | Reinitialisation avec token expire | Token de reinitialisation expire | Message d'erreur |
+| AUTH-E11 | Connexion avec compte inactif | Compte non encore active | Message d'erreur |
 
-#### Edge Cases
-| ID | Journey | Scenario | Expected |
-|----|---------|----------|----------|
-| D-EC01 | Article description max length | 100-char description | Accepted |
-| D-EC02 | Article description 101 chars | Truncated/error |
-| D-EC03 | Price with 3 decimals | 5.999 | Rounded to 6.00 or rejected |
-| D-EC04 | Empty description | "" | Validation error |
-| D-EC05 | Lot quantity = 0 | lot_quantity=0 | Validation error |
-| D-EC06 | Special characters in description | "T-shirt bebe 'Zara' (3 mois)" | Accepted |
-| D-EC07 | Concurrent list validation | Submit twice rapidly | Only one validation succeeds |
-| D-EC08 | Navigate away during save | Close tab while saving | No partial data saved |
+#### Cas limites
+| ID | Parcours | Scenario | Attendu |
+|----|----------|----------|---------|
+| AUTH-EC01 | Double soumission de connexion | Cliquer valider deux fois rapidement | Pas de requete dupliquee, redirection unique |
+| AUTH-EC02 | Mot de passe avec caracteres speciaux | Mot de passe : `P@$$w0rd!#%^` | Accepte |
+| AUTH-EC03 | Sensibilite a la casse de l'email | Connexion avec `Admin@ALPE-bourse.FR` | Fonctionne (insensible a la casse) |
+| AUTH-EC04 | XSS dans les champs de connexion | `<script>alert(1)</script>` dans email | Assaini, pas de XSS |
+| AUTH-EC05 | Injection SQL dans la connexion | `' OR 1=1 --` | Rejete, pas d'injection |
+| AUTH-EC06 | Email tres long | Email de 256 caracteres | Erreur de validation |
+| AUTH-EC07 | Session expiree en cours d'utilisation | Token JWT expire en pleine session | Redirection vers `/login` |
+| AUTH-EC08 | Re-activer un compte deja actif | Visiter l'URL d'activation d'un utilisateur actif | Erreur ou redirection |
 
 ---
 
-### 2.4 Volunteer
+### 2.3 Deposant
 
-#### Happy Paths
-| ID | Journey | Entry | Steps | Exit |
-|----|---------|-------|-------|------|
-| B-01 | Scan article QR code | `/editions/:id/sales` | Scan barcode with camera | Article details displayed |
-| B-02 | Register cash sale | `/editions/:id/sales` | Scan, select "Especes", confirm | Sale recorded, recent sales updated |
-| B-03 | Register card sale | `/editions/:id/sales` | Scan, select "CB", confirm | Sale recorded |
-| B-04 | Register check sale | `/editions/:id/sales` | Scan, select "Cheque", confirm | Sale recorded |
-| B-05 | Cancel recent sale | `/editions/:id/sales` | Click cancel on recent sale (< 5 min) | Sale cancelled, article back on sale |
-| B-06 | Manual barcode input | `/editions/:id/sales` | Type barcode in text field | Article found and displayed |
-| B-07 | View live statistics | `/editions/:id/stats` | Navigate to stats page | Real-time stats with auto-refresh |
-| B-08 | Private sale detection | `/editions/:id/sales` | Sale on Friday 17-18h | Sale marked as private |
+#### Parcours nominaux
+| ID | Parcours | Entree | Etapes | Sortie |
+|----|----------|--------|--------|--------|
+| D-01 | Consulter mes editions | `/lists` | Se connecter, voir la liste des editions | Editions avec inscription active affichees |
+| D-02 | Creer une nouvelle liste | `/depositor/editions/:id/lists` | Cliquer "Nouvelle liste" | Liste creee, redirection vers le detail |
+| D-03 | Ajouter un article a la liste | `/depositor/lists/:id` | Remplir categorie, description, prix, certifier, valider | Article ajoute, compteurs mis a jour |
+| D-04 | Ajouter un article vetement | `/depositor/lists/:id` | Categorie=vetement, remplir taille/marque/genre | Compteur vetements incremente |
+| D-05 | Ajouter un lot | `/depositor/lists/:id` | Cocher "lot", selectionner body/pyjama, quantite=3 | Lot cree, compte comme 1 article |
+| D-06 | Modifier un article | `/depositor/lists/:id` | Cliquer modifier, changer le prix, sauvegarder | Article mis a jour |
+| D-07 | Supprimer un article | `/depositor/lists/:id` | Cliquer supprimer, confirmer | Article supprime, compteurs decrementes |
+| D-08 | Valider la liste | `/depositor/lists/:id` | Tous les articles certifies, cliquer "Valider", accepter la checkbox | Liste validee, articles verrouilles |
+| D-09 | Telecharger le PDF de la liste | `/depositor/lists/:id` | Cliquer "Telecharger PDF" | PDF telecharge avec etiquettes |
+| D-10 | Modifier son profil | `/profile` | Modifier nom/telephone/adresse, sauvegarder | Profil mis a jour |
+| D-11 | Exporter ses donnees personnelles (RGPD) | `/profile` | Cliquer "Exporter mes donnees" | Fichier JSON telecharge |
+| D-12 | Supprimer son compte (RGPD) | `/profile` | Cliquer supprimer, confirmer | Compte anonymise |
+| D-13 | Creer une deuxieme liste | `/depositor/editions/:id/lists` | Cliquer "Nouvelle liste" a nouveau | Deuxieme liste creee (max 2) |
 
-#### Error Paths
-| ID | Journey | Trigger | Expected |
-|----|---------|---------|----------|
-| B-E01 | Scan unknown barcode | Invalid barcode | Error "Article non trouve" |
-| B-E02 | Scan already-sold article | Article status = sold | Error "Article deja vendu" |
-| B-E03 | Cancel sale after 5 min | Sale > 5 min old | Cancel button hidden/disabled |
-| B-E04 | Scan without edition open | Edition not in_progress | Error message |
-| B-E05 | Invalid barcode format | "ABC" instead of "012305" | Warning "Format invalide" |
+#### Parcours d'erreur
+| ID | Parcours | Declencheur | Attendu |
+|----|----------|-------------|---------|
+| D-E01 | Ajouter un article sous le prix minimum | Prix = 0.50 | Erreur "Prix minimum 1.00 EUR" |
+| D-E02 | Ajouter une poussette au-dessus du prix max | Poussette a 200 EUR | Erreur "Prix maximum 150.00 EUR" |
+| D-E03 | Ajouter un 25e article | Liste deja a 24 articles | Erreur "Maximum 24 articles" |
+| D-E04 | Ajouter un 13e vetement | 12 vetements deja presents | Erreur "Maximum 12 vetements" |
+| D-E05 | Ajouter un article interdit | Categorie = siege_auto | Erreur "Article interdit" |
+| D-E06 | Ajouter un 2e manteau | Deja 1 manteau | Erreur "Maximum 1 manteau" |
+| D-E07 | Ajouter un lot avec mauvaise sous-categorie | Lot de t-shirts | Erreur "Lots uniquement pour bodys/pyjamas" |
+| D-E08 | Valider sans certification | Article non certifie | Bouton de validation desactive |
+| D-E09 | Creer une 3e liste | A deja 2 listes | Bouton desactive/masque |
+| D-E10 | Ajouter un article apres la date limite | Date limite de declaration depassee | Banniere d'erreur, formulaire desactive |
+| D-E11 | Modifier une liste validee | Statut de la liste = validee | Boutons de modification masques |
+| D-E12 | Acceder a la liste d'un autre deposant | Modifier l'URL avec un ID de liste etranger | 403 Interdit |
+| D-E13 | Supprimer une liste non vide | La liste contient des articles | Bouton supprimer masque |
 
-#### Edge Cases
-| ID | Journey | Scenario | Expected |
-|----|---------|----------|----------|
-| B-EC01 | Rapid consecutive scans | Scan 5 articles in 10 seconds | All processed sequentially |
-| B-EC02 | Offline sale | Network disconnected | Sale queued locally, synced later |
-| B-EC03 | Offline sync conflict | Offline sale for already-sold article | Conflict reported in sync |
-| B-EC04 | Camera permission denied | QR scanner denied | Manual input fallback shown |
-| B-EC05 | Register number assignment | Multiple registers | Each sale tagged with register # |
-
----
-
-### 2.5 Manager
-
-#### Happy Paths
-| ID | Journey | Entry | Steps | Exit |
-|----|---------|-------|-------|------|
-| G-01 | View editions list | `/editions` | Login as manager | Editions table displayed |
-| G-02 | Configure edition dates | `/editions/:id` | Edit operational dates, commission, save | Edition configured, status = configured |
-| G-03 | Create deposit slots | `/editions/:id` | Add slots with capacity/times | Slots listed |
-| G-04 | Import Billetweb CSV | `/editions/:id` | Upload CSV, preview, confirm import | Depositors imported, invitations sent |
-| G-05 | View edition depositors | `/editions/:id/depositors` | Navigate from edition detail | Depositor list with filters |
-| G-06 | Create single invitation | `/admin/invitations` | Click "Nouvelle invitation", fill form | Invitation created, email sent |
-| G-07 | Bulk create invitations | `/admin/invitations` | Click "En masse", upload CSV | Multiple invitations created |
-| G-08 | Resend invitation | `/admin/invitations` | Click "Relancer" on pending invitation | New token generated, email resent |
-| G-09 | Bulk resend invitations | `/admin/invitations` | Select multiple, click "Relancer la selection" | All resent |
-| G-10 | Delete invitation | `/admin/invitations` | Click delete, confirm | Invitation removed |
-| G-11 | Bulk delete invitations | `/admin/invitations` | Select multiple, click "Supprimer la selection" | All deleted |
-| G-12 | Export invitations Excel | `/admin/invitations/stats` | Click "Exporter Excel" | Excel file downloaded |
-| G-13 | Generate labels (by slot) | `/editions/:id/labels` | Select slot mode, choose slot, generate | PDF downloaded |
-| G-14 | Generate labels (all) | `/editions/:id/labels` | Select complete mode, generate | PDF downloaded |
-| G-15 | Generate labels (selection) | `/editions/:id/labels` | Select depositors, generate | PDF downloaded |
-| G-16 | Calculate payouts | `/editions/:id/payouts` | Click "Calculer les reversements" | Payouts calculated for all depositors |
-| G-17 | Record payment (cash) | `/editions/:id/payouts` | Click "Payer" on payout, select cash | Payout marked as paid |
-| G-18 | Record payment (check) | `/editions/:id/payouts` | Click "Payer", select cheque, enter reference | Payment recorded with reference |
-| G-19 | Download payout receipt | `/editions/:id/payouts` | Click PDF icon on payout row | Receipt PDF downloaded |
-| G-20 | Download all receipts | `/editions/:id/payouts` | Click "Tous les bordereaux" | Bulk PDF downloaded |
-| G-21 | Export payouts Excel | `/editions/:id/payouts` | Click "Exporter Excel" | Excel downloaded |
-| G-22 | Send payout reminder | `/editions/:id/payouts` | Click reminder on absent depositor | Email sent |
-| G-23 | Bulk send reminders | `/editions/:id/payouts` | Click "Relancer tous les absents" | Emails queued |
-| G-24 | View payout dashboard | `/editions/:id/payouts/dashboard` | Navigate from payouts page | Charts and statistics displayed |
-| G-25 | View invitation stats | `/admin/invitations/stats` | Navigate from invitations page | Stats page with charts |
-| G-26 | Cancel sale (manager override) | `/editions/:id/sales/manage` | Click "Annuler" on any sale (no time limit) | Sale cancelled |
-| G-27 | Filter invitations by status | `/admin/invitations` | Select "Expirees" filter | Only expired invitations shown |
-| G-28 | Filter payouts by status | `/editions/:id/payouts` | Select "Paye" filter | Only paid payouts shown |
-| G-29 | Search payouts by name | `/editions/:id/payouts` | Type depositor name in search | Filtered results |
-| G-30 | Send deadline reminder | `/editions/:id` | Click "Envoyer un rappel" | Emails queued to depositors |
-
-#### Error Paths
-| ID | Journey | Trigger | Expected |
-|----|---------|---------|----------|
-| G-E01 | Import invalid CSV | Malformed CSV file | Preview shows errors, import blocked |
-| G-E02 | Import CSV with unpaid entries | Billetweb entries without payment | Entries skipped, count shown |
-| G-E03 | Create duplicate invitation | Same email as existing invitation | Error "Email deja invite" |
-| G-E04 | Configure invalid dates | End date before start date | Validation error |
-| G-E05 | Create overlapping slots | Same time range as existing | Error "Creneaux se chevauchent" |
-| G-E06 | Record payment twice | Click pay on already-paid payout | Button disabled/hidden |
-| G-E07 | Manager tries to create edition | Navigate to create edition | Button hidden (admin only) |
-| G-E08 | Manager tries to close edition | No close button visible | Button hidden (admin only) |
-| G-E09 | Manager tries to view audit logs | Navigate to `/admin/audit-logs` | 403 or route not shown |
-
-#### Edge Cases
-| ID | Journey | Scenario | Expected |
-|----|---------|----------|----------|
-| G-EC01 | Import 500-row CSV | Large Billetweb export | All processed, progress shown |
-| G-EC02 | Commission rate 0% | Set commission to 0 | Net = Gross for all payouts |
-| G-EC03 | Commission rate 100% | Set commission to 1 | Net = 0 for all payouts |
-| G-EC04 | Recalculate after sale cancel | Payout calculated, then sale cancelled | Recalculate shows lower amount |
-| G-EC05 | Labels for depositor with no validated lists | Select depositor, generate | Skip or error |
-| G-EC06 | Bulk resend with mix of statuses | Select activated + pending | Only pending/expired resent, activated skipped |
+#### Cas limites
+| ID | Parcours | Scenario | Attendu |
+|----|----------|----------|---------|
+| D-EC01 | Description d'article longueur max | Description de 100 caracteres | Acceptee |
+| D-EC02 | Description d'article 101 caracteres | | Tronquee/erreur |
+| D-EC03 | Prix avec 3 decimales | 5.999 | Arrondi a 6.00 ou rejete |
+| D-EC04 | Description vide | "" | Erreur de validation |
+| D-EC05 | Quantite de lot = 0 | lot_quantity=0 | Erreur de validation |
+| D-EC06 | Caracteres speciaux dans la description | "T-shirt bebe 'Zara' (3 mois)" | Acceptee |
+| D-EC07 | Validation concurrente de liste | Soumettre deux fois rapidement | Seule une validation reussit |
+| D-EC08 | Navigation pendant la sauvegarde | Fermer l'onglet pendant la sauvegarde | Pas de donnees partielles enregistrees |
 
 ---
 
-### 2.6 Administrator
+### 2.4 Benevole
 
-#### Happy Paths
-| ID | Journey | Entry | Steps | Exit |
-|----|---------|-------|-------|------|
-| A-01 | Create new edition | `/editions` | Click "Nouvelle edition", fill name/dates, submit | Edition created, status = draft |
-| A-02 | Delete draft edition | `/editions` | Click delete on draft edition, confirm | Edition deleted |
-| A-03 | Close edition | `/editions/:id` | Check closure prerequisites, click "Cloturer", confirm | Edition closed, payouts finalized |
-| A-04 | Archive edition | `/editions` | Click "Archiver" on closed edition, confirm | Edition archived |
-| A-05 | View audit logs | `/admin/audit-logs` | Navigate to audit logs | Full audit trail displayed |
-| A-06 | Filter audit logs | `/admin/audit-logs` | Filter by action/user/date | Filtered results |
-| A-07 | Download closure report | `/editions/:id` | Click "Rapport de cloture" on closed edition | PDF report downloaded |
+#### Parcours nominaux
+| ID | Parcours | Entree | Etapes | Sortie |
+|----|----------|--------|--------|--------|
+| B-01 | Scanner un QR code d'article | `/editions/:id/sales` | Scanner le code-barres avec la camera | Details de l'article affiches |
+| B-02 | Enregistrer une vente en especes | `/editions/:id/sales` | Scanner, selectionner "Especes", confirmer | Vente enregistree, ventes recentes mises a jour |
+| B-03 | Enregistrer une vente par carte | `/editions/:id/sales` | Scanner, selectionner "CB", confirmer | Vente enregistree |
+| B-04 | Enregistrer une vente par cheque | `/editions/:id/sales` | Scanner, selectionner "Cheque", confirmer | Vente enregistree |
+| B-05 | Annuler une vente recente | `/editions/:id/sales` | Cliquer annuler sur une vente recente (< 5 min) | Vente annulee, article remis en vente |
+| B-06 | Saisie manuelle du code-barres | `/editions/:id/sales` | Saisir le code-barres dans le champ texte | Article trouve et affiche |
+| B-07 | Consulter les statistiques en direct | `/editions/:id/stats` | Naviguer vers la page de stats | Statistiques temps reel avec rafraichissement auto |
+| B-08 | Detection de vente privee | `/editions/:id/sales` | Vente le vendredi 17h-18h | Vente marquee comme privee |
 
-#### Error Paths
-| ID | Journey | Trigger | Expected |
-|----|---------|---------|----------|
-| A-E01 | Close edition without payouts | Missing prerequisite | Closure check fails, reasons listed |
-| A-E02 | Delete non-draft edition | Edition in_progress | Delete button hidden |
-| A-E03 | Create duplicate edition name | Same name as existing | Error "Nom deja utilise" |
-| A-E04 | Archive non-closed edition | Edition in_progress | Archive button hidden |
-| A-E05 | Close with unpaid payouts | Payouts not all paid | Warning in closure check |
+#### Parcours d'erreur
+| ID | Parcours | Declencheur | Attendu |
+|----|----------|-------------|---------|
+| B-E01 | Scanner un code-barres inconnu | Code-barres invalide | Erreur "Article non trouve" |
+| B-E02 | Scanner un article deja vendu | Statut de l'article = vendu | Erreur "Article deja vendu" |
+| B-E03 | Annuler une vente apres 5 min | Vente > 5 min | Bouton annuler masque/desactive |
+| B-E04 | Scanner sans edition ouverte | Edition pas en cours | Message d'erreur |
+| B-E05 | Format de code-barres invalide | "ABC" au lieu de "012305" | Avertissement "Format invalide" |
 
-#### Edge Cases
-| ID | Journey | Scenario | Expected |
-|----|---------|----------|----------|
-| A-EC01 | Archive edition closed > 1 year | Old closed edition | "A archiver" badge shown |
-| A-EC02 | View archived edition details | Filter by "Archive" | Edition visible, read-only |
-| A-EC03 | Closure with 0 sales | Edition with no sales | Closure allowed (0 payouts) |
-
----
-
-## 3. Multi-Step Workflow Journeys
-
-### W-01: Complete Depositor Lifecycle
-```
-Admin creates edition → Manager configures dates → Manager imports Billetweb →
-Depositor activates account → Depositor creates list → Depositor adds articles →
-Depositor validates list → Manager generates labels → Volunteer scans/sells →
-Manager calculates payouts → Manager records payment → Admin closes edition
-```
-
-### W-02: Invitation → Activation → Declaration
-```
-Manager creates invitation → Email sent → Depositor clicks link →
-Token validated → Account activated → Login → View editions →
-Create list → Add articles → Validate list → Download PDF
-```
-
-### W-03: Sale → Cancel → Resale
-```
-Volunteer scans article → Registers sale (cash) → Cancels within 5 min →
-Article back on sale → Volunteer re-scans → Registers new sale (card)
-```
-
-### W-04: Payout Calculation → Payment
-```
-Manager calculates payouts → Reviews dashboard → Records cash payment →
-Marks absent depositor → Sends reminder email → Depositor returns →
-Records check payment → All payouts paid → Admin closes edition
-```
-
-### W-05: Billetweb Import → Labels → Sales
-```
-Manager uploads CSV → Preview validates → Import confirmed →
-Depositors invited → Depositors activate + declare →
-Manager generates labels (by slot) → Event day → Volunteer scans/sells
-```
-
-### W-06: Offline Sales Workflow
-```
-Network disconnected → Volunteer records offline sales →
-Network restored → Sales synced → Conflicts resolved →
-Stats updated in real-time
-```
-
-### W-07: GDPR Full Cycle
-```
-Depositor logs in → Edits profile → Exports all data (JSON download) →
-Decides to delete → Confirms deletion → Account anonymized →
-Login no longer works → Data removed from active listings
-```
+#### Cas limites
+| ID | Parcours | Scenario | Attendu |
+|----|----------|----------|---------|
+| B-EC01 | Scans consecutifs rapides | Scanner 5 articles en 10 secondes | Tous traites sequentiellement |
+| B-EC02 | Vente hors-ligne | Reseau deconnecte | Vente mise en file d'attente, synchronisee ensuite |
+| B-EC03 | Conflit de synchronisation hors-ligne | Vente hors-ligne pour article deja vendu | Conflit signale lors de la synchronisation |
+| B-EC04 | Permission camera refusee | Scanner QR refuse | Mode de saisie manuelle affiche |
+| B-EC05 | Attribution de numero de caisse | Plusieurs caisses | Chaque vente etiquetee avec le numero de caisse |
 
 ---
 
-## 4. Coverage Matrix
+### 2.5 Gestionnaire
 
-### 4.1 Features x Roles
+#### Parcours nominaux
+| ID | Parcours | Entree | Etapes | Sortie |
+|----|----------|--------|--------|--------|
+| G-01 | Consulter la liste des editions | `/editions` | Se connecter en tant que gestionnaire | Tableau des editions affiche |
+| G-02 | Configurer les dates d'edition | `/editions/:id` | Modifier dates operationnelles, commission, sauvegarder | Edition configuree, statut = configure |
+| G-03 | Creer des creneaux de depot | `/editions/:id` | Ajouter des creneaux avec capacite/horaires | Creneaux listes |
+| G-04 | Importer le CSV Billetweb | `/editions/:id` | Charger le CSV, previsualiser, confirmer l'import | Deposants importes, invitations envoyees |
+| G-05 | Consulter les deposants d'une edition | `/editions/:id/depositors` | Naviguer depuis le detail de l'edition | Liste des deposants avec filtres |
+| G-06 | Creer une invitation individuelle | `/admin/invitations` | Cliquer "Nouvelle invitation", remplir le formulaire | Invitation creee, email envoye |
+| G-07 | Creer des invitations en masse | `/admin/invitations` | Cliquer "En masse", charger le CSV | Invitations multiples creees |
+| G-08 | Relancer une invitation | `/admin/invitations` | Cliquer "Relancer" sur une invitation en attente | Nouveau token genere, email renvoye |
+| G-09 | Relancer des invitations en masse | `/admin/invitations` | Selectionner plusieurs, cliquer "Relancer la selection" | Toutes relancees |
+| G-10 | Supprimer une invitation | `/admin/invitations` | Cliquer supprimer, confirmer | Invitation supprimee |
+| G-11 | Supprimer des invitations en masse | `/admin/invitations` | Selectionner plusieurs, cliquer "Supprimer la selection" | Toutes supprimees |
+| G-12 | Exporter les invitations en Excel | `/admin/invitations/stats` | Cliquer "Exporter Excel" | Fichier Excel telecharge |
+| G-13 | Generer les etiquettes (par creneau) | `/editions/:id/labels` | Selectionner le mode creneau, choisir le creneau, generer | PDF telecharge |
+| G-14 | Generer les etiquettes (toutes) | `/editions/:id/labels` | Selectionner le mode complet, generer | PDF telecharge |
+| G-15 | Generer les etiquettes (selection) | `/editions/:id/labels` | Selectionner des deposants, generer | PDF telecharge |
+| G-16 | Calculer les reversements | `/editions/:id/payouts` | Cliquer "Calculer les reversements" | Reversements calcules pour tous les deposants |
+| G-17 | Enregistrer un paiement (especes) | `/editions/:id/payouts` | Cliquer "Payer" sur un reversement, selectionner especes | Reversement marque comme paye |
+| G-18 | Enregistrer un paiement (cheque) | `/editions/:id/payouts` | Cliquer "Payer", selectionner cheque, saisir la reference | Paiement enregistre avec reference |
+| G-19 | Telecharger un bordereau de reversement | `/editions/:id/payouts` | Cliquer sur l'icone PDF d'une ligne | Bordereau PDF telecharge |
+| G-20 | Telecharger tous les bordereaux | `/editions/:id/payouts` | Cliquer "Tous les bordereaux" | PDF groupe telecharge |
+| G-21 | Exporter les reversements en Excel | `/editions/:id/payouts` | Cliquer "Exporter Excel" | Excel telecharge |
+| G-22 | Envoyer un rappel de reversement | `/editions/:id/payouts` | Cliquer relancer sur un deposant absent | Email envoye |
+| G-23 | Relancer tous les absents | `/editions/:id/payouts` | Cliquer "Relancer tous les absents" | Emails mis en file d'attente |
+| G-24 | Consulter le tableau de bord des reversements | `/editions/:id/payouts/dashboard` | Naviguer depuis la page de reversements | Graphiques et statistiques affiches |
+| G-25 | Consulter les statistiques d'invitations | `/admin/invitations/stats` | Naviguer depuis la page d'invitations | Page de stats avec graphiques |
+| G-26 | Annuler une vente (droit gestionnaire) | `/editions/:id/sales/manage` | Cliquer "Annuler" sur n'importe quelle vente (sans limite de temps) | Vente annulee |
+| G-27 | Filtrer les invitations par statut | `/admin/invitations` | Selectionner le filtre "Expirees" | Seules les invitations expirees affichees |
+| G-28 | Filtrer les reversements par statut | `/editions/:id/payouts` | Selectionner le filtre "Paye" | Seuls les reversements payes affiches |
+| G-29 | Rechercher un reversement par nom | `/editions/:id/payouts` | Saisir le nom du deposant dans la recherche | Resultats filtres |
+| G-30 | Envoyer un rappel de date limite | `/editions/:id` | Cliquer "Envoyer un rappel" | Emails mis en file d'attente pour les deposants |
 
-| Feature | Visitor | Auth | Depositor | Volunteer | Manager | Admin |
-|---------|---------|------|-----------|-----------|---------|-------|
-| View privacy policy | V-01 | - | - | - | - | - |
-| Login | - | AUTH-01 | - | - | - | - |
-| Activate account | - | AUTH-02 | - | - | - | - |
-| Reset password | - | AUTH-03, AUTH-04 | - | - | - | - |
-| Logout | - | AUTH-05 | - | - | - | - |
-| View my editions | - | - | D-01 | - | - | - |
-| Create list | - | - | D-02, D-13 | - | - | - |
-| Add article | - | - | D-03 to D-06 | - | - | - |
-| Validate list | - | - | D-08 | - | - | - |
-| Download PDF | - | - | D-09 | - | - | - |
-| Edit profile | - | - | D-10 | - | - | - |
-| GDPR export | - | - | D-11 | - | - | - |
-| GDPR delete | - | - | D-12 | - | - | - |
-| Scan article | - | - | - | B-01, B-06 | - | - |
-| Register sale | - | - | - | B-02 to B-04 | - | - |
-| Cancel sale (5 min) | - | - | - | B-05 | - | - |
-| View live stats | - | - | - | B-07 | - | - |
-| View editions list | - | - | - | - | G-01 | G-01 |
-| Configure edition | - | - | - | - | G-02, G-03 | G-02 |
-| Import Billetweb | - | - | - | - | G-04 | G-04 |
-| Manage invitations | - | - | - | - | G-06 to G-12 | G-06 |
-| Generate labels | - | - | - | - | G-13 to G-15 | G-13 |
-| Calculate payouts | - | - | - | - | G-16 | G-16 |
-| Record payment | - | - | - | - | G-17, G-18 | G-17 |
-| Payout receipts | - | - | - | - | G-19 to G-21 | G-19 |
-| Payout reminders | - | - | - | - | G-22, G-23 | G-22 |
-| Cancel sale (manager) | - | - | - | - | G-26 | G-26 |
-| Create edition | - | - | - | - | - | A-01 |
-| Delete edition | - | - | - | - | - | A-02 |
-| Close edition | - | - | - | - | - | A-03 |
-| Archive edition | - | - | - | - | - | A-04 |
-| View audit logs | - | - | - | - | - | A-05, A-06 |
-| Closure report | - | - | - | - | - | A-07 |
+#### Parcours d'erreur
+| ID | Parcours | Declencheur | Attendu |
+|----|----------|-------------|---------|
+| G-E01 | Importer un CSV invalide | Fichier CSV malforme | Apercu affiche les erreurs, import bloque |
+| G-E02 | Importer un CSV avec inscriptions non payees | Inscriptions Billetweb sans paiement | Inscriptions ignorees, total affiche |
+| G-E03 | Creer une invitation en doublon | Meme email qu'une invitation existante | Erreur "Email deja invite" |
+| G-E04 | Configurer des dates invalides | Date de fin avant date de debut | Erreur de validation |
+| G-E05 | Creer des creneaux qui se chevauchent | Meme plage horaire qu'un creneau existant | Erreur "Creneaux se chevauchent" |
+| G-E06 | Enregistrer un paiement deux fois | Cliquer payer sur un reversement deja paye | Bouton desactive/masque |
+| G-E07 | Gestionnaire tente de creer une edition | Naviguer vers la creation d'edition | Bouton masque (admin uniquement) |
+| G-E08 | Gestionnaire tente de cloturer une edition | Pas de bouton de cloture visible | Bouton masque (admin uniquement) |
+| G-E09 | Gestionnaire tente de voir les journaux d'audit | Naviguer vers `/admin/audit-logs` | 403 ou route non affichee |
 
-### 4.2 Test Type Coverage
+#### Cas limites
+| ID | Parcours | Scenario | Attendu |
+|----|----------|----------|---------|
+| G-EC01 | Import d'un CSV de 500 lignes | Grand export Billetweb | Tous traites, progression affichee |
+| G-EC02 | Taux de commission a 0% | Commission fixee a 0 | Net = Brut pour tous les reversements |
+| G-EC03 | Taux de commission a 100% | Commission fixee a 1 | Net = 0 pour tous les reversements |
+| G-EC04 | Recalcul apres annulation de vente | Reversement calcule, puis vente annulee | Le recalcul affiche un montant inferieur |
+| G-EC05 | Etiquettes pour deposant sans liste validee | Selectionner le deposant, generer | Ignore ou erreur |
+| G-EC06 | Relance en masse avec statuts mixtes | Selectionner activees + en attente | Seules les en attente/expirees sont relancees, les activees sont ignorees |
 
-| Test Type | IDs | Count |
-|-----------|-----|-------|
-| Happy paths | V-01, AUTH-01 to AUTH-05, D-01 to A-07 | 68 |
-| Error paths | V-E01 to V-E04, AUTH-E01 to AUTH-E11, D-E01 to A-E05 | 47 |
-| Edge cases | AUTH-EC01 to AUTH-EC08, D-EC01 to A-EC03 | 30 |
-| Workflows | W-01 to W-07 | 7 |
+---
+
+### 2.6 Administrateur
+
+#### Parcours nominaux
+| ID | Parcours | Entree | Etapes | Sortie |
+|----|----------|--------|--------|--------|
+| A-01 | Creer une nouvelle edition | `/editions` | Cliquer "Nouvelle edition", remplir nom/dates, valider | Edition creee, statut = brouillon |
+| A-02 | Supprimer une edition brouillon | `/editions` | Cliquer supprimer sur une edition brouillon, confirmer | Edition supprimee |
+| A-03 | Cloturer une edition | `/editions/:id` | Verifier les prerequis de cloture, cliquer "Cloturer", confirmer | Edition cloturee, reversements finalises |
+| A-04 | Archiver une edition | `/editions` | Cliquer "Archiver" sur une edition cloturee, confirmer | Edition archivee |
+| A-05 | Consulter les journaux d'audit | `/admin/audit-logs` | Naviguer vers les journaux d'audit | Piste d'audit complete affichee |
+| A-06 | Filtrer les journaux d'audit | `/admin/audit-logs` | Filtrer par action/utilisateur/date | Resultats filtres |
+| A-07 | Telecharger le rapport de cloture | `/editions/:id` | Cliquer "Rapport de cloture" sur une edition cloturee | Rapport PDF telecharge |
+
+#### Parcours d'erreur
+| ID | Parcours | Declencheur | Attendu |
+|----|----------|-------------|---------|
+| A-E01 | Cloturer une edition sans reversements | Prerequis manquant | Verification de cloture echoue, raisons listees |
+| A-E02 | Supprimer une edition non brouillon | Edition en cours | Bouton supprimer masque |
+| A-E03 | Creer une edition avec un nom en doublon | Meme nom qu'une edition existante | Erreur "Nom deja utilise" |
+| A-E04 | Archiver une edition non cloturee | Edition en cours | Bouton archiver masque |
+| A-E05 | Cloturer avec des reversements non payes | Reversements pas tous payes | Avertissement dans la verification de cloture |
+
+#### Cas limites
+| ID | Parcours | Scenario | Attendu |
+|----|----------|----------|---------|
+| A-EC01 | Archiver une edition cloturee > 1 an | Ancienne edition cloturee | Badge "A archiver" affiche |
+| A-EC02 | Consulter une edition archivee | Filtrer par "Archive" | Edition visible, lecture seule |
+| A-EC03 | Cloture avec 0 vente | Edition sans aucune vente | Cloture autorisee (0 reversements) |
+
+---
+
+## 3. Parcours de workflows multi-etapes
+
+### W-01 : Cycle de vie complet du deposant
+```
+Admin cree edition → Gestionnaire configure les dates → Gestionnaire importe Billetweb →
+Deposant active son compte → Deposant cree une liste → Deposant ajoute des articles →
+Deposant valide la liste → Gestionnaire genere les etiquettes → Benevole scanne/vend →
+Gestionnaire calcule les reversements → Gestionnaire enregistre le paiement → Admin cloture l'edition
+```
+
+### W-02 : Invitation → Activation → Declaration
+```
+Gestionnaire cree l'invitation → Email envoye → Deposant clique le lien →
+Token valide → Compte active → Connexion → Consultation des editions →
+Creation de liste → Ajout d'articles → Validation de la liste → Telechargement du PDF
+```
+
+### W-03 : Vente → Annulation → Revente
+```
+Benevole scanne l'article → Enregistre la vente (especes) → Annule sous 5 min →
+Article remis en vente → Benevole re-scanne → Enregistre une nouvelle vente (carte)
+```
+
+### W-04 : Calcul des reversements → Paiement
+```
+Gestionnaire calcule les reversements → Consulte le tableau de bord → Enregistre un paiement especes →
+Marque un deposant absent → Envoie un email de rappel → Le deposant revient →
+Enregistre un paiement par cheque → Tous les reversements payes → Admin cloture l'edition
+```
+
+### W-05 : Import Billetweb → Etiquettes → Ventes
+```
+Gestionnaire charge le CSV → Apercu de validation → Import confirme →
+Deposants invites → Deposants activent + declarent →
+Gestionnaire genere les etiquettes (par creneau) → Jour de l'evenement → Benevole scanne/vend
+```
+
+### W-06 : Workflow de ventes hors-ligne
+```
+Reseau deconnecte → Benevole enregistre des ventes hors-ligne →
+Reseau retabli → Ventes synchronisees → Conflits resolus →
+Statistiques mises a jour en temps reel
+```
+
+### W-07 : Cycle RGPD complet
+```
+Deposant se connecte → Modifie son profil → Exporte toutes ses donnees (telechargement JSON) →
+Decide de supprimer → Confirme la suppression → Compte anonymise →
+La connexion ne fonctionne plus → Donnees retirees des listes actives
+```
+
+---
+
+## 4. Matrice de couverture
+
+### 4.1 Fonctionnalites x Roles
+
+| Fonctionnalite | Visiteur | Auth | Deposant | Benevole | Gestionnaire | Admin |
+|----------------|----------|------|----------|----------|--------------|-------|
+| Consulter la politique de confidentialite | V-01 | - | - | - | - | - |
+| Connexion | - | AUTH-01 | - | - | - | - |
+| Activation de compte | - | AUTH-02 | - | - | - | - |
+| Reinitialisation du mot de passe | - | AUTH-03, AUTH-04 | - | - | - | - |
+| Deconnexion | - | AUTH-05 | - | - | - | - |
+| Consulter mes editions | - | - | D-01 | - | - | - |
+| Creer une liste | - | - | D-02, D-13 | - | - | - |
+| Ajouter un article | - | - | D-03 a D-06 | - | - | - |
+| Valider une liste | - | - | D-08 | - | - | - |
+| Telecharger le PDF | - | - | D-09 | - | - | - |
+| Modifier le profil | - | - | D-10 | - | - | - |
+| Export RGPD | - | - | D-11 | - | - | - |
+| Suppression RGPD | - | - | D-12 | - | - | - |
+| Scanner un article | - | - | - | B-01, B-06 | - | - |
+| Enregistrer une vente | - | - | - | B-02 a B-04 | - | - |
+| Annuler une vente (5 min) | - | - | - | B-05 | - | - |
+| Stats en direct | - | - | - | B-07 | - | - |
+| Consulter la liste des editions | - | - | - | - | G-01 | G-01 |
+| Configurer une edition | - | - | - | - | G-02, G-03 | G-02 |
+| Importer Billetweb | - | - | - | - | G-04 | G-04 |
+| Gerer les invitations | - | - | - | - | G-06 a G-12 | G-06 |
+| Generer les etiquettes | - | - | - | - | G-13 a G-15 | G-13 |
+| Calculer les reversements | - | - | - | - | G-16 | G-16 |
+| Enregistrer un paiement | - | - | - | - | G-17, G-18 | G-17 |
+| Bordereaux de reversement | - | - | - | - | G-19 a G-21 | G-19 |
+| Rappels de reversement | - | - | - | - | G-22, G-23 | G-22 |
+| Annuler une vente (gestionnaire) | - | - | - | - | G-26 | G-26 |
+| Creer une edition | - | - | - | - | - | A-01 |
+| Supprimer une edition | - | - | - | - | - | A-02 |
+| Cloturer une edition | - | - | - | - | - | A-03 |
+| Archiver une edition | - | - | - | - | - | A-04 |
+| Consulter les journaux d'audit | - | - | - | - | - | A-05, A-06 |
+| Rapport de cloture | - | - | - | - | - | A-07 |
+
+### 4.2 Couverture par type de test
+
+| Type de test | IDs | Nombre |
+|--------------|-----|--------|
+| Parcours nominaux | V-01, AUTH-01 a AUTH-05, D-01 a A-07 | 68 |
+| Parcours d'erreur | V-E01 a V-E04, AUTH-E01 a AUTH-E11, D-E01 a A-E05 | 47 |
+| Cas limites | AUTH-EC01 a AUTH-EC08, D-EC01 a A-EC03 | 30 |
+| Workflows | W-01 a W-07 | 7 |
 | **Total** | | **152** |
 
-### 4.3 Page Coverage
+### 4.3 Couverture par page
 
-| Page | Happy | Error | Edge | Workflows |
-|------|-------|-------|------|-----------|
-| `/login` | AUTH-01 | AUTH-E01 to E03, E11 | AUTH-EC01 to EC06 | W-02 |
-| `/activate` | AUTH-02 | AUTH-E04 to E09 | AUTH-EC08 | W-02 |
+| Page | Nominaux | Erreur | Cas limites | Workflows |
+|------|----------|--------|-------------|-----------|
+| `/login` | AUTH-01 | AUTH-E01 a E03, E11 | AUTH-EC01 a EC06 | W-02 |
+| `/activate` | AUTH-02 | AUTH-E04 a E09 | AUTH-EC08 | W-02 |
 | `/forgot-password` | AUTH-03 | - | - | - |
 | `/reset-password` | AUTH-04 | AUTH-E10 | - | - |
 | `/privacy` | V-01 | - | - | - |
 | `/lists` | D-01 | - | - | W-01, W-02 |
 | `/depositor/editions/:id/lists` | D-02, D-13 | D-E09, E10 | - | W-01, W-02 |
-| `/depositor/lists/:id` | D-03 to D-09 | D-E01 to E13 | D-EC01 to EC08 | W-01, W-02 |
-| `/profile` | D-10 to D-12 | - | - | W-07 |
+| `/depositor/lists/:id` | D-03 a D-09 | D-E01 a E13 | D-EC01 a EC08 | W-01, W-02 |
+| `/profile` | D-10 a D-12 | - | - | W-07 |
 | `/editions` | G-01 | - | - | W-01 |
-| `/editions/:id` | G-02 to G-04, G-30 | G-E04, E05 | - | W-01, W-05 |
+| `/editions/:id` | G-02 a G-04, G-30 | G-E04, E05 | - | W-01, W-05 |
 | `/editions/:id/depositors` | G-05 | - | - | W-05 |
-| `/editions/:id/labels` | G-13 to G-15 | - | G-EC05 | W-05 |
-| `/editions/:id/sales` | B-01 to B-08 | B-E01 to E05 | B-EC01 to EC05 | W-03, W-06 |
+| `/editions/:id/labels` | G-13 a G-15 | - | G-EC05 | W-05 |
+| `/editions/:id/sales` | B-01 a B-08 | B-E01 a E05 | B-EC01 a EC05 | W-03, W-06 |
 | `/editions/:id/sales/manage` | G-26 | - | - | - |
 | `/editions/:id/stats` | B-07 | - | - | - |
-| `/editions/:id/payouts` | G-16 to G-23, G-28, G-29 | G-E06 | G-EC02 to EC04 | W-04 |
+| `/editions/:id/payouts` | G-16 a G-23, G-28, G-29 | G-E06 | G-EC02 a EC04 | W-04 |
 | `/editions/:id/payouts/dashboard` | G-24 | - | - | W-04 |
-| `/admin/invitations` | G-06 to G-12, G-27 | G-E03 | G-EC06 | W-02 |
+| `/admin/invitations` | G-06 a G-12, G-27 | G-E03 | G-EC06 | W-02 |
 | `/admin/invitations/stats` | G-25, G-12 | - | - | - |
 | `/admin/audit-logs` | A-05, A-06 | G-E09 | - | - |
 
 ---
 
-## 5. Security Tests
+## 5. Tests de securite
 
-| ID | Test | Expected |
-|----|------|----------|
-| S-01 | XSS in form fields | All inputs sanitized, no script execution |
-| S-02 | SQL injection via login | Rejected by parameterized queries |
-| S-03 | JWT token tampering | Invalid token → 401 |
-| S-04 | Access API without token | 401 Unauthorized |
-| S-05 | Access admin API as depositor | 403 Forbidden |
-| S-06 | Access other user's data | 403 or 404 |
-| S-07 | CORS validation | Only allowed origins accepted |
-| S-08 | Expired JWT token | 401, redirect to login |
-| S-09 | Replay old invitation token | Token invalidated after use |
-| S-10 | Path traversal in file endpoints | Blocked |
-
----
-
-## 6. Performance & Reliability Tests
-
-| ID | Test | Criteria |
-|----|------|----------|
-| P-01 | Page load time | < 3 seconds on Fast 3G |
-| P-02 | API response time | < 500ms for standard queries |
-| P-03 | Large table rendering | 100+ rows in payout table, no lag |
-| P-04 | Auto-refresh (live stats) | Updates every 10s without memory leak |
-| P-05 | PDF generation (100 labels) | < 10 seconds |
-| P-06 | Billetweb CSV (500 rows) | Import completes without timeout |
+| ID | Test | Attendu |
+|----|------|---------|
+| S-01 | XSS dans les champs de formulaire | Toutes les saisies assainies, aucune execution de script |
+| S-02 | Injection SQL via la connexion | Rejete par les requetes parametrees |
+| S-03 | Falsification de token JWT | Token invalide → 401 |
+| S-04 | Acces a l'API sans token | 401 Non autorise |
+| S-05 | Acces a l'API admin en tant que deposant | 403 Interdit |
+| S-06 | Acces aux donnees d'un autre utilisateur | 403 ou 404 |
+| S-07 | Validation CORS | Seules les origines autorisees acceptees |
+| S-08 | Token JWT expire | 401, redirection vers login |
+| S-09 | Rejouer un ancien token d'invitation | Token invalide apres utilisation |
+| S-10 | Traversee de chemin dans les endpoints fichier | Bloquee |
 
 ---
 
-## 7. Accessibility Tests (WCAG 2.1 AA)
+## 6. Tests de performance et fiabilite
 
-| ID | Test | Criteria |
-|----|------|----------|
-| ACC-01 | Keyboard navigation | All interactive elements reachable via Tab |
-| ACC-02 | Skip link | Present and functional on every page |
-| ACC-03 | ARIA landmarks | `<nav>`, `<main>`, `<header>` properly labeled |
-| ACC-04 | Form labels | All inputs have associated `<label>` or `aria-label` |
-| ACC-05 | Color contrast | 4.5:1 minimum for normal text, 3:1 for large text |
-| ACC-06 | Focus indicators | Visible focus ring on all interactive elements |
-| ACC-07 | Error announcements | Form errors announced to screen readers |
-| ACC-08 | Modal focus trap | Focus trapped inside open modals |
-| ACC-09 | Table headers | All data tables have `<th>` with `scope` |
-| ACC-10 | Admin dropdown keyboard | ArrowUp/Down navigation, Escape to close |
+| ID | Test | Critere |
+|----|------|---------|
+| P-01 | Temps de chargement des pages | < 3 secondes en Fast 3G |
+| P-02 | Temps de reponse API | < 500ms pour les requetes standards |
+| P-03 | Rendu de grands tableaux | 100+ lignes dans le tableau de reversements, pas de ralentissement |
+| P-04 | Rafraichissement automatique (stats en direct) | Mise a jour toutes les 10s sans fuite memoire |
+| P-05 | Generation PDF (100 etiquettes) | < 10 secondes |
+| P-06 | CSV Billetweb (500 lignes) | Import termine sans timeout |
+
+---
+
+## 7. Tests d'accessibilite (WCAG 2.1 AA)
+
+| ID | Test | Critere |
+|----|------|---------|
+| ACC-01 | Navigation au clavier | Tous les elements interactifs atteignables via Tab |
+| ACC-02 | Lien d'evitement | Present et fonctionnel sur chaque page |
+| ACC-03 | Points de repere ARIA | `<nav>`, `<main>`, `<header>` correctement etiquetes |
+| ACC-04 | Labels de formulaire | Toutes les saisies ont un `<label>` associe ou un `aria-label` |
+| ACC-05 | Contraste des couleurs | 4.5:1 minimum pour le texte normal, 3:1 pour le texte large |
+| ACC-06 | Indicateurs de focus | Anneau de focus visible sur tous les elements interactifs |
+| ACC-07 | Annonces d'erreur | Erreurs de formulaire annoncees aux lecteurs d'ecran |
+| ACC-08 | Piege de focus dans les modales | Focus confine dans les modales ouvertes |
+| ACC-09 | En-tetes de tableau | Tous les tableaux de donnees ont des `<th>` avec `scope` |
+| ACC-10 | Menu admin au clavier | Navigation FlecheHaut/Bas, Echap pour fermer |
