@@ -31,9 +31,10 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.15 | Secondary Features | ✅ Done | 100% |
 | 0.16 | Accessibility & UX | ✅ Done | 100% |
 | 0.17 | Management Enhancements | ✅ Done | 100% |
+| 0.18 | Homepage & Edition Constraint | ✅ Done | 100% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.17 (Management Enhancements complete)
+**Current Version:** 0.18 (Homepage & Edition Constraint complete)
 **Next Target:** 1.0.0 - Production Release
 
 ---
@@ -616,9 +617,29 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
+## v0.18 - Homepage & Edition Constraint (US-011, REQ-F-019) ✅
+
+**Branch:** `feature/us-011-homepage`
+
+### Public Homepage (US-011) ✅
+- [x] **0.18.1** Backend: public `GET /config/active-edition` endpoint (no auth required)
+- [x] **0.18.2** Backend: `get_any_active_edition()` repository method (in_progress > registrations_open > configured)
+- [x] **0.18.3** Frontend: HomePage component with 3 modes (visitor, authenticated+edition, authenticated-no-edition)
+- [x] **0.18.4** Frontend: role-based quick links (depositor, volunteer, manager, admin)
+- [x] **0.18.5** Frontend: public route `/` (removed ProtectedRoute wrapper)
+
+### Single Active Edition Constraint (REQ-F-019) ✅
+- [x] **0.18.6** Backend: validation in `update_status()` — only one edition in active status at a time
+- [x] **0.18.7** Backend: explicit error message with active edition name
+
+### Docs ✅
+- [x] **0.18.8** Update PLAN.md and DEVELOPMENT.md
+
+---
+
 ## v1.0.0 - Production Release
 
-**Prerequisites:** All versions 0.1 through 0.17 completed and tested.
+**Prerequisites:** All versions 0.1 through 0.18 completed and tested.
 
 - [ ] **1.0.1** Final integration testing
 - [ ] **1.0.2** Performance optimization

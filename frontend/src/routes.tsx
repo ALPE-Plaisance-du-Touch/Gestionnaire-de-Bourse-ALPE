@@ -7,6 +7,7 @@ import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, Edition
 import { MyEditionsPage, MyListsPage, ListDetailPage } from '@/pages/depositor';
 import { SalesPage } from '@/pages/volunteer/SalesPage';
 import { ProfilePage, PrivacyPolicyPage } from '@/pages/account';
+import { HomePage } from '@/pages/home';
 
 /**
  * Root layout that provides auth context to all routes.
@@ -16,24 +17,6 @@ function RootLayout() {
     <AuthProvider>
       <Outlet />
     </AuthProvider>
-  );
-}
-
-/**
- * Placeholder pages (to be replaced with actual components).
- */
-function HomePage() {
-  return (
-    <MainLayout>
-      <div className="text-center py-12">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Bienvenue sur la Bourse ALPE
-        </h1>
-        <p className="text-lg text-gray-600">
-          Gérez vos ventes de vêtements et jouets d'occasion.
-        </p>
-      </div>
-    </MainLayout>
   );
 }
 
@@ -97,14 +80,10 @@ export const router = createBrowserRouter([
         ),
       },
 
-      // Protected routes - any authenticated user
+      // Homepage - public (auth-aware, shows different content)
       {
         path: '/',
-        element: (
-          <ProtectedRoute>
-            <HomePage />
-          </ProtectedRoute>
-        ),
+        element: <HomePage />,
       },
       {
         path: '/editions',

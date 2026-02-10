@@ -40,8 +40,10 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.14 | Listes spéciales & Règles métier | ✅ Done |
 | 0.15 | Fonctionnalités secondaires | ✅ Done |
 | 0.16 | Accessibilité & UX | ✅ Done |
+| 0.17 | Améliorations gestion | ✅ Done |
+| 0.18 | Page d'accueil | ✅ Done |
 
-**Conformité specs : ~87%** (57/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
+**Conformité specs : ~89%** (59/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
 
 ---
 
@@ -55,6 +57,7 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.15 | Fonctionnalités secondaires | Vente privée écoles, rappel récupération, aide tarifaire, prévisualisation | ✅ Done |
 | 0.16 | Accessibilité & UX | WCAG 2.1 AA, indicateur mot de passe, UX scanner, détection déposant | Moyenne |
 | 0.17 | Améliorations gestion | Override annulation, export Excel invitations, archivage auto, relance bulk | Basse |
+| 0.18 | Page d'accueil | Homepage publique, contrainte unicité édition active | Moyenne |
 | 1.0.0 | Feature Freeze & Production | Bug fixes, tests intégration, perf, audit, release | - |
 
 ---
@@ -219,9 +222,30 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 
 ---
 
+## v0.18 - Page d'accueil
+
+**Branche :** `feature/us-011-homepage`
+**Exigences :** US-011, REQ-F-019
+
+### Page d'accueil publique (US-011)
+- [x] **0.18.1** Backend : endpoint public `GET /config/active-edition` (édition active sans auth)
+- [x] **0.18.2** Backend : méthode `get_any_active_edition()` (in_progress > registrations_open > configured)
+- [x] **0.18.3** Frontend : composant HomePage avec 3 modes (visiteur, connecté avec bourse, connecté sans bourse)
+- [x] **0.18.4** Frontend : liens contextuels par rôle (déposant, bénévole, gestionnaire, admin)
+- [x] **0.18.5** Frontend : route `/` publique (suppression ProtectedRoute)
+
+### Contrainte unicité édition active (REQ-F-019)
+- [x] **0.18.6** Backend : validation dans `update_status()` — une seule édition active à la fois
+- [x] **0.18.7** Backend : message d'erreur explicite avec nom de l'édition active
+
+### Tests & docs
+- [x] **0.18.8** Mise à jour PLAN.md et DEVELOPMENT.md
+
+---
+
 ## v1.0.0 - Feature Freeze & Production
 
-**Prérequis :** Toutes les versions 0.12 à 0.17 terminées et testées.
+**Prérequis :** Toutes les versions 0.12 à 0.18 terminées et testées.
 
 À partir de cette version, plus aucune fonctionnalité n'est ajoutée.
 Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
@@ -269,6 +293,8 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 | TASK-018 | 0.17 | Archivage automatisé | US-009 AC-7 |
 | TASK-019 | 0.16 | Indicateur force mot de passe | US-001 AC-2 |
 | TASK-020 | 0.17 | Relance invitations en masse | US-010 AC-12 |
+| TASK-021 | 0.18 | Page d'accueil publique | US-011 |
+| TASK-022 | 0.18 | Contrainte unicité édition active | REQ-F-019 |
 
 ---
 

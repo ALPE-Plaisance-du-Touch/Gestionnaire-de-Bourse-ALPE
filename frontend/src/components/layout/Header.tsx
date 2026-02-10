@@ -38,7 +38,7 @@ export function Header() {
   };
 
   const displayName = user
-    ? user.first_name || user.email.split('@')[0]
+    ? user.firstName || user.email.split('@')[0]
     : '';
 
   const handleAdminButtonKeyDown = useCallback((e: React.KeyboardEvent) => {

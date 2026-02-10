@@ -191,4 +191,13 @@ export const editionsApi = {
     const response = await apiClient.post<EditionApiResponse>(`/v1/editions/${editionId}/archive`);
     return transformEdition(response.data);
   },
+
+  /**
+   * Get the currently active edition (public, no auth required).
+   */
+  getActiveEdition: async (): Promise<Edition | null> => {
+    const response = await apiClient.get<{ activeEdition: EditionApiResponse | null }>('/v1/config/active-edition');
+    if (!response.data.activeEdition) return null;
+    return transformEdition(response.data.activeEdition);
+  },
 };
