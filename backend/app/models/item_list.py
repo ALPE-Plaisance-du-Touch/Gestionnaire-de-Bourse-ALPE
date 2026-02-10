@@ -108,6 +108,11 @@ class ItemList(Base, UUIDMixin, TimestampMixin):
         return sum(1 for a in self.articles if a.is_clothing)
 
     @property
+    def total_value(self) -> float:
+        """Get total value of all articles in the list."""
+        return sum(float(a.price) for a in self.articles if a.price is not None)
+
+    @property
     def is_list_1000(self) -> bool:
         """Check if this is a Liste 1000 (ALPE member)."""
         return self.list_type == ListType.LIST_1000.value
