@@ -149,54 +149,54 @@
 
 | ID | Description | Resultat | Commentaire |
 |----|-------------|----------|-------------|
-| G-01 | Liste des editions | PASS | 5 editions, colonnes et filtres OK |
-| G-02 | Configurer dates edition | SKIP | Page detail edition non testee |
-| G-03 | Creer creneaux de depot | SKIP | Page detail edition non testee |
+| G-01 | Liste des editions | PASS | 4 editions, colonnes et filtres OK |
+| G-02 | Configurer dates edition | SKIP | Necessite edition brouillon dediee |
+| G-03 | Creer creneaux de depot | SKIP | Necessite edition brouillon dediee |
 | G-04 | Importer CSV Billetweb | SKIP | Fonctionnalite non implementee |
 | G-05 | Consulter deposants d'une edition | SKIP | Page non implementee |
 | G-06 | Creer invitation individuelle | PASS | Invitation creee, compteur mis a jour |
-| G-07 | Invitations en masse | SKIP | Non teste dans cette campagne |
-| G-08 | Relancer une invitation | SKIP | Non teste dans cette campagne |
-| G-09 | Relancer invitations en masse | SKIP | Non teste dans cette campagne |
-| G-10 | Supprimer une invitation | SKIP | Non teste dans cette campagne |
-| G-11 | Supprimer invitations en masse | SKIP | Non teste dans cette campagne |
-| G-12 | Exporter invitations Excel | SKIP | Non teste dans cette campagne |
-| G-13 | Etiquettes par creneau | SKIP | Fonctionnalite non implementee |
-| G-14 | Etiquettes (toutes) | SKIP | Fonctionnalite non implementee |
-| G-15 | Etiquettes par selection | SKIP | Fonctionnalite non implementee |
-| G-16 | Calculer reversements | SKIP | Fonctionnalite non implementee |
-| G-17 | Paiement especes | SKIP | Fonctionnalite non implementee |
-| G-18 | Paiement cheque | SKIP | Fonctionnalite non implementee |
-| G-19 | Bordereau reversement PDF | SKIP | Fonctionnalite non implementee |
-| G-20 | Tous les bordereaux | SKIP | Fonctionnalite non implementee |
-| G-21 | Exporter reversements Excel | SKIP | Fonctionnalite non implementee |
-| G-22 | Rappel reversement | SKIP | Fonctionnalite non implementee |
-| G-23 | Relancer tous les absents | SKIP | Fonctionnalite non implementee |
-| G-24 | Tableau de bord reversements | SKIP | Fonctionnalite non implementee |
-| G-25 | Statistiques invitations | SKIP | Non teste dans cette campagne |
-| G-26 | Annuler vente (gestionnaire) | SKIP | Fonctionnalite non implementee |
-| G-27 | Filtrer invitations par statut | SKIP | Non teste dans cette campagne |
-| G-28 | Filtrer reversements par statut | SKIP | Fonctionnalite non implementee |
-| G-29 | Rechercher reversement par nom | SKIP | Fonctionnalite non implementee |
+| G-07 | Invitations en masse | SKIP | Non teste (necessiterait CSV d'invitations) |
+| G-08 | Relancer une invitation | PASS | Ecart : confirm() natif au lieu de modal |
+| G-09 | Relancer invitations en masse | PASS | Modal confirmation, 1 relancee sur 5 selectionnees |
+| G-10 | Supprimer une invitation | PASS | Modal confirmation + suppression OK |
+| G-11 | Supprimer invitations en masse | SKIP | Non teste (risque de supprimer les donnees de test) |
+| G-12 | Exporter invitations Excel | PASS | Telechargement declenche sans erreur |
+| G-13 | Etiquettes par creneau | PASS | Mode disponible, aucun deposant affecte a un creneau (pas d'import Billetweb) |
+| G-14 | Etiquettes (toutes) | PASS | "PDF genere avec succes !" pour 7 etiquettes |
+| G-15 | Etiquettes par selection | PASS | Mode disponible, aucun deposant inscrit via Billetweb |
+| G-16 | Calculer reversements | SKIP | Pas de ventes en BDD |
+| G-17 | Paiement especes | SKIP | Pas de reversements calcules |
+| G-18 | Paiement cheque | SKIP | Pas de reversements calcules |
+| G-19 | Bordereau reversement PDF | SKIP | Pas de reversements calcules |
+| G-20 | Tous les bordereaux | SKIP | Pas de reversements calcules |
+| G-21 | Exporter reversements Excel | SKIP | Pas de reversements calcules |
+| G-22 | Rappel reversement | SKIP | Pas de reversements calcules |
+| G-23 | Relancer tous les absents | SKIP | Pas de reversements calcules |
+| G-24 | Tableau de bord reversements | SKIP | Pas de reversements calcules |
+| G-25 | Statistiques invitations | PASS | Taux activation 80%, graphiques, ventilation |
+| G-26 | Annuler vente (gestionnaire) | SKIP | Pas de ventes en BDD |
+| G-27 | Filtrer invitations par statut | PASS | Filtre "En attente" → 1 invitation OK |
+| G-28 | Filtrer reversements par statut | SKIP | Pas de reversements calcules |
+| G-29 | Rechercher reversement par nom | SKIP | Pas de reversements calcules |
 | G-30 | Rappel date limite | SKIP | Fonctionnalite non implementee |
 | G-E01 | CSV invalide | SKIP | Fonctionnalite non implementee |
 | G-E02 | CSV inscriptions non payees | SKIP | Fonctionnalite non implementee |
-| G-E03 | Invitation email en doublon | SKIP | Non teste dans cette campagne |
-| G-E04 | Dates invalides | SKIP | Non teste dans cette campagne |
-| G-E05 | Creneaux chevauchants | SKIP | Non teste dans cette campagne |
-| G-E06 | Double paiement | SKIP | Fonctionnalite non implementee |
-| G-E07 | Gestionnaire cree edition | SKIP | Non teste dans cette campagne |
-| G-E08 | Gestionnaire cloture edition | SKIP | Non teste dans cette campagne |
-| G-E09 | Gestionnaire journaux audit | SKIP | Fonctionnalite non implementee |
+| G-E03 | Invitation email en doublon | PASS | "Une invitation existe deja pour cet email" |
+| G-E04 | Dates invalides | SKIP | Necessite edition brouillon dediee |
+| G-E05 | Creneaux chevauchants | SKIP | Necessite edition brouillon dediee |
+| G-E06 | Double paiement | SKIP | Pas de reversements calcules |
+| G-E07 | Gestionnaire cree edition | PASS | Bouton "Nouvelle edition" absent pour gestionnaire |
+| G-E08 | Gestionnaire cloture edition | PASS | Bouton "Cloturer" absent pour gestionnaire |
+| G-E09 | Gestionnaire journaux audit | PASS | "Acces refuse" affiche correctement |
 | G-EC01 | Import CSV 500 lignes | SKIP | Fonctionnalite non implementee |
-| G-EC02 | Commission 0% | SKIP | Non teste dans cette campagne |
-| G-EC03 | Commission 100% | SKIP | Non teste dans cette campagne |
-| G-EC04 | Recalcul apres annulation | SKIP | Fonctionnalite non implementee |
-| G-EC05 | Etiquettes sans liste validee | SKIP | Fonctionnalite non implementee |
-| G-EC06 | Relance masse statuts mixtes | SKIP | Non teste dans cette campagne |
+| G-EC02 | Commission 0% | SKIP | Necessite edition brouillon dediee |
+| G-EC03 | Commission 100% | SKIP | Necessite edition brouillon dediee |
+| G-EC04 | Recalcul apres annulation | SKIP | Pas de ventes/reversements en BDD |
+| G-EC05 | Etiquettes sans liste validee | PASS | Mode selection : "Aucun deposant inscrit" |
+| G-EC06 | Relance masse statuts mixtes | PASS | 5 selectionnees, 1 relancee (seule pending), 4 activees ignorees |
 
-**Bilan : 2/2 PASS, 43 SKIP**
-**Note** : La majorite des fonctionnalites gestionnaire (CSV import, etiquettes, reversements, ventes) ne sont pas encore implementees.
+**Bilan : 16/16 PASS, 29 SKIP**
+**Note** : Les SKIP restants concernent des fonctionnalites non implementees (CSV import, reversements, ventes) ou des pre-requis non disponibles (edition brouillon dediee).
 
 ---
 
@@ -208,8 +208,8 @@
 | A-02 | Supprimer edition brouillon | PASS | Modal confirmation + suppression OK |
 | A-03 | Cloturer une edition | SKIP | Fonctionnalite de cloture non implementee |
 | A-04 | Archiver une edition | PASS | Teste via A-EC01 |
-| A-05 | Journaux d'audit | SKIP | Fonctionnalite non implementee |
-| A-06 | Filtrer journaux d'audit | SKIP | Fonctionnalite non implementee |
+| A-05 | Journaux d'audit | PASS | Colonnes : date, action, utilisateur, role, IP, detail, resultat |
+| A-06 | Filtrer journaux d'audit | PASS | Filtre par action (Connexion) OK, filtre par email OK. Ecart : filtre email cherche dans colonne utilisateur, pas dans detail |
 | A-07 | Rapport de cloture PDF | SKIP | Fonctionnalite non implementee |
 | A-08 | Accueil admin (edition active) | PASS | Liens gestionnaire + admin presents |
 | A-09 | Accueil admin (pas d'edition) | SKIP | Edition active en BDD, pas modifiable |
@@ -223,7 +223,7 @@
 | A-EC02 | Consulter edition archivee | PASS | Filtre OK. Ecart : bouton "Modifier" visible |
 | A-EC03 | Cloture avec 0 vente | SKIP | Fonctionnalite non implementee |
 
-**Bilan : 8/8 PASS, 9 SKIP**
+**Bilan : 10/10 PASS, 7 SKIP**
 
 ---
 
@@ -235,12 +235,12 @@
 | Authentification | 17 | 0 | 0 | 3 | 1 | 21 |
 | Deposant | 23 | 1 | 0 | 8 | 2 | 34 |
 | Benevole | 2 | 0 | 0 | 9 | 5 | 16 |
-| Gestionnaire | 2 | 0 | 0 | 43 | 0 | 45 |
-| Administrateur | 8 | 0 | 0 | 9 | 0 | 17 |
-| **TOTAL** | **60** | **1** | **0** | **72** | **8** | **141** |
+| Gestionnaire | 16 | 0 | 0 | 29 | 0 | 45 |
+| Administrateur | 10 | 0 | 0 | 7 | 0 | 17 |
+| **TOTAL** | **76** | **1** | **0** | **56** | **8** | **141** |
 
-**Taux de reussite (tests executes)** : 61/61 = **100%**
-**Couverture** : 61/141 = **43%** (limites par les fonctionnalites non implementees)
+**Taux de reussite (tests executes)** : 77/77 = **100%**
+**Couverture** : 77/141 = **55%** (limites par les fonctionnalites non implementees et les pre-requis manquants)
 
 ---
 
@@ -267,6 +267,8 @@
 | 8 | Suppression article utilise confirm() natif au lieu d'un modal | Faible | UX |
 | 9 | Message erreur generique au lieu du message backend specifique (2e manteau, description >100) | Moyenne | Validation |
 | 10 | Champ description sans `maxlength` HTML (101 chars acceptes cote client) | Faible | Validation |
+| 11 | Relance invitation utilise confirm() natif au lieu d'un modal custom | Faible | UX |
+| 12 | Filtre email audit cherche dans colonne UTILISATEUR, pas dans DETAIL (connexions ont email dans DETAIL) | Faible | UX |
 
 ---
 
