@@ -1,5 +1,5 @@
 # Makefile for Bourse ALPE development
-.PHONY: help install dev up down logs shell-backend shell-frontend db-shell migrate test lint clean
+.PHONY: help install dev up down logs shell-backend shell-frontend db-shell migrate seed test lint clean
 
 # Default target
 help:
@@ -25,6 +25,7 @@ help:
 	@echo "Database:"
 	@echo "  make migrate        Run database migrations"
 	@echo "  make migrate-new    Create new migration (NAME=description)"
+	@echo "  make seed           Populate database with E2E test data"
 	@echo ""
 	@echo "Testing:"
 	@echo "  make test           Run all tests"
@@ -96,6 +97,9 @@ migrate:
 
 migrate-new:
 	docker-compose exec backend alembic revision --autogenerate -m "$(NAME)"
+
+seed:
+	docker-compose exec backend python scripts/seed.py
 
 # ============================================
 # Testing
