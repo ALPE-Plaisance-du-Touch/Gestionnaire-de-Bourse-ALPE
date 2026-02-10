@@ -92,8 +92,8 @@
 | D-14 | Creer une deuxieme liste | PASS | 2e liste creee, compteur 2/2 |
 | D-E01 | Prix sous le minimum | PASS | "Valeur >= 1" (validation HTML native) |
 | D-E02 | Poussette au-dessus du prix max | PASS | "Valeur <= 150" (max dynamique selon sous-categorie) |
-| D-E03 | 25e article | SKIP | Necessite 24 articles pre-existants |
-| D-E04 | 13e vetement | SKIP | Necessite 12 vetements pre-existants |
+| D-E03 | 25e article | PASS | 24/24 atteint, bouton "Ajouter" disabled + "Maximum d'articles atteint" |
+| D-E04 | 13e vetement | PASS | 12/12 vetements, message "Maximum de vetements (12)" + bouton disabled |
 | D-E05 | Article interdit (siege auto) | PASS | Sous-categorie absente du select |
 | D-E06 | 2e manteau | PASS | Backend rejette. Ecart : message generique |
 | D-E07 | Lot mauvaise sous-categorie | PASS | Checkbox lot invisible sauf Bodys/Pyjamas |
@@ -107,13 +107,13 @@
 | D-EC02 | Description 101 caracteres | PASS | Backend rejette. Ecart : message generique |
 | D-EC03 | Prix avec 3 decimales | PASS | "Valeur valide" (step=0.5, arrondi requis) |
 | D-EC04 | Description vide | PASS | "Description requise" |
-| D-EC05 | Quantite de lot = 0 | SKIP | Non teste (champ min=1 par defaut) |
+| D-EC05 | Quantite de lot = 0 | PASS | Validation HTML5 native "valeur >= 1" bloque la soumission |
 | D-EC06 | Caracteres speciaux description | PASS | Guillemets et parentheses OK |
 | D-EC07 | Validation concurrente | N/A | Sessions concurrentes non testables |
 | D-EC08 | Navigation pendant sauvegarde | N/A | Non testable via MCP |
 
-**Bilan : 24/24 PASS (dont 1 FIXED), 8 SKIP, 2 N/A**
-**Note** : Edition passee en `registrations_open` pour debloquer les tests de listes/articles. Les SKIP restants concernent des fonctionnalites non implementees (RGPD, date limite) ou des pre-requis lourds (24 articles/12 vetements).
+**Bilan : 27/27 PASS (dont 1 FIXED), 5 SKIP, 2 N/A**
+**Note** : Edition passee en `registrations_open` pour debloquer les tests de listes/articles. Les SKIP restants concernent des fonctionnalites non implementees (RGPD, date limite).
 
 ---
 
@@ -150,8 +150,8 @@
 | ID | Description | Resultat | Commentaire |
 |----|-------------|----------|-------------|
 | G-01 | Liste des editions | PASS | 4 editions, colonnes et filtres OK |
-| G-02 | Configurer dates edition | SKIP | Necessite edition brouillon dediee |
-| G-03 | Creer creneaux de depot | SKIP | Necessite edition brouillon dediee |
+| G-02 | Configurer dates edition | PASS | Commission, deadline, periodes depot/vente/recuperation OK. Statut reste brouillon |
+| G-03 | Creer creneaux de depot | PASS | Creneau jeu. 15/10 09:30-11:30, 20 places, "Jeudi matin" |
 | G-04 | Importer CSV Billetweb | SKIP | Fonctionnalite non implementee |
 | G-05 | Consulter deposants d'une edition | SKIP | Page non implementee |
 | G-06 | Creer invitation individuelle | PASS | Invitation creee, compteur mis a jour |
@@ -182,8 +182,8 @@
 | G-E01 | CSV invalide | SKIP | Fonctionnalite non implementee |
 | G-E02 | CSV inscriptions non payees | SKIP | Fonctionnalite non implementee |
 | G-E03 | Invitation email en doublon | PASS | "Une invitation existe deja pour cet email" |
-| G-E04 | Dates invalides | SKIP | Necessite edition brouillon dediee |
-| G-E05 | Creneaux chevauchants | SKIP | Necessite edition brouillon dediee |
+| G-E04 | Dates invalides | PASS | Fin depot avant debut depot → "La fin du depot doit etre apres le debut" |
+| G-E05 | Creneaux chevauchants | PASS | Chevauchement 10:00-11:00 vs 09:30-11:30 → "Ce creneau chevauche un creneau existant" |
 | G-E06 | Double paiement | SKIP | Pas de reversements calcules |
 | G-E07 | Gestionnaire cree edition | PASS | Bouton "Nouvelle edition" absent pour gestionnaire |
 | G-E08 | Gestionnaire cloture edition | PASS | Bouton "Cloturer" absent pour gestionnaire |
@@ -195,8 +195,8 @@
 | G-EC05 | Etiquettes sans liste validee | PASS | Mode selection : "Aucun deposant inscrit" |
 | G-EC06 | Relance masse statuts mixtes | PASS | 5 selectionnees, 1 relancee (seule pending), 4 activees ignorees |
 
-**Bilan : 16/16 PASS, 29 SKIP**
-**Note** : Les SKIP restants concernent des fonctionnalites non implementees (CSV import, reversements, ventes) ou des pre-requis non disponibles (edition brouillon dediee).
+**Bilan : 20/20 PASS, 25 SKIP**
+**Note** : Les SKIP restants concernent des fonctionnalites non implementees (CSV import, reversements, ventes).
 
 ---
 
@@ -233,14 +233,14 @@
 |-----------|------|-------|------|------|-----|-------|
 | Visiteur | 8 | 0 | 0 | 0 | 0 | 8 |
 | Authentification | 17 | 0 | 0 | 3 | 1 | 21 |
-| Deposant | 23 | 1 | 0 | 8 | 2 | 34 |
+| Deposant | 26 | 1 | 0 | 5 | 2 | 34 |
 | Benevole | 2 | 0 | 0 | 9 | 5 | 16 |
-| Gestionnaire | 16 | 0 | 0 | 29 | 0 | 45 |
+| Gestionnaire | 20 | 0 | 0 | 25 | 0 | 45 |
 | Administrateur | 10 | 0 | 0 | 7 | 0 | 17 |
-| **TOTAL** | **76** | **1** | **0** | **56** | **8** | **141** |
+| **TOTAL** | **83** | **1** | **0** | **49** | **8** | **141** |
 
-**Taux de reussite (tests executes)** : 77/77 = **100%**
-**Couverture** : 77/141 = **55%** (limites par les fonctionnalites non implementees et les pre-requis manquants)
+**Taux de reussite (tests executes)** : 84/84 = **100%**
+**Couverture** : 84/141 = **60%** (limites par les fonctionnalites non implementees et les pre-requis manquants)
 
 ---
 
