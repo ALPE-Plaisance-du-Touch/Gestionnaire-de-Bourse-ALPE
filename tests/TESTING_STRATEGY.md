@@ -12,10 +12,10 @@ E2E test campaign designed for execution via Claude Code + Chrome DevTools MCP.
 
 | Role | Code | Permissions | Restrictions |
 |------|------|-------------|--------------|
-| **Visitor** | (none) | Login, activate account, reset password, view privacy policy | No access to any protected route |
-| **Depositor** | `depositor` | Declare articles, validate lists, download PDF labels, view sales results, edit profile, export/delete personal data (GDPR) | Cannot access admin pages, cannot scan/sell, cannot manage editions |
+| **Visitor** | (none) | View privacy policy | No access to any protected or auth route |
+| **Depositor** | `depositor` | Login, activate account, reset password + declare articles, validate lists, download PDF labels, view sales results, edit profile, export/delete personal data (GDPR) | Cannot access admin pages, cannot scan/sell, cannot manage editions |
 | **Volunteer** | `volunteer` | All depositor permissions + scan articles, register sales, cancel sales (within 5 min), view live stats, offline sales sync | Cannot configure editions, cannot manage invitations/payouts |
-| **Manager** | `manager` | All volunteer permissions + configure editions, import Billetweb CSV, manage invitations, generate labels, calculate/record payouts, manage sales (cancel without time limit), view audit logs (no) | Cannot create/close/archive editions, cannot view audit logs |
+| **Manager** | `manager` | All volunteer permissions + configure editions, import Billetweb CSV, manage invitations, generate labels, calculate/record payouts, manage sales (cancel without time limit) | Cannot create/close/archive editions, cannot view audit logs |
 | **Administrator** | `administrator` | Full access: all manager permissions + create editions, close editions, archive editions, view audit logs, manage user roles | None |
 
 ### 1.2 Test User Accounts
@@ -35,45 +35,64 @@ E2E test campaign designed for execution via Claude Code + Chrome DevTools MCP.
 
 ## 2. Journey Map per Profile
 
-### 2.1 Visitor (Unauthenticated)
+### 2.1 Visitor (Unauthenticated, no account)
 
 #### Happy Paths
 | ID | Journey | Entry | Steps | Exit |
 |----|---------|-------|-------|------|
-| V-01 | Login with valid credentials | `/login` | Fill email + password, submit | Redirect to `/` |
-| V-02 | Activate account via invitation link | `/activate?token=xxx` | Token validated, fill form, submit | Redirect to `/login` with success |
-| V-03 | Request password reset | `/forgot-password` | Fill email, submit | Success message shown |
-| V-04 | Reset password with valid token | `/reset-password?token=xxx` | Fill new password + confirm, submit | Redirect to `/login` |
-| V-05 | View privacy policy | `/privacy` | Navigate, read content | Static page displayed |
+| V-01 | View privacy policy | `/privacy` | Navigate, read content | Static page displayed |
 
 #### Error Paths
 | ID | Journey | Trigger | Expected |
 |----|---------|---------|----------|
-| V-E01 | Login with wrong password | Invalid password | Error message "Identifiants invalides" |
-| V-E02 | Login with unknown email | Unknown email | Error message "Identifiants invalides" (no enumeration) |
-| V-E03 | Login with empty fields | Submit empty form | Validation messages |
-| V-E04 | Activate with expired token | Token > 7 days old | Error "Lien expiré" |
-| V-E05 | Activate with invalid token | Garbage token | Error "Lien invalide" |
-| V-E06 | Activate with already-used token | Re-visit activation link | Redirect to login |
-| V-E07 | Activate with weak password | "123" | Validation error, strength indicator red |
-| V-E08 | Activate without accepting terms | Checkbox unchecked | Submit blocked |
-| V-E09 | Activate with mismatched passwords | pw != confirm | Validation error |
-| V-E10 | Reset password with expired token | Expired reset token | Error message |
-| V-E11 | Access protected route when logged out | Navigate to `/editions` | Redirect to `/login` |
+| V-E01 | Access protected route | Navigate to `/editions` | Redirect to `/login` |
+| V-E02 | Access login page | Navigate to `/login` | Login form displayed (public auth page) |
+| V-E03 | Access admin page | Navigate to `/admin/invitations` | Redirect to `/login` |
+| V-E04 | Access depositor page | Navigate to `/lists` | Redirect to `/login` |
+
+---
+
+### 2.2 Authentication (all roles, pre-login / account management)
+
+#### Happy Paths
+| ID | Journey | Entry | Steps | Exit |
+|----|---------|-------|-------|------|
+| AUTH-01 | Login with valid credentials | `/login` | Fill email + password, submit | Redirect to `/` |
+| AUTH-02 | Activate account via invitation link | `/activate?token=xxx` | Token validated, fill form, submit | Redirect to `/login` with success |
+| AUTH-03 | Request password reset | `/forgot-password` | Fill email, submit | Success message shown |
+| AUTH-04 | Reset password with valid token | `/reset-password?token=xxx` | Fill new password + confirm, submit | Redirect to `/login` |
+| AUTH-05 | Logout | Any authenticated page | Click "Deconnexion" | Redirect to `/login` |
+
+#### Error Paths
+| ID | Journey | Trigger | Expected |
+|----|---------|---------|----------|
+| AUTH-E01 | Login with wrong password | Invalid password | Error message "Identifiants invalides" |
+| AUTH-E02 | Login with unknown email | Unknown email | Error message "Identifiants invalides" (no enumeration) |
+| AUTH-E03 | Login with empty fields | Submit empty form | Validation messages |
+| AUTH-E04 | Activate with expired token | Token > 7 days old | Error "Lien expire" |
+| AUTH-E05 | Activate with invalid token | Garbage token | Error "Lien invalide" |
+| AUTH-E06 | Activate with already-used token | Re-visit activation link | Redirect to login |
+| AUTH-E07 | Activate with weak password | "123" | Validation error, strength indicator red |
+| AUTH-E08 | Activate without accepting terms | Checkbox unchecked | Submit blocked |
+| AUTH-E09 | Activate with mismatched passwords | pw != confirm | Validation error |
+| AUTH-E10 | Reset password with expired token | Expired reset token | Error message |
+| AUTH-E11 | Login with inactive account | Account not yet activated | Error message |
 
 #### Edge Cases
 | ID | Journey | Scenario | Expected |
 |----|---------|----------|----------|
-| V-EC01 | Double-submit login | Click submit rapidly twice | No duplicate request, single redirect |
-| V-EC02 | Password with special chars | Password: `P@$$w0rd!#%^` | Accepted |
-| V-EC03 | Email case sensitivity | Login with `Admin@ALPE-bourse.FR` | Works (case-insensitive) |
-| V-EC04 | XSS in login fields | `<script>alert(1)</script>` in email | Sanitized, no XSS |
-| V-EC05 | SQL injection in login | `' OR 1=1 --` | Rejected, no injection |
-| V-EC06 | Very long email | 256-char email | Validation error |
+| AUTH-EC01 | Double-submit login | Click submit rapidly twice | No duplicate request, single redirect |
+| AUTH-EC02 | Password with special chars | Password: `P@$$w0rd!#%^` | Accepted |
+| AUTH-EC03 | Email case sensitivity | Login with `Admin@ALPE-bourse.FR` | Works (case-insensitive) |
+| AUTH-EC04 | XSS in login fields | `<script>alert(1)</script>` in email | Sanitized, no XSS |
+| AUTH-EC05 | SQL injection in login | `' OR 1=1 --` | Rejected, no injection |
+| AUTH-EC06 | Very long email | 256-char email | Validation error |
+| AUTH-EC07 | Session expired during use | JWT token expires mid-session | Redirect to `/login` |
+| AUTH-EC08 | Re-activate already active account | Visit activate URL of active user | Error or redirect |
 
 ---
 
-### 2.2 Depositor
+### 2.3 Depositor
 
 #### Happy Paths
 | ID | Journey | Entry | Steps | Exit |
@@ -123,7 +142,7 @@ E2E test campaign designed for execution via Claude Code + Chrome DevTools MCP.
 
 ---
 
-### 2.3 Volunteer
+### 2.4 Volunteer
 
 #### Happy Paths
 | ID | Journey | Entry | Steps | Exit |
@@ -157,7 +176,7 @@ E2E test campaign designed for execution via Claude Code + Chrome DevTools MCP.
 
 ---
 
-### 2.4 Manager
+### 2.5 Manager
 
 #### Happy Paths
 | ID | Journey | Entry | Steps | Exit |
@@ -218,7 +237,7 @@ E2E test campaign designed for execution via Claude Code + Chrome DevTools MCP.
 
 ---
 
-### 2.5 Administrator
+### 2.6 Administrator
 
 #### Happy Paths
 | ID | Journey | Entry | Steps | Exit |
@@ -306,60 +325,61 @@ Login no longer works → Data removed from active listings
 
 ### 4.1 Features x Roles
 
-| Feature | Visitor | Depositor | Volunteer | Manager | Admin |
-|---------|---------|-----------|-----------|---------|-------|
-| Login | V-01 | - | - | - | - |
-| Activate account | V-02 | - | - | - | - |
-| Reset password | V-03, V-04 | - | - | - | - |
-| View privacy policy | V-05 | - | - | - | - |
-| View my editions | - | D-01 | - | - | - |
-| Create list | - | D-02, D-13 | - | - | - |
-| Add article | - | D-03 to D-06 | - | - | - |
-| Validate list | - | D-08 | - | - | - |
-| Download PDF | - | D-09 | - | - | - |
-| Edit profile | - | D-10 | - | - | - |
-| GDPR export | - | D-11 | - | - | - |
-| GDPR delete | - | D-12 | - | - | - |
-| Scan article | - | - | B-01, B-06 | - | - |
-| Register sale | - | - | B-02 to B-04 | - | - |
-| Cancel sale (5 min) | - | - | B-05 | - | - |
-| View live stats | - | - | B-07 | - | - |
-| View editions list | - | - | - | G-01 | G-01 |
-| Configure edition | - | - | - | G-02, G-03 | G-02 |
-| Import Billetweb | - | - | - | G-04 | G-04 |
-| Manage invitations | - | - | - | G-06 to G-12 | G-06 |
-| Generate labels | - | - | - | G-13 to G-15 | G-13 |
-| Calculate payouts | - | - | - | G-16 | G-16 |
-| Record payment | - | - | - | G-17, G-18 | G-17 |
-| Payout receipts | - | - | - | G-19 to G-21 | G-19 |
-| Payout reminders | - | - | - | G-22, G-23 | G-22 |
-| Cancel sale (manager) | - | - | - | G-26 | G-26 |
-| Create edition | - | - | - | - | A-01 |
-| Delete edition | - | - | - | - | A-02 |
-| Close edition | - | - | - | - | A-03 |
-| Archive edition | - | - | - | - | A-04 |
-| View audit logs | - | - | - | - | A-05, A-06 |
-| Closure report | - | - | - | - | A-07 |
+| Feature | Visitor | Auth | Depositor | Volunteer | Manager | Admin |
+|---------|---------|------|-----------|-----------|---------|-------|
+| View privacy policy | V-01 | - | - | - | - | - |
+| Login | - | AUTH-01 | - | - | - | - |
+| Activate account | - | AUTH-02 | - | - | - | - |
+| Reset password | - | AUTH-03, AUTH-04 | - | - | - | - |
+| Logout | - | AUTH-05 | - | - | - | - |
+| View my editions | - | - | D-01 | - | - | - |
+| Create list | - | - | D-02, D-13 | - | - | - |
+| Add article | - | - | D-03 to D-06 | - | - | - |
+| Validate list | - | - | D-08 | - | - | - |
+| Download PDF | - | - | D-09 | - | - | - |
+| Edit profile | - | - | D-10 | - | - | - |
+| GDPR export | - | - | D-11 | - | - | - |
+| GDPR delete | - | - | D-12 | - | - | - |
+| Scan article | - | - | - | B-01, B-06 | - | - |
+| Register sale | - | - | - | B-02 to B-04 | - | - |
+| Cancel sale (5 min) | - | - | - | B-05 | - | - |
+| View live stats | - | - | - | B-07 | - | - |
+| View editions list | - | - | - | - | G-01 | G-01 |
+| Configure edition | - | - | - | - | G-02, G-03 | G-02 |
+| Import Billetweb | - | - | - | - | G-04 | G-04 |
+| Manage invitations | - | - | - | - | G-06 to G-12 | G-06 |
+| Generate labels | - | - | - | - | G-13 to G-15 | G-13 |
+| Calculate payouts | - | - | - | - | G-16 | G-16 |
+| Record payment | - | - | - | - | G-17, G-18 | G-17 |
+| Payout receipts | - | - | - | - | G-19 to G-21 | G-19 |
+| Payout reminders | - | - | - | - | G-22, G-23 | G-22 |
+| Cancel sale (manager) | - | - | - | - | G-26 | G-26 |
+| Create edition | - | - | - | - | - | A-01 |
+| Delete edition | - | - | - | - | - | A-02 |
+| Close edition | - | - | - | - | - | A-03 |
+| Archive edition | - | - | - | - | - | A-04 |
+| View audit logs | - | - | - | - | - | A-05, A-06 |
+| Closure report | - | - | - | - | - | A-07 |
 
 ### 4.2 Test Type Coverage
 
 | Test Type | IDs | Count |
 |-----------|-----|-------|
-| Happy paths | V-01 to A-07 | 67 |
-| Error paths | V-E01 to A-E05 | 42 |
-| Edge cases | V-EC01 to A-EC03 | 28 |
+| Happy paths | V-01, AUTH-01 to AUTH-05, D-01 to A-07 | 68 |
+| Error paths | V-E01 to V-E04, AUTH-E01 to AUTH-E11, D-E01 to A-E05 | 47 |
+| Edge cases | AUTH-EC01 to AUTH-EC08, D-EC01 to A-EC03 | 30 |
 | Workflows | W-01 to W-07 | 7 |
-| **Total** | | **144** |
+| **Total** | | **152** |
 
 ### 4.3 Page Coverage
 
 | Page | Happy | Error | Edge | Workflows |
 |------|-------|-------|------|-----------|
-| `/login` | V-01 | V-E01 to E03 | V-EC01 to EC06 | W-02 |
-| `/activate` | V-02 | V-E04 to E09 | - | W-02 |
-| `/forgot-password` | V-03 | - | - | - |
-| `/reset-password` | V-04 | V-E10 | - | - |
-| `/privacy` | V-05 | - | - | - |
+| `/login` | AUTH-01 | AUTH-E01 to E03, E11 | AUTH-EC01 to EC06 | W-02 |
+| `/activate` | AUTH-02 | AUTH-E04 to E09 | AUTH-EC08 | W-02 |
+| `/forgot-password` | AUTH-03 | - | - | - |
+| `/reset-password` | AUTH-04 | AUTH-E10 | - | - |
+| `/privacy` | V-01 | - | - | - |
 | `/lists` | D-01 | - | - | W-01, W-02 |
 | `/depositor/editions/:id/lists` | D-02, D-13 | D-E09, E10 | - | W-01, W-02 |
 | `/depositor/lists/:id` | D-03 to D-09 | D-E01 to E13 | D-EC01 to EC08 | W-01, W-02 |
