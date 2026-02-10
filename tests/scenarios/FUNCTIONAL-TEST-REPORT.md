@@ -152,8 +152,8 @@
 | G-01 | Liste des editions | PASS | 4 editions, colonnes et filtres OK |
 | G-02 | Configurer dates edition | PASS | Commission, deadline, periodes depot/vente/recuperation OK. Statut reste brouillon |
 | G-03 | Creer creneaux de depot | PASS | Creneau jeu. 15/10 09:30-11:30, 20 places, "Jeudi matin" |
-| G-04 | Importer CSV Billetweb | SKIP | Fonctionnalite non implementee |
-| G-05 | Consulter deposants d'une edition | SKIP | Page non implementee |
+| G-04 | Importer CSV Billetweb | PASS | Preview (10 lignes, 8 a traiter, 2 ignores, 0 erreurs) + import (7 invitations, 1 associe). Ecart : modal sans overflow-y, bouton Importer inaccessible sur petit ecran |
+| G-05 | Consulter deposants d'une edition | PASS | 8 deposants, filtre par type (Liste 1000 → 2 resultats), creneaux et villes corrects |
 | G-06 | Creer invitation individuelle | PASS | Invitation creee, compteur mis a jour |
 | G-07 | Invitations en masse | SKIP | Non teste (necessiterait CSV d'invitations) |
 | G-08 | Relancer une invitation | PASS | Ecart : confirm() natif au lieu de modal |
@@ -179,8 +179,8 @@
 | G-28 | Filtrer reversements par statut | SKIP | Pas de reversements calcules |
 | G-29 | Rechercher reversement par nom | SKIP | Pas de reversements calcules |
 | G-30 | Rappel date limite | SKIP | Fonctionnalite non implementee |
-| G-E01 | CSV invalide | SKIP | Fonctionnalite non implementee |
-| G-E02 | CSV inscriptions non payees | SKIP | Fonctionnalite non implementee |
+| G-E01 | CSV invalide | PASS | CSV avec email manquant → "Erreurs bloquantes (1)", "Import impossible" |
+| G-E02 | CSV inscriptions non payees | PASS | Lignes Paye=Non et Valide=Non correctement filtrees (2 "Non payes/invalides" dans le recap) |
 | G-E03 | Invitation email en doublon | PASS | "Une invitation existe deja pour cet email" |
 | G-E04 | Dates invalides | PASS | Fin depot avant debut depot → "La fin du depot doit etre apres le debut" |
 | G-E05 | Creneaux chevauchants | PASS | Chevauchement 10:00-11:00 vs 09:30-11:30 → "Ce creneau chevauche un creneau existant" |
@@ -195,8 +195,8 @@
 | G-EC05 | Etiquettes sans liste validee | PASS | Mode selection : "Aucun deposant inscrit" |
 | G-EC06 | Relance masse statuts mixtes | PASS | 5 selectionnees, 1 relancee (seule pending), 4 activees ignorees |
 
-**Bilan : 20/20 PASS, 25 SKIP**
-**Note** : Les SKIP restants concernent des fonctionnalites non implementees (CSV import, reversements, ventes).
+**Bilan : 24/24 PASS, 21 SKIP**
+**Note** : Import Billetweb teste avec CSV factice (10 lignes). Les SKIP restants concernent des fonctionnalites non implementees (reversements, ventes) ou des pre-requis specifiques.
 
 ---
 
@@ -235,12 +235,12 @@
 | Authentification | 17 | 0 | 0 | 3 | 1 | 21 |
 | Deposant | 26 | 1 | 0 | 5 | 2 | 34 |
 | Benevole | 2 | 0 | 0 | 9 | 5 | 16 |
-| Gestionnaire | 20 | 0 | 0 | 25 | 0 | 45 |
+| Gestionnaire | 24 | 0 | 0 | 21 | 0 | 45 |
 | Administrateur | 10 | 0 | 0 | 7 | 0 | 17 |
-| **TOTAL** | **83** | **1** | **0** | **49** | **8** | **141** |
+| **TOTAL** | **87** | **1** | **0** | **45** | **8** | **141** |
 
-**Taux de reussite (tests executes)** : 84/84 = **100%**
-**Couverture** : 84/141 = **60%** (limites par les fonctionnalites non implementees et les pre-requis manquants)
+**Taux de reussite (tests executes)** : 88/88 = **100%**
+**Couverture** : 88/141 = **62%** (limites par les fonctionnalites non implementees et les pre-requis manquants)
 
 ---
 
@@ -269,6 +269,7 @@
 | 10 | Champ description sans `maxlength` HTML (101 chars acceptes cote client) | Faible | Validation |
 | 11 | Relance invitation utilise confirm() natif au lieu d'un modal custom | Faible | UX |
 | 12 | Filtre email audit cherche dans colonne UTILISATEUR, pas dans DETAIL (connexions ont email dans DETAIL) | Faible | UX |
+| 13 | Modal import Billetweb (preview) n'a pas d'overflow-y scroll, bouton "Importer" inaccessible sur ecrans < 1024px hauteur | Moyenne | UX |
 
 ---
 
