@@ -1,0 +1,51 @@
+{
+  "_description": "Deposit slot fixtures for active_edition",
+
+  "slot_wednesday_morning": {
+    "start_datetime": "2026-03-11T09:30:00",
+    "end_datetime": "2026-03-11T11:30:00",
+    "max_capacity": 20,
+    "reserved_for_locals": false,
+    "description": "Mercredi matin"
+  },
+
+  "slot_wednesday_afternoon": {
+    "start_datetime": "2026-03-11T14:00:00",
+    "end_datetime": "2026-03-11T18:00:00",
+    "max_capacity": 40,
+    "reserved_for_locals": false,
+    "description": "Mercredi apres-midi"
+  },
+
+  "slot_wednesday_evening": {
+    "start_datetime": "2026-03-11T20:00:00",
+    "end_datetime": "2026-03-11T22:00:00",
+    "max_capacity": 20,
+    "reserved_for_locals": true,
+    "description": "Mercredi soir (reserve Plaisancois)"
+  },
+
+  "slot_thursday_morning": {
+    "start_datetime": "2026-03-12T09:30:00",
+    "end_datetime": "2026-03-12T12:00:00",
+    "max_capacity": 15,
+    "reserved_for_locals": false,
+    "description": "Jeudi matin"
+  },
+
+  "slot_thursday_afternoon": {
+    "start_datetime": "2026-03-12T17:00:00",
+    "end_datetime": "2026-03-12T21:00:00",
+    "max_capacity": 32,
+    "reserved_for_locals": false,
+    "description": "Jeudi apres-midi/soir"
+  },
+
+  "slot_friday_morning": {
+    "start_datetime": "2026-03-13T09:30:00",
+    "end_datetime": "2026-03-13T12:00:00",
+    "max_capacity": 15,
+    "reserved_for_locals": true,
+    "description": "Vendredi matin (reserve Plaisancois)"
+  }
+}

@@ -1,0 +1,6 @@
+Nom,Prénom,E-mail,Téléphone,Session,Tarif,Adresse,Code postal,Ville,Paiement
+Durand,Jean,deposant@example.com,0612345678,Mercredi 11 mars 9h30-11h30,Standard - 5€,12 Rue des Lilas,31830,Plaisance du Touch,Payé
+Garcia,Emma,nouveau-deposant@example.com,0612345681,Mercredi 11 mars 14h-18h,Standard - 5€,5 Avenue des Roses,31830,Plaisance du Touch,Payé
+Leroy,Thomas,adherent2@alpe-bourse.fr,0612345682,Mercredi 11 mars 20h-22h,Liste 1000 - 1€,8 Rue du Parc,31830,Plaisance du Touch,Payé
+Leroy,Julie,ami-thomas@example.com,0612345683,Jeudi 12 mars 9h30-12h,Liste 2000 - 5€,15 Boulevard Central,31300,Toulouse,Payé
+Dupuis,Alice,nouv1@example.com,0612345684,Jeudi 12 mars 17h-21h,Standard - 5€,22 Rue des Chenes,31830,Plaisance du Touch,Payé

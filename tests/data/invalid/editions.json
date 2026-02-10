@@ -1,0 +1,39 @@
+{
+  "_description": "Invalid edition data for error scenarios (G-E04, G-E05, A-E03, A-E06)",
+
+  "invalid_dates": {
+    "start_datetime": "2026-03-15T09:00:00",
+    "end_datetime": "2026-03-14T18:00:00",
+    "_scenario": "G-E04: Date de fin avant date de debut"
+  },
+
+  "overlapping_slot": {
+    "start_datetime": "2026-03-11T10:00:00",
+    "end_datetime": "2026-03-11T11:00:00",
+    "max_capacity": 10,
+    "_scenario": "G-E05: Creneau qui chevauche slot_wednesday_morning (09:30-11:30)"
+  },
+
+  "duplicate_edition_name": {
+    "name": "Bourse Printemps 2026",
+    "location": "Autre lieu",
+    "_scenario": "A-E03: Nom deja utilise (same as active_edition)"
+  },
+
+  "second_active_edition": {
+    "name": "Bourse Speciale 2026",
+    "location": "Salle polyvalente",
+    "status": "in_progress",
+    "_scenario": "A-E06: Tentative d'activer une 2e edition"
+  },
+
+  "commission_0_percent": {
+    "commission_rate": "0.00",
+    "_scenario": "G-EC02: Taux de commission a 0%"
+  },
+
+  "commission_100_percent": {
+    "commission_rate": "1.00",
+    "_scenario": "G-EC03: Taux de commission a 100%"
+  }
+}
