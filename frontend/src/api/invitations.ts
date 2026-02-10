@@ -5,6 +5,7 @@ import type {
   InvitationCreateResponse,
   BulkInvitationResult,
   BulkDeleteResult,
+  BulkResendResult,
   DepositorLookup,
   InvitationResendResponse,
   InvitationStatusFilter,
@@ -100,6 +101,18 @@ export const invitationsApi = {
       { responseType: 'blob', timeout: 60000 },
     );
     return response.data as Blob;
+  },
+
+  bulkResendInvitations: async (ids: string[]): Promise<BulkResendResult> => {
+    const response = await apiClient.post<{ total: number; resent: number; skipped: number }>(
+      '/v1/invitations/bulk-resend',
+      { ids },
+    );
+    return {
+      total: response.data.total,
+      resent: response.data.resent,
+      skipped: response.data.skipped,
+    };
   },
 
   lookupDepositor: async (email: string): Promise<DepositorLookup | null> => {

@@ -42,6 +42,7 @@ interface EditionsListPageProps {
 export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPageProps) {
   const [statusFilter, setStatusFilter] = useState<FilterOption>('all');
   const [editionToDelete, setEditionToDelete] = useState<Edition | null>(null);
+  const [editionToArchive, setEditionToArchive] = useState<Edition | null>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -95,6 +96,36 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
 
   const handleDeleteCancel = () => {
     setEditionToDelete(null);
+  };
+
+  // Archive edition mutation
+  const archiveMutation = useMutation({
+    mutationFn: editionsApi.archiveEdition,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['editions'] });
+      setEditionToArchive(null);
+    },
+    onError: () => {
+      setEditionToArchive(null);
+    },
+  });
+
+  const handleArchiveConfirm = async () => {
+    if (editionToArchive) {
+      try {
+        await archiveMutation.mutateAsync(editionToArchive.id);
+      } catch {
+        // Error handled by mutation
+      }
+    }
+  };
+
+  const isStaleForArchiving = (edition: Edition): boolean => {
+    if (edition.status !== 'closed' || !edition.closedAt) return false;
+    const closedDate = new Date(edition.closedAt);
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    return closedDate < oneYearAgo;
   };
 
   if (error) {
@@ -167,6 +198,16 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
       {deleteMutation.isError && (
         <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
           Erreur lors de la suppression de l'édition. Veuillez réessayer.
+        </div>
+      )}
+      {archiveMutation.isSuccess && (
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          Edition archivee avec succes !
+        </div>
+      )}
+      {archiveMutation.isError && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          Erreur lors de l'archivage. Verifiez que l'edition est bien cloturee.
         </div>
       )}
 
@@ -250,6 +291,11 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
                         >
                           {statusInfo.label}
                         </span>
+                        {isStaleForArchiving(edition) && (
+                          <span className="ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">
+                            A archiver
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {edition.createdBy
@@ -264,6 +310,17 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
                         >
                           Modifier
                         </Button>
+                        {isAdmin && edition.status === 'closed' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditionToArchive(edition)}
+                            disabled={archiveMutation.isPending}
+                            className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                          >
+                            Archiver
+                          </Button>
+                        )}
                         {canDelete && (
                           <Button
                             variant="ghost"
@@ -322,6 +379,39 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
                 className="bg-red-600 hover:bg-red-700"
               >
                 {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Archive confirmation modal */}
+      {editionToArchive && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Archiver l'edition
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Archiver l'edition{' '}
+              <span className="font-medium">{editionToArchive.name}</span> ?
+            </p>
+            <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded mb-4">
+              Une edition archivee n'apparait plus dans la liste par defaut. Elle reste consultable via le filtre "Archive".
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setEditionToArchive(null)}
+                disabled={archiveMutation.isPending}
+              >
+                Annuler
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleArchiveConfirm}
+                disabled={archiveMutation.isPending}
+              >
+                {archiveMutation.isPending ? 'Archivage...' : 'Archiver'}
               </Button>
             </div>
           </div>

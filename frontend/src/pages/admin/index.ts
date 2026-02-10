@@ -10,3 +10,4 @@ export { PayoutsManagementPage } from './PayoutsManagementPage';
 export { PayoutDashboardPage } from './PayoutDashboardPage';
 export { InvitationStatsPage } from './InvitationStatsPage';
 export { AuditLogPage } from './AuditLogPage';
+export { SalesManagementPage } from './SalesManagementPage';

@@ -63,3 +63,17 @@ class BulkDeleteResult(BaseModel):
     total: int
     deleted: int
     not_found: int
+
+
+class BulkResendRequest(BaseModel):
+    """Request schema for bulk invitation resend."""
+
+    ids: list[str] = Field(..., min_length=1, max_length=100)
+
+
+class BulkResendResult(BaseModel):
+    """Response schema for bulk invitation resend."""
+
+    total: int
+    resent: int
+    skipped: int

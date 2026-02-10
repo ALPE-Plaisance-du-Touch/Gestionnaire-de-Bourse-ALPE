@@ -3,7 +3,7 @@ import { MainLayout } from '@/components/layout';
 import { ProtectedRoute } from '@/components/auth';
 import { AuthProvider } from '@/contexts';
 import { LoginPage, ActivatePage, ForgotPasswordPage, ResetPasswordPage } from '@/pages/auth';
-import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, EditionDepositorsPage, LabelsManagementPage, LiveStatsPage, PayoutsManagementPage, PayoutDashboardPage, InvitationStatsPage, AuditLogPage } from '@/pages/admin';
+import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, EditionDepositorsPage, LabelsManagementPage, LiveStatsPage, PayoutsManagementPage, PayoutDashboardPage, InvitationStatsPage, AuditLogPage, SalesManagementPage } from '@/pages/admin';
 import { MyEditionsPage, MyListsPage, ListDetailPage } from '@/pages/depositor';
 import { SalesPage } from '@/pages/volunteer/SalesPage';
 import { ProfilePage, PrivacyPolicyPage } from '@/pages/account';
@@ -152,6 +152,16 @@ export const router = createBrowserRouter([
           <ProtectedRoute allowedRoles={['volunteer', 'manager', 'administrator']}>
             <MainLayout>
               <SalesPage />
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/editions/:id/sales/manage',
+        element: (
+          <ProtectedRoute allowedRoles={['manager', 'administrator']}>
+            <MainLayout>
+              <SalesManagementPage />
             </MainLayout>
           </ProtectedRoute>
         ),

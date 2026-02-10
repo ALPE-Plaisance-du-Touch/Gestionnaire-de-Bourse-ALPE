@@ -30,9 +30,10 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.14 | Special Lists & Business Rules | ✅ Done | 100% |
 | 0.15 | Secondary Features | ✅ Done | 100% |
 | 0.16 | Accessibility & UX | ✅ Done | 100% |
+| 0.17 | Management Enhancements | ✅ Done | 100% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.16 (Accessibility & UX complete)
+**Current Version:** 0.17 (Management Enhancements complete)
 **Next Target:** 1.0.0 - Production Release
 
 ---
@@ -586,9 +587,38 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
+## v0.17 - Management Enhancements (TASK-013, TASK-014, TASK-017, TASK-018, TASK-020) ✅
+
+**Branch:** `feature/management-enhancements`
+
+### Manager Sale Oversight (TASK-017) ✅
+- [x] **0.17.1** Backend: cancel_sale() already bypasses 5-min limit for managers
+- [x] **0.17.2** Frontend: SalesManagementPage (paginated table, payment filter, cancel with confirmation)
+
+### Excel Export - Invitation Stats (TASK-014) ✅ (already implemented in v0.9)
+- [x] **0.17.3** Backend: `GET /invitations/export-excel` endpoint (3 sheets)
+- [x] **0.17.4** Frontend: "Export Excel" button on InvitationStatsPage
+
+### Edition Archiving UI (TASK-018) ✅
+- [x] **0.17.5** Frontend: "Archiver" button on EditionsListPage for closed editions
+- [x] **0.17.6** Amber "A archiver" badge for editions closed > 1 year ago
+
+### Bulk Resend Invitations (TASK-020) ✅
+- [x] **0.17.7** Backend: `POST /invitations/bulk-resend` endpoint + BulkResendRequest/Result schemas
+- [x] **0.17.8** Frontend: "Relancer la sélection" button with confirmation modal on InvitationsPage
+
+### Closure Prerequisites (TASK-013) ✅ (already implemented in v0.10)
+- [x] **0.17.9** Backend: payout calculation + payment finalization checks in closure endpoint
+
+### Tests & Docs ✅
+- [x] **0.17.10** Unit tests: bulk resend schema validation (7 tests)
+- [x] **0.17.11** Update PLAN.md and DEVELOPMENT.md
+
+---
+
 ## v1.0.0 - Production Release
 
-**Prerequisites:** All versions 0.1 through 0.16 completed and tested.
+**Prerequisites:** All versions 0.1 through 0.17 completed and tested.
 
 - [ ] **1.0.1** Final integration testing
 - [ ] **1.0.2** Performance optimization

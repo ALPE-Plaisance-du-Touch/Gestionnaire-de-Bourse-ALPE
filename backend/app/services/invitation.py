@@ -410,3 +410,37 @@ class InvitationService:
                 result["not_found"] += 1
 
         return result
+
+    async def bulk_resend_invitations(
+        self,
+        invitation_ids: list[str],
+        background_tasks: "BackgroundTasks | None" = None,
+    ) -> dict:
+        """Resend multiple invitations at once.
+
+        Only pending or expired invitations are resent. Already activated
+        accounts are skipped.
+
+        Returns:
+            Dict with total, resent, skipped counts
+        """
+        from app.services.email import email_service
+
+        result = {"total": len(invitation_ids), "resent": 0, "skipped": 0}
+
+        for invitation_id in invitation_ids:
+            try:
+                user, token = await self.resend_invitation(invitation_id)
+                result["resent"] += 1
+
+                if background_tasks:
+                    background_tasks.add_task(
+                        email_service.send_invitation_email,
+                        to_email=user.email,
+                        token=token,
+                        first_name=user.first_name,
+                    )
+            except Exception:
+                result["skipped"] += 1
+
+        return result
