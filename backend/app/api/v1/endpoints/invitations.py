@@ -21,6 +21,7 @@ from app.schemas import (
     InvitationResendResponse,
     InvitationResponse,
 )
+from app.schemas.invitation import BulkResendRequest, BulkResendResult
 from app.services.email import email_service
 from app.services.invitation import InvitationService
 
@@ -274,6 +275,32 @@ async def bulk_delete_invitations(
         total=result["total"],
         deleted=result["deleted"],
         not_found=result["not_found"],
+    )
+
+
+@router.post(
+    "/bulk-resend",
+    response_model=BulkResendResult,
+    summary="Bulk resend invitations",
+    description="Resend multiple invitations at once. Only pending/expired invitations are resent.",
+)
+async def bulk_resend_invitations(
+    request: BulkResendRequest,
+    background_tasks: BackgroundTasks,
+    invitation_service: InvitationServiceDep,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Resend multiple invitations at once."""
+    result = await invitation_service.bulk_resend_invitations(
+        request.ids, background_tasks
+    )
+    logger.info(
+        f"Bulk resend: {result['resent']}/{result['total']} invitations resent by {current_user.email}"
+    )
+    return BulkResendResult(
+        total=result["total"],
+        resent=result["resent"],
+        skipped=result["skipped"],
     )
 
 

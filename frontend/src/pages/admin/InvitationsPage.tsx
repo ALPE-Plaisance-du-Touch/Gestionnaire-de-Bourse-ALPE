@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invitationsApi } from '@/api';
 import { Button, Select } from '@/components/ui';
-import type { Invitation, InvitationStatusFilter, BulkDeleteResult } from '@/types';
+import type { Invitation, InvitationStatusFilter, BulkDeleteResult, BulkResendResult } from '@/types';
 
 type FilterOption = 'all' | InvitationStatusFilter;
 
@@ -50,7 +50,9 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
   const [invitationToDelete, setInvitationToDelete] = useState<Invitation | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [showBulkResendModal, setShowBulkResendModal] = useState(false);
   const [bulkDeleteResult, setBulkDeleteResult] = useState<BulkDeleteResult | null>(null);
+  const [bulkResendResult, setBulkResendResult] = useState<BulkResendResult | null>(null);
   const queryClient = useQueryClient();
 
   // Fetch invitations
@@ -97,6 +99,20 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
     },
     onError: () => {
       setShowBulkDeleteModal(false);
+    },
+  });
+
+  // Bulk resend mutation
+  const bulkResendMutation = useMutation({
+    mutationFn: invitationsApi.bulkResendInvitations,
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['invitations'] });
+      setBulkResendResult(result);
+      setSelectedIds(new Set());
+      setShowBulkResendModal(false);
+    },
+    onError: () => {
+      setShowBulkResendModal(false);
     },
   });
 
@@ -178,6 +194,25 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
 
   const handleBulkDeleteCancel = () => {
     setShowBulkDeleteModal(false);
+  };
+
+  const resendableSelectedCount = useMemo(() => {
+    return invitations.filter(
+      (i) => selectedIds.has(i.id) && (i.status === 'pending' || i.status === 'sent' || i.status === 'expired')
+    ).length;
+  }, [invitations, selectedIds]);
+
+  const handleBulkResendConfirm = async () => {
+    const resendableIds = invitations
+      .filter((i) => selectedIds.has(i.id) && (i.status === 'pending' || i.status === 'sent' || i.status === 'expired'))
+      .map((i) => i.id);
+    if (resendableIds.length > 0) {
+      try {
+        await bulkResendMutation.mutateAsync(resendableIds);
+      } catch {
+        // Error handled by mutation
+      }
+    }
   };
 
   const isAllSelected = invitations.length > 0 && selectedIds.size === invitations.length;
@@ -281,6 +316,22 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
           Erreur lors de la suppression en masse. Veuillez réessayer.
         </div>
       )}
+      {bulkResendResult && (
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex justify-between items-center">
+          <span>
+            {bulkResendResult.resent} invitation{bulkResendResult.resent > 1 ? 's' : ''} relancee{bulkResendResult.resent > 1 ? 's' : ''} avec succes
+            {bulkResendResult.skipped > 0 && ` (${bulkResendResult.skipped} ignoree${bulkResendResult.skipped > 1 ? 's' : ''})`}
+          </span>
+          <button onClick={() => setBulkResendResult(null)} className="text-green-700 hover:text-green-900">
+            ✕
+          </button>
+        </div>
+      )}
+      {bulkResendMutation.isError && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          Erreur lors de la relance en masse. Veuillez reessayer.
+        </div>
+      )}
 
       {/* Selection bar */}
       {selectedIds.size > 0 && (
@@ -296,6 +347,15 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
             >
               Désélectionner
             </Button>
+            {resendableSelectedCount > 0 && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setShowBulkResendModal(true)}
+              >
+                Relancer la selection ({resendableSelectedCount})
+              </Button>
+            )}
             <Button
               variant="primary"
               size="sm"
@@ -525,6 +585,39 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
                 className="bg-red-600 hover:bg-red-700"
               >
                 {bulkDeleteMutation.isPending ? 'Suppression...' : `Supprimer (${selectedIds.size})`}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Bulk resend confirmation modal */}
+      {showBulkResendModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Relancer les invitations
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Relancer{' '}
+              <span className="font-medium">{resendableSelectedCount} invitation{resendableSelectedCount > 1 ? 's' : ''}</span> ?
+            </p>
+            <p className="text-sm text-blue-600 bg-blue-50 p-3 rounded mb-4">
+              Un nouveau lien d'activation sera genere et envoye par email pour chaque invitation en attente ou expiree.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowBulkResendModal(false)}
+                disabled={bulkResendMutation.isPending}
+              >
+                Annuler
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleBulkResendConfirm}
+                disabled={bulkResendMutation.isPending}
+              >
+                {bulkResendMutation.isPending ? 'Envoi...' : `Relancer (${resendableSelectedCount})`}
               </Button>
             </div>
           </div>

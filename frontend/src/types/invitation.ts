@@ -58,6 +58,12 @@ export interface BulkDeleteResult {
   notFound: number;
 }
 
+export interface BulkResendResult {
+  total: number;
+  resent: number;
+  skipped: number;
+}
+
 export interface DepositorLookup {
   found: boolean;
   firstName?: string;
