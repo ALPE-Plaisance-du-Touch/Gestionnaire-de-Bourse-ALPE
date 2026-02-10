@@ -13,8 +13,10 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  // Get redirect path from location state or default to home
-  const from = (location.state as { from?: string })?.from || '/';
+  // Get redirect path and success message from location state
+  const locationState = location.state as { from?: string; message?: string } | null;
+  const from = locationState?.from || '/';
+  const successMessage = locationState?.message || null;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -52,6 +54,14 @@ export function LoginPage() {
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {successMessage && !error && (
+            <div
+              className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg"
+              role="status"
+            >
+              {successMessage}
+            </div>
+          )}
           {error && (
             <div
               className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
