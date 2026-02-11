@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invitationsApi } from '@/api';
@@ -215,6 +215,35 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
 
   const isAllSelected = invitations.length > 0 && selectedIds.size === invitations.length;
   const isSomeSelected = selectedIds.size > 0 && selectedIds.size < invitations.length;
+
+  // Auto-dismiss success messages after 5 seconds
+  useEffect(() => {
+    if (resendMutation.isSuccess) {
+      const timer = setTimeout(() => resendMutation.reset(), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendMutation.isSuccess]);
+
+  useEffect(() => {
+    if (deleteMutation.isSuccess) {
+      const timer = setTimeout(() => deleteMutation.reset(), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [deleteMutation.isSuccess]);
+
+  useEffect(() => {
+    if (bulkDeleteResult) {
+      const timer = setTimeout(() => setBulkDeleteResult(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [bulkDeleteResult]);
+
+  useEffect(() => {
+    if (bulkResendResult) {
+      const timer = setTimeout(() => setBulkResendResult(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [bulkResendResult]);
 
   if (error) {
     return (

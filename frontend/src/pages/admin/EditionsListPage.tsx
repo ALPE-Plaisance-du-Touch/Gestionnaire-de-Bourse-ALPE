@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { editionsApi } from '@/api';
 import { Button, ConfirmModal, Select } from '@/components/ui';
@@ -119,6 +119,21 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
       }
     }
   };
+
+  // Auto-dismiss success messages after 5 seconds
+  useEffect(() => {
+    if (deleteMutation.isSuccess) {
+      const timer = setTimeout(() => deleteMutation.reset(), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [deleteMutation.isSuccess]);
+
+  useEffect(() => {
+    if (archiveMutation.isSuccess) {
+      const timer = setTimeout(() => archiveMutation.reset(), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [archiveMutation.isSuccess]);
 
   const isStaleForArchiving = (edition: Edition): boolean => {
     if (edition.status !== 'closed' || !edition.closedAt) return false;

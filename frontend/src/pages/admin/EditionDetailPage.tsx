@@ -111,6 +111,14 @@ export function EditionDetailPage() {
   const [closureModalOpen, setClosureModalOpen] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
 
+  // Auto-dismiss success message after 5 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => setSuccess(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
+
   // Fetch edition
   const { data: edition, isLoading, error: fetchError } = useQuery({
     queryKey: ['edition', id],
