@@ -11,3 +11,4 @@ export { PayoutDashboardPage } from './PayoutDashboardPage';
 export { InvitationStatsPage } from './InvitationStatsPage';
 export { AuditLogPage } from './AuditLogPage';
 export { SalesManagementPage } from './SalesManagementPage';
+export { AdminDashboardPage } from './AdminDashboardPage';

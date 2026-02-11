@@ -3,7 +3,7 @@ import { MainLayout } from '@/components/layout';
 import { ProtectedRoute } from '@/components/auth';
 import { AuthProvider } from '@/contexts';
 import { LoginPage, ActivatePage, ForgotPasswordPage, ResetPasswordPage } from '@/pages/auth';
-import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, EditionDepositorsPage, LabelsManagementPage, LiveStatsPage, PayoutsManagementPage, PayoutDashboardPage, InvitationStatsPage, AuditLogPage, SalesManagementPage } from '@/pages/admin';
+import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, EditionDepositorsPage, LabelsManagementPage, LiveStatsPage, PayoutsManagementPage, PayoutDashboardPage, InvitationStatsPage, AuditLogPage, SalesManagementPage, AdminDashboardPage } from '@/pages/admin';
 import { MyEditionsPage, MyListsPage, ListDetailPage } from '@/pages/depositor';
 import { SalesPage } from '@/pages/volunteer/SalesPage';
 import { ProfilePage, PrivacyPolicyPage } from '@/pages/account';
@@ -37,16 +37,6 @@ function NotFoundPage() {
 
 
 
-function AdminPage() {
-  return (
-    <MainLayout>
-      <div className="py-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Administration</h1>
-        <p className="text-gray-600">Page d'administration à implémenter.</p>
-      </div>
-    </MainLayout>
-  );
-}
 
 /**
  * Application router configuration.
@@ -233,7 +223,9 @@ export const router = createBrowserRouter([
         path: '/admin',
         element: (
           <ProtectedRoute allowedRoles={['manager', 'administrator']}>
-            <AdminPage />
+            <MainLayout>
+              <AdminDashboardPage />
+            </MainLayout>
           </ProtectedRoute>
         ),
       },
