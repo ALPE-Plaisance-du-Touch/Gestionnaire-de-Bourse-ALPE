@@ -1,0 +1,4 @@
+email,prenom,nom,type_liste
+test.bulk1@example.com,Marie,Dupuis,standard
+test.bulk2@example.com,Pierre,Lambert,list_1000
+test.bulk3@example.com,Julie,Martin,list_2000

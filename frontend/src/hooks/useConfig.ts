@@ -22,9 +22,9 @@ export function useConfig() {
 
     async function fetchConfig() {
       try {
-        const response = await apiClient.get<{ support_email: string }>('/v1/config/public');
+        const response = await apiClient.get<{ supportEmail: string }>('/v1/config/public');
         const mappedConfig: PublicConfig = {
-          supportEmail: response.data.support_email,
+          supportEmail: response.data.supportEmail,
         };
         cachedConfig = mappedConfig;
         setConfig(mappedConfig);

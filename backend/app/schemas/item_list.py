@@ -112,8 +112,10 @@ class ItemListSummary(BaseModel):
     status: str
     article_count: int = 0
     clothing_count: int = 0
+    total_value: float = 0.0
     is_validated: bool
     validated_at: datetime | None = None
+    created_at: datetime
 
 
 class DepositorListsResponse(BaseModel):

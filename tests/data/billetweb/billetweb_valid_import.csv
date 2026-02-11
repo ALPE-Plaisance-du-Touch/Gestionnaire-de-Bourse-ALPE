@@ -1,0 +1,11 @@
+Séance,Tarif,Nom,Prénom,Email,Payé,Valide,Téléphone (Commande) - #5,Adresse (Commande) - #7,Code postal (Commande) - #8,Ville (Commande) - #9,Commande
+2027-03-10 09:30,Standard,Leclerc,Camille,camille.leclerc@example.com,Oui,Oui,+33612345678,10 rue de la Paix,31830,Plaisance du Touch,C001-001
+2027-03-10 09:30,Standard,Moreau,Lucas,lucas.moreau@example.com,Oui,Oui,06 98 76 54 32,5 avenue des Fleurs,31830,Plaisance du Touch,C002-001
+2027-03-10 14:00,Réservé habitants de Plaisance,Petit,Emma,emma.petit@example.com,Oui,Oui,+33 6 11 22 33 44,20 boulevard Central,31830,Plaisance du Touch,C003-001
+2027-03-10 14:00,Standard,Roux,Hugo,hugo.roux@example.com,Oui,Oui,0645678901,12 rue des Lilas,31300,Toulouse,C004-001
+2027-03-11 17:00,Famille,Bernard,Lea,lea.bernard@example.com,Oui,Oui,+33698765432,8 place du Marche,31830,Plaisance du Touch,C005-001
+2027-03-11 17:00,Standard,Durand,Jean,deposant@example.com,Oui,Oui,+33611223344,15 rue Victor Hugo,31830,Plaisance du Touch,C006-001
+2027-03-10 09:30,Standard,Fournier,Sophie,sophie.fournier@example.com,Oui,Oui,0687654321,3 impasse des Roses,31830,Plaisance du Touch,C007-001
+2027-03-10 14:00,Adhérent ALPE,Garcia,Antoine,antoine.garcia@example.com,Oui,Oui,+33 6 55 44 33 22,7 chemin des Vignes,31830,Plaisance du Touch,C008-001
+2027-03-10 09:30,Standard,Martin,Claire,claire.martin@example.com,Oui,Non,,22 rue Gambetta,31000,Toulouse,C009-001
+2027-03-10 14:00,Standard,Dubois,Thomas,thomas.dubois@example.com,Non,Oui,0612131415,6 allée des Pins,31830,Plaisance du Touch,C010-001

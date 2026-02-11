@@ -123,8 +123,10 @@ async def get_my_lists(
                     status=lst.status,
                     article_count=lst.article_count,
                     clothing_count=lst.clothing_count,
+                    total_value=lst.total_value,
                     is_validated=lst.is_validated,
                     validated_at=lst.validated_at,
+                    created_at=lst.created_at,
                 )
                 for lst in summary["lists"]
             ],

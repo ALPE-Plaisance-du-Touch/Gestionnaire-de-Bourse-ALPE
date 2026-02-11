@@ -57,7 +57,7 @@ interface ItemListSummaryApiResponse {
   status: string;
   articleCount: number;
   clothingCount: number;
-  totalValue: string;
+  totalValue: number;
   isValidated: boolean;
   validatedAt: string | null;
   createdAt: string;
@@ -105,7 +105,7 @@ function transformItemListSummary(data: ItemListSummaryApiResponse): ItemListSum
     status: data.status as ListStatus,
     articleCount: data.articleCount,
     clothingCount: data.clothingCount,
-    totalValue: parseFloat(data.totalValue),
+    totalValue: data.totalValue || 0,
     isValidated: data.isValidated,
     validatedAt: data.validatedAt,
     createdAt: data.createdAt,
