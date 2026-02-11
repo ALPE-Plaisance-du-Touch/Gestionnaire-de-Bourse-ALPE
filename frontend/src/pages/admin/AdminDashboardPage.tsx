@@ -105,6 +105,7 @@ export function AdminDashboardPage() {
     { label: 'Gestion des ventes', to: `/editions/${editionId}/sales/manage` },
     { label: 'Statistiques', to: `/editions/${editionId}/stats` },
     { label: 'Reversements', to: `/editions/${editionId}/payouts` },
+    { label: 'Utilisateurs', to: '/admin/users' },
   ];
 
   return (

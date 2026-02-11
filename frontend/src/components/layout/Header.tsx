@@ -166,16 +166,28 @@ export function Header() {
                             Invitations
                           </Link>
                           {user.role === 'administrator' && (
-                            <Link
-                              ref={(el) => { menuItemsRef.current[2] = el; }}
-                              to="/admin/audit-logs"
-                              role="menuitem"
-                              tabIndex={-1}
-                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
-                              onClick={() => setIsAdminMenuOpen(false)}
-                            >
-                              Journal d'audit
-                            </Link>
+                            <>
+                              <Link
+                                ref={(el) => { menuItemsRef.current[2] = el; }}
+                                to="/admin/users"
+                                role="menuitem"
+                                tabIndex={-1}
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                                onClick={() => setIsAdminMenuOpen(false)}
+                              >
+                                Utilisateurs
+                              </Link>
+                              <Link
+                                ref={(el) => { menuItemsRef.current[3] = el; }}
+                                to="/admin/audit-logs"
+                                role="menuitem"
+                                tabIndex={-1}
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                                onClick={() => setIsAdminMenuOpen(false)}
+                              >
+                                Journal d'audit
+                              </Link>
+                            </>
                           )}
                         </div>
                       </div>
@@ -292,13 +304,22 @@ export function Header() {
                   Invitations
                 </Link>
                 {user?.role === 'administrator' && (
-                  <Link
-                    to="/admin/audit-logs"
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                    onClick={closeMobileMenu}
-                  >
-                    Journal d'audit
-                  </Link>
+                  <>
+                    <Link
+                      to="/admin/users"
+                      className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                      onClick={closeMobileMenu}
+                    >
+                      Utilisateurs
+                    </Link>
+                    <Link
+                      to="/admin/audit-logs"
+                      className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                      onClick={closeMobileMenu}
+                    >
+                      Journal d'audit
+                    </Link>
+                  </>
                 )}
               </>
             )}
