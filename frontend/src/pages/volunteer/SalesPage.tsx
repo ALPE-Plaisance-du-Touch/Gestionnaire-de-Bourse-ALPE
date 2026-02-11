@@ -5,6 +5,7 @@ import { salesApi } from '@/api';
 import { QrScanner } from '@/components/sales/QrScanner';
 import { OfflineBanner } from '@/components/ui/OfflineBanner';
 import { useOfflineSales } from '@/hooks/useOfflineSales';
+import { useAuth } from '@/contexts';
 import { playSuccessBeep, playErrorBeep } from '@/utils/sound';
 import type { ScanArticleResponse, SaleResponse, OfflineSaleDisplay } from '@/types';
 import type { PendingSale } from '@/services/db';
@@ -20,6 +21,9 @@ const PAYMENT_LABELS: Record<PaymentMethod, string> = {
 export function SalesPage() {
   const { id: editionId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const canViewEdition = user?.role === 'manager' || user?.role === 'administrator';
+  const backLink = canViewEdition ? `/editions/${editionId}` : '/';
 
   const {
     isOnline,
@@ -152,10 +156,10 @@ export function SalesPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <Link
-            to={`/editions/${editionId}`}
+            to={backLink}
             className="text-sm text-blue-600 hover:text-blue-700 mb-1 inline-block"
           >
-            &larr; Retour à l'édition
+            &larr; {canViewEdition ? "Retour à l'édition" : "Retour à l'accueil"}
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Caisse</h1>
         </div>
