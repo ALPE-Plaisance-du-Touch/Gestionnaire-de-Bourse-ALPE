@@ -127,7 +127,7 @@
 | B-04 | Vente cheque | PASS | Article 010114 vendu par cheque |
 | B-05 | Annuler une vente | PASS | Ecart : pas de modal confirmation, annulation directe |
 | B-06 | Saisie manuelle code-barres | PASS | Saisie 010104, article affiche avec details |
-| B-07 | Statistiques en direct | SKIP | Page non implementee ou vide |
+| B-07 | Statistiques en direct | PASS | Page /payouts/dashboard : graphiques taux de vente par categorie, distribution prix, top 10 deposants, refresh auto 10s |
 | B-08 | Detection vente privee | N/A | Necessite horloge specifique |
 | B-E01 | Code-barres inconnu | PASS | Ecart : message en anglais "Article not found" |
 | B-E02 | Article deja vendu | PASS | "Cet article a deja ete vendu !" |
@@ -140,8 +140,8 @@
 | B-EC04 | Permission camera refusee | N/A | Non simulable via MCP |
 | B-EC05 | Attribution numero caisse | N/A | Sessions concurrentes |
 
-**Bilan : 8/8 PASS, 3 SKIP, 6 N/A**
-**Note** : Ventes cash/carte/cheque testees avec articles seed. Annulation sans modal (ecart). Saisie manuelle OK.
+**Bilan : 9/9 PASS, 2 SKIP, 6 N/A**
+**Note** : Ventes cash/carte/cheque testees avec articles seed. Annulation sans modal (ecart). Saisie manuelle OK. Statistiques en direct sur /payouts/dashboard.
 
 ---
 
@@ -171,7 +171,7 @@
 | G-20 | Tous les bordereaux | PASS | PDF global : Bordereaux_Bourse_Printemps_2026.pdf (200) |
 | G-21 | Exporter reversements Excel | PASS | Excel genere : Export_Reversements_Bourse_Printemps_2026.xlsx (200) |
 | G-22 | Rappel reversement | SKIP | Pas de deposant avec email de rappel configurable |
-| G-23 | Relancer tous les absents | SKIP | Pas de deposants absents testables |
+| G-23 | Relancer tous les absents | PASS | Bouton + confirm() + POST /bulk-remind → 200. Reponse "Aucun deposant a relancer" (tous payes) |
 | G-24 | Tableau de bord reversements | PASS | Stats correctes : 49E ventes, 9.80E commission, 38.20E a reverser, 2/4 (50%) |
 | G-25 | Statistiques invitations | PASS | Taux activation 80%, graphiques, ventilation |
 | G-26 | Annuler vente (gestionnaire) | PASS | Gestionnaire annule vente ancienne sans limite de 5 min |
@@ -195,8 +195,8 @@
 | G-EC05 | Etiquettes sans liste validee | PASS | Mode selection : "Aucun deposant inscrit" |
 | G-EC06 | Relance masse statuts mixtes | PASS | 5 selectionnees, 1 relancee (seule pending), 4 activees ignorees |
 
-**Bilan : 40/40 PASS, 5 SKIP**
-**Note** : Reversements testes avec donnees seed (articles, ventes, payouts). PDF/Excel exports OK. Filtres et recherche OK.
+**Bilan : 41/41 PASS, 4 SKIP**
+**Note** : Reversements testes avec donnees seed (articles, ventes, payouts). PDF/Excel exports OK. Filtres, recherche et relance masse OK.
 
 ---
 
@@ -210,7 +210,7 @@
 | A-04 | Archiver une edition | PASS | Teste via A-EC01 |
 | A-05 | Journaux d'audit | PASS | Colonnes : date, action, utilisateur, role, IP, detail, resultat |
 | A-06 | Filtrer journaux d'audit | PASS | Filtre par action (Connexion) OK, filtre par email OK. Ecart : filtre email cherche dans colonne utilisateur, pas dans detail |
-| A-07 | Rapport de cloture PDF | SKIP | Bouton visible sur edition cloturee, non teste |
+| A-07 | Rapport de cloture PDF | PASS | GET /closure-report → 200, Rapport_Cloture_Bourse_Printemps_2026.pdf (application/pdf) |
 | A-08 | Accueil admin (edition active) | PASS | Liens gestionnaire + admin presents |
 | A-09 | Accueil admin (pas d'edition) | SKIP | Edition active en BDD, pas modifiable |
 | A-E01 | Cloturer sans reversements | SKIP | Pre-requis specifique (edition sans aucun reversement) |
@@ -223,7 +223,7 @@
 | A-EC02 | Consulter edition archivee | PASS | Filtre OK. Ecart : bouton "Modifier" visible |
 | A-EC03 | Cloture avec 0 vente | SKIP | Pre-requis specifique (edition sans ventes) |
 
-**Bilan : 12/12 PASS (dont 1 FIXED), 5 SKIP**
+**Bilan : 13/13 PASS (dont 1 FIXED), 4 SKIP**
 
 ---
 
@@ -234,13 +234,13 @@
 | Visiteur | 8 | 0 | 0 | 0 | 0 | 8 |
 | Authentification | 20 | 0 | 0 | 0 | 1 | 21 |
 | Deposant | 27 | 1 | 0 | 4 | 2 | 34 |
-| Benevole | 8 | 0 | 0 | 3 | 6 | 17 |
-| Gestionnaire | 40 | 0 | 0 | 5 | 0 | 45 |
-| Administrateur | 11 | 1 | 0 | 5 | 0 | 17 |
-| **TOTAL** | **114** | **2** | **0** | **17** | **9** | **142** |
+| Benevole | 9 | 0 | 0 | 2 | 6 | 17 |
+| Gestionnaire | 41 | 0 | 0 | 4 | 0 | 45 |
+| Administrateur | 12 | 1 | 0 | 4 | 0 | 17 |
+| **TOTAL** | **117** | **2** | **0** | **14** | **9** | **142** |
 
-**Taux de reussite (tests executes)** : 116/116 = **100%**
-**Couverture** : 116/142 = **82%** (limites par les fonctionnalites non implementees et les pre-requis specifiques)
+**Taux de reussite (tests executes)** : 119/119 = **100%**
+**Couverture** : 119/142 = **84%** (limites par les fonctionnalites non implementees et les pre-requis specifiques)
 
 ---
 
