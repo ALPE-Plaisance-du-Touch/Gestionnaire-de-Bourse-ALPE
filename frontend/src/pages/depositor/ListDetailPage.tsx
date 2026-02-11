@@ -95,6 +95,7 @@ export function ListDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['list-articles', listId] });
       queryClient.invalidateQueries({ queryKey: ['depositor-list', listId] });
       setEditingArticle(null);
+      setShowArticleForm(false);
     },
   });
 
