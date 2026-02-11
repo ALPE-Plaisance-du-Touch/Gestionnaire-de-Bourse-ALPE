@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { User, UserProfileUpdate } from '@/types';
+import type { User, UserProfileUpdate, UserAdminUpdate, UserListParams, PaginatedUsers } from '@/types';
 
 export const usersApi = {
   getProfile: async (): Promise<User> => {
@@ -21,5 +21,27 @@ export const usersApi = {
 
   deleteAccount: async (): Promise<void> => {
     await apiClient.delete('/v1/users/me');
+  },
+
+  listUsers: async (params: UserListParams = {}): Promise<PaginatedUsers> => {
+    const response = await apiClient.get('/v1/users/', {
+      params: {
+        role: params.role || undefined,
+        search: params.search || undefined,
+        page: params.page || 1,
+        limit: params.limit || 20,
+      },
+    });
+    return response.data as PaginatedUsers;
+  },
+
+  getUser: async (userId: string): Promise<User> => {
+    const response = await apiClient.get<User>(`/v1/users/${userId}`);
+    return response.data;
+  },
+
+  updateUser: async (userId: string, data: UserAdminUpdate): Promise<User> => {
+    const response = await apiClient.patch<User>(`/v1/users/${userId}`, data);
+    return response.data;
   },
 };
