@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { depositorListsApi } from '@/api';
-import { Button } from '@/components/ui';
+import { Button, ConfirmModal } from '@/components/ui';
 import type { ItemListSummary, ListType } from '@/types';
 
 const LIST_TYPE_LABELS: Record<ListType, string> = {
@@ -319,39 +319,23 @@ export function MyListsPage() {
       </div>
 
       {/* Delete confirmation modal */}
-      {listToDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Confirmer la suppression
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Êtes-vous sûr de vouloir supprimer la{' '}
-              <span className="font-medium">Liste n°{listToDelete.number}</span> ?
-            </p>
-            <p className="text-sm text-red-600 bg-red-50 p-3 rounded mb-4">
-              Cette action est irréversible.
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={handleDeleteCancel}
-                disabled={deleteMutation.isPending}
-              >
-                Annuler
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleDeleteConfirm}
-                disabled={deleteMutation.isPending}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={!!listToDelete}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmer la suppression"
+        variant="danger"
+        confirmLabel="Supprimer"
+        isLoading={deleteMutation.isPending}
+      >
+        <p className="text-gray-600">
+          Êtes-vous sûr de vouloir supprimer la{' '}
+          <span className="font-medium">Liste n°{listToDelete?.number}</span> ?
+        </p>
+        <p className="text-sm text-red-600 bg-red-50 p-3 rounded">
+          Cette action est irréversible.
+        </p>
+      </ConfirmModal>
     </div>
   );
 }

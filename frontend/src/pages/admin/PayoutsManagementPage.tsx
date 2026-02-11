@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { payoutsApi } from '@/api';
-import { Button } from '@/components/ui';
+import { Button, ConfirmModal } from '@/components/ui';
 import { PaymentModal } from '@/components/payouts/PaymentModal';
 import type { PayoutResponse } from '@/types';
 
@@ -45,6 +45,7 @@ export function PayoutsManagementPage() {
   const [isAbsent, setIsAbsent] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [showBulkReminderConfirm, setShowBulkReminderConfirm] = useState(false);
 
   const perPage = 20;
 
@@ -202,9 +203,12 @@ export function PayoutsManagementPage() {
   });
 
   const handleBulkReminder = () => {
-    if (confirm('Envoyer un email de relance a tous les deposants non payes ?')) {
-      bulkReminderMutation.mutate();
-    }
+    setShowBulkReminderConfirm(true);
+  };
+
+  const handleBulkReminderConfirm = () => {
+    setShowBulkReminderConfirm(false);
+    bulkReminderMutation.mutate();
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -604,6 +608,18 @@ export function PayoutsManagementPage() {
           </div>
         </div>
       )}
+
+      {/* Bulk reminder confirmation modal */}
+      <ConfirmModal
+        isOpen={showBulkReminderConfirm}
+        onClose={() => setShowBulkReminderConfirm(false)}
+        onConfirm={handleBulkReminderConfirm}
+        title="Relancer les déposants"
+        message="Envoyer un email de relance à tous les déposants non payés ?"
+        variant="warning"
+        confirmLabel="Envoyer les relances"
+        isLoading={bulkReminderMutation.isPending}
+      />
     </div>
   );
 }

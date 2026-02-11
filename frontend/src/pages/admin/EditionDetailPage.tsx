@@ -2,7 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { editionsApi, billetwebApi, payoutsApi, ApiException } from '@/api';
-import { Button, Input, Modal } from '@/components/ui';
+import { Button, ConfirmModal, Input, Modal } from '@/components/ui';
 import { DepositSlotsEditor } from '@/components/editions';
 import { BilletwebImportButton } from '@/components/billetweb';
 import type { EditionStatus } from '@/types';
@@ -109,6 +109,7 @@ export function EditionDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [closureModalOpen, setClosureModalOpen] = useState(false);
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
 
   // Fetch edition
   const { data: edition, isLoading, error: fetchError } = useQuery({
@@ -845,13 +846,9 @@ export function EditionDetailPage() {
                 variant="secondary"
                 disabled={archiveMutation.isPending}
                 isLoading={archiveMutation.isPending}
-                onClick={() => {
-                  if (window.confirm("Etes-vous sur de vouloir archiver cette edition ? Cette action est irreversible.")) {
-                    archiveMutation.mutate();
-                  }
-                }}
+                onClick={() => setShowArchiveConfirm(true)}
               >
-                Archiver l'edition
+                Archiver l'édition
               </Button>
             </div>
           </div>
@@ -875,6 +872,20 @@ export function EditionDetailPage() {
           </Button>
         </div>
       </form>
+
+      {/* Archive confirmation modal */}
+      <ConfirmModal
+        isOpen={showArchiveConfirm}
+        onClose={() => setShowArchiveConfirm(false)}
+        onConfirm={() => {
+          setShowArchiveConfirm(false);
+          archiveMutation.mutate();
+        }}
+        title="Archiver l'édition"
+        message="Êtes-vous sûr de vouloir archiver cette édition ? Cette action est irréversible."
+        variant="warning"
+        confirmLabel="Archiver"
+      />
     </div>
   );
 }

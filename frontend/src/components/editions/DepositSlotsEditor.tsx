@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { depositSlotsApi, ApiException } from '@/api';
-import { Button, Input } from '@/components/ui';
+import { Button, ConfirmModal, Input } from '@/components/ui';
 import type { DepositSlot, CreateDepositSlotRequest } from '@/types';
 
 interface DepositSlotsEditorProps {
@@ -71,6 +71,7 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
   const queryClient = useQueryClient();
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [slotToDelete, setSlotToDelete] = useState<string | null>(null);
 
   // Form state for new slot
   const [newSlot, setNewSlot] = useState<CreateDepositSlotRequest>({
@@ -152,8 +153,13 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
   };
 
   const handleDeleteSlot = (slotId: string) => {
-    if (confirm('Supprimer ce créneau ?')) {
-      deleteMutation.mutate(slotId);
+    setSlotToDelete(slotId);
+  };
+
+  const handleDeleteSlotConfirm = () => {
+    if (slotToDelete) {
+      deleteMutation.mutate(slotToDelete);
+      setSlotToDelete(null);
     }
   };
 
@@ -288,6 +294,18 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
           </ul>
         </div>
       )}
+
+      {/* Delete slot confirmation modal */}
+      <ConfirmModal
+        isOpen={!!slotToDelete}
+        onClose={() => setSlotToDelete(null)}
+        onConfirm={handleDeleteSlotConfirm}
+        title="Supprimer le créneau"
+        message="Supprimer ce créneau de dépôt ?"
+        variant="danger"
+        confirmLabel="Supprimer"
+        isLoading={deleteMutation.isPending}
+      />
     </div>
   );
 }
