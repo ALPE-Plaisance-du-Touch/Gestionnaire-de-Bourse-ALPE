@@ -120,9 +120,17 @@ export function MyEditionsPage() {
               <div
                 key={edition.id}
                 className={`bg-white rounded-lg shadow overflow-hidden ${
-                  canDeclare ? 'hover:shadow-md cursor-pointer' : 'opacity-75'
+                  canDeclare ? 'hover:shadow-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg' : 'opacity-75'
                 }`}
                 onClick={() => canDeclare && navigate(`/depositor/editions/${edition.id}/lists`)}
+                role={canDeclare ? 'link' : undefined}
+                tabIndex={canDeclare ? 0 : undefined}
+                onKeyDown={canDeclare ? (e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(`/depositor/editions/${edition.id}/lists`);
+                  }
+                } : undefined}
               >
                 <div className="p-5">
                   <div className="flex items-start justify-between">

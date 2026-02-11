@@ -247,8 +247,16 @@ export function MyListsPage() {
               return (
                 <div
                   key={list.id}
-                  className="p-4 hover:bg-gray-50 cursor-pointer"
+                  className="p-4 hover:bg-gray-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
                   onClick={() => handleViewList(list)}
+                  role="link"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleViewList(list);
+                    }
+                  }}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
