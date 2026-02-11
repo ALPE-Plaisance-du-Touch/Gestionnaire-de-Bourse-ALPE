@@ -7,6 +7,7 @@ import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, Edition
 import { MyEditionsPage, MyListsPage, ListDetailPage } from '@/pages/depositor';
 import { SalesPage } from '@/pages/volunteer/SalesPage';
 import { ProfilePage, PrivacyPolicyPage } from '@/pages/account';
+import { HelpPage } from '@/pages/help';
 import { HomePage } from '@/pages/home';
 
 /**
@@ -76,6 +77,14 @@ export const router = createBrowserRouter([
         element: (
           <MainLayout>
             <PrivacyPolicyPage />
+          </MainLayout>
+        ),
+      },
+      {
+        path: '/aide',
+        element: (
+          <MainLayout>
+            <HelpPage />
           </MainLayout>
         ),
       },

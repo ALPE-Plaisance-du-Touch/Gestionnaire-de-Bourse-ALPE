@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { depositorListsApi, articlesApi } from '@/api';
 import { Button, ConfirmModal } from '@/components/ui';
@@ -325,7 +325,11 @@ export function ListDetailPage() {
 
       {!canValidate && isDraft && articles.length > 0 && (
         <div className="mb-4 bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg">
-          Tous les articles doivent être certifiés conformes avant de pouvoir valider la liste.
+          Tous les articles doivent être{' '}
+          <Link to="/aide#certification" className="underline font-medium hover:text-yellow-900">
+            certifiés conformes
+          </Link>{' '}
+          avant de pouvoir valider la liste.
         </div>
       )}
 
