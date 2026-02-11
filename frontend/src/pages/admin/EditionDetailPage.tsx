@@ -387,7 +387,7 @@ export function EditionDetailPage() {
 
       {/* Success message */}
       {success && (
-        <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+        <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
           <p className="font-medium">Modifications enregistrées !</p>
           <p className="text-sm mt-1">
             {statusMutation.isSuccess
@@ -399,7 +399,7 @@ export function EditionDetailPage() {
 
       {/* Error message */}
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
           {error}
         </div>
       )}

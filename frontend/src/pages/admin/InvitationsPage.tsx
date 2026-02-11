@@ -308,27 +308,27 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
 
       {/* Success/Error messages */}
       {resendMutation.isSuccess && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
           Invitation renvoyée avec succès !
         </div>
       )}
       {resendMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
           Erreur lors de l'envoi de l'invitation. Veuillez réessayer.
         </div>
       )}
       {deleteMutation.isSuccess && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
           Invitation supprimée avec succès !
         </div>
       )}
       {deleteMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
           Erreur lors de la suppression de l'invitation. Veuillez réessayer.
         </div>
       )}
       {bulkDeleteResult && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex justify-between items-center">
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex justify-between items-center" role="alert">
           <span>
             {bulkDeleteResult.deleted} invitation{bulkDeleteResult.deleted > 1 ? 's' : ''} supprimée{bulkDeleteResult.deleted > 1 ? 's' : ''} avec succès
             {bulkDeleteResult.notFound > 0 && ` (${bulkDeleteResult.notFound} non trouvée${bulkDeleteResult.notFound > 1 ? 's' : ''})`}
@@ -339,15 +339,15 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
         </div>
       )}
       {bulkDeleteMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
           Erreur lors de la suppression en masse. Veuillez réessayer.
         </div>
       )}
       {bulkResendResult && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex justify-between items-center">
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex justify-between items-center" role="alert">
           <span>
-            {bulkResendResult.resent} invitation{bulkResendResult.resent > 1 ? 's' : ''} relancee{bulkResendResult.resent > 1 ? 's' : ''} avec succes
-            {bulkResendResult.skipped > 0 && ` (${bulkResendResult.skipped} ignoree${bulkResendResult.skipped > 1 ? 's' : ''})`}
+            {bulkResendResult.resent} invitation{bulkResendResult.resent > 1 ? 's' : ''} relancée{bulkResendResult.resent > 1 ? 's' : ''} avec succès
+            {bulkResendResult.skipped > 0 && ` (${bulkResendResult.skipped} ignorée${bulkResendResult.skipped > 1 ? 's' : ''})`}
           </span>
           <button onClick={() => setBulkResendResult(null)} className="text-green-700 hover:text-green-900">
             ✕
@@ -355,8 +355,8 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
         </div>
       )}
       {bulkResendMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          Erreur lors de la relance en masse. Veuillez reessayer.
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+          Erreur lors de la relance en masse. Veuillez réessayer.
         </div>
       )}
 

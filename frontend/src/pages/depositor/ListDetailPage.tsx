@@ -32,6 +32,7 @@ export function ListDetailPage() {
   const [showValidateModal, setShowValidateModal] = useState(false);
   const [confirmationAccepted, setConfirmationAccepted] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState(false);
   const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
 
   // Fetch list details
@@ -164,6 +165,7 @@ export function ListDetailPage() {
   const handleDownloadPdf = async () => {
     if (!listId) return;
     setIsDownloadingPdf(true);
+    setPdfError(false);
     try {
       const blob = await depositorListsApi.downloadListPdf(listId);
       const url = URL.createObjectURL(blob);
@@ -175,7 +177,7 @@ export function ListDetailPage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch {
-      // Error handled silently - user sees nothing downloaded
+      setPdfError(true);
     } finally {
       setIsDownloadingPdf(false);
     }
@@ -275,6 +277,13 @@ export function ListDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* PDF error */}
+      {pdfError && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+          Erreur lors du téléchargement du PDF. Veuillez réessayer.
+        </div>
+      )}
 
       {/* Deadline banner */}
       {edition?.declarationDeadline && isDraft && (

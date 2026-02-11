@@ -206,23 +206,23 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
 
       {/* Success/Error messages */}
       {deleteMutation.isSuccess && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
           Édition supprimée avec succès !
         </div>
       )}
       {deleteMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
           Erreur lors de la suppression de l'édition. Veuillez réessayer.
         </div>
       )}
       {archiveMutation.isSuccess && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-          Edition archivee avec succes !
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
+          Édition archivée avec succès !
         </div>
       )}
       {archiveMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          Erreur lors de l'archivage. Verifiez que l'edition est bien cloturee.
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+          Erreur lors de l'archivage. Vérifiez que l'édition est bien clôturée.
         </div>
       )}
 
