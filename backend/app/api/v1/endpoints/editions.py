@@ -5,7 +5,7 @@ import math
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import DBSession, require_role
@@ -277,7 +277,11 @@ async def close_edition(
         from app.repositories.payout import PayoutRepository
         payout_repo = PayoutRepository(db)
         stats = await payout_repo.get_stats(edition_id)
-        depositor_count = len(edition.depositors) if edition.depositors else 0
+        from app.models.edition_depositor import EditionDepositor
+        result = await db.execute(
+            select(func.count()).where(EditionDepositor.edition_id == edition_id)
+        )
+        depositor_count = result.scalar() or 0
 
         background_tasks.add_task(
             _notify_managers_of_closure,

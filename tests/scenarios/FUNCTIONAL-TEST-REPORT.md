@@ -1,7 +1,7 @@
 # Rapport de tests fonctionnels
 
 **Campagne** : Tests E2E via Chrome DevTools MCP
-**Date** : 2026-02-10
+**Date** : 2026-02-11
 **Branche** : `feature/functional-testing`
 **Testeur** : Claude (MCP automatise)
 **Environnement** : Docker Compose local (backend + frontend + MariaDB + MailHog)
@@ -122,26 +122,26 @@
 | ID | Description | Resultat | Commentaire |
 |----|-------------|----------|-------------|
 | B-01 | Scanner QR code | N/A | Necessite camera physique |
-| B-02 | Vente especes | SKIP | Pas d'articles en vente dans les donnees |
-| B-03 | Vente carte | SKIP | Pas d'articles en vente |
-| B-04 | Vente cheque | SKIP | Pas d'articles en vente |
-| B-05 | Annuler une vente | SKIP | Pas de vente enregistree |
-| B-06 | Saisie manuelle code-barres | SKIP | Pas d'articles en vente |
+| B-02 | Vente especes | PASS | Article 010104 vendu en especes, compteur ventes +1 |
+| B-03 | Vente carte | PASS | Article 010113 vendu par CB |
+| B-04 | Vente cheque | PASS | Article 010114 vendu par cheque |
+| B-05 | Annuler une vente | PASS | Ecart : pas de modal confirmation, annulation directe |
+| B-06 | Saisie manuelle code-barres | PASS | Saisie 010104, article affiche avec details |
 | B-07 | Statistiques en direct | SKIP | Page non implementee ou vide |
 | B-08 | Detection vente privee | N/A | Necessite horloge specifique |
 | B-E01 | Code-barres inconnu | PASS | Ecart : message en anglais "Article not found" |
-| B-E02 | Article deja vendu | SKIP | Pas d'article vendu en BDD |
+| B-E02 | Article deja vendu | PASS | "Cet article a deja ete vendu !" |
 | B-E03 | Annuler vente apres 5 min | N/A | Necessite attente 5+ minutes |
 | B-E04 | Scanner sans edition ouverte | SKIP | Edition active en BDD |
 | B-E05 | Format code-barres invalide | PASS | Ecart : pas de validation client, meme message erreur |
-| B-EC01 | Scans consecutifs rapides | SKIP | Pas d'articles en vente |
+| B-EC01 | Scans consecutifs rapides | N/A | Necessite timing precis non reproductible via MCP |
 | B-EC02 | Vente hors-ligne | SKIP | Fonctionnalite non implementee |
 | B-EC03 | Conflit synchro hors-ligne | N/A | Sessions concurrentes |
 | B-EC04 | Permission camera refusee | N/A | Non simulable via MCP |
 | B-EC05 | Attribution numero caisse | N/A | Sessions concurrentes |
 
-**Bilan : 2/2 PASS, 9 SKIP, 5 N/A**
-**Note** : L'accueil benevole et la page caisse ont ete verifies (liens corrects, scanner QR present, champ saisie manuelle).
+**Bilan : 8/8 PASS, 3 SKIP, 6 N/A**
+**Note** : Ventes cash/carte/cheque testees avec articles seed. Annulation sans modal (ecart). Saisie manuelle OK.
 
 ---
 
@@ -164,27 +164,27 @@
 | G-13 | Etiquettes par creneau | PASS | Mode disponible, aucun deposant affecte a un creneau (pas d'import Billetweb) |
 | G-14 | Etiquettes (toutes) | PASS | "PDF genere avec succes !" pour 7 etiquettes |
 | G-15 | Etiquettes par selection | PASS | Mode disponible, aucun deposant inscrit via Billetweb |
-| G-16 | Calculer reversements | SKIP | Pas de ventes en BDD |
-| G-17 | Paiement especes | SKIP | Pas de reversements calcules |
-| G-18 | Paiement cheque | SKIP | Pas de reversements calcules |
-| G-19 | Bordereau reversement PDF | SKIP | Pas de reversements calcules |
-| G-20 | Tous les bordereaux | SKIP | Pas de reversements calcules |
-| G-21 | Exporter reversements Excel | SKIP | Pas de reversements calcules |
-| G-22 | Rappel reversement | SKIP | Pas de reversements calcules |
-| G-23 | Relancer tous les absents | SKIP | Pas de reversements calcules |
-| G-24 | Tableau de bord reversements | SKIP | Pas de reversements calcules |
+| G-16 | Calculer reversements | PASS | 4 reversements calcules pour 3 deposants. Total 49E, Commission 9.80E, Net 38.20E |
+| G-17 | Paiement especes | PASS | Payout #101 paye en especes (19.20E), progression 1/4 |
+| G-18 | Paiement cheque | PASS | Payout #1001 paye par cheque CHQ-12345, reference et notes enregistrees |
+| G-19 | Bordereau reversement PDF | PASS | PDF genere : Reversement_101_Durand.pdf (200, application/pdf) |
+| G-20 | Tous les bordereaux | PASS | PDF global : Bordereaux_Bourse_Printemps_2026.pdf (200) |
+| G-21 | Exporter reversements Excel | PASS | Excel genere : Export_Reversements_Bourse_Printemps_2026.xlsx (200) |
+| G-22 | Rappel reversement | SKIP | Pas de deposant avec email de rappel configurable |
+| G-23 | Relancer tous les absents | SKIP | Pas de deposants absents testables |
+| G-24 | Tableau de bord reversements | PASS | Stats correctes : 49E ventes, 9.80E commission, 38.20E a reverser, 2/4 (50%) |
 | G-25 | Statistiques invitations | PASS | Taux activation 80%, graphiques, ventilation |
-| G-26 | Annuler vente (gestionnaire) | SKIP | Pas de ventes en BDD |
+| G-26 | Annuler vente (gestionnaire) | PASS | Gestionnaire annule vente ancienne sans limite de 5 min |
 | G-27 | Filtrer invitations par statut | PASS | Filtre "En attente" → 1 invitation OK |
-| G-28 | Filtrer reversements par statut | SKIP | Pas de reversements calcules |
-| G-29 | Rechercher reversement par nom | SKIP | Pas de reversements calcules |
+| G-28 | Filtrer reversements par statut | PASS | Filtre Paye → 2 resultats, Pret → 2 resultats, Tous → 4 |
+| G-29 | Rechercher reversement par nom | PASS | Recherche "Moreau" → 1 resultat (Claire Moreau #1001) |
 | G-30 | Rappel date limite | SKIP | Fonctionnalite non implementee |
 | G-E01 | CSV invalide | PASS | CSV avec email manquant → "Erreurs bloquantes (1)", "Import impossible" |
 | G-E02 | CSV inscriptions non payees | PASS | Lignes Paye=Non et Valide=Non correctement filtrees (2 "Non payes/invalides" dans le recap) |
 | G-E03 | Invitation email en doublon | PASS | "Une invitation existe deja pour cet email" |
 | G-E04 | Dates invalides | PASS | Fin depot avant debut depot → "La fin du depot doit etre apres le debut" |
 | G-E05 | Creneaux chevauchants | PASS | Chevauchement 10:00-11:00 vs 09:30-11:30 → "Ce creneau chevauche un creneau existant" |
-| G-E06 | Double paiement | SKIP | Pas de reversements calcules |
+| G-E06 | Double paiement | PASS | Bouton "Payer" masque sur reversement deja paye |
 | G-E07 | Gestionnaire cree edition | PASS | Bouton "Nouvelle edition" absent pour gestionnaire |
 | G-E08 | Gestionnaire cloture edition | PASS | Bouton "Cloturer" absent pour gestionnaire |
 | G-E09 | Gestionnaire journaux audit | PASS | "Acces refuse" affiche correctement |
@@ -195,8 +195,8 @@
 | G-EC05 | Etiquettes sans liste validee | PASS | Mode selection : "Aucun deposant inscrit" |
 | G-EC06 | Relance masse statuts mixtes | PASS | 5 selectionnees, 1 relancee (seule pending), 4 activees ignorees |
 
-**Bilan : 28/28 PASS, 17 SKIP**
-**Note** : Import Billetweb teste avec CSV factice (10 lignes). Invitations en masse CSV et suppression en masse testees. Les SKIP restants concernent des fonctionnalites non implementees (reversements, ventes) ou des pre-requis specifiques.
+**Bilan : 40/40 PASS, 5 SKIP**
+**Note** : Reversements testes avec donnees seed (articles, ventes, payouts). PDF/Excel exports OK. Filtres et recherche OK.
 
 ---
 
@@ -206,24 +206,24 @@
 |----|-------------|----------|-------------|
 | A-01 | Creer une edition | PASS | Ecart mineur : modal de succes au lieu de redirection detail |
 | A-02 | Supprimer edition brouillon | PASS | Modal confirmation + suppression OK |
-| A-03 | Cloturer une edition | SKIP | Fonctionnalite de cloture non implementee |
+| A-03 | Cloturer une edition | FIXED | Bug MissingGreenlet sur edition.depositors corrige. Cloture OK, edition en lecture seule |
 | A-04 | Archiver une edition | PASS | Teste via A-EC01 |
 | A-05 | Journaux d'audit | PASS | Colonnes : date, action, utilisateur, role, IP, detail, resultat |
 | A-06 | Filtrer journaux d'audit | PASS | Filtre par action (Connexion) OK, filtre par email OK. Ecart : filtre email cherche dans colonne utilisateur, pas dans detail |
-| A-07 | Rapport de cloture PDF | SKIP | Fonctionnalite non implementee |
+| A-07 | Rapport de cloture PDF | SKIP | Bouton visible sur edition cloturee, non teste |
 | A-08 | Accueil admin (edition active) | PASS | Liens gestionnaire + admin presents |
 | A-09 | Accueil admin (pas d'edition) | SKIP | Edition active en BDD, pas modifiable |
-| A-E01 | Cloturer sans reversements | SKIP | Fonctionnalite non implementee |
+| A-E01 | Cloturer sans reversements | SKIP | Pre-requis specifique (edition sans aucun reversement) |
 | A-E02 | Supprimer edition non-brouillon | PASS | Bouton masque sur editions non-brouillon |
 | A-E03 | Nom edition en doublon | PASS | "Une edition avec ce nom existe deja" |
 | A-E04 | Archiver edition non-cloturee | PASS | Bouton masque sur editions non-cloturees |
-| A-E05 | Cloturer reversements non payes | SKIP | Fonctionnalite non implementee |
+| A-E05 | Cloturer reversements non payes | PASS | Modale prerequis : "2 paiement(s) en attente", bouton Confirmer disabled |
 | A-E06 | Activer 2e edition | SKIP | REQ-F-019 (contrainte unicite) non implementee. Brouillon→Configure OK malgre edition active |
 | A-EC01 | Archiver edition > 1 an | PASS | Badge "A archiver" + archivage OK |
 | A-EC02 | Consulter edition archivee | PASS | Filtre OK. Ecart : bouton "Modifier" visible |
-| A-EC03 | Cloture avec 0 vente | SKIP | Fonctionnalite non implementee |
+| A-EC03 | Cloture avec 0 vente | SKIP | Pre-requis specifique (edition sans ventes) |
 
-**Bilan : 10/10 PASS, 7 SKIP**
+**Bilan : 12/12 PASS (dont 1 FIXED), 5 SKIP**
 
 ---
 
@@ -234,13 +234,13 @@
 | Visiteur | 8 | 0 | 0 | 0 | 0 | 8 |
 | Authentification | 20 | 0 | 0 | 0 | 1 | 21 |
 | Deposant | 27 | 1 | 0 | 4 | 2 | 34 |
-| Benevole | 2 | 0 | 0 | 9 | 5 | 16 |
-| Gestionnaire | 28 | 0 | 0 | 17 | 0 | 45 |
-| Administrateur | 10 | 0 | 0 | 7 | 0 | 17 |
-| **TOTAL** | **95** | **1** | **0** | **37** | **8** | **141** |
+| Benevole | 8 | 0 | 0 | 3 | 6 | 17 |
+| Gestionnaire | 40 | 0 | 0 | 5 | 0 | 45 |
+| Administrateur | 11 | 1 | 0 | 5 | 0 | 17 |
+| **TOTAL** | **114** | **2** | **0** | **17** | **9** | **142** |
 
-**Taux de reussite (tests executes)** : 96/96 = **100%**
-**Couverture** : 96/141 = **68%** (limites par les fonctionnalites non implementees et les pre-requis manquants)
+**Taux de reussite (tests executes)** : 116/116 = **100%**
+**Couverture** : 116/142 = **82%** (limites par les fonctionnalites non implementees et les pre-requis specifiques)
 
 ---
 
@@ -250,6 +250,7 @@
 |--------|-------------|----------|
 | `6b9fe4e` | `mailto:undefined` sur pages erreur activation (snake_case vs camelCase dans useConfig) | `useConfig.ts`, `LoginPage.tsx` |
 | `135fc89` | "NaN €" et "Invalid Date" sur page listes deposant (champs manquants dans schema) | `item_list.py` (schema + model), `depositor_lists.py`, `depositor-lists.ts` |
+| (session) | MissingGreenlet sur `edition.depositors` lors de la cloture (lazy load en contexte async) | `editions.py` (endpoint close_edition) |
 
 ---
 
@@ -270,6 +271,7 @@
 | 11 | Relance invitation utilise confirm() natif au lieu d'un modal custom | Faible | UX |
 | 12 | Filtre email audit cherche dans colonne UTILISATEUR, pas dans DETAIL (connexions ont email dans DETAIL) | Faible | UX |
 | 13 | Modal import Billetweb (preview) n'a pas d'overflow-y scroll, bouton "Importer" inaccessible sur ecrans < 1024px hauteur | Moyenne | UX |
+| 14 | Annulation de vente benevole sans modal de confirmation (annulation directe) | Faible | UX |
 
 ---
 
