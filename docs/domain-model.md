@@ -206,8 +206,7 @@ stateDiagram-v2
 - Chaque liste est numérotée et rattachée à un déposant et une édition
 - Une liste contient maximum 24 articles dont 12 vêtements maximum (REQ-F-002)
 - Statuts possibles : brouillon, validee
-- Les lignes 1-12 sont réservées aux vêtements uniquement
-- Les lignes 13-24 acceptent toutes les catégories
+- Les vêtements occupent les premières lignes (max 12), suivis des autres catégories, numérotation séquentielle sans trous
 - Une liste ne peut plus être modifiée après la date limite de déclaration (REQ-F-011 : 3 semaines avant collecte)
 - Une liste validée génère un récapitulatif PDF envoyé au déposant par email
 - **Couleurs d'étiquettes par numéro** :
@@ -230,7 +229,7 @@ stateDiagram-v2
 - Prix minimum : 1€ pour tout article (REQ-F-002)
 - Prix maximum : 150€ uniquement pour poussettes/landaus (REQ-F-002)
 - Contraintes par catégorie (REQ-F-002) :
-  - Vêtements : 12 maximum par liste, lignes 1-12 obligatoires
+  - Vêtements : 12 maximum par liste, toujours placés en premier dans la numérotation
   - Manteau/Blouson : 1 maximum par liste
   - Sac à main : 1 maximum par liste
   - Foulards : 2 maximum par liste
@@ -285,7 +284,7 @@ stateDiagram-v2
 - **Créneau Plaisançois** : Les créneaux réservés Plaisançois ne peuvent être réservés que par des habitants de Plaisance-du-Touch
 - **Maximum 24 articles par liste** : Une liste ne peut contenir plus de 24 articles
 - **Maximum 12 vêtements par liste** : Une liste ne peut contenir plus de 12 articles de catégorie "Vêtements"
-- **Lignes 1-12 réservées vêtements** : Les articles en lignes 1-12 doivent obligatoirement être de catégorie "Vêtements"
+- **Vêtements en premier** : Les articles vêtements sont toujours numérotés avant les autres catégories (numérotation séquentielle sans trous)
 - **Prix article ≥ 1€** : Le prix proposé d'un article doit être au minimum 1€
 - **Prix poussette ≤ 150€** : Le prix d'une poussette/landau ne peut dépasser 150€
 - **Contraintes catégorie respectées** : Les contraintes par catégorie (1 manteau, 2 foulards, etc.) doivent être respectées par liste

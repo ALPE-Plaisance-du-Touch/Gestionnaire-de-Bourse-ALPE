@@ -21,8 +21,6 @@ CATEGORY_ORDER = {
 
 # Categories that count as clothing (lines 1-12)
 CLOTHING_CATEGORIES = {"clothing", "shoes", "accessories"}
-# First line for non-clothing categories
-NON_CLOTHING_START_LINE = 13
 
 
 class ArticleRepository:
@@ -185,11 +183,8 @@ class ArticleRepository:
     async def reorder_articles(self, item_list_id: str) -> None:
         """Reorder all articles in a list by category and assign new line numbers.
 
-        Lines 1-12 are reserved for clothing (clothing, shoes, accessories).
-        Lines 13-24 are for other categories (nursery, toys, books, other).
-
-        This maintains the category order (clothing first, then shoes, etc.)
-        and assigns line numbers according to the clothing/non-clothing split.
+        Clothing articles (clothing, shoes, accessories) come first (lines 1-12),
+        followed by non-clothing articles. Line numbers are sequential with no gaps.
         """
         articles = await self.get_by_list_id(item_list_id, order_by_category=True)
 
@@ -203,14 +198,14 @@ class ArticleRepository:
 
         await self.db.flush()
 
-        # Second pass: assign final line numbers
-        # Clothing: lines 1-12
-        for index, article in enumerate(clothing_articles, start=1):
-            article.line_number = index
-
-        # Non-clothing: lines 13-24
-        for index, article in enumerate(other_articles, start=NON_CLOTHING_START_LINE):
-            article.line_number = index
+        # Second pass: assign final line numbers sequentially (clothing first, then others)
+        line = 1
+        for article in clothing_articles:
+            article.line_number = line
+            line += 1
+        for article in other_articles:
+            article.line_number = line
+            line += 1
 
         await self.db.commit()
 
