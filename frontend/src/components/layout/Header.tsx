@@ -4,6 +4,7 @@ import { useAuth, useIsAuthenticated, useUser } from '@/contexts';
 
 export function Header() {
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const adminMenuRef = useRef<HTMLDivElement>(null);
   const adminButtonRef = useRef<HTMLButtonElement>(null);
   const menuItemsRef = useRef<(HTMLAnchorElement | null)[]>([]);
@@ -31,6 +32,8 @@ export function Header() {
   const isAuthenticated = useIsAuthenticated();
   const user = useUser();
   const { logout } = useAuth();
+
+  const isManagerOrAdmin = user && (user.role === 'administrator' || user.role === 'manager');
 
   const handleLogout = async () => {
     await logout();
@@ -82,6 +85,8 @@ export function Header() {
     }
   }, []);
 
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -93,23 +98,25 @@ export function Header() {
             </span>
           </Link>
 
-          {/* Navigation */}
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6" aria-label="Navigation principale">
             {isAuthenticated ? (
               <>
-                <Link
-                  to="/editions"
-                  className="text-gray-600 hover:text-gray-900 font-medium"
-                >
-                  Éditions
-                </Link>
+                {isManagerOrAdmin && (
+                  <Link
+                    to="/editions"
+                    className="text-gray-600 hover:text-gray-900 font-medium"
+                  >
+                    Éditions
+                  </Link>
+                )}
                 <Link
                   to="/lists"
                   className="text-gray-600 hover:text-gray-900 font-medium"
                 >
                   Mes listes
                 </Link>
-                {user && (user.role === 'administrator' || user.role === 'manager') && (
+                {isManagerOrAdmin && (
                   <div className="relative" ref={adminMenuRef}>
                     <button
                       ref={adminButtonRef}
@@ -179,27 +186,62 @@ export function Header() {
             ) : null}
           </nav>
 
-          {/* User menu */}
-          <div className="flex items-center gap-4">
-            {isAuthenticated ? (
-              <>
+          {/* Mobile hamburger + User menu */}
+          <div className="flex items-center gap-2">
+            {/* Hamburger button - mobile only */}
+            {isAuthenticated && (
+              <button
+                type="button"
+                className="md:hidden p-2 text-gray-600 hover:text-gray-900 rounded-md"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="mobile-menu"
+                aria-label={isMobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+              >
+                {isMobileMenuOpen ? (
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
+            )}
+
+            {/* Desktop user menu */}
+            <div className="hidden md:flex items-center gap-4">
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    to="/profile"
+                    className="text-sm text-gray-600 hover:text-gray-900"
+                  >
+                    Bonjour, <strong>{displayName}</strong>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="text-sm text-gray-600 hover:text-gray-900"
+                  >
+                    Déconnexion
+                  </button>
+                </>
+              ) : (
                 <Link
-                  to="/profile"
-                  className="text-sm text-gray-600 hover:text-gray-900"
+                  to="/login"
+                  className="text-sm font-medium text-blue-600 hover:text-blue-700"
                 >
-                  Bonjour, <strong>{displayName}</strong>
+                  Connexion
                 </Link>
-                <button
-                  onClick={handleLogout}
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Déconnexion
-                </button>
-              </>
-            ) : (
+              )}
+            </div>
+
+            {/* Mobile login link */}
+            {!isAuthenticated && (
               <Link
                 to="/login"
-                className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                className="md:hidden text-sm font-medium text-blue-600 hover:text-blue-700"
               >
                 Connexion
               </Link>
@@ -207,6 +249,77 @@ export function Header() {
           </div>
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {isMobileMenuOpen && isAuthenticated && (
+        <div id="mobile-menu" className="md:hidden border-t border-gray-200 bg-white">
+          <nav className="px-4 py-3 space-y-1" aria-label="Navigation mobile">
+            {isManagerOrAdmin && (
+              <Link
+                to="/editions"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                onClick={closeMobileMenu}
+              >
+                Éditions
+              </Link>
+            )}
+            <Link
+              to="/lists"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+              onClick={closeMobileMenu}
+            >
+              Mes listes
+            </Link>
+
+            {isManagerOrAdmin && (
+              <>
+                <div className="border-t border-gray-200 my-2" />
+                <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Administration
+                </p>
+                <Link
+                  to="/admin"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                  onClick={closeMobileMenu}
+                >
+                  Tableau de bord
+                </Link>
+                <Link
+                  to="/admin/invitations"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                  onClick={closeMobileMenu}
+                >
+                  Invitations
+                </Link>
+                {user?.role === 'administrator' && (
+                  <Link
+                    to="/admin/audit-logs"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                    onClick={closeMobileMenu}
+                  >
+                    Journal d'audit
+                  </Link>
+                )}
+              </>
+            )}
+
+            <div className="border-t border-gray-200 my-2" />
+            <Link
+              to="/profile"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+              onClick={closeMobileMenu}
+            >
+              Mon profil
+            </Link>
+            <button
+              onClick={() => { closeMobileMenu(); handleLogout(); }}
+              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+            >
+              Déconnexion
+            </button>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
