@@ -167,6 +167,8 @@ export const articlesApi = {
   ): Promise<Article> => {
     const payload: Record<string, unknown> = {};
 
+    if (data.category !== undefined) payload.category = data.category;
+    if (data.subcategory !== undefined) payload.subcategory = data.subcategory;
     if (data.description !== undefined) payload.description = data.description;
     if (data.price !== undefined) payload.price = data.price;
     if (data.size !== undefined) payload.size = data.size;

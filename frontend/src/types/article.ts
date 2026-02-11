@@ -64,6 +64,8 @@ export interface CreateArticleRequest {
 }
 
 export interface UpdateArticleRequest {
+  category?: ArticleCategory;
+  subcategory?: string;
   description?: string;
   price?: number;
   size?: string;

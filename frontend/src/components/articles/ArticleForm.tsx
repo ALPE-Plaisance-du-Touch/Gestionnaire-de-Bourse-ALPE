@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Button, Input, Select } from '@/components/ui';
 import type {
   Article,
@@ -73,6 +73,9 @@ const GENDER_OPTIONS = [
   { value: 'adult_unisex', label: 'Adulte mixte' },
 ];
 
+// Categories that count as clothing for line number allocation
+const CLOTHING_CATEGORIES = ['clothing', 'shoes', 'accessories'];
+
 // Only these subcategories can be sold as lots
 const LOT_ALLOWED_SUBCATEGORIES = ['body', 'pajama'];
 
@@ -118,7 +121,11 @@ export function ArticleForm({
   const showSizeAndGender = isClothing || isShoes;
   const subcategoryOptions = SUBCATEGORY_OPTIONS[category] ?? [];
   const maxClothing = constraints?.maxClothingPerList ?? 12;
-  const canAddClothing = !article && (clothingCount < maxClothing || !isClothing);
+  // When editing, the current article is already counted in clothingCount, so subtract it
+  const effectiveClothingCount = article && CLOTHING_CATEGORIES.includes(article.category)
+    ? clothingCount - 1
+    : clothingCount;
+  const canAddClothing = effectiveClothingCount < maxClothing || !isClothing;
   const canCreateLot = LOT_ALLOWED_SUBCATEGORIES.includes(subcategory);
 
   // Find matching price hint based on category, subcategory and gender
@@ -144,28 +151,32 @@ export function ArticleForm({
     return categoryMatch ?? null;
   }, [priceHints, category, subcategory, gender]);
 
+  // Track whether category/subcategory have been changed by the user (skip initial render)
+  const initialCategoryRef = useRef(category);
+  const initialSubcategoryRef = useRef(subcategory);
+
   // Reset subcategory and clothing-specific fields when category changes
-  // But not on initial render when duplicating (sourceArticle exists)
   useEffect(() => {
-    if (!article && !duplicateFrom) {
-      setSubcategory('');
-      // Clear clothing-specific fields for non-clothing/shoes categories
-      if (!showSizeAndGender) {
-        setSize('');
-        setGender('');
-        setBrand('');
-        setColor('');
-      }
+    if (category === initialCategoryRef.current) return;
+    initialCategoryRef.current = ''; // After first real change, always reset on subsequent changes
+    setSubcategory('');
+    if (!showSizeAndGender) {
+      setSize('');
+      setGender('');
+      setBrand('');
+      setColor('');
     }
-  }, [category, article, duplicateFrom, showSizeAndGender]);
+  }, [category, showSizeAndGender]);
 
   // Reset lot when subcategory changes to one that doesn't allow lots
   useEffect(() => {
-    if (!article && !duplicateFrom && !LOT_ALLOWED_SUBCATEGORIES.includes(subcategory)) {
+    if (subcategory === initialSubcategoryRef.current) return;
+    initialSubcategoryRef.current = '';
+    if (!LOT_ALLOWED_SUBCATEGORIES.includes(subcategory)) {
       setIsLot(false);
       setLotQuantity('');
     }
-  }, [subcategory, article, duplicateFrom]);
+  }, [subcategory]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -188,7 +199,7 @@ export function ArticleForm({
       }
     }
 
-    if (!canAddClothing && isClothing && !article) {
+    if (!canAddClothing && isClothing) {
       newErrors.category = `Maximum de vêtements atteint (${maxClothing})`;
     }
 
@@ -236,7 +247,7 @@ export function ArticleForm({
             options={CATEGORY_OPTIONS}
             value={category}
             onChange={(e) => setCategory(e.target.value as ArticleCategory)}
-            disabled={!!article} // Can't change category when editing
+            disabled={isSubmitting}
           />
           {errors.category && (
             <p className="mt-1 text-sm text-red-600">{errors.category}</p>
