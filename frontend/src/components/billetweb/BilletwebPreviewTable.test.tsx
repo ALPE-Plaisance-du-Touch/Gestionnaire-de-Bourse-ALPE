@@ -28,16 +28,16 @@ describe('BilletwebPreviewTable', () => {
       const totalSection = screen.getByText('Total lignes').parentElement;
       expect(totalSection).toHaveTextContent('10');
 
-      const unpaidSection = screen.getByText('Non payes/invalides').parentElement;
+      const unpaidSection = screen.getByText('Non payés/invalides').parentElement;
       expect(unpaidSection).toHaveTextContent('2');
 
-      const toProcessSection = screen.getByText('A traiter').parentElement;
+      const toProcessSection = screen.getByText('À traiter').parentElement;
       expect(toProcessSection).toHaveTextContent('8');
 
-      const existingSection = screen.getByText('Deposants existants').parentElement;
+      const existingSection = screen.getByText('Déposants existants').parentElement;
       expect(existingSection).toHaveTextContent('3');
 
-      const newSection = screen.getByText('Nouveaux deposants').parentElement;
+      const newSection = screen.getByText('Nouveaux déposants').parentElement;
       expect(newSection).toHaveTextContent('5');
     });
 
@@ -45,13 +45,13 @@ describe('BilletwebPreviewTable', () => {
       render(<BilletwebPreviewTable preview={basePreview} />);
 
       expect(screen.getByText('Total lignes')).toBeInTheDocument();
-      expect(screen.getByText('Non payes/invalides')).toBeInTheDocument();
-      expect(screen.getByText('A traiter')).toBeInTheDocument();
+      expect(screen.getByText('Non payés/invalides')).toBeInTheDocument();
+      expect(screen.getByText('À traiter')).toBeInTheDocument();
       expect(screen.getByText('Erreurs')).toBeInTheDocument();
-      expect(screen.getByText('Deposants existants')).toBeInTheDocument();
-      expect(screen.getByText('Nouveaux deposants')).toBeInTheDocument();
+      expect(screen.getByText('Déposants existants')).toBeInTheDocument();
+      expect(screen.getByText('Nouveaux déposants')).toBeInTheDocument();
       expect(screen.getByText('Doublons dans fichier')).toBeInTheDocument();
-      expect(screen.getByText('Deja inscrits')).toBeInTheDocument();
+      expect(screen.getByText('Déjà inscrits')).toBeInTheDocument();
     });
   });
 
@@ -59,9 +59,9 @@ describe('BilletwebPreviewTable', () => {
     it('shows success message when can import', () => {
       render(<BilletwebPreviewTable preview={basePreview} />);
 
-      expect(screen.getByText('Pret a importer')).toBeInTheDocument();
-      expect(screen.getByText(/3 deposant.*existant.*seront associes/i)).toBeInTheDocument();
-      expect(screen.getByText(/5 invitation.*seront envoyees/i)).toBeInTheDocument();
+      expect(screen.getByText('Prêt à importer')).toBeInTheDocument();
+      expect(screen.getByText(/3 déposant.*existant.*seront associés/i)).toBeInTheDocument();
+      expect(screen.getByText(/5 invitation.*seront envoyées/i)).toBeInTheDocument();
     });
 
     it('shows error message when cannot import', () => {

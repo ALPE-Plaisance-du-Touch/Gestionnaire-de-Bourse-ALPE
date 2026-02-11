@@ -171,7 +171,7 @@ export function InvitationCreateModal({ isOpen, onClose }: InvitationCreateModal
             <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-lg text-sm">
               <div className="flex items-center justify-between">
                 <span>
-                  Deposant existant : <strong>{lookup.firstName} {lookup.lastName}</strong>
+                  Déposant existant : <strong>{lookup.firstName} {lookup.lastName}</strong>
                   {lookup.participationCount ? ` (${lookup.participationCount} participation${lookup.participationCount > 1 ? 's' : ''})` : ''}
                 </span>
                 <button

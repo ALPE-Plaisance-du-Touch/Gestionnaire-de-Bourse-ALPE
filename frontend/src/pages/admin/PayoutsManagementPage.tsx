@@ -232,7 +232,7 @@ export function PayoutsManagementPage() {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Retour a l'edition
+          Retour à l'édition
         </Link>
         <h1 className="text-2xl font-bold text-gray-900">Reversements</h1>
         <p className="text-sm text-gray-500 mt-1">
@@ -366,7 +366,7 @@ export function PayoutsManagementPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deposant</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Déposant</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Liste</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Articles</th>
@@ -442,7 +442,7 @@ export function PayoutsManagementPage() {
                           <button
                             onClick={() => handleDownloadReceipt(payout)}
                             className="text-blue-600 hover:text-blue-800 text-xs font-medium"
-                            title="Telecharger le bordereau"
+                            title="Télécharger le bordereau"
                           >
                             PDF
                           </button>

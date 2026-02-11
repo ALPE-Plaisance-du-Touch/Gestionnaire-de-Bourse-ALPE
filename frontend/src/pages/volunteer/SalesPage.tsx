@@ -77,7 +77,7 @@ export function SalesPage() {
     },
     onError: (error: Error) => {
       setScannedArticle(null);
-      setScanError(error.message || 'Article non trouve');
+      setScanError(error.message || 'Article non trouvé');
       playErrorBeep();
     },
   });
@@ -89,7 +89,7 @@ export function SalesPage() {
     onSuccess: (data) => {
       playSuccessBeep();
       const suffix = data.isOffline ? ' (hors-ligne)' : '';
-      setSuccessMessage(`Vente enregistree${suffix} ! ${data.description} - ${data.price.toFixed(2)} EUR`);
+      setSuccessMessage(`Vente enregistrée${suffix} ! ${data.description} - ${data.price.toFixed(2)} EUR`);
       setScannedArticle(null);
       setSelectedPayment(null);
       if (!data.isOffline) {
@@ -155,7 +155,7 @@ export function SalesPage() {
             to={`/editions/${editionId}`}
             className="text-sm text-blue-600 hover:text-blue-700 mb-1 inline-block"
           >
-            &larr; Retour a l'edition
+            &larr; Retour à l'édition
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Caisse</h1>
         </div>
@@ -203,7 +203,7 @@ export function SalesPage() {
                 backgroundColor: scannedArticle.labelColor ? getLabelColorHex(scannedArticle.labelColor) + '15' : '#ffffff',
               }}
             >
-              <h3 className="font-semibold text-gray-900 mb-3">Article scanne</h3>
+              <h3 className="font-semibold text-gray-900 mb-3">Article scanné</h3>
               <div className="grid grid-cols-2 gap-2 text-sm mb-4">
                 <div>
                   <span className="text-gray-500">Description</span>
@@ -214,7 +214,7 @@ export function SalesPage() {
                   <p className="text-xl font-bold text-gray-900">{Number(scannedArticle.price).toFixed(2)} EUR</p>
                 </div>
                 <div>
-                  <span className="text-gray-500">Categorie</span>
+                  <span className="text-gray-500">Catégorie</span>
                   <p>{scannedArticle.category}</p>
                 </div>
                 <div>
@@ -222,7 +222,7 @@ export function SalesPage() {
                   <p>{scannedArticle.size || '-'}</p>
                 </div>
                 <div>
-                  <span className="text-gray-500">Deposant</span>
+                  <span className="text-gray-500">Déposant</span>
                   <p>{scannedArticle.depositorName}</p>
                 </div>
                 <div>
@@ -274,7 +274,7 @@ export function SalesPage() {
           </div>
 
           {allSales.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">Aucune vente enregistree</p>
+            <p className="text-gray-500 text-center py-8">Aucune vente enregistrée</p>
           ) : (
             <div className="space-y-2 max-h-[600px] overflow-y-auto">
               {allSales.map((sale) => (

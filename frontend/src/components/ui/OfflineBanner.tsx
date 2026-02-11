@@ -20,14 +20,14 @@ export function OfflineBanner({ isOnline, pendingCount, lastSyncCount, conflicts
 
       {isOnline && lastSyncCount !== undefined && lastSyncCount > 0 && (
         <div className="rounded-lg bg-green-100 border border-green-300 text-green-800 px-4 py-3 text-sm font-medium">
-          {lastSyncCount} vente{lastSyncCount !== 1 ? 's' : ''} synchronisee{lastSyncCount !== 1 ? 's' : ''}
+          {lastSyncCount} vente{lastSyncCount !== 1 ? 's' : ''} synchronisée{lastSyncCount !== 1 ? 's' : ''}
         </div>
       )}
 
       {conflicts && conflicts.length > 0 && (
         <div className="rounded-lg bg-red-100 border border-red-300 text-red-800 px-4 py-3 text-sm">
           <p className="font-medium">
-            {conflicts.length} conflit{conflicts.length !== 1 ? 's' : ''} detecte{conflicts.length !== 1 ? 's' : ''}
+            {conflicts.length} conflit{conflicts.length !== 1 ? 's' : ''} détecté{conflicts.length !== 1 ? 's' : ''}
           </p>
           <ul className="mt-1 list-disc list-inside">
             {conflicts.map((c, i) => (

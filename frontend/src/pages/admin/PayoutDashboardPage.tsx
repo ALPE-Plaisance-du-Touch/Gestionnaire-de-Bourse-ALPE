@@ -60,7 +60,7 @@ export function PayoutDashboardPage() {
       const blob = await payoutsApi.downloadClosureReport(editionId!);
       downloadBlob(blob, 'Rapport_cloture.pdf');
     } catch {
-      setErrorMessage('Erreur lors du telechargement du rapport de cloture.');
+      setErrorMessage('Erreur lors du téléchargement du rapport de clôture.');
     }
   };
 
@@ -89,7 +89,7 @@ export function PayoutDashboardPage() {
         </Link>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Statistiques detaillees</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Statistiques détaillées</h1>
             <p className="text-sm text-gray-500 mt-1">
               Actualisation automatique toutes les 10 secondes
             </p>
@@ -99,7 +99,7 @@ export function PayoutDashboardPage() {
               Exporter Excel
             </Button>
             <Button variant="outline" onClick={handleDownloadClosureReport}>
-              Rapport de cloture
+              Rapport de clôture
             </Button>
           </div>
         </div>
@@ -194,16 +194,16 @@ export function PayoutDashboardPage() {
           {/* Top 10 depositors */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Top 10 deposants
+              Top 10 déposants
             </h2>
             {dashboard.topDepositors.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">Aucune vente enregistree</p>
+              <p className="text-gray-500 text-center py-4">Aucune vente enregistrée</p>
             ) : (
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-2 font-medium text-gray-600">#</th>
-                    <th className="text-left py-2 font-medium text-gray-600">Deposant</th>
+                    <th className="text-left py-2 font-medium text-gray-600">Déposant</th>
                     <th className="text-right py-2 font-medium text-gray-600">Articles vendus</th>
                     <th className="text-right py-2 font-medium text-gray-600">Total ventes</th>
                   </tr>

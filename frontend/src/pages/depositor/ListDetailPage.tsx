@@ -267,7 +267,7 @@ export function ListDetailPage() {
               onClick={handleDownloadPdf}
               disabled={isDownloadingPdf || articles.length === 0}
             >
-              {isDownloadingPdf ? 'Telechargement...' : 'Telecharger PDF'}
+              {isDownloadingPdf ? 'Téléchargement...' : 'Télécharger PDF'}
             </Button>
             {isDraft && canValidate && (
               <Button onClick={handleValidateList} disabled={validateMutation.isPending}>

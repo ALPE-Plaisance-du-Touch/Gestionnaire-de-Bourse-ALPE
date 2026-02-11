@@ -95,13 +95,13 @@ export function EditionDepositorsPage() {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Retour a l'edition
+          Retour à l'édition
         </Link>
         <h1 className="text-2xl font-bold text-gray-900">
-          Deposants - {edition.name}
+          Déposants - {edition.name}
         </h1>
         <p className="mt-1 text-gray-600">
-          {total} deposant{total !== 1 ? 's' : ''} inscrit{total !== 1 ? 's' : ''} a cette edition.
+          {total} déposant{total !== 1 ? 's' : ''} inscrit{total !== 1 ? 's' : ''} à cette édition.
         </p>
       </div>
 
@@ -137,19 +137,19 @@ export function EditionDepositorsPage() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Deposant
+                  Déposant
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Email
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Telephone
+                  Téléphone
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Type de liste
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Creneau de depot
+                  Créneau de dépôt
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ville
@@ -161,8 +161,8 @@ export function EditionDepositorsPage() {
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                     {listTypeFilter
-                      ? 'Aucun deposant trouve avec ce type de liste.'
-                      : 'Aucun deposant inscrit pour cette edition.'}
+                      ? 'Aucun déposant trouvé avec ce type de liste.'
+                      : 'Aucun déposant inscrit pour cette édition.'}
                   </td>
                 </tr>
               ) : (
@@ -216,7 +216,7 @@ export function EditionDepositorsPage() {
         {totalPages > 1 && (
           <div className="bg-gray-50 px-6 py-3 flex items-center justify-between border-t">
             <div className="text-sm text-gray-500">
-              Page {page} sur {totalPages} ({total} deposants)
+              Page {page} sur {totalPages} ({total} déposants)
             </div>
             <div className="flex gap-2">
               <Button
