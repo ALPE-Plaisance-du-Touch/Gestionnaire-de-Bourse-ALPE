@@ -114,6 +114,7 @@ export function EditionDetailPage() {
   const [showAttendeesSyncModal, setShowAttendeesSyncModal] = useState(false);
   const [showInvitationsConfirm, setShowInvitationsConfirm] = useState(false);
   const [showOpenRegistrationsConfirm, setShowOpenRegistrationsConfirm] = useState(false);
+  const [showRevertToConfiguredConfirm, setShowRevertToConfiguredConfirm] = useState(false);
 
   // Auto-dismiss success message after 5 seconds
   useEffect(() => {
@@ -278,6 +279,25 @@ export function EditionDetailPage() {
         }
       } else {
         setError("Une erreur est survenue lors de l'ouverture des inscriptions.");
+      }
+    },
+  });
+
+  const revertToConfiguredMutation = useMutation({
+    mutationFn: () => editionsApi.updateEditionStatus(id!, 'configured'),
+    onSuccess: () => {
+      setShowRevertToConfiguredConfirm(false);
+      setSuccess(true);
+      setError(null);
+      queryClient.invalidateQueries({ queryKey: ['editions'] });
+      queryClient.invalidateQueries({ queryKey: ['edition', id] });
+    },
+    onError: (err) => {
+      setShowRevertToConfiguredConfirm(false);
+      if (err instanceof ApiException) {
+        setError(err.message);
+      } else {
+        setError("Une erreur est survenue lors du retour en configuration.");
       }
     },
   });
@@ -793,6 +813,29 @@ export function EditionDetailPage() {
           </div>
         )}
 
+        {/* Revert to configured */}
+        {edition.status === 'registrations_open' && isAdmin && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-yellow-900">Revenir en configuration</h3>
+                <p className="text-sm text-yellow-700">
+                  Annuler l'ouverture des inscriptions et repasser l'édition en statut "Configurée".
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={revertToConfiguredMutation.isPending}
+                isLoading={revertToConfiguredMutation.isPending}
+                onClick={() => setShowRevertToConfiguredConfirm(true)}
+              >
+                Revenir en configuration
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Sales & Stats links */}
         {edition.status === 'in_progress' && (
           <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
@@ -1116,6 +1159,20 @@ export function EditionDetailPage() {
           </div>
         </div>
       </Modal>
+
+      {/* Revert to configured confirmation modal */}
+      <ConfirmModal
+        isOpen={showRevertToConfiguredConfirm}
+        onClose={() => setShowRevertToConfiguredConfirm(false)}
+        onConfirm={() => {
+          setShowRevertToConfiguredConfirm(false);
+          revertToConfiguredMutation.mutate();
+        }}
+        title="Revenir en configuration"
+        message="L'édition repassera en statut « Configurée ». Les déposants ne pourront plus déclarer leurs articles tant que les inscriptions ne seront pas ré-ouvertes."
+        variant="warning"
+        confirmLabel="Confirmer"
+      />
     </div>
   );
 }
