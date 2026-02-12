@@ -2646,7 +2646,7 @@ notes: |
   - La page d'accueil est le point d'entrée principal de l'application
   - Elle doit être accessible sans authentification (partie publique)
   - Elle présente l'association ALPE et le concept de la bourse aux vêtements
-  - Contrainte système : une seule édition peut être active à la fois (statut ≠ brouillon, ≠ clôturée, ≠ archivée)
+  - Contrainte système : une seule édition peut être active à la fois (statut inscriptions_ouvertes ou en_cours). Plusieurs éditions peuvent être en brouillon ou configurée simultanément.
   - Pour les visiteurs : présentation de l'association + informations sur la bourse active
   - Pour les utilisateurs connectés : la page d'accueil EST la bourse en cours (accès direct aux fonctionnalités)
   - S'il n'y a pas de bourse active, un message clair l'indique

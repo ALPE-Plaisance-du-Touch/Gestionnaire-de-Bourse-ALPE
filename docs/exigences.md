@@ -88,8 +88,9 @@ links:
       - Message « Aucune bourse n'est en cours actuellement. »
       - Si administrateur : lien « Créer une nouvelle édition »
     - **Contrainte d'unicité d'édition active :**
-      - Une seule édition peut avoir un statut actif (≠ brouillon, ≠ clôturée, ≠ archivée) à un instant donné
-      - Le système DOIT bloquer toute tentative d'activer une deuxième édition tant qu'une autre est active
+      - Une seule édition peut avoir un statut actif (inscriptions_ouvertes ou en_cours) à un instant donné
+      - Plusieurs éditions peuvent être en statut brouillon ou configurée simultanément (préparation en parallèle)
+      - Le système DOIT bloquer toute tentative d'ouvrir les inscriptions ou de démarrer une deuxième édition tant qu'une autre est active
       - Message d'erreur explicite en cas de violation : « Une bourse est déjà en cours ([nom de l'édition]). Clôturez-la avant d'en activer une autre. »
     - Page responsive et conforme WCAG 2.1 AA
   - **Priorité :** Should have (page d'accueil) / Must have (contrainte d'unicité)

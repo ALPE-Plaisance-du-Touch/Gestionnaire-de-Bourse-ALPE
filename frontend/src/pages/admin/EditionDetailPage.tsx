@@ -325,7 +325,15 @@ export function EditionDetailPage() {
       await updateMutation.mutateAsync(updateData);
 
       if (hasAllConfigDates && edition.status === 'draft') {
-        await statusMutation.mutateAsync('configured');
+        try {
+          await statusMutation.mutateAsync('configured');
+        } catch (err) {
+          if (err instanceof ApiException) {
+            setError(err.message);
+          } else {
+            setError('Les modifications ont été enregistrées, mais le passage en statut "Configurée" a échoué.');
+          }
+        }
       }
     } catch {
       // Error handled by mutation
