@@ -728,7 +728,7 @@ export function EditionDetailPage() {
               </p>
             )}
 
-            {importStats && importStats.totalImports > 0 && (
+            {importStats && importStats.totalDepositors > 0 && (
               <div className="mt-4 bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-medium text-gray-700">Historique des imports</h4>
