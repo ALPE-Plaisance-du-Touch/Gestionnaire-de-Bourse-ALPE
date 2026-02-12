@@ -139,6 +139,11 @@ class TestSyncSessionsImport:
         assert result["updated"] == 0
         assert result["total"] == 1
 
+        # Verify deposit period was updated from slot boundaries
+        await db_session.refresh(edition)
+        assert edition.deposit_start_datetime == datetime(2025, 11, 5, 9, 0)
+        assert edition.deposit_end_datetime == datetime(2025, 11, 5, 12, 0)
+
     @pytest.mark.asyncio
     async def test_import_updates_existing_slots(self, db_session, admin_user):
         edition = Edition(

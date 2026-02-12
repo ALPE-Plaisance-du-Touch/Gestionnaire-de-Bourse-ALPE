@@ -165,6 +165,18 @@ class BilletwebSyncService:
 
         await self.db.flush()
 
+        # Update edition deposit period from slot boundaries
+        all_slots_result = await self.db.execute(
+            select(DepositSlot)
+            .where(DepositSlot.edition_id == edition.id)
+            .order_by(DepositSlot.start_datetime)
+        )
+        all_slots = all_slots_result.scalars().all()
+        if all_slots:
+            edition.deposit_start_datetime = all_slots[0].start_datetime
+            edition.deposit_end_datetime = all_slots[-1].end_datetime
+            await self.db.flush()
+
         return {"created": created, "updated": updated, "total": created + updated}
 
     @staticmethod
