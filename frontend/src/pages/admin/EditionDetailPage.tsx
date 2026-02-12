@@ -30,9 +30,11 @@ function formatDatetimeLocal(datetimeString: string | null): string {
   return datetimeString.replace('Z', '').substring(0, 16);
 }
 
+type FieldError = { field: string; message: string };
+
 /**
  * Validate chronological order of dates.
- * Returns error message if invalid, null if valid.
+ * Returns {field, message} if invalid, null if valid.
  */
 function validateDateOrder(dates: {
   declarationDeadline: string;
@@ -41,7 +43,7 @@ function validateDateOrder(dates: {
   editionEnd: string;
   retrievalStart: string;
   retrievalEnd: string;
-}): string | null {
+}): FieldError | null {
   const {
     declarationDeadline,
     depositStart,
@@ -62,19 +64,19 @@ function validateDateOrder(dates: {
   const retEnd = new Date(retrievalEnd);
 
   if (declDate >= depStart) {
-    return 'La date limite de déclaration doit être avant le début du dépôt.';
+    return { field: 'declarationDeadline', message: 'La date limite de déclaration doit être avant le début du dépôt.' };
   }
   if (depEnd <= depStart) {
-    return 'La fin du dépôt doit être après le début du dépôt.';
+    return { field: 'depositEnd', message: 'La fin du dépôt doit être après le début du dépôt.' };
   }
   if (editionEnd) {
     const edEnd = new Date(editionEnd);
     if (retStart < edEnd) {
-      return 'Le début de la récupération doit être après la fin de la vente.';
+      return { field: 'retrievalStart', message: 'Le début de la récupération doit être après la fin de la vente.' };
     }
   }
   if (retEnd <= retStart) {
-    return 'La fin de la récupération doit être après le début de la récupération.';
+    return { field: 'retrievalEnd', message: 'La fin de la récupération doit être après le début de la récupération.' };
   }
 
   return null;
@@ -100,6 +102,7 @@ export function EditionDetailPage() {
 
   // UI state
   const errorRef = useRef<HTMLDivElement>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [closureModalOpen, setClosureModalOpen] = useState(false);
@@ -115,12 +118,16 @@ export function EditionDetailPage() {
     }
   }, [success]);
 
-  // Scroll to error message when validation fails
+  // Scroll to first field error or global error
   useEffect(() => {
-    if (error) {
+    const firstErrorField = Object.keys(fieldErrors)[0];
+    if (firstErrorField) {
+      const el = document.querySelector(`[data-field="${firstErrorField}"]`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (error) {
       errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-  }, [error]);
+  }, [fieldErrors, error]);
 
   // Fetch edition
   const { data: edition, isLoading, error: fetchError } = useQuery({
@@ -161,6 +168,7 @@ export function EditionDetailPage() {
       await queryClient.refetchQueries({ queryKey: ['edition', id] });
       setSuccess(true);
       setError(null);
+      setFieldErrors({});
     },
     onError: (err) => {
       if (err instanceof ApiException) {
@@ -230,33 +238,31 @@ export function EditionDetailPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setFieldErrors({});
     setError(null);
     setSuccess(false);
 
     if (!edition) return;
 
+    const errors: Record<string, string> = {};
+
     if (!name.trim()) {
-      setError("Le nom de l'édition est requis.");
-      return;
+      errors.name = "Le nom de l'édition est requis.";
     }
 
     if (!startDatetime || !endDatetime) {
-      setError('Les dates de début et de fin sont requises.');
-      return;
-    }
-
-    const start = new Date(startDatetime);
-    const end = new Date(endDatetime);
-
-    if (end <= start) {
-      setError('La date de fin doit être après la date de début.');
-      return;
+      errors.endDatetime = 'Les dates de début et de fin sont requises.';
+    } else {
+      const start = new Date(startDatetime);
+      const end = new Date(endDatetime);
+      if (end <= start) {
+        errors.endDatetime = 'La date de fin doit être après la date de début.';
+      }
     }
 
     const commissionNum = parseFloat(commissionRate);
     if (isNaN(commissionNum) || commissionNum < 0 || commissionNum > 100) {
-      setError('Le taux de commission doit être entre 0 et 100%.');
-      return;
+      errors.commissionRate = 'Le taux de commission doit être entre 0 et 100%.';
     }
 
     const hasAllConfigDates =
@@ -277,9 +283,13 @@ export function EditionDetailPage() {
       });
 
       if (dateError) {
-        setError(dateError);
-        return;
+        errors[dateError.field] = dateError.message;
       }
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
     }
 
     // Send dates as-is (local time) - backend stores without timezone
@@ -411,14 +421,17 @@ export function EditionDetailPage() {
           </h2>
 
           <fieldset disabled={!isEditable} className="space-y-4">
-            <Input
-              label="Nom de l'édition"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Bourse Printemps 2025"
-              required
-            />
+            <div data-field="name">
+              <Input
+                label="Nom de l'édition"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Bourse Printemps 2025"
+                required
+                error={fieldErrors.name}
+              />
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
@@ -428,13 +441,16 @@ export function EditionDetailPage() {
                 onChange={(e) => setStartDatetime(e.target.value)}
                 required
               />
-              <Input
-                label="Date et heure de fin"
-                type="datetime-local"
-                value={endDatetime}
-                onChange={(e) => setEndDatetime(e.target.value)}
-                required
-              />
+              <div data-field="endDatetime">
+                <Input
+                  label="Date et heure de fin"
+                  type="datetime-local"
+                  value={endDatetime}
+                  onChange={(e) => setEndDatetime(e.target.value)}
+                  required
+                  error={fieldErrors.endDatetime}
+                />
+              </div>
             </div>
 
             <Input
@@ -472,7 +488,7 @@ export function EditionDetailPage() {
 
           <fieldset disabled={!isEditable} className="space-y-6">
             {/* Commission Rate */}
-            <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="bg-gray-50 p-4 rounded-lg" data-field="commissionRate">
               <div className="max-w-xs">
                 <Input
                   label="Taux de commission ALPE (%)"
@@ -483,25 +499,31 @@ export function EditionDetailPage() {
                   min="0"
                   max="100"
                   step="0.1"
+                  error={fieldErrors.commissionRate}
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-2">
-                Commission prélevée sur les ventes (par défaut 20%).
-                Les frais d'inscription (5€ pour 2 listes) sont gérés via Billetweb.
-              </p>
+              {!fieldErrors.commissionRate && (
+                <p className="text-xs text-gray-500 mt-2">
+                  Commission prélevée sur les ventes (par défaut 20%).
+                  Les frais d'inscription (5€ pour 2 listes) sont gérés via Billetweb.
+                </p>
+              )}
             </div>
 
             {/* Declaration Deadline */}
-            <div>
+            <div data-field="declarationDeadline">
               <Input
                 label="Date limite de déclaration des articles"
                 type="datetime-local"
                 value={declarationDeadline}
                 onChange={(e) => setDeclarationDeadline(e.target.value)}
+                error={fieldErrors.declarationDeadline}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Après cette date, les déposants ne pourront plus modifier leurs listes.
-              </p>
+              {!fieldErrors.declarationDeadline && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Après cette date, les déposants ne pourront plus modifier leurs listes.
+                </p>
+              )}
             </div>
 
             {/* Deposit Dates */}
@@ -514,12 +536,15 @@ export function EditionDetailPage() {
                   value={depositStartDatetime}
                   onChange={(e) => setDepositStartDatetime(e.target.value)}
                 />
-                <Input
-                  label="Fin du dépôt"
-                  type="datetime-local"
-                  value={depositEndDatetime}
-                  onChange={(e) => setDepositEndDatetime(e.target.value)}
-                />
+                <div data-field="depositEnd">
+                  <Input
+                    label="Fin du dépôt"
+                    type="datetime-local"
+                    value={depositEndDatetime}
+                    onChange={(e) => setDepositEndDatetime(e.target.value)}
+                    error={fieldErrors.depositEnd}
+                  />
+                </div>
               </div>
             </div>
 
@@ -527,18 +552,24 @@ export function EditionDetailPage() {
             <div>
               <h3 className="text-sm font-medium text-gray-700 mb-2">Période de récupération</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Début de la récupération"
-                  type="datetime-local"
-                  value={retrievalStartDatetime}
-                  onChange={(e) => setRetrievalStartDatetime(e.target.value)}
-                />
-                <Input
-                  label="Fin de la récupération"
-                  type="datetime-local"
-                  value={retrievalEndDatetime}
-                  onChange={(e) => setRetrievalEndDatetime(e.target.value)}
-                />
+                <div data-field="retrievalStart">
+                  <Input
+                    label="Début de la récupération"
+                    type="datetime-local"
+                    value={retrievalStartDatetime}
+                    onChange={(e) => setRetrievalStartDatetime(e.target.value)}
+                    error={fieldErrors.retrievalStart}
+                  />
+                </div>
+                <div data-field="retrievalEnd">
+                  <Input
+                    label="Fin de la récupération"
+                    type="datetime-local"
+                    value={retrievalEndDatetime}
+                    onChange={(e) => setRetrievalEndDatetime(e.target.value)}
+                    error={fieldErrors.retrievalEnd}
+                  />
+                </div>
               </div>
             </div>
           </fieldset>
