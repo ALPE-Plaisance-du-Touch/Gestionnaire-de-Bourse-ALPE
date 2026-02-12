@@ -22,6 +22,8 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
   const overlayRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
   const titleId = useId();
 
   // Focus trap + Escape key
@@ -36,7 +38,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -75,7 +77,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
       document.removeEventListener('keydown', handleKeyDown);
       previousFocusRef.current?.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
