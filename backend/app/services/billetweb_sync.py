@@ -219,12 +219,13 @@ class BilletwebSyncService:
     ) -> ParsedRow | None:
         """Convert a Billetweb API attendee dict to a ParsedRow.
 
-        Returns None if the attendee should be skipped (unpaid/invalid).
+        Returns None if the attendee should be skipped (unpaid/disabled).
         """
-        # Filter: only paid and validated
-        paid = str(attendee.get("paid", "")).lower()
-        valid = str(attendee.get("valid", "")).lower()
-        if paid not in ("1", "true", "oui") or valid not in ("1", "true", "oui"):
+        # Filter: only paid and not disabled
+        # Billetweb API uses "order_paid" (not "paid") and "disabled" (not "valid")
+        order_paid = str(attendee.get("order_paid", "")).lower()
+        disabled = str(attendee.get("disabled", "0")).lower()
+        if order_paid not in ("1", "true", "oui") or disabled in ("1", "true", "oui"):
             return None
 
         email = str(attendee.get("order_email", attendee.get("email", ""))).strip()
@@ -235,21 +236,34 @@ class BilletwebSyncService:
         if not email or not nom:
             return None
 
-        # Map session: try by session_id first, then by session start datetime
-        session_id = str(attendee.get("session_id", ""))
+        # Map session: try by order_session (Billetweb session ID), then by session_start datetime
+        order_session = str(attendee.get("order_session", ""))
         session_start = str(attendee.get("session_start", "")).strip()
         seance = ""
 
-        if session_id and session_id in slot_mapping:
-            seance = session_id
+        if order_session and order_session in slot_mapping:
+            seance = order_session
         elif session_start:
             # Try matching datetime format
             seance = session_start
 
-        # Extract custom fields
-        telephone = attendee.get("phone", None) or attendee.get("telephone", None)
-        code_postal = attendee.get("zip", None) or attendee.get("code_postal", None)
-        ville = attendee.get("city", None) or attendee.get("ville", None)
+        # Extract custom fields from nested custom_order object
+        custom_order = attendee.get("custom_order", {}) or {}
+        telephone = (
+            custom_order.get("Téléphone")
+            or custom_order.get("telephone")
+            or attendee.get("phone")
+        )
+        code_postal = (
+            custom_order.get("Code postal")
+            or custom_order.get("code_postal")
+            or attendee.get("zip")
+        )
+        ville = (
+            custom_order.get("Ville")
+            or custom_order.get("ville")
+            or attendee.get("city")
+        )
         commande_ref = str(attendee.get("order_ext_id", attendee.get("barcode", "")))
 
         return ParsedRow(
