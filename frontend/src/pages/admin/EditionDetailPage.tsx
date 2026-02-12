@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { editionsApi, billetwebApi, payoutsApi, ApiException } from '@/api';
@@ -99,6 +99,7 @@ export function EditionDetailPage() {
   const [commissionRate, setCommissionRate] = useState('20');
 
   // UI state
+  const errorRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [closureModalOpen, setClosureModalOpen] = useState(false);
@@ -113,6 +114,13 @@ export function EditionDetailPage() {
       return () => clearTimeout(timer);
     }
   }, [success]);
+
+  // Scroll to error message when validation fails
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [error]);
 
   // Fetch edition
   const { data: edition, isLoading, error: fetchError } = useQuery({
@@ -383,7 +391,7 @@ export function EditionDetailPage() {
 
       {/* Error message */}
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+        <div ref={errorRef} className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
           {error}
         </div>
       )}
