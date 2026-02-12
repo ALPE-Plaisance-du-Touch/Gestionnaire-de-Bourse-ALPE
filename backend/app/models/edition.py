@@ -85,6 +85,10 @@ class Edition(Base, UUIDMixin, TimestampMixin):
         nullable=True,
     )
 
+    # Billetweb API integration
+    billetweb_event_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    last_billetweb_sync: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
     # Creator
     created_by_id: Mapped[str | None] = mapped_column(
         ForeignKey("users.id"),

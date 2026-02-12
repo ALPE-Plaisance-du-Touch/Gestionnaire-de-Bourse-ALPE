@@ -39,7 +39,7 @@ class EditionBase(BaseModel):
 class EditionCreate(EditionBase):
     """Schema for creating a new edition."""
 
-    pass
+    billetweb_event_id: str | None = None
 
 
 class EditionUpdate(BaseModel):
@@ -105,6 +105,10 @@ class EditionResponse(BaseModel):
     # Metadata
     created_at: datetime
     created_by: CreatorResponse | None = None
+
+    # Billetweb API integration
+    billetweb_event_id: str | None = None
+    last_billetweb_sync: datetime | None = None
 
     # Closure tracking
     closed_at: datetime | None = None

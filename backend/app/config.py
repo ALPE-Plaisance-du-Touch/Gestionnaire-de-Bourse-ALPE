@@ -61,6 +61,9 @@ class Settings(BaseSettings):
     rate_limit_requests: int = 100
     rate_limit_window_seconds: int = 60
 
+    # Encryption key for app settings (Fernet)
+    settings_encryption_key: str = ""
+
     # Invitation token
     invitation_token_expire_days: int = 7
 

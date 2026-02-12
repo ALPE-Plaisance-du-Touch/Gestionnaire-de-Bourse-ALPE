@@ -74,6 +74,7 @@ class EditionService:
             location=data.location,
             description=data.description,
             created_by=created_by,
+            billetweb_event_id=getattr(data, "billetweb_event_id", None),
         )
 
     async def get_edition(self, edition_id: str) -> Edition:

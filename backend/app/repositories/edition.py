@@ -48,6 +48,7 @@ class EditionRepository:
         *,
         location: str | None = None,
         description: str | None = None,
+        billetweb_event_id: str | None = None,
     ) -> Edition:
         """Create a new edition."""
         edition = Edition(
@@ -58,6 +59,7 @@ class EditionRepository:
             description=description,
             status=EditionStatus.DRAFT.value,
             created_by_id=created_by.id,
+            billetweb_event_id=billetweb_event_id,
         )
 
         self.db.add(edition)
