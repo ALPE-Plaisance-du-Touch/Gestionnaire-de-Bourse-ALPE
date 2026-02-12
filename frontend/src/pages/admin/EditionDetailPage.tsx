@@ -7,6 +7,7 @@ import { DepositSlotsEditor } from '@/components/editions';
 import { BilletwebImportButton } from '@/components/billetweb';
 import { BilletwebSessionsSyncModal } from '@/components/billetweb/BilletwebSessionsSyncModal';
 import { BilletwebAttendeesSyncModal } from '@/components/billetweb/BilletwebAttendeesSyncModal';
+import { useAuth } from '@/contexts/AuthContext';
 import type { EditionStatus } from '@/types';
 
 const STATUS_LABELS: Record<EditionStatus, { label: string; className: string }> = {
@@ -86,6 +87,8 @@ export function EditionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user: currentUser } = useAuth();
+  const isAdmin = currentUser?.role === 'administrator';
 
   // Form state
   const [name, setName] = useState('');
@@ -109,6 +112,8 @@ export function EditionDetailPage() {
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [showSessionsSyncModal, setShowSessionsSyncModal] = useState(false);
   const [showAttendeesSyncModal, setShowAttendeesSyncModal] = useState(false);
+  const [showInvitationsConfirm, setShowInvitationsConfirm] = useState(false);
+  const [showOpenRegistrationsConfirm, setShowOpenRegistrationsConfirm] = useState(false);
 
   // Auto-dismiss success message after 5 seconds
   useEffect(() => {
@@ -232,6 +237,47 @@ export function EditionDetailPage() {
         setError(err.message);
       } else {
         setError("Une erreur est survenue lors de l'archivage.");
+      }
+    },
+  });
+
+  const sendInvitationsMutation = useMutation({
+    mutationFn: () => editionsApi.sendInvitations(id!),
+    onSuccess: () => {
+      setShowInvitationsConfirm(false);
+      setSuccess(true);
+      setError(null);
+      queryClient.invalidateQueries({ queryKey: ['billetweb-stats', id] });
+    },
+    onError: (err) => {
+      setShowInvitationsConfirm(false);
+      if (err instanceof ApiException) {
+        setError(err.message);
+      } else {
+        setError("Une erreur est survenue lors de l'envoi des invitations.");
+      }
+    },
+  });
+
+  const openRegistrationsMutation = useMutation({
+    mutationFn: () => editionsApi.openRegistrations(id!),
+    onSuccess: () => {
+      setShowOpenRegistrationsConfirm(false);
+      setSuccess(true);
+      setError(null);
+      queryClient.invalidateQueries({ queryKey: ['editions'] });
+      queryClient.invalidateQueries({ queryKey: ['edition', id] });
+    },
+    onError: (err) => {
+      setShowOpenRegistrationsConfirm(false);
+      if (err instanceof ApiException) {
+        if (err.status === 409) {
+          setError(err.message);
+        } else {
+          setError(err.message);
+        }
+      } else {
+        setError("Une erreur est survenue lors de l'ouverture des inscriptions.");
       }
     },
   });
@@ -659,7 +705,7 @@ export function EditionDetailPage() {
                     Voir les déposants
                   </Link>
                 </div>
-                <div className="grid grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-4 gap-4 text-sm">
                   <div>
                     <p className="text-gray-500">Déposants inscrits</p>
                     <p className="text-xl font-semibold text-gray-900">{importStats.totalDepositors}</p>
@@ -672,7 +718,39 @@ export function EditionDetailPage() {
                     <p className="text-gray-500">Lignes importées</p>
                     <p className="text-xl font-semibold text-gray-900">{importStats.totalImported}</p>
                   </div>
+                  <div>
+                    <p className="text-gray-500">Invitations en attente</p>
+                    <p className="text-xl font-semibold text-gray-900">{importStats.pendingInvitations ?? 0}</p>
+                  </div>
                 </div>
+              </div>
+            )}
+
+            {/* Workflow actions: send invitations + open registrations */}
+            {importStats && importStats.totalDepositors > 0 && (
+              <div className="mt-4 flex items-center gap-3 flex-wrap">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="primary"
+                  onClick={() => setShowInvitationsConfirm(true)}
+                  disabled={sendInvitationsMutation.isPending || (importStats.pendingInvitations ?? 0) === 0}
+                  isLoading={sendInvitationsMutation.isPending}
+                >
+                  Envoyer les invitations ({importStats.pendingInvitations ?? 0})
+                </Button>
+                {isAdmin && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setShowOpenRegistrationsConfirm(true)}
+                    disabled={openRegistrationsMutation.isPending}
+                    isLoading={openRegistrationsMutation.isPending}
+                  >
+                    Ouvrir les inscriptions
+                  </Button>
+                )}
               </div>
             )}
           </section>
@@ -966,6 +1044,78 @@ export function EditionDetailPage() {
           lastSync={edition.lastBilletwebSync}
         />
       )}
+
+      {/* Send invitations confirmation modal */}
+      <Modal
+        isOpen={showInvitationsConfirm}
+        onClose={() => setShowInvitationsConfirm(false)}
+        title="Envoyer les invitations"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-700">
+            Vous allez envoyer les emails d'invitation/notification aux déposants qui ne les ont pas encore reçus.
+          </p>
+          {importStats && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+              <p><strong>{importStats.pendingInvitations ?? 0}</strong> invitation(s) en attente d'envoi</p>
+              <p className="text-xs text-blue-600 mt-1">
+                Les nouveaux utilisateurs recevront un lien d'activation. Les utilisateurs existants recevront une notification.
+              </p>
+            </div>
+          )}
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowInvitationsConfirm(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="button"
+              disabled={sendInvitationsMutation.isPending}
+              isLoading={sendInvitationsMutation.isPending}
+              onClick={() => sendInvitationsMutation.mutate()}
+            >
+              Envoyer les invitations
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Open registrations confirmation modal */}
+      <Modal
+        isOpen={showOpenRegistrationsConfirm}
+        onClose={() => setShowOpenRegistrationsConfirm(false)}
+        title="Ouvrir les inscriptions"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-700">
+            L'édition passera en statut <strong>Inscriptions ouvertes</strong>.
+            Un email sera envoyé à tous les déposants inscrits pour les informer qu'ils peuvent déclarer leurs articles.
+          </p>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
+            Cette action n'est possible que si aucune autre édition n'est déjà active.
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowOpenRegistrationsConfirm(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="button"
+              disabled={openRegistrationsMutation.isPending}
+              isLoading={openRegistrationsMutation.isPending}
+              onClick={() => openRegistrationsMutation.mutate()}
+            >
+              Confirmer l'ouverture
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

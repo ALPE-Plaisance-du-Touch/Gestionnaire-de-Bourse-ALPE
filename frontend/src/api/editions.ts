@@ -194,6 +194,20 @@ export const editionsApi = {
     return transformEdition(response.data);
   },
 
+  sendInvitations: async (editionId: string): Promise<{
+    invitationsSent: number;
+    notificationsSent: number;
+    alreadySent: number;
+  }> => {
+    const response = await apiClient.post(`/v1/editions/${editionId}/send-invitations`);
+    return response.data;
+  },
+
+  openRegistrations: async (editionId: string): Promise<Edition> => {
+    const response = await apiClient.post<EditionApiResponse>(`/v1/editions/${editionId}/open-registrations`);
+    return transformEdition(response.data);
+  },
+
   /**
    * Get the currently active edition (public, no auth required).
    */

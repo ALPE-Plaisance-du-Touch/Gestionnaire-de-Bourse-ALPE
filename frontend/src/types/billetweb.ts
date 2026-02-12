@@ -132,5 +132,6 @@ export interface BilletwebImportStats {
   totalDepositors: number;
   totalImports: number;
   totalImported: number;
+  pendingInvitations: number;
   latestImport: BilletwebImportLog | null;
 }

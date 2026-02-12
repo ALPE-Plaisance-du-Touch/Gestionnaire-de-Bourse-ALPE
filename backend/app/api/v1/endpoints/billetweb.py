@@ -302,9 +302,15 @@ async def get_import_stats(
     total_imported = await import_repo.get_total_imported_for_edition(edition_id)
     latest_import = await import_repo.get_latest_import(edition_id)
 
+    # Count depositors who haven't received their invitation email yet
+    from app.services import EditionService
+    edition_service = EditionService(db)
+    pending_invitations = await edition_service.get_pending_invitations_count(edition_id)
+
     return {
         "total_depositors": total_depositors,
         "total_imports": total_imports,
         "total_imported": total_imported,
+        "pending_invitations": pending_invitations,
         "latest_import": BilletwebImportLogResponse.model_validate(latest_import) if latest_import else None,
     }
