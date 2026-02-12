@@ -77,15 +77,8 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
     if (event.description) {
       setDescription(event.description.replace(/<[^>]*>/g, '').trim());
     }
-    // Parse Billetweb date strings into datetime-local format
-    if (event.start) {
-      const parsed = event.start.replace(' ', 'T').slice(0, 16);
-      setStartDatetime(parsed);
-    }
-    if (event.end) {
-      const parsed = event.end.replace(' ', 'T').slice(0, 16);
-      setEndDatetime(parsed);
-    }
+    // Billetweb start/end dates are deposit dates, not edition sale dates
+    // so we intentionally do NOT pre-fill startDatetime/endDatetime
     setBilletwebEventId(event.id);
     setShowEventSelect(false);
   };
