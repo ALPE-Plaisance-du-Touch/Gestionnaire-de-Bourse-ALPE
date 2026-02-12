@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { editionsApi, ApiException, billetwebApiSettings } from '@/api';
 import { Button, Input, Modal } from '@/components/ui';
@@ -12,6 +13,7 @@ interface EditionCreateModalProps {
 
 export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [name, setName] = useState('');
   const [startDatetime, setStartDatetime] = useState('');
@@ -20,7 +22,7 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
   const [description, setDescription] = useState('');
   const [billetwebEventId, setBilletwebEventId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [createdEditionId, setCreatedEditionId] = useState<string | null>(null);
   const [showEventSelect, setShowEventSelect] = useState(false);
 
   // Check if Billetweb API is configured (admin only, won't error for non-admins)
@@ -35,9 +37,9 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
 
   const createMutation = useMutation({
     mutationFn: editionsApi.createEdition,
-    onSuccess: () => {
+    onSuccess: (edition) => {
       queryClient.invalidateQueries({ queryKey: ['editions'] });
-      setSuccess(true);
+      setCreatedEditionId(edition.id);
       setError(null);
     },
     onError: (err) => {
@@ -63,7 +65,7 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
     setDescription('');
     setBilletwebEventId(null);
     setError(null);
-    setSuccess(false);
+    setCreatedEditionId(null);
   };
 
   const handleClose = () => {
@@ -117,14 +119,10 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
     });
   };
 
-  const handleCreateAnother = () => {
-    resetForm();
-  };
-
   return (
     <>
       <Modal isOpen={isOpen} onClose={handleClose} title="Nouvelle édition" size="lg">
-        {success ? (
+        {createdEditionId ? (
           <div className="space-y-4">
             <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
               <p className="font-medium">Édition créée avec succès !</p>
@@ -136,7 +134,14 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
               <Button variant="outline" onClick={handleClose}>
                 Fermer
               </Button>
-              <Button onClick={handleCreateAnother}>Créer une autre édition</Button>
+              <Button onClick={() => {
+                const editionId = createdEditionId;
+                resetForm();
+                onClose();
+                navigate(`/editions/${editionId}`);
+              }}>
+                Voir l'édition
+              </Button>
             </div>
           </div>
         ) : (
