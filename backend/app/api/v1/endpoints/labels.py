@@ -46,13 +46,13 @@ async def generate_labels(
     # Get edition
     edition = await edition_repo.get_by_id(edition_id)
     if not edition:
-        raise HTTPException(status_code=404, detail="Edition not found")
+        raise HTTPException(status_code=404, detail="Édition non trouvée")
 
     # Check edition status
     if edition.status not in ("registrations_open", "in_progress"):
         raise HTTPException(
             status_code=400,
-            detail="Labels can only be generated for editions with status 'registrations_open' or 'in_progress'",
+            detail="Les étiquettes ne peuvent être générées que pour les éditions au statut « Inscriptions ouvertes » ou « En cours ».",
         )
 
     # Get lists based on generation mode
@@ -84,7 +84,7 @@ async def generate_labels(
     if not lists:
         raise HTTPException(
             status_code=404,
-            detail="No validated lists found for the given criteria",
+            detail="Aucune liste validée trouvée pour les critères sélectionnés.",
         )
 
     # Generate PDF
@@ -118,7 +118,7 @@ async def get_label_stats(
     """Get label generation statistics for an edition."""
     edition = await edition_repo.get_by_id(edition_id)
     if not edition:
-        raise HTTPException(status_code=404, detail="Edition not found")
+        raise HTTPException(status_code=404, detail="Édition non trouvée")
 
     stats = await item_list_repo.get_label_stats(edition_id)
     return LabelStatsResponse(**stats)

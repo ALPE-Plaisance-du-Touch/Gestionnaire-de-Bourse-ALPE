@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useId, type ReactNode } from 'react';
 
 interface ModalProps {
   isOpen: boolean;
@@ -15,20 +15,66 @@ const sizeStyles = {
   xl: 'max-w-xl',
 };
 
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const titleId = useId();
 
-  // Close on Escape key
+  // Focus trap + Escape key
   useEffect(() => {
+    if (!isOpen) return;
+
+    previousFocusRef.current = document.activeElement as HTMLElement;
+
+    requestAnimationFrame(() => {
+      modalRef.current?.focus();
+    });
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape') {
         onClose();
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        const modal = modalRef.current;
+        if (!modal) return;
+
+        const focusableElements = Array.from(
+          modal.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+        );
+
+        if (focusableElements.length === 0) {
+          e.preventDefault();
+          return;
+        }
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement || document.activeElement === modal) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      previousFocusRef.current?.focus();
+    };
   }, [isOpen, onClose]);
 
   // Prevent body scroll when modal is open
@@ -59,15 +105,16 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
       onClick={handleOverlayClick}
       role="dialog"
       aria-modal="true"
-      aria-labelledby="modal-title"
+      aria-labelledby={titleId}
     >
       <div
         ref={modalRef}
-        className={`w-full ${sizeStyles[size]} bg-white rounded-lg shadow-xl`}
+        tabIndex={-1}
+        className={`w-full ${sizeStyles[size]} bg-white rounded-lg shadow-xl outline-none`}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h2 id="modal-title" className="text-lg font-semibold text-gray-900">
+          <h2 id={titleId} className="text-lg font-semibold text-gray-900">
             {title}
           </h2>
           <button

@@ -87,7 +87,7 @@ export function SalesManagementPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Gestion des ventes</h1>
         <p className="mt-1 text-gray-600">
-          Consultez et gerez les ventes de l'edition. Les managers peuvent annuler les ventes sans limite de temps.
+          Consultez et gérez les ventes de l'édition. Les managers peuvent annuler les ventes sans limite de temps.
         </p>
       </div>
 
@@ -127,7 +127,7 @@ export function SalesManagementPage() {
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Article</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deposant</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Déposant</th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Prix</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Paiement</th>
                   <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Caisse</th>
@@ -192,7 +192,7 @@ export function SalesManagementPage() {
               disabled={page <= 1}
               onClick={() => setPage(page - 1)}
             >
-              Precedent
+              Précédent
             </Button>
             <Button
               variant="outline"
@@ -216,11 +216,11 @@ export function SalesManagementPage() {
             <div className="mb-4 text-sm text-gray-600">
               <p><strong>Article :</strong> {saleToCancel.articleDescription}</p>
               <p><strong>Prix :</strong> {saleToCancel.price.toFixed(2)} EUR</p>
-              <p><strong>Deposant :</strong> {saleToCancel.depositorName}</p>
+              <p><strong>Déposant :</strong> {saleToCancel.depositorName}</p>
               <p><strong>Vendu le :</strong> {formatDateTime(saleToCancel.soldAt)}</p>
             </div>
             <p className="mb-4 text-sm text-amber-600">
-              L'article sera remis en vente apres annulation.
+              L'article sera remis en vente après annulation.
             </p>
             {cancelError && (
               <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">

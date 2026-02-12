@@ -150,29 +150,53 @@ class ArticleService:
         if not article or article.item_list_id != list_id:
             raise ArticleNotFoundError(article_id)
 
+        # Determine effective category/subcategory after update
+        new_category = data.category.value if data.category else article.category
+        new_subcategory = data.subcategory if "subcategory" in data.model_fields_set else article.subcategory
+        category_changed = new_category != article.category
+
+        # Validate clothing limit if switching to clothing
+        if category_changed and new_category in CLOTHING_CATEGORIES:
+            clothing_count = await self.repository.count_clothing(list_id)
+            # Current article is not clothing (otherwise no change), so no need to subtract
+            if clothing_count >= MAX_CLOTHING_PER_LIST:
+                raise MaxClothingExceededError(MAX_CLOTHING_PER_LIST)
+
+        # Validate category-specific limits for new subcategory
+        if new_subcategory and new_subcategory != article.subcategory and new_subcategory in CATEGORY_LIMITS:
+            max_allowed = CATEGORY_LIMITS[new_subcategory]
+            current = await self.repository.count_by_subcategory(list_id, new_subcategory)
+            if current >= max_allowed:
+                raise CategoryLimitExceededError(new_subcategory, max_allowed)
+
         # Validate price if provided
         if data.price is not None:
-            self._validate_price(data.price, article.category)
+            self._validate_price(data.price, new_category, new_subcategory)
 
-        # Validate lot fields if changing
-        if data.is_lot is not None or data.lot_quantity is not None:
-            is_lot = data.is_lot if data.is_lot is not None else article.is_lot
-            lot_qty = (
-                data.lot_quantity
-                if data.lot_quantity is not None
-                else article.lot_quantity
-            )
-            if is_lot and lot_qty:
-                self._validate_lot(lot_qty, article.size, article.subcategory)
+        # Validate lot fields
+        is_lot = data.is_lot if data.is_lot is not None else article.is_lot
+        lot_qty = data.lot_quantity if data.lot_quantity is not None else article.lot_quantity
+        size = data.size if data.size is not None else article.size
+        if is_lot and lot_qty:
+            self._validate_lot(lot_qty, size, new_subcategory)
 
         # Update
         update_data = data.model_dump(exclude_unset=True)
 
-        # Handle gender enum
+        # Handle enums
         if "gender" in update_data and update_data["gender"] is not None:
             update_data["gender"] = update_data["gender"].value
+        if "category" in update_data and update_data["category"] is not None:
+            update_data["category"] = update_data["category"].value
 
-        return await self.repository.update(article, **update_data)
+        article = await self.repository.update(article, **update_data)
+
+        # Reorder if category changed (line numbers depend on clothing vs non-clothing)
+        if category_changed:
+            await self.repository.reorder_articles(list_id)
+            article = await self.repository.get_by_id(article.id)
+
+        return article
 
     async def delete_article(
         self,

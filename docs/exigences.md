@@ -51,7 +51,7 @@ links:
     - Page accessible sans authentification (route `/`)
     - **Visiteur non authentifié :**
       - Présentation de l'association ALPE et du fonctionnement de la bourse (dépôt, vente, reversement, commission 20%)
-      - Si une édition est active : affichage de ses informations (nom, dates de vente, lieu, date limite de déclaration)
+      - Si une édition est active : affichage de ses informations (nom, dates de vente, lieu, date limite de déclaration). Le statut technique de l'édition (configurée, inscriptions ouvertes, etc.) ne DOIT PAS être affiché aux visiteurs.
       - Si aucune édition n'est active : message « Aucune bourse n'est programmée pour le moment. »
       - Bouton « Se connecter » visible
       - Lien vers la politique de confidentialité

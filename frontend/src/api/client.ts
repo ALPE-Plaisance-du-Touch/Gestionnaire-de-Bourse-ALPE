@@ -166,7 +166,20 @@ function createApiClient(): AxiosInstance {
       const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
       if (error.response) {
-        const { data, status } = error.response;
+        let { data } = error.response;
+        const { status } = error.response;
+
+        // When responseType is 'blob', error responses are received as Blob
+        // Parse the Blob to extract the JSON error message
+        if (data instanceof Blob) {
+          try {
+            const text = await data.text();
+            data = JSON.parse(text) as ApiError;
+            error.response.data = data;
+          } catch {
+            // If parsing fails, use a generic error
+          }
+        }
 
         // Handle 401 - try to refresh token
         if (status === 401 && !originalRequest._retry) {

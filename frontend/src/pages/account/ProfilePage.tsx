@@ -3,9 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { usersApi } from '@/api/users';
 import { useAuth } from '@/contexts';
-import { Button } from '@/components/ui/Button';
+import { Button, Input } from '@/components/ui';
 import { Modal } from '@/components/ui/Modal';
 import type { UserProfileUpdate } from '@/types';
+
+const ROLE_LABELS: Record<string, string> = {
+  depositor: 'Déposant',
+  volunteer: 'Bénévole',
+  manager: 'Gestionnaire',
+  administrator: 'Administrateur',
+};
 
 export function ProfilePage() {
   const navigate = useNavigate();
@@ -106,41 +113,33 @@ export function ProfilePage() {
         {isEditing ? (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
-                <input
-                  type="text"
-                  value={formData.firstName || ''}
-                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
-                <input
-                  type="text"
-                  value={formData.lastName || ''}
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
-              <input
-                type="tel"
-                value={formData.phone || ''}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              <Input
+                label="Prénom"
+                type="text"
+                value={formData.firstName || ''}
+                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              />
+              <Input
+                label="Nom"
+                type="text"
+                value={formData.lastName || ''}
+                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
               />
             </div>
+            <Input
+              label="Téléphone"
+              type="tel"
+              value={formData.phone || ''}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            />
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
+              <label htmlFor="profile-address" className="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
               <textarea
+                id="profile-address"
                 value={formData.address || ''}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
             <div className="flex gap-2">
@@ -179,7 +178,7 @@ export function ProfilePage() {
             </div>
             <div className="flex justify-between">
               <dt className="text-sm text-gray-500">Rôle</dt>
-              <dd className="text-sm text-gray-900 capitalize">{user.role}</dd>
+              <dd className="text-sm text-gray-900">{ROLE_LABELS[user.role] || user.role}</dd>
             </div>
           </dl>
         )}

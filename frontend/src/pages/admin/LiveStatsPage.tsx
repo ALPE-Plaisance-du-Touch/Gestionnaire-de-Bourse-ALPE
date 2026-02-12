@@ -20,7 +20,7 @@ export function LiveStatsPage() {
           to={`/editions/${editionId}`}
           className="text-sm text-blue-600 hover:text-blue-700 mb-1 inline-block"
         >
-          &larr; Retour a l'edition
+          &larr; Retour à l'édition
         </Link>
         <h1 className="text-2xl font-bold text-gray-900">Stats en direct</h1>
         <p className="text-sm text-gray-500 mt-1">
@@ -86,16 +86,16 @@ export function LiveStatsPage() {
           {/* Top depositors */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Top 5 deposants
+              Top 5 déposants
             </h2>
             {stats.topDepositors.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">Aucune vente enregistree</p>
+              <p className="text-gray-500 text-center py-4">Aucune vente enregistrée</p>
             ) : (
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-2 font-medium text-gray-600">#</th>
-                    <th className="text-left py-2 font-medium text-gray-600">Deposant</th>
+                    <th className="text-left py-2 font-medium text-gray-600">Déposant</th>
                     <th className="text-right py-2 font-medium text-gray-600">Articles</th>
                     <th className="text-right py-2 font-medium text-gray-600">Total</th>
                   </tr>

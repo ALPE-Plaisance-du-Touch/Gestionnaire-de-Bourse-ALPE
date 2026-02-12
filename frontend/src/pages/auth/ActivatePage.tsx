@@ -167,7 +167,7 @@ export function ActivatePage() {
   if (tokenStatus === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
+        <div className="text-center" role="status" aria-label="Vérification du lien d'activation">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Vérification du lien d'activation...</p>
         </div>
@@ -380,14 +380,10 @@ export function ActivatePage() {
               />
               <label htmlFor="accept-terms" className="ml-2 text-sm text-gray-700">
                 J'accepte le{' '}
-                <a
-                  href="/reglement-deposant"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-500"
-                >
+                <span className="text-gray-500 underline cursor-default" title="Bientôt disponible">
                   règlement des déposants
-                </a>{' '}
+                </span>{' '}
+                <span className="text-xs text-gray-400">(bientôt disponible)</span>{' '}
                 et les conditions générales d'utilisation
               </label>
             </div>

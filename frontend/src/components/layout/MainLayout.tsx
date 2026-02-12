@@ -28,6 +28,9 @@ export function MainLayout({ children }: MainLayoutProps) {
               &copy; {new Date().getFullYear()} ALPE Plaisance du Touch.
               Tous droits réservés.
             </span>
+            <Link to="/aide" className="hover:text-gray-700 underline">
+              Aide
+            </Link>
             <Link to="/privacy" className="hover:text-gray-700 underline">
               Politique de confidentialité
             </Link>

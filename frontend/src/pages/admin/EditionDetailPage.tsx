@@ -2,7 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { editionsApi, billetwebApi, payoutsApi, ApiException } from '@/api';
-import { Button, Input, Modal } from '@/components/ui';
+import { Button, ConfirmModal, Input, Modal } from '@/components/ui';
 import { DepositSlotsEditor } from '@/components/editions';
 import { BilletwebImportButton } from '@/components/billetweb';
 import type { EditionStatus } from '@/types';
@@ -109,6 +109,15 @@ export function EditionDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [closureModalOpen, setClosureModalOpen] = useState(false);
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
+
+  // Auto-dismiss success message after 5 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => setSuccess(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
 
   // Fetch edition
   const { data: edition, isLoading, error: fetchError } = useQuery({
@@ -196,7 +205,7 @@ export function EditionDetailPage() {
       if (err instanceof ApiException) {
         setError(err.message);
       } else {
-        setError('Une erreur est survenue lors de la cloture.');
+        setError('Une erreur est survenue lors de la clôture.');
       }
     },
   });
@@ -378,7 +387,7 @@ export function EditionDetailPage() {
 
       {/* Success message */}
       {success && (
-        <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+        <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
           <p className="font-medium">Modifications enregistrées !</p>
           <p className="text-sm mt-1">
             {statusMutation.isSuccess
@@ -390,7 +399,7 @@ export function EditionDetailPage() {
 
       {/* Error message */}
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
           {error}
         </div>
       )}
@@ -574,7 +583,7 @@ export function EditionDetailPage() {
               Inscriptions Billetweb
             </h2>
             <p className="text-sm text-gray-500 mb-4">
-              Importez les inscriptions depuis Billetweb pour associer les deposants a cette edition.
+              Importez les inscriptions depuis Billetweb pour associer les déposants à cette édition.
             </p>
 
             <BilletwebImportButton
@@ -594,20 +603,20 @@ export function EditionDetailPage() {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    Voir les deposants
+                    Voir les déposants
                   </Link>
                 </div>
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-500">Deposants inscrits</p>
+                    <p className="text-gray-500">Déposants inscrits</p>
                     <p className="text-xl font-semibold text-gray-900">{importStats.totalDepositors}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Imports effectues</p>
+                    <p className="text-gray-500">Imports effectués</p>
                     <p className="text-xl font-semibold text-gray-900">{importStats.totalImports}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Lignes importees</p>
+                    <p className="text-gray-500">Lignes importées</p>
                     <p className="text-xl font-semibold text-gray-900">{importStats.totalImported}</p>
                   </div>
                 </div>
@@ -637,8 +646,8 @@ export function EditionDetailPage() {
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-gray-900">Etiquettes</h3>
-                <p className="text-sm text-gray-500">Generez les etiquettes PDF pour les listes validees.</p>
+                <h3 className="text-sm font-semibold text-gray-900">Étiquettes</h3>
+                <p className="text-sm text-gray-500">Générez les étiquettes PDF pour les listes validées.</p>
               </div>
               <Link
                 to={`/editions/${edition.id}/labels`}
@@ -647,7 +656,7 @@ export function EditionDetailPage() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                 </svg>
-                Gestion des etiquettes
+                Gestion des étiquettes
               </Link>
             </div>
           </div>
@@ -659,7 +668,7 @@ export function EditionDetailPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">Ventes</h3>
-                <p className="text-sm text-gray-500">Accedez a la caisse et aux statistiques en direct.</p>
+                <p className="text-sm text-gray-500">Accédez à la caisse et aux statistiques en direct.</p>
               </div>
               <div className="flex gap-2">
                 <Link
@@ -691,7 +700,7 @@ export function EditionDetailPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">Reversements</h3>
-                <p className="text-sm text-gray-500">Calculez et gerez les reversements aux deposants.</p>
+                <p className="text-sm text-gray-500">Calculez et gérez les reversements aux déposants.</p>
               </div>
               <Link
                 to={`/editions/${edition.id}/payouts`}
@@ -711,9 +720,9 @@ export function EditionDetailPage() {
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-red-900">Cloture de l'edition</h3>
+                <h3 className="text-sm font-semibold text-red-900">Clôture de l'édition</h3>
                 <p className="text-sm text-red-700">
-                  La cloture est definitive et irreversible. Verifiez les prerequis avant de confirmer.
+                  La clôture est définitive et irréversible. Vérifiez les prérequis avant de confirmer.
                 </p>
               </div>
               <Button
@@ -721,7 +730,7 @@ export function EditionDetailPage() {
                 variant="danger"
                 onClick={() => setClosureModalOpen(true)}
               >
-                Cloturer l'edition
+                Clôturer l'édition
               </Button>
             </div>
           </div>
@@ -731,15 +740,15 @@ export function EditionDetailPage() {
         <Modal
           isOpen={closureModalOpen}
           onClose={() => setClosureModalOpen(false)}
-          title="Cloture de l'edition"
+          title="Clôture de l'édition"
           size="lg"
         >
           <div className="space-y-4">
             <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
-              La cloture est definitive et irreversible. L'edition passera en lecture seule.
+              La clôture est définitive et irréversible. L'édition passera en lecture seule.
             </div>
 
-            <h3 className="text-sm font-semibold text-gray-900">Prerequis</h3>
+            <h3 className="text-sm font-semibold text-gray-900">Prérequis</h3>
 
             {isClosureCheckLoading ? (
               <div className="animate-pulse space-y-2">
@@ -788,7 +797,7 @@ export function EditionDetailPage() {
                 isLoading={closureMutation.isPending}
                 onClick={() => closureMutation.mutate()}
               >
-                Confirmer la cloture
+                Confirmer la clôture
               </Button>
             </div>
           </div>
@@ -799,8 +808,8 @@ export function EditionDetailPage() {
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-gray-900">Rapport de cloture</h3>
-                <p className="text-sm text-gray-500">Telecharger le rapport PDF recapitulatif de l'edition.</p>
+                <h3 className="text-sm font-semibold text-gray-900">Rapport de clôture</h3>
+                <p className="text-sm text-gray-500">Télécharger le rapport PDF récapitulatif de l'édition.</p>
               </div>
               <button
                 type="button"
@@ -816,7 +825,7 @@ export function EditionDetailPage() {
                     document.body.removeChild(a);
                     window.URL.revokeObjectURL(url);
                   } catch {
-                    setError('Erreur lors du telechargement du rapport de cloture.');
+                    setError('Erreur lors du téléchargement du rapport de clôture.');
                   }
                 }}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
@@ -824,7 +833,7 @@ export function EditionDetailPage() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                Rapport de cloture (PDF)
+                Rapport de clôture (PDF)
               </button>
             </div>
           </div>
@@ -837,7 +846,7 @@ export function EditionDetailPage() {
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">Archivage</h3>
                 <p className="text-sm text-gray-500">
-                  Archiver cette edition pour la retirer de la liste active.
+                  Archiver cette édition pour la retirer de la liste active.
                 </p>
               </div>
               <Button
@@ -845,13 +854,9 @@ export function EditionDetailPage() {
                 variant="secondary"
                 disabled={archiveMutation.isPending}
                 isLoading={archiveMutation.isPending}
-                onClick={() => {
-                  if (window.confirm("Etes-vous sur de vouloir archiver cette edition ? Cette action est irreversible.")) {
-                    archiveMutation.mutate();
-                  }
-                }}
+                onClick={() => setShowArchiveConfirm(true)}
               >
-                Archiver l'edition
+                Archiver l'édition
               </Button>
             </div>
           </div>
@@ -875,6 +880,20 @@ export function EditionDetailPage() {
           </Button>
         </div>
       </form>
+
+      {/* Archive confirmation modal */}
+      <ConfirmModal
+        isOpen={showArchiveConfirm}
+        onClose={() => setShowArchiveConfirm(false)}
+        onConfirm={() => {
+          setShowArchiveConfirm(false);
+          archiveMutation.mutate();
+        }}
+        title="Archiver l'édition"
+        message="Êtes-vous sûr de vouloir archiver cette édition ? Cette action est irréversible."
+        variant="warning"
+        confirmLabel="Archiver"
+      />
     </div>
   );
 }

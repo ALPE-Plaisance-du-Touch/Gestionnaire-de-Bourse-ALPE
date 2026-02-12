@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { depositorListsApi, articlesApi } from '@/api';
-import { Button } from '@/components/ui';
+import { Button, ConfirmModal } from '@/components/ui';
 import { ArticleForm } from '@/components/articles/ArticleForm';
 import { ArticleList } from '@/components/articles/ArticleList';
 import type { Article, CreateArticleRequest, UpdateArticleRequest } from '@/types';
@@ -32,6 +32,8 @@ export function ListDetailPage() {
   const [showValidateModal, setShowValidateModal] = useState(false);
   const [confirmationAccepted, setConfirmationAccepted] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState(false);
+  const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
 
   // Fetch list details
   const {
@@ -93,6 +95,7 @@ export function ListDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['list-articles', listId] });
       queryClient.invalidateQueries({ queryKey: ['depositor-list', listId] });
       setEditingArticle(null);
+      setShowArticleForm(false);
     },
   });
 
@@ -133,8 +136,13 @@ export function ListDetailPage() {
   };
 
   const handleDeleteArticle = (article: Article) => {
-    if (confirm(`Supprimer l'article "${article.description}" ?`)) {
-      deleteMutation.mutate(article.id);
+    setArticleToDelete(article);
+  };
+
+  const handleDeleteArticleConfirm = () => {
+    if (articleToDelete) {
+      deleteMutation.mutate(articleToDelete.id);
+      setArticleToDelete(null);
     }
   };
 
@@ -158,6 +166,7 @@ export function ListDetailPage() {
   const handleDownloadPdf = async () => {
     if (!listId) return;
     setIsDownloadingPdf(true);
+    setPdfError(false);
     try {
       const blob = await depositorListsApi.downloadListPdf(listId);
       const url = URL.createObjectURL(blob);
@@ -169,7 +178,7 @@ export function ListDetailPage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch {
-      // Error handled silently - user sees nothing downloaded
+      setPdfError(true);
     } finally {
       setIsDownloadingPdf(false);
     }
@@ -259,7 +268,7 @@ export function ListDetailPage() {
               onClick={handleDownloadPdf}
               disabled={isDownloadingPdf || articles.length === 0}
             >
-              {isDownloadingPdf ? 'Telechargement...' : 'Telecharger PDF'}
+              {isDownloadingPdf ? 'Téléchargement...' : 'Télécharger PDF'}
             </Button>
             {isDraft && canValidate && (
               <Button onClick={handleValidateList} disabled={validateMutation.isPending}>
@@ -269,6 +278,13 @@ export function ListDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* PDF error */}
+      {pdfError && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+          Erreur lors du téléchargement du PDF. Veuillez réessayer.
+        </div>
+      )}
 
       {/* Deadline banner */}
       {edition?.declarationDeadline && isDraft && (
@@ -310,7 +326,11 @@ export function ListDetailPage() {
 
       {!canValidate && isDraft && articles.length > 0 && (
         <div className="mb-4 bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg">
-          Tous les articles doivent être certifiés conformes avant de pouvoir valider la liste.
+          Tous les articles doivent être{' '}
+          <Link to="/aide#certification" className="underline font-medium hover:text-yellow-900">
+            certifiés conformes
+          </Link>{' '}
+          avant de pouvoir valider la liste.
         </div>
       )}
 
@@ -384,61 +404,60 @@ export function ListDetailPage() {
         </div>
       )}
 
+      {/* Delete article confirmation modal */}
+      <ConfirmModal
+        isOpen={!!articleToDelete}
+        onClose={() => setArticleToDelete(null)}
+        onConfirm={handleDeleteArticleConfirm}
+        title="Supprimer l'article"
+        message={`Supprimer l'article « ${articleToDelete?.description} » ?`}
+        variant="danger"
+        confirmLabel="Supprimer"
+        isLoading={deleteMutation.isPending}
+      />
+
       {/* Validate modal */}
-      {showValidateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Valider la liste
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Vous êtes sur le point de valider votre liste de {articles.length} article
-              {articles.length > 1 ? 's' : ''} pour un total de {formatPrice(totalValue)}.
-            </p>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-              <p className="text-sm text-yellow-800">
-                <strong>Attention :</strong> Une fois validée, vous ne pourrez plus modifier
-                votre liste. Assurez-vous que tous les articles sont correctement saisis.
-              </p>
-            </div>
-            <label className="flex items-start gap-3 mb-6">
-              <input
-                type="checkbox"
-                checked={confirmationAccepted}
-                onChange={(e) => setConfirmationAccepted(e.target.checked)}
-                className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm text-gray-700">
-                Je certifie que tous mes articles sont propres, en bon état, et conformes aux
-                conditions de vente de la bourse aux vêtements.
-              </span>
-            </label>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowValidateModal(false);
-                  setConfirmationAccepted(false);
-                }}
-                disabled={validateMutation.isPending}
-              >
-                Annuler
-              </Button>
-              <Button
-                onClick={handleConfirmValidation}
-                disabled={!confirmationAccepted || validateMutation.isPending}
-              >
-                {validateMutation.isPending ? 'Validation...' : 'Valider ma liste'}
-              </Button>
-            </div>
-            {validateMutation.isError && (
-              <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                Erreur lors de la validation. Veuillez réessayer.
-              </div>
-            )}
-          </div>
+      <ConfirmModal
+        isOpen={showValidateModal}
+        onClose={() => {
+          setShowValidateModal(false);
+          setConfirmationAccepted(false);
+        }}
+        onConfirm={handleConfirmValidation}
+        title="Valider la liste"
+        variant="warning"
+        confirmLabel="Valider ma liste"
+        isLoading={validateMutation.isPending}
+        confirmDisabled={!confirmationAccepted}
+      >
+        <p className="text-gray-600">
+          Vous êtes sur le point de valider votre liste de {articles.length} article
+          {articles.length > 1 ? 's' : ''} pour un total de {formatPrice(totalValue)}.
+        </p>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-sm text-yellow-800">
+            <strong>Attention :</strong> Une fois validée, vous ne pourrez plus modifier
+            votre liste. Assurez-vous que tous les articles sont correctement saisis.
+          </p>
         </div>
-      )}
+        <label className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            checked={confirmationAccepted}
+            onChange={(e) => setConfirmationAccepted(e.target.checked)}
+            className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <span className="text-sm text-gray-700">
+            Je certifie que tous mes articles sont propres, en bon état, et conformes aux
+            conditions de vente de la bourse aux vêtements.
+          </span>
+        </label>
+        {validateMutation.isError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm" role="alert">
+            Erreur lors de la validation. Veuillez réessayer.
+          </div>
+        )}
+      </ConfirmModal>
     </div>
   );
 }

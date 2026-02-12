@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { editionsApi } from '@/api';
-import { Button, Select } from '@/components/ui';
+import { Button, ConfirmModal, Select } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Edition, EditionStatus } from '@/types';
 
@@ -120,6 +120,21 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
     }
   };
 
+  // Auto-dismiss success messages after 5 seconds
+  useEffect(() => {
+    if (deleteMutation.isSuccess) {
+      const timer = setTimeout(() => deleteMutation.reset(), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [deleteMutation.isSuccess]);
+
+  useEffect(() => {
+    if (archiveMutation.isSuccess) {
+      const timer = setTimeout(() => archiveMutation.reset(), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [archiveMutation.isSuccess]);
+
   const isStaleForArchiving = (edition: Edition): boolean => {
     if (edition.status !== 'closed' || !edition.closedAt) return false;
     const closedDate = new Date(edition.closedAt);
@@ -191,23 +206,23 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
 
       {/* Success/Error messages */}
       {deleteMutation.isSuccess && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
           Édition supprimée avec succès !
         </div>
       )}
       {deleteMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
           Erreur lors de la suppression de l'édition. Veuillez réessayer.
         </div>
       )}
       {archiveMutation.isSuccess && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-          Edition archivee avec succes !
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
+          Édition archivée avec succès !
         </div>
       )}
       {archiveMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          Erreur lors de l'archivage. Verifiez que l'edition est bien cloturee.
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+          Erreur lors de l'archivage. Vérifiez que l'édition est bien clôturée.
         </div>
       )}
 
@@ -351,72 +366,42 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
       )}
 
       {/* Delete confirmation modal */}
-      {editionToDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Confirmer la suppression
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Êtes-vous sûr de vouloir supprimer l'édition{' '}
-              <span className="font-medium">{editionToDelete.name}</span> ?
-            </p>
-            <p className="text-sm text-red-600 bg-red-50 p-3 rounded mb-4">
-              Cette action est irréversible. L'édition sera définitivement supprimée.
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={handleDeleteCancel}
-                disabled={deleteMutation.isPending}
-              >
-                Annuler
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleDeleteConfirm}
-                disabled={deleteMutation.isPending}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={!!editionToDelete}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmer la suppression"
+        variant="danger"
+        confirmLabel="Supprimer"
+        isLoading={deleteMutation.isPending}
+      >
+        <p className="text-gray-600">
+          Êtes-vous sûr de vouloir supprimer l'édition{' '}
+          <span className="font-medium">{editionToDelete?.name}</span> ?
+        </p>
+        <p className="text-sm text-red-600 bg-red-50 p-3 rounded">
+          Cette action est irréversible. L'édition sera définitivement supprimée.
+        </p>
+      </ConfirmModal>
+
       {/* Archive confirmation modal */}
-      {editionToArchive && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Archiver l'edition
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Archiver l'edition{' '}
-              <span className="font-medium">{editionToArchive.name}</span> ?
-            </p>
-            <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded mb-4">
-              Une edition archivee n'apparait plus dans la liste par defaut. Elle reste consultable via le filtre "Archive".
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setEditionToArchive(null)}
-                disabled={archiveMutation.isPending}
-              >
-                Annuler
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleArchiveConfirm}
-                disabled={archiveMutation.isPending}
-              >
-                {archiveMutation.isPending ? 'Archivage...' : 'Archiver'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={!!editionToArchive}
+        onClose={() => setEditionToArchive(null)}
+        onConfirm={handleArchiveConfirm}
+        title="Archiver l'édition"
+        variant="warning"
+        confirmLabel="Archiver"
+        isLoading={archiveMutation.isPending}
+      >
+        <p className="text-gray-600">
+          Archiver l'édition{' '}
+          <span className="font-medium">{editionToArchive?.name}</span> ?
+        </p>
+        <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded">
+          Une édition archivée n'apparaît plus dans la liste par défaut. Elle reste consultable via le filtre « Archivé ».
+        </p>
+      </ConfirmModal>
     </div>
   );
 }

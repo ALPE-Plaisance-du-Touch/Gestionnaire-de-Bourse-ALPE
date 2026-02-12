@@ -79,13 +79,13 @@ export function LabelsManagementPage() {
     onSuccess: (blob) => {
       const date = new Date().toISOString().split('T')[0];
       const editionName = edition?.name?.replace(/\s+/g, '_') || 'edition';
-      downloadBlob(blob, `Etiquettes_${editionName}_${date}.pdf`);
-      setSuccessMessage('PDF genere avec succes ! Le telechargement a demarre.');
+      downloadBlob(blob, `Étiquettes_${editionName}_${date}.pdf`);
+      setSuccessMessage('PDF généré avec succès ! Le téléchargement a démarré.');
       setErrorMessage('');
       queryClient.invalidateQueries({ queryKey: ['label-stats', editionId] });
     },
     onError: (error: Error) => {
-      setErrorMessage(error.message || 'Erreur lors de la generation du PDF');
+      setErrorMessage(error.message || 'Erreur lors de la génération du PDF');
       setSuccessMessage('');
     },
   });
@@ -132,27 +132,27 @@ export function LabelsManagementPage() {
       {/* Breadcrumb */}
       <nav className="mb-6">
         <ol className="flex items-center space-x-2 text-sm text-gray-500">
-          <li><Link to="/editions" className="hover:text-gray-700">Editions</Link></li>
+          <li><Link to="/editions" className="hover:text-gray-700">Éditions</Link></li>
           <li>/</li>
           <li><Link to={`/editions/${editionId}`} className="hover:text-gray-700">{edition?.name || '...'}</Link></li>
           <li>/</li>
-          <li className="text-gray-900 font-medium">Etiquettes</li>
+          <li className="text-gray-900 font-medium">Étiquettes</li>
         </ol>
       </nav>
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Gestion des etiquettes</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Gestion des étiquettes</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Generez les etiquettes PDF pour les listes validees de cette edition.
+          Générez les étiquettes PDF pour les listes validées de cette édition.
         </p>
       </div>
 
       {/* Stats cards */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <StatCard label="Deposants" value={stats.totalDepositors} sublabel="avec listes validees" />
-          <StatCard label="Listes validees" value={stats.totalLists} sublabel={`${stats.labelsGenerated} deja generees`} />
+          <StatCard label="Déposants" value={stats.totalDepositors} sublabel="avec listes validées" />
+          <StatCard label="Listes validees" value={stats.totalLists} sublabel={`${stats.labelsGenerated} déjà générées`} />
           <StatCard label="Etiquettes" value={stats.totalLabels} sublabel="au total" />
         </div>
       )}
@@ -162,14 +162,14 @@ export function LabelsManagementPage() {
 
       {/* Generation form */}
       <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Mode de generation</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Mode de génération</h2>
 
         {/* Mode selector */}
         <div className="flex flex-wrap gap-3 mb-6">
           {([
-            { value: 'complete', label: 'Edition complete' },
-            { value: 'slot', label: 'Par creneau' },
-            { value: 'selection', label: 'Par selection' },
+            { value: 'complete', label: 'Édition complète' },
+            { value: 'slot', label: 'Par créneau' },
+            { value: 'selection', label: 'Par sélection' },
           ] as const).map((option) => (
             <button
               key={option.value}
@@ -194,11 +194,11 @@ export function LabelsManagementPage() {
         {mode === 'slot' && (
           <div className="mb-6">
             <Select
-              label="Creneau de depot"
+              label="Créneau de dépôt"
               value={selectedSlotId}
               onChange={(e) => setSelectedSlotId(e.target.value)}
               options={[
-                { value: '', label: 'Selectionnez un creneau...' },
+                { value: '', label: 'Sélectionnez un créneau...' },
                 ...slots.map((slot) => ({
                   value: slot.id,
                   label: formatSlotLabel(slot.startDatetime, slot.endDatetime),
@@ -213,18 +213,18 @@ export function LabelsManagementPage() {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <label className="block text-sm font-medium text-gray-700">
-                Deposants ({selectedDepositorIds.size} selectionne{selectedDepositorIds.size > 1 ? 's' : ''})
+                Déposants ({selectedDepositorIds.size} sélectionné{selectedDepositorIds.size > 1 ? 's' : ''})
               </label>
               <button
                 type="button"
                 onClick={toggleAllDepositors}
                 className="text-sm text-blue-600 hover:text-blue-800"
               >
-                {selectedDepositorIds.size === depositors.length ? 'Tout deselectionner' : 'Tout selectionner'}
+                {selectedDepositorIds.size === depositors.length ? 'Tout desélectionnér' : 'Tout sélectionnér'}
               </button>
             </div>
             {depositors.length === 0 ? (
-              <p className="text-sm text-gray-500">Aucun deposant inscrit pour cette edition.</p>
+              <p className="text-sm text-gray-500">Aucun déposant inscrit pour cette édition.</p>
             ) : (
               <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg divide-y divide-gray-100">
                 {depositors.map((dep: EditionDepositorWithUser) => (
@@ -269,12 +269,12 @@ export function LabelsManagementPage() {
           isLoading={generateMutation.isPending}
           disabled={!canGenerate()}
         >
-          {generateMutation.isPending ? 'Generation en cours...' : 'Generer et telecharger le PDF'}
+          {generateMutation.isPending ? 'Génération en cours...' : 'Générer et télécharger le PDF'}
         </Button>
 
         {generateMutation.isPending && (
           <p className="mt-2 text-sm text-gray-500">
-            La generation peut prendre quelques secondes selon le nombre d'etiquettes...
+            La génération peut prendre quelques secondes selon le nombre d'étiquettes...
           </p>
         )}
       </div>

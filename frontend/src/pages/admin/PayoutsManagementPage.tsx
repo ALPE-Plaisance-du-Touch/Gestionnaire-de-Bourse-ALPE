@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { payoutsApi } from '@/api';
-import { Button } from '@/components/ui';
+import { Button, ConfirmModal } from '@/components/ui';
 import { PaymentModal } from '@/components/payouts/PaymentModal';
 import type { PayoutResponse } from '@/types';
 
@@ -45,6 +45,7 @@ export function PayoutsManagementPage() {
   const [isAbsent, setIsAbsent] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [showBulkReminderConfirm, setShowBulkReminderConfirm] = useState(false);
 
   const perPage = 20;
 
@@ -202,9 +203,12 @@ export function PayoutsManagementPage() {
   });
 
   const handleBulkReminder = () => {
-    if (confirm('Envoyer un email de relance a tous les deposants non payes ?')) {
-      bulkReminderMutation.mutate();
-    }
+    setShowBulkReminderConfirm(true);
+  };
+
+  const handleBulkReminderConfirm = () => {
+    setShowBulkReminderConfirm(false);
+    bulkReminderMutation.mutate();
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -228,7 +232,7 @@ export function PayoutsManagementPage() {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Retour a l'edition
+          Retour à l'édition
         </Link>
         <h1 className="text-2xl font-bold text-gray-900">Reversements</h1>
         <p className="text-sm text-gray-500 mt-1">
@@ -362,7 +366,7 @@ export function PayoutsManagementPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deposant</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Déposant</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Liste</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Articles</th>
@@ -438,7 +442,7 @@ export function PayoutsManagementPage() {
                           <button
                             onClick={() => handleDownloadReceipt(payout)}
                             className="text-blue-600 hover:text-blue-800 text-xs font-medium"
-                            title="Telecharger le bordereau"
+                            title="Télécharger le bordereau"
                           >
                             PDF
                           </button>
@@ -604,6 +608,18 @@ export function PayoutsManagementPage() {
           </div>
         </div>
       )}
+
+      {/* Bulk reminder confirmation modal */}
+      <ConfirmModal
+        isOpen={showBulkReminderConfirm}
+        onClose={() => setShowBulkReminderConfirm(false)}
+        onConfirm={handleBulkReminderConfirm}
+        title="Relancer les déposants"
+        message="Envoyer un email de relance à tous les déposants non payés ?"
+        variant="warning"
+        confirmLabel="Envoyer les relances"
+        isLoading={bulkReminderMutation.isPending}
+      />
     </div>
   );
 }

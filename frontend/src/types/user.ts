@@ -67,3 +67,28 @@ export interface PasswordReset {
   token: string;
   password: string;
 }
+
+export interface UserAdminUpdate {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string | null;
+  role?: UserRole;
+  isActive?: boolean;
+  isLocalResident?: boolean;
+}
+
+export interface UserListParams {
+  role?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedUsers {
+  items: User[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}

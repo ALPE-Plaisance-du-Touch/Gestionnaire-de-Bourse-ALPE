@@ -1,8 +1,8 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invitationsApi } from '@/api';
-import { Button, Select } from '@/components/ui';
+import { Button, ConfirmModal, Select } from '@/components/ui';
 import type { Invitation, InvitationStatusFilter, BulkDeleteResult, BulkResendResult } from '@/types';
 
 type FilterOption = 'all' | InvitationStatusFilter;
@@ -48,6 +48,7 @@ interface InvitationsPageProps {
 export function InvitationsPage({ onCreateClick, onBulkCreateClick }: InvitationsPageProps) {
   const [statusFilter, setStatusFilter] = useState<FilterOption>('all');
   const [invitationToDelete, setInvitationToDelete] = useState<Invitation | null>(null);
+  const [invitationToResend, setInvitationToResend] = useState<Invitation | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   const [showBulkResendModal, setShowBulkResendModal] = useState(false);
@@ -125,17 +126,14 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
     return { total, pending, activated, expired };
   }, [invitations]);
 
-  const handleResend = async (invitation: Invitation) => {
-    if (
-      window.confirm(
-        `Renvoyer l'invitation à ${invitation.email} ?\nUn nouveau lien sera généré et envoyé par email.`
-      )
-    ) {
+  const handleResendConfirm = async () => {
+    if (invitationToResend) {
       try {
-        await resendMutation.mutateAsync(invitation.id);
+        await resendMutation.mutateAsync(invitationToResend.id);
       } catch {
         // Error handled by mutation
       }
+      setInvitationToResend(null);
     }
   };
 
@@ -218,6 +216,35 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
   const isAllSelected = invitations.length > 0 && selectedIds.size === invitations.length;
   const isSomeSelected = selectedIds.size > 0 && selectedIds.size < invitations.length;
 
+  // Auto-dismiss success messages after 5 seconds
+  useEffect(() => {
+    if (resendMutation.isSuccess) {
+      const timer = setTimeout(() => resendMutation.reset(), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendMutation.isSuccess]);
+
+  useEffect(() => {
+    if (deleteMutation.isSuccess) {
+      const timer = setTimeout(() => deleteMutation.reset(), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [deleteMutation.isSuccess]);
+
+  useEffect(() => {
+    if (bulkDeleteResult) {
+      const timer = setTimeout(() => setBulkDeleteResult(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [bulkDeleteResult]);
+
+  useEffect(() => {
+    if (bulkResendResult) {
+      const timer = setTimeout(() => setBulkResendResult(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [bulkResendResult]);
+
   if (error) {
     return (
       <div className="p-6">
@@ -281,27 +308,27 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
 
       {/* Success/Error messages */}
       {resendMutation.isSuccess && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
           Invitation renvoyée avec succès !
         </div>
       )}
       {resendMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
           Erreur lors de l'envoi de l'invitation. Veuillez réessayer.
         </div>
       )}
       {deleteMutation.isSuccess && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
           Invitation supprimée avec succès !
         </div>
       )}
       {deleteMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
           Erreur lors de la suppression de l'invitation. Veuillez réessayer.
         </div>
       )}
       {bulkDeleteResult && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex justify-between items-center">
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex justify-between items-center" role="alert">
           <span>
             {bulkDeleteResult.deleted} invitation{bulkDeleteResult.deleted > 1 ? 's' : ''} supprimée{bulkDeleteResult.deleted > 1 ? 's' : ''} avec succès
             {bulkDeleteResult.notFound > 0 && ` (${bulkDeleteResult.notFound} non trouvée${bulkDeleteResult.notFound > 1 ? 's' : ''})`}
@@ -312,15 +339,15 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
         </div>
       )}
       {bulkDeleteMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
           Erreur lors de la suppression en masse. Veuillez réessayer.
         </div>
       )}
       {bulkResendResult && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex justify-between items-center">
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex justify-between items-center" role="alert">
           <span>
-            {bulkResendResult.resent} invitation{bulkResendResult.resent > 1 ? 's' : ''} relancee{bulkResendResult.resent > 1 ? 's' : ''} avec succes
-            {bulkResendResult.skipped > 0 && ` (${bulkResendResult.skipped} ignoree${bulkResendResult.skipped > 1 ? 's' : ''})`}
+            {bulkResendResult.resent} invitation{bulkResendResult.resent > 1 ? 's' : ''} relancée{bulkResendResult.resent > 1 ? 's' : ''} avec succès
+            {bulkResendResult.skipped > 0 && ` (${bulkResendResult.skipped} ignorée${bulkResendResult.skipped > 1 ? 's' : ''})`}
           </span>
           <button onClick={() => setBulkResendResult(null)} className="text-green-700 hover:text-green-900">
             ✕
@@ -328,8 +355,8 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
         </div>
       )}
       {bulkResendMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          Erreur lors de la relance en masse. Veuillez reessayer.
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+          Erreur lors de la relance en masse. Veuillez réessayer.
         </div>
       )}
 
@@ -480,7 +507,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleResend(invitation)}
+                            onClick={() => setInvitationToResend(invitation)}
                             disabled={resendMutation.isPending}
                           >
                             Relancer
@@ -513,116 +540,83 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
         </p>
       )}
 
+      {/* Resend confirmation modal */}
+      <ConfirmModal
+        isOpen={!!invitationToResend}
+        onClose={() => setInvitationToResend(null)}
+        onConfirm={handleResendConfirm}
+        title="Relancer l'invitation"
+        message={`Renvoyer l'invitation à ${invitationToResend?.email} ?`}
+        variant="info"
+        confirmLabel="Relancer"
+        isLoading={resendMutation.isPending}
+      >
+        <p className="text-sm text-blue-600 bg-blue-50 p-3 rounded">
+          Un nouveau lien d'activation sera généré et envoyé par email.
+        </p>
+      </ConfirmModal>
+
       {/* Delete confirmation modal */}
-      {invitationToDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Confirmer la suppression
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Êtes-vous sûr de vouloir supprimer l'invitation pour{' '}
-              <span className="font-medium">{invitationToDelete.email}</span> ?
-            </p>
-            {invitationToDelete.status === 'activated' ? (
-              <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded mb-4">
-                Cette invitation a déjà été activée. L'utilisateur sera retiré de la liste
-                des invitations, mais son compte sera conservé.
-              </p>
-            ) : (
-              <p className="text-sm text-red-600 bg-red-50 p-3 rounded mb-4">
-                Cette action est irréversible. L'invitation sera définitivement supprimée.
-              </p>
-            )}
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={handleDeleteCancel}
-                disabled={deleteMutation.isPending}
-              >
-                Annuler
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleDeleteConfirm}
-                disabled={deleteMutation.isPending}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={!!invitationToDelete}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmer la suppression"
+        variant="danger"
+        confirmLabel="Supprimer"
+        isLoading={deleteMutation.isPending}
+      >
+        <p className="text-gray-600">
+          Êtes-vous sûr de vouloir supprimer l'invitation pour{' '}
+          <span className="font-medium">{invitationToDelete?.email}</span> ?
+        </p>
+        {invitationToDelete?.status === 'activated' ? (
+          <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded">
+            Cette invitation a déjà été activée. L'utilisateur sera retiré de la liste
+            des invitations, mais son compte sera conservé.
+          </p>
+        ) : (
+          <p className="text-sm text-red-600 bg-red-50 p-3 rounded">
+            Cette action est irréversible. L'invitation sera définitivement supprimée.
+          </p>
+        )}
+      </ConfirmModal>
 
       {/* Bulk delete confirmation modal */}
-      {showBulkDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Confirmer la suppression en masse
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Êtes-vous sûr de vouloir supprimer{' '}
-              <span className="font-medium">{selectedIds.size} invitation{selectedIds.size > 1 ? 's' : ''}</span> ?
-            </p>
-            <p className="text-sm text-red-600 bg-red-50 p-3 rounded mb-4">
-              Les invitations en attente seront définitivement supprimées.
-              Les comptes déjà activés seront retirés de la liste mais conservés.
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={handleBulkDeleteCancel}
-                disabled={bulkDeleteMutation.isPending}
-              >
-                Annuler
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleBulkDeleteConfirm}
-                disabled={bulkDeleteMutation.isPending}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                {bulkDeleteMutation.isPending ? 'Suppression...' : `Supprimer (${selectedIds.size})`}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={showBulkDeleteModal}
+        onClose={handleBulkDeleteCancel}
+        onConfirm={handleBulkDeleteConfirm}
+        title="Confirmer la suppression en masse"
+        variant="danger"
+        confirmLabel={`Supprimer (${selectedIds.size})`}
+        isLoading={bulkDeleteMutation.isPending}
+      >
+        <p className="text-gray-600">
+          Êtes-vous sûr de vouloir supprimer{' '}
+          <span className="font-medium">{selectedIds.size} invitation{selectedIds.size > 1 ? 's' : ''}</span> ?
+        </p>
+        <p className="text-sm text-red-600 bg-red-50 p-3 rounded">
+          Les invitations en attente seront définitivement supprimées.
+          Les comptes déjà activés seront retirés de la liste mais conservés.
+        </p>
+      </ConfirmModal>
+
       {/* Bulk resend confirmation modal */}
-      {showBulkResendModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Relancer les invitations
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Relancer{' '}
-              <span className="font-medium">{resendableSelectedCount} invitation{resendableSelectedCount > 1 ? 's' : ''}</span> ?
-            </p>
-            <p className="text-sm text-blue-600 bg-blue-50 p-3 rounded mb-4">
-              Un nouveau lien d'activation sera genere et envoye par email pour chaque invitation en attente ou expiree.
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setShowBulkResendModal(false)}
-                disabled={bulkResendMutation.isPending}
-              >
-                Annuler
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleBulkResendConfirm}
-                disabled={bulkResendMutation.isPending}
-              >
-                {bulkResendMutation.isPending ? 'Envoi...' : `Relancer (${resendableSelectedCount})`}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={showBulkResendModal}
+        onClose={() => setShowBulkResendModal(false)}
+        onConfirm={handleBulkResendConfirm}
+        title="Relancer les invitations"
+        message={`Relancer ${resendableSelectedCount} invitation${resendableSelectedCount > 1 ? 's' : ''} ?`}
+        variant="info"
+        confirmLabel={`Relancer (${resendableSelectedCount})`}
+        isLoading={bulkResendMutation.isPending}
+      >
+        <p className="text-sm text-blue-600 bg-blue-50 p-3 rounded">
+          Un nouveau lien d'activation sera généré et envoyé par email pour chaque invitation en attente ou expirée.
+        </p>
+      </ConfirmModal>
     </div>
   );
 }

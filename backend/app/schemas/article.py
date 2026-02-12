@@ -162,6 +162,8 @@ class ArticleCreate(BaseModel):
 class ArticleUpdate(BaseModel):
     """Schema for updating an article."""
 
+    category: ArticleCategory | None = None
+    subcategory: str | None = Field(None, max_length=50)
     description: str | None = Field(None, min_length=1, max_length=100)
     price: Decimal | None = Field(None, ge=MIN_PRICE)
     size: str | None = Field(None, max_length=50)

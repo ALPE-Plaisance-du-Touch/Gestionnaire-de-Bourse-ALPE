@@ -36,7 +36,7 @@ export function BilletwebImportResult({ result, editionId }: BilletwebImportResu
         )}
         <div>
           <p className={`font-medium ${success ? 'text-green-800' : 'text-red-800'}`}>
-            {success ? 'Import reussi !' : 'Erreur lors de l\'import'}
+            {success ? 'Import réussi !' : 'Erreur lors de l\'import'}
           </p>
           <p className={`text-sm ${success ? 'text-green-700' : 'text-red-700'}`}>
             {message}
@@ -47,10 +47,10 @@ export function BilletwebImportResult({ result, editionId }: BilletwebImportResu
       {/* Statistics */}
       {success && (
         <div className="bg-gray-50 rounded-lg p-4">
-          <h4 className="font-medium text-gray-700 mb-3">Resultat de l'import</h4>
+          <h4 className="font-medium text-gray-700 mb-3">Résultat de l'import</h4>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
             <div className="bg-white p-3 rounded border">
-              <p className="text-gray-500">Deposants associes</p>
+              <p className="text-gray-500">Déposants associés</p>
               <p className="text-2xl font-semibold text-green-600">
                 {importResult.existingDepositorsLinked}
               </p>
@@ -62,7 +62,7 @@ export function BilletwebImportResult({ result, editionId }: BilletwebImportResu
               </p>
             </div>
             <div className="bg-white p-3 rounded border">
-              <p className="text-gray-500">Lignes ignorees</p>
+              <p className="text-gray-500">Lignes ignorées</p>
               <p className="text-2xl font-semibold text-gray-500">
                 {importResult.rowsSkipped}
               </p>
@@ -80,7 +80,7 @@ export function BilletwebImportResult({ result, editionId }: BilletwebImportResu
                 />
               </svg>
               <div>
-                <p className="text-gray-500">Invitations envoyees</p>
+                <p className="text-gray-500">Invitations envoyées</p>
                 <p className="text-xl font-semibold text-blue-600">
                   {importResult.invitationsSent}
                 </p>
@@ -96,7 +96,7 @@ export function BilletwebImportResult({ result, editionId }: BilletwebImportResu
                 />
               </svg>
               <div>
-                <p className="text-gray-500">Notifications envoyees</p>
+                <p className="text-gray-500">Notifications envoyées</p>
                 <p className="text-xl font-semibold text-green-600">
                   {importResult.notificationsSent}
                 </p>
@@ -109,11 +109,11 @@ export function BilletwebImportResult({ result, editionId }: BilletwebImportResu
       {/* Next steps */}
       {success && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="font-medium text-blue-800 mb-2">Prochaines etapes</h4>
+          <h4 className="font-medium text-blue-800 mb-2">Prochaines étapes</h4>
           <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
-            <li>Les nouveaux deposants recevront un email d'invitation pour activer leur compte</li>
-            <li>Les deposants existants recevront une notification de leur inscription</li>
-            <li>Vous pouvez consulter la liste des deposants ci-dessous</li>
+            <li>Les nouveaux déposants recevront un email d'invitation pour activer leur compte</li>
+            <li>Les déposants existants recevront une notification de leur inscription</li>
+            <li>Vous pouvez consulter la liste des déposants ci-dessous</li>
           </ul>
           <div className="mt-4">
             <Link
@@ -123,7 +123,7 @@ export function BilletwebImportResult({ result, editionId }: BilletwebImportResu
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              Voir la liste des deposants
+              Voir la liste des déposants
             </Link>
           </div>
         </div>

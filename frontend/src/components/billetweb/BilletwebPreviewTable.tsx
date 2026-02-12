@@ -18,11 +18,11 @@ export function BilletwebPreviewTable({ preview }: BilletwebPreviewTableProps) {
             <p className="text-2xl font-semibold text-gray-900">{stats.totalRows}</p>
           </div>
           <div className="bg-white p-3 rounded border">
-            <p className="text-gray-500">Non payes/invalides</p>
+            <p className="text-gray-500">Non payés/invalides</p>
             <p className="text-2xl font-semibold text-gray-400">{stats.rowsUnpaidInvalid}</p>
           </div>
           <div className="bg-white p-3 rounded border">
-            <p className="text-gray-500">A traiter</p>
+            <p className="text-gray-500">À traiter</p>
             <p className="text-2xl font-semibold text-blue-600">{stats.rowsToProcess}</p>
           </div>
           <div className="bg-white p-3 rounded border">
@@ -35,11 +35,11 @@ export function BilletwebPreviewTable({ preview }: BilletwebPreviewTableProps) {
 
         <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div className="bg-white p-3 rounded border">
-            <p className="text-gray-500">Deposants existants</p>
+            <p className="text-gray-500">Déposants existants</p>
             <p className="text-xl font-semibold text-green-600">{stats.existingDepositors}</p>
           </div>
           <div className="bg-white p-3 rounded border">
-            <p className="text-gray-500">Nouveaux deposants</p>
+            <p className="text-gray-500">Nouveaux déposants</p>
             <p className="text-xl font-semibold text-blue-600">{stats.newDepositors}</p>
           </div>
           <div className="bg-white p-3 rounded border">
@@ -47,7 +47,7 @@ export function BilletwebPreviewTable({ preview }: BilletwebPreviewTableProps) {
             <p className="text-xl font-semibold text-amber-600">{stats.duplicatesInFile}</p>
           </div>
           <div className="bg-white p-3 rounded border">
-            <p className="text-gray-500">Deja inscrits</p>
+            <p className="text-gray-500">Déjà inscrits</p>
             <p className="text-xl font-semibold text-gray-500">{stats.alreadyRegistered}</p>
           </div>
         </div>
@@ -180,9 +180,9 @@ export function BilletwebPreviewTable({ preview }: BilletwebPreviewTableProps) {
             />
           </svg>
           <div>
-            <p className="font-medium text-green-800">Pret a importer</p>
+            <p className="font-medium text-green-800">Prêt à importer</p>
             <p className="text-sm text-green-700">
-              {stats.existingDepositors} deposant(s) existant(s) seront associes, {stats.newDepositors} invitation(s) seront envoyees.
+              {stats.existingDepositors} déposant(s) existant(s) seront associés, {stats.newDepositors} invitation(s) seront envoyées.
             </p>
           </div>
         </div>

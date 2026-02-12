@@ -29,14 +29,16 @@ function formatDateShort(dateString: string): string {
   });
 }
 
-function EditionCard({ edition }: { edition: Edition }) {
+function EditionCard({ edition, showStatus = true }: { edition: Edition; showStatus?: boolean }) {
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-bold text-gray-900">{edition.name}</h3>
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-          {STATUS_LABELS[edition.status] || edition.status}
-        </span>
+        {showStatus && (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+            {STATUS_LABELS[edition.status] || edition.status}
+          </span>
+        )}
       </div>
       {edition.location && (
         <p className="text-gray-600 mb-3">{edition.location}</p>
@@ -163,7 +165,7 @@ function AuthenticatedHomePage({
       {edition ? (
         <>
           <div className="mb-8">
-            <EditionCard edition={edition} />
+            <EditionCard edition={edition} showStatus={role === 'manager' || role === 'administrator'} />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Accès rapide</h2>
