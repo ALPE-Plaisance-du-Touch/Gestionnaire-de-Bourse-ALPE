@@ -15,6 +15,7 @@ from app.exceptions import (
     ValidationError,
 )
 from app.models import User
+from app.models.edition import EditionStatus
 from app.models.edition_depositor import EditionDepositor
 from app.models.user import Role
 from app.schemas import (
@@ -360,6 +361,94 @@ async def delete_edition(
             status_code=status.HTTP_409_CONFLICT,
             detail=e.message,
         )
+
+
+@router.post(
+    "/{edition_id}/send-invitations",
+    summary="Send invitation emails to depositors",
+    description="Send activation/notification emails to depositors who haven't received them yet. Manager+.",
+)
+async def send_invitations(
+    edition_id: str,
+    edition_service: EditionServiceDep,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Send invitation/notification emails to depositors."""
+    try:
+        result = await edition_service.send_invitations_to_depositors(edition_id)
+        return result
+    except EditionNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} not found",
+        )
+
+
+@router.post(
+    "/{edition_id}/open-registrations",
+    response_model=EditionResponse,
+    summary="Open registrations",
+    description="Transition edition to registrations_open and notify all depositors. Admin only.",
+)
+async def open_registrations(
+    edition_id: str,
+    edition_service: EditionServiceDep,
+    db: DBSession,
+    background_tasks: BackgroundTasks,
+    current_user: Annotated[User, Depends(require_role(["administrator"]))],
+):
+    """Open registrations for an edition.
+
+    Transitions the edition to registrations_open status and sends
+    a notification email to all registered depositors.
+    """
+    try:
+        edition = await edition_service.update_status(
+            edition_id, EditionStatus.REGISTRATIONS_OPEN
+        )
+    except EditionNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} not found",
+        )
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=e.message,
+        )
+
+    # Send registrations open email to all depositors in background
+    from sqlalchemy.orm import joinedload
+
+    result = await db.execute(
+        select(EditionDepositor)
+        .options(joinedload(EditionDepositor.user))
+        .where(EditionDepositor.edition_id == edition_id)
+    )
+    depositors = list(result.unique().scalars().all())
+
+    deadline_str = None
+    if edition.declaration_deadline:
+        deadline_str = edition.declaration_deadline.strftime("%d/%m/%Y")
+
+    async def _send_registrations_open_emails():
+        sent = 0
+        for dep in depositors:
+            try:
+                await email_service.send_registrations_open_email(
+                    to_email=dep.user.email,
+                    first_name=dep.user.first_name or "Deposant",
+                    edition_name=edition.name,
+                    declaration_deadline=deadline_str,
+                )
+                sent += 1
+            except Exception as e:
+                logger.error(f"Failed to send registrations open email to {dep.user.email}: {e}")
+        logger.info(f"Registrations open emails sent: {sent}/{len(depositors)}")
+
+    background_tasks.add_task(_send_registrations_open_emails)
+
+    return EditionResponse.model_validate(edition)
 
 
 @router.post(

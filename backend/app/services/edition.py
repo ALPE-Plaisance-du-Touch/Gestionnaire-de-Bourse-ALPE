@@ -1,8 +1,11 @@
 """Edition service for business logic."""
 
-from datetime import datetime
+import logging
+from datetime import datetime, timezone
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from app.exceptions import (
     EditionClosedError,
@@ -11,10 +14,13 @@ from app.exceptions import (
 )
 from app.models import Edition, User
 from app.models.edition import EditionStatus
+from app.models.edition_depositor import EditionDepositor
 from app.repositories import EditionRepository
 from app.repositories.payout import PayoutRepository
 from app.schemas import EditionCreate, EditionUpdate
 from app.schemas.edition import ClosureCheckItem, ClosureCheckResponse
+
+logger = logging.getLogger(__name__)
 
 
 class EditionService:
@@ -329,3 +335,90 @@ class EditionService:
         in_progress > registrations_open > configured.
         """
         return await self.repository.get_any_active_edition()
+
+    async def send_invitations_to_depositors(
+        self, edition_id: str
+    ) -> dict:
+        """Send invitation/notification emails to depositors who haven't received them yet.
+
+        For each depositor with invitation_sent_at IS NULL:
+        - If user is not active: regenerate token if expired, send activation email
+        - If user is active: send notification email
+
+        Returns dict with invitations_sent, notifications_sent, already_sent.
+        """
+        from app.services.email import email_service
+        from app.services.invitation import InvitationService
+
+        edition = await self.get_edition(edition_id)
+        invitation_service = InvitationService(self.db)
+
+        # Get depositors who haven't been sent an invitation yet
+        result = await self.db.execute(
+            select(EditionDepositor)
+            .options(joinedload(EditionDepositor.user))
+            .where(
+                EditionDepositor.edition_id == edition_id,
+                EditionDepositor.invitation_sent_at.is_(None),
+            )
+        )
+        pending = list(result.unique().scalars().all())
+
+        # Count already sent
+        result_sent = await self.db.execute(
+            select(EditionDepositor).where(
+                EditionDepositor.edition_id == edition_id,
+                EditionDepositor.invitation_sent_at.isnot(None),
+            )
+        )
+        already_sent = len(list(result_sent.scalars().all()))
+
+        invitations_sent = 0
+        notifications_sent = 0
+        now = datetime.now(timezone.utc)
+
+        for ed in pending:
+            user = ed.user
+            try:
+                if not user.is_active or not user.password_hash:
+                    # New user: regenerate token if expired, send activation email
+                    _, token = await invitation_service.resend_invitation(user.id)
+                    await email_service.send_billetweb_invitation_email(
+                        to_email=user.email,
+                        token=token,
+                        first_name=user.first_name,
+                        edition_name=edition.name,
+                    )
+                    invitations_sent += 1
+                else:
+                    # Existing active user: send notification
+                    await email_service.send_edition_registration_notification(
+                        to_email=user.email,
+                        first_name=user.first_name,
+                        edition_name=edition.name,
+                    )
+                    notifications_sent += 1
+
+                ed.invitation_sent_at = now
+            except Exception as e:
+                logger.error(f"Failed to send invitation to {user.email}: {e}")
+
+        await self.db.commit()
+
+        return {
+            "invitations_sent": invitations_sent,
+            "notifications_sent": notifications_sent,
+            "already_sent": already_sent,
+        }
+
+    async def get_pending_invitations_count(self, edition_id: str) -> int:
+        """Count depositors who haven't received their invitation email yet."""
+        from sqlalchemy import func
+
+        result = await self.db.execute(
+            select(func.count()).where(
+                EditionDepositor.edition_id == edition_id,
+                EditionDepositor.invitation_sent_at.is_(None),
+            )
+        )
+        return result.scalar() or 0
