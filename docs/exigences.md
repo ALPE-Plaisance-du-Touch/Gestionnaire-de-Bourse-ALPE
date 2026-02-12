@@ -44,6 +44,28 @@ links:
   - **Priorité :** Must have
   - **Responsable validation :** Administrateur ALPE
 
+- REQ-F-020 — Le système DOIT permettre à un administrateur de configurer les identifiants d'accès à l'API Billetweb (user + clé API) et de tester la connexion. (US-012)
+  - **Critères d'acceptation :**
+    - Interface de configuration accessible uniquement aux administrateurs
+    - Champs : identifiant API (user) et clé API (key)
+    - Clé API stockée chiffrée en base de données, jamais exposée en clair dans les réponses API ou les logs
+    - Bouton "Tester la connexion" pour valider les identifiants (appel GET /api/events)
+    - Affichage masqué de la clé (••••••••abcd) avec option afficher/masquer
+  - **Priorité :** Must have
+  - **Responsable validation :** Administrateur ALPE
+
+- REQ-F-021 — Le système DOIT permettre à un gestionnaire ou administrateur de synchroniser les inscriptions depuis l'API Billetweb pour une édition donnée. (US-012)
+  - **Critères d'acceptation :**
+    - Synchronisation des événements : pré-remplissage de la création d'édition (administrateur uniquement)
+    - Synchronisation des séances : import des créneaux de dépôt avec capacité
+    - Synchronisation des participants : import incrémental via paramètre `last_update`
+    - Prévisualisation obligatoire avant import (mêmes règles que REQ-F-008)
+    - Gestion doublons, envoi invitations automatique, mêmes validations que l'import CSV
+    - Respect de la limitation API (10 appels/minute sur endpoint attendees)
+    - L'import CSV (REQ-F-008) reste disponible comme alternative
+  - **Priorité :** Should have
+  - **Responsable validation :** Gestionnaire + Administrateur ALPE
+
 ## Page d'accueil
 
 - REQ-F-019 — Le système DOIT afficher une page d'accueil informative et DOIT garantir qu'une seule édition de bourse peut être active à la fois. (US-011)
@@ -66,8 +88,9 @@ links:
       - Message « Aucune bourse n'est en cours actuellement. »
       - Si administrateur : lien « Créer une nouvelle édition »
     - **Contrainte d'unicité d'édition active :**
-      - Une seule édition peut avoir un statut actif (≠ brouillon, ≠ clôturée, ≠ archivée) à un instant donné
-      - Le système DOIT bloquer toute tentative d'activer une deuxième édition tant qu'une autre est active
+      - Une seule édition peut avoir un statut actif (inscriptions_ouvertes ou en_cours) à un instant donné
+      - Plusieurs éditions peuvent être en statut brouillon ou configurée simultanément (préparation en parallèle)
+      - Le système DOIT bloquer toute tentative d'ouvrir les inscriptions ou de démarrer une deuxième édition tant qu'une autre est active
       - Message d'erreur explicite en cas de violation : « Une bourse est déjà en cours ([nom de l'édition]). Clôturez-la avant d'en activer une autre. »
     - Page responsive et conforme WCAG 2.1 AA
   - **Priorité :** Should have (page d'accueil) / Must have (contrainte d'unicité)

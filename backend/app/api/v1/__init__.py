@@ -6,6 +6,7 @@ from app.api.v1.endpoints import (
     audit,
     auth,
     billetweb,
+    billetweb_api,
     config,
     deposit_slots,
     depositor_articles,
@@ -32,6 +33,16 @@ api_router.include_router(
     billetweb.router,
     prefix="/editions/{edition_id}/billetweb",
     tags=["Billetweb Import"],
+)
+api_router.include_router(
+    billetweb_api.router,
+    prefix="/settings/billetweb",
+    tags=["Billetweb API"],
+)
+api_router.include_router(
+    billetweb_api.edition_router,
+    prefix="/editions/{edition_id}/billetweb-api",
+    tags=["Billetweb API Sync"],
 )
 api_router.include_router(invitations.router, prefix="/invitations", tags=["Invitations"])
 api_router.include_router(labels.router, tags=["Labels"])

@@ -561,6 +561,150 @@ class BilletwebImportService:
             list_type_breakdown=list_type_counts,
         )
 
+    async def _process_rows(
+        self,
+        parsed_rows: list[ParsedRow],
+        slot_mapping: dict[str, str],
+        edition: Edition,
+        imported_by: User,
+        import_log: BilletwebImportLog | None = None,
+        send_emails: bool = True,
+        background_tasks: "BackgroundTasks | None" = None,
+    ) -> tuple[int, int, int, int, int]:
+        """Process parsed rows: create/link depositors, send emails.
+
+        This method is shared between CSV import and API sync.
+
+        Returns:
+            Tuple of (existing_linked, new_created, already_registered,
+                      invitations_sent, notifications_sent)
+        """
+        from sqlalchemy import select
+
+        from app.services.email import email_service
+
+        existing_linked = 0
+        new_created = 0
+        already_registered = 0
+        invitations_sent = 0
+        notifications_sent = 0
+
+        # Get deposit slots for email context
+        slot_repo = DepositSlotRepository(self.db)
+        deposit_slots, _ = await slot_repo.list_by_edition(edition.id)
+
+        for row in parsed_rows:
+            # Get slot ID
+            seance_normalized = self._normalize_for_comparison(row.seance)
+            slot_id = slot_mapping.get(seance_normalized)
+
+            # Check if user exists
+            user = await self.user_repo.get_by_email(row.email)
+
+            if user:
+                # Check if already registered for this edition
+                existing_reg = await self.db.execute(
+                    select(EditionDepositor).where(
+                        EditionDepositor.edition_id == edition.id,
+                        EditionDepositor.user_id == user.id,
+                    )
+                )
+                if existing_reg.scalar_one_or_none():
+                    already_registered += 1
+                    continue
+
+                # Link existing user to edition
+                edition_depositor = EditionDepositor(
+                    edition_id=edition.id,
+                    user_id=user.id,
+                    deposit_slot_id=slot_id,
+                    list_type=row.list_type,
+                    billetweb_order_ref=row.commande_ref,
+                    billetweb_session=row.seance,
+                    billetweb_tarif=row.tarif,
+                    imported_at=datetime.now(timezone.utc),
+                    import_log_id=import_log.id if import_log else None,
+                    postal_code=row.code_postal,
+                    city=row.ville,
+                    address=row.adresse,
+                )
+                self.db.add(edition_depositor)
+                existing_linked += 1
+
+                # Send notification email to existing user
+                if send_emails:
+                    if background_tasks:
+                        background_tasks.add_task(
+                            email_service.send_edition_registration_notification,
+                            to_email=user.email,
+                            first_name=user.first_name,
+                            edition_name=edition.name,
+                            slot_datetime=deposit_slots[0].start_datetime if slot_id and deposit_slots else None,
+                        )
+                    else:
+                        await email_service.send_edition_registration_notification(
+                            to_email=user.email,
+                            first_name=user.first_name,
+                            edition_name=edition.name,
+                            slot_datetime=deposit_slots[0].start_datetime if slot_id and deposit_slots else None,
+                        )
+                    notifications_sent += 1
+
+            else:
+                # Create new user with invitation
+                new_user, token = await self.invitation_service.create_invitation(
+                    email=row.email,
+                    first_name=row.prenom,
+                    last_name=row.nom,
+                    list_type=row.list_type,
+                )
+
+                # Update user with additional info from Billetweb
+                new_user.phone = row.telephone
+                new_user.address = row.adresse
+                new_user.is_local_resident = row.code_postal == "31830"
+
+                # Link to edition
+                edition_depositor = EditionDepositor(
+                    edition_id=edition.id,
+                    user_id=new_user.id,
+                    deposit_slot_id=slot_id,
+                    list_type=row.list_type,
+                    billetweb_order_ref=row.commande_ref,
+                    billetweb_session=row.seance,
+                    billetweb_tarif=row.tarif,
+                    imported_at=datetime.now(timezone.utc),
+                    import_log_id=import_log.id if import_log else None,
+                    postal_code=row.code_postal,
+                    city=row.ville,
+                    address=row.adresse,
+                )
+                self.db.add(edition_depositor)
+                new_created += 1
+
+                # Send invitation email
+                if send_emails:
+                    if background_tasks:
+                        background_tasks.add_task(
+                            email_service.send_billetweb_invitation_email,
+                            to_email=new_user.email,
+                            token=token,
+                            first_name=new_user.first_name,
+                            edition_name=edition.name,
+                            slot_datetime=deposit_slots[0].start_datetime if slot_id and deposit_slots else None,
+                        )
+                    else:
+                        await email_service.send_billetweb_invitation_email(
+                            to_email=new_user.email,
+                            token=token,
+                            first_name=new_user.first_name,
+                            edition_name=edition.name,
+                            slot_datetime=deposit_slots[0].start_datetime if slot_id and deposit_slots else None,
+                        )
+                    invitations_sent += 1
+
+        return existing_linked, new_created, already_registered, invitations_sent, notifications_sent
+
     async def import_file(
         self,
         edition: Edition,
@@ -590,8 +734,6 @@ class BilletwebImportService:
         Raises:
             ValueError: If there are validation errors and ignore_errors is False
         """
-        from app.services.email import email_service
-
         # Get deposit slots for this edition via repository (async-safe)
         slot_repo = DepositSlotRepository(self.db)
         deposit_slots, _ = await slot_repo.list_by_edition(edition.id)
@@ -645,124 +787,18 @@ class BilletwebImportService:
         self.db.add(import_log)
         await self.db.flush()  # Get the ID
 
-        # Process each valid row
-        existing_linked = 0
-        new_created = 0
-        already_registered = 0
-        invitations_sent = 0
-        notifications_sent = 0
-
-        from sqlalchemy import select
-
-        for row in result.parsed_rows:
-            # Get slot ID
-            seance_normalized = self._normalize_for_comparison(row.seance)
-            slot_id = result.slot_mapping.get(seance_normalized)
-
-            # Check if user exists
-            user = await self.user_repo.get_by_email(row.email)
-
-            if user:
-                # Check if already registered for this edition
-                existing_reg = await self.db.execute(
-                    select(EditionDepositor).where(
-                        EditionDepositor.edition_id == edition.id,
-                        EditionDepositor.user_id == user.id,
-                    )
-                )
-                if existing_reg.scalar_one_or_none():
-                    already_registered += 1
-                    continue
-
-                # Link existing user to edition
-                edition_depositor = EditionDepositor(
-                    edition_id=edition.id,
-                    user_id=user.id,
-                    deposit_slot_id=slot_id,
-                    list_type=row.list_type,
-                    billetweb_order_ref=row.commande_ref,
-                    billetweb_session=row.seance,
-                    billetweb_tarif=row.tarif,
-                    imported_at=datetime.now(timezone.utc),
-                    import_log_id=import_log.id,
-                    postal_code=row.code_postal,
-                    city=row.ville,
-                    address=row.adresse,
-                )
-                self.db.add(edition_depositor)
-                existing_linked += 1
-
-                # Send notification email to existing user
-                if send_emails:
-                    if background_tasks:
-                        background_tasks.add_task(
-                            email_service.send_edition_registration_notification,
-                            to_email=user.email,
-                            first_name=user.first_name,
-                            edition_name=edition.name,
-                            slot_datetime=deposit_slots[0].start_datetime if slot_id and deposit_slots else None,
-                        )
-                    else:
-                        await email_service.send_edition_registration_notification(
-                            to_email=user.email,
-                            first_name=user.first_name,
-                            edition_name=edition.name,
-                            slot_datetime=deposit_slots[0].start_datetime if slot_id and deposit_slots else None,
-                        )
-                    notifications_sent += 1
-
-            else:
-                # Create new user with invitation
-                new_user, token = await self.invitation_service.create_invitation(
-                    email=row.email,
-                    first_name=row.prenom,
-                    last_name=row.nom,
-                    list_type=row.list_type,
-                )
-
-                # Update user with additional info from Billetweb
-                new_user.phone = row.telephone
-                new_user.address = row.adresse
-                new_user.is_local_resident = row.code_postal == "31830"
-
-                # Link to edition
-                edition_depositor = EditionDepositor(
-                    edition_id=edition.id,
-                    user_id=new_user.id,
-                    deposit_slot_id=slot_id,
-                    list_type=row.list_type,
-                    billetweb_order_ref=row.commande_ref,
-                    billetweb_session=row.seance,
-                    billetweb_tarif=row.tarif,
-                    imported_at=datetime.now(timezone.utc),
-                    import_log_id=import_log.id,
-                    postal_code=row.code_postal,
-                    city=row.ville,
-                    address=row.adresse,
-                )
-                self.db.add(edition_depositor)
-                new_created += 1
-
-                # Send invitation email
-                if send_emails:
-                    if background_tasks:
-                        background_tasks.add_task(
-                            email_service.send_billetweb_invitation_email,
-                            to_email=new_user.email,
-                            token=token,
-                            first_name=new_user.first_name,
-                            edition_name=edition.name,
-                            slot_datetime=deposit_slots[0].start_datetime if slot_id and deposit_slots else None,
-                        )
-                    else:
-                        await email_service.send_billetweb_invitation_email(
-                            to_email=new_user.email,
-                            token=token,
-                            first_name=new_user.first_name,
-                            edition_name=edition.name,
-                            slot_datetime=deposit_slots[0].start_datetime if slot_id and deposit_slots else None,
-                        )
-                    invitations_sent += 1
+        # Process rows using shared method
+        existing_linked, new_created, already_registered, invitations_sent, notifications_sent = (
+            await self._process_rows(
+                parsed_rows=result.parsed_rows,
+                slot_mapping=result.slot_mapping,
+                edition=edition,
+                imported_by=imported_by,
+                import_log=import_log,
+                send_emails=send_emails,
+                background_tasks=background_tasks,
+            )
+        )
 
         # Update import log with results
         import_log.rows_imported = existing_linked + new_created
@@ -774,3 +810,30 @@ class BilletwebImportService:
         await self.db.commit()
 
         return import_log, invitations_sent, notifications_sent
+
+    async def import_from_rows(
+        self,
+        parsed_rows: list[ParsedRow],
+        slot_mapping: dict[str, str],
+        edition: Edition,
+        imported_by: User,
+        send_emails: bool = True,
+        background_tasks: "BackgroundTasks | None" = None,
+    ) -> tuple[int, int, int, int, int]:
+        """Import depositors from pre-parsed rows (used by API sync).
+
+        Returns:
+            Tuple of (existing_linked, new_created, already_registered,
+                      invitations_sent, notifications_sent)
+        """
+        result = await self._process_rows(
+            parsed_rows=parsed_rows,
+            slot_mapping=slot_mapping,
+            edition=edition,
+            imported_by=imported_by,
+            import_log=None,
+            send_emails=send_emails,
+            background_tasks=background_tasks,
+        )
+        await self.db.commit()
+        return result

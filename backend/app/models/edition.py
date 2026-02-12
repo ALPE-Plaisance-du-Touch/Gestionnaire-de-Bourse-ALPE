@@ -64,12 +64,6 @@ class Edition(Base, UUIDMixin, TimestampMixin):
         DateTime, nullable=True
     )
 
-    # Sale dates (when items are sold to public)
-    sale_start_datetime: Mapped[datetime | None] = mapped_column(
-        DateTime, nullable=True
-    )
-    sale_end_datetime: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-
     # Retrieval dates (when depositors pick up unsold items)
     retrieval_start_datetime: Mapped[datetime | None] = mapped_column(
         DateTime, nullable=True
@@ -84,6 +78,10 @@ class Edition(Base, UUIDMixin, TimestampMixin):
         default=Decimal("0.20"),  # 20% default
         nullable=True,
     )
+
+    # Billetweb API integration
+    billetweb_event_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    last_billetweb_sync: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     # Creator
     created_by_id: Mapped[str | None] = mapped_column(

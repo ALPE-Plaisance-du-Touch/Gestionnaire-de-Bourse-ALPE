@@ -74,6 +74,7 @@ class EditionService:
             location=data.location,
             description=data.description,
             created_by=created_by,
+            billetweb_event_id=getattr(data, "billetweb_event_id", None),
         )
 
     async def get_edition(self, edition_id: str) -> Edition:
@@ -201,16 +202,17 @@ class EditionService:
             )
 
         # REQ-F-019: Enforce single active edition constraint
-        active_statuses = [
-            EditionStatus.CONFIGURED,
+        # Only registrations_open and in_progress count as "active"
+        # Multiple editions can be in configured status simultaneously
+        truly_active_statuses = [
             EditionStatus.REGISTRATIONS_OPEN,
             EditionStatus.IN_PROGRESS,
         ]
-        if new_status in active_statuses:
+        if new_status in truly_active_statuses:
             other = await self.repository.get_any_active_edition(
                 exclude_id=edition.id
             )
-            if other:
+            if other and other.status in [s.value for s in truly_active_statuses]:
                 raise ValidationError(
                     f"Une bourse est déjà active ({other.name}). "
                     "Clôturez-la avant d'en activer une autre.",

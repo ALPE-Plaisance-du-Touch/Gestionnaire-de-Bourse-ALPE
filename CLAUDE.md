@@ -174,6 +174,10 @@ All specs are in `docs/` (v1.0.0 validated):
 | Non-functional | `REQ-NF-xxx` | REQ-NF-001 |
 | Dev Tasks | `x.y.z` | 0.2.1 |
 
+## External APIs
+
+- **Billetweb API**: https://www.billetweb.fr/bo/api.php (registration & ticketing platform used for depositor sign-ups)
+
 ## Environment Variables
 
 ### Backend (.env)
@@ -225,6 +229,13 @@ The Axios client has an interceptor that automatically converts snake_case (back
 Backend stores datetimes without timezone info. Frontend should:
 - Send dates as local time strings (e.g., `2025-03-15T09:00:00`)
 - Parse dates directly without `new Date()` conversion to avoid timezone shifts
+
+### Billetweb API Field Mapping
+The Billetweb REST API uses non-obvious field names for attendees:
+- Payment status: `order_paid` (not `paid`)
+- Disabled/cancelled: `disabled` (not `valid`)
+- Session ID: `order_session` (not `session_id`)
+- Custom fields (phone, zip, city) are in a nested `custom_order` object with French keys: `Téléphone`, `Code postal`, `Ville`
 
 ## Current Development Focus
 

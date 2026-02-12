@@ -11,6 +11,7 @@ from app.models.article import Article
 from app.models.sale import Sale
 from app.models.payout import Payout
 from app.models.audit_log import AuditLog
+from app.models.app_setting import AppSetting
 
 __all__ = [
     "Base",
@@ -25,4 +26,5 @@ __all__ = [
     "Sale",
     "Payout",
     "AuditLog",
+    "AppSetting",
 ]

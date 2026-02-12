@@ -53,8 +53,6 @@ const mockEdition: Edition = {
   declarationDeadline: null,
   depositStartDatetime: null,
   depositEndDatetime: null,
-  saleStartDatetime: null,
-  saleEndDatetime: null,
   retrievalStartDatetime: null,
   retrievalEndDatetime: null,
   commissionRate: 0.2,
@@ -68,8 +66,6 @@ const mockConfiguredEdition: Edition = {
   declarationDeadline: '2025-03-10T23:59:00Z',
   depositStartDatetime: '2025-03-12T09:00:00Z',
   depositEndDatetime: '2025-03-14T18:00:00Z',
-  saleStartDatetime: '2025-03-15T09:00:00Z',
-  saleEndDatetime: '2025-03-16T17:00:00Z',
   retrievalStartDatetime: '2025-03-16T17:00:00Z',
   retrievalEndDatetime: '2025-03-16T19:00:00Z',
 };
@@ -219,20 +215,16 @@ describe('EditionDetailPage', () => {
 
     // Fill all configuration dates with invalid order (deposit end before deposit start)
     const allInputs = document.querySelectorAll('input[type="datetime-local"]');
-    // Order: startDatetime, endDatetime, declarationDeadline, depositStart, depositEnd, saleStart, saleEnd, retrievalStart, retrievalEnd
+    // Order: startDatetime, endDatetime, declarationDeadline, depositStart, depositEnd, retrievalStart, retrievalEnd
     const declarationInput = allInputs[2] as HTMLInputElement;
     const depositStartInput = allInputs[3] as HTMLInputElement;
     const depositEndInput = allInputs[4] as HTMLInputElement;
-    const saleStartInput = allInputs[5] as HTMLInputElement;
-    const saleEndInput = allInputs[6] as HTMLInputElement;
-    const retrievalStartInput = allInputs[7] as HTMLInputElement;
-    const retrievalEndInput = allInputs[8] as HTMLInputElement;
+    const retrievalStartInput = allInputs[5] as HTMLInputElement;
+    const retrievalEndInput = allInputs[6] as HTMLInputElement;
 
     await userEvent.type(declarationInput, '2025-03-01T12:00');
     await userEvent.type(depositStartInput, '2025-03-12T09:00');
     await userEvent.type(depositEndInput, '2025-03-11T18:00'); // Invalid: before start
-    await userEvent.type(saleStartInput, '2025-03-15T09:00');
-    await userEvent.type(saleEndInput, '2025-03-16T17:00');
     await userEvent.type(retrievalStartInput, '2025-03-16T17:00');
     await userEvent.type(retrievalEndInput, '2025-03-16T19:00');
 
@@ -323,18 +315,14 @@ describe('EditionDetailPage', () => {
     const declarationInput = allInputs[2] as HTMLInputElement;
     const depositStartInput = allInputs[3] as HTMLInputElement;
     const depositEndInput = allInputs[4] as HTMLInputElement;
-    const saleStartInput = allInputs[5] as HTMLInputElement;
-    const saleEndInput = allInputs[6] as HTMLInputElement;
-    const retrievalStartInput = allInputs[7] as HTMLInputElement;
-    const retrievalEndInput = allInputs[8] as HTMLInputElement;
+    const retrievalStartInput = allInputs[5] as HTMLInputElement;
+    const retrievalEndInput = allInputs[6] as HTMLInputElement;
 
     await userEvent.type(declarationInput, '2025-03-01T12:00');
     await userEvent.type(depositStartInput, '2025-03-02T09:00');
     await userEvent.type(depositEndInput, '2025-03-03T18:00');
-    await userEvent.type(saleStartInput, '2025-03-04T09:00');
-    await userEvent.type(saleEndInput, '2025-03-05T17:00');
-    await userEvent.type(retrievalStartInput, '2025-03-05T17:00');
-    await userEvent.type(retrievalEndInput, '2025-03-05T19:00');
+    await userEvent.type(retrievalStartInput, '2025-03-16T17:00');
+    await userEvent.type(retrievalEndInput, '2025-03-16T19:00');
 
     // Submit
     await userEvent.click(screen.getByText(/Enregistrer les modifications/i));

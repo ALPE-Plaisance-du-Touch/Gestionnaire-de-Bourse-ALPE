@@ -21,6 +21,7 @@ services:
       - SMTP_USE_TLS=false
       - FRONTEND_URL=http://localhost:5173
       - CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+      - SETTINGS_ENCRYPTION_KEY=vD8D0pPsQo8SfVBni2geHnxgHVQ0eB243c8V8pmmvp8=
     depends_on:
       db:
         condition: service_healthy

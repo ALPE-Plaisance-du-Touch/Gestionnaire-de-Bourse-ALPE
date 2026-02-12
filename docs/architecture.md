@@ -63,6 +63,7 @@ flowchart TB
     Admin -->|Gère utilisateurs<br/>Clôture éditions| App
 
     Billetweb -->|Export CSV| Gestionnaire
+    App -->|API REST<br/>Événements, séances,<br/>participants| Billetweb
     App -->|Notifications<br/>Confirmations| Email
 ```
 
@@ -94,6 +95,7 @@ flowchart TB
 
     subgraph Services Externes
         SMTP[Serveur SMTP<br/>Emails transactionnels]
+        BilletwebAPI[API Billetweb<br/>Événements & inscriptions]
     end
 
     Browser -->|HTTPS| React
@@ -102,6 +104,7 @@ flowchart TB
     API -->|SQL| MySQL
     API -->|Lecture/Écriture| Files
     API -->|SMTP| SMTP
+    API -->|HTTPS REST<br/>user/key auth| BilletwebAPI
 
     PWA -.->|IndexedDB<br/>Cache local| PWA
 ```

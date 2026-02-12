@@ -44,10 +44,10 @@ function EditionCard({ edition, showStatus = true }: { edition: Edition; showSta
         <p className="text-gray-600 mb-3">{edition.location}</p>
       )}
       <div className="space-y-2 text-sm text-gray-700">
-        {edition.saleStartDatetime && edition.saleEndDatetime && (
+        {edition.startDatetime && edition.endDatetime && (
           <p>
             <span className="font-medium">Vente :</span>{' '}
-            {formatDate(edition.saleStartDatetime)} — {formatDateShort(edition.saleEndDatetime)}
+            {formatDate(edition.startDatetime)} — {formatDateShort(edition.endDatetime)}
           </p>
         )}
         {edition.depositStartDatetime && edition.depositEndDatetime && (

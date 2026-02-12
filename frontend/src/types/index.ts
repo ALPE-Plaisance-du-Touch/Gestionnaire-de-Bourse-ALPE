@@ -14,3 +14,4 @@ export * from './label';
 export * from './sale';
 export * from './payout';
 export * from './dashboard';
+export * from './billetweb-api';

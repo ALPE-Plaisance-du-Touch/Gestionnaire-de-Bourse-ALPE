@@ -1,10 +1,12 @@
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { editionsApi, billetwebApi, payoutsApi, ApiException } from '@/api';
 import { Button, ConfirmModal, Input, Modal } from '@/components/ui';
 import { DepositSlotsEditor } from '@/components/editions';
 import { BilletwebImportButton } from '@/components/billetweb';
+import { BilletwebSessionsSyncModal } from '@/components/billetweb/BilletwebSessionsSyncModal';
+import { BilletwebAttendeesSyncModal } from '@/components/billetweb/BilletwebAttendeesSyncModal';
 import type { EditionStatus } from '@/types';
 
 const STATUS_LABELS: Record<EditionStatus, { label: string; className: string }> = {
@@ -28,58 +30,53 @@ function formatDatetimeLocal(datetimeString: string | null): string {
   return datetimeString.replace('Z', '').substring(0, 16);
 }
 
+type FieldError = { field: string; message: string };
+
 /**
  * Validate chronological order of dates.
- * Returns error message if invalid, null if valid.
+ * Returns {field, message} if invalid, null if valid.
  */
 function validateDateOrder(dates: {
   declarationDeadline: string;
   depositStart: string;
   depositEnd: string;
-  saleStart: string;
-  saleEnd: string;
+  editionEnd: string;
   retrievalStart: string;
   retrievalEnd: string;
-}): string | null {
+}): FieldError | null {
   const {
     declarationDeadline,
     depositStart,
     depositEnd,
-    saleStart,
-    saleEnd,
+    editionEnd,
     retrievalStart,
     retrievalEnd,
   } = dates;
 
-  if (!declarationDeadline || !depositStart || !depositEnd || !saleStart || !saleEnd || !retrievalStart || !retrievalEnd) {
+  if (!declarationDeadline || !depositStart || !depositEnd || !retrievalStart || !retrievalEnd) {
     return null;
   }
 
   const declDate = new Date(declarationDeadline);
   const depStart = new Date(depositStart);
   const depEnd = new Date(depositEnd);
-  const salStart = new Date(saleStart);
-  const salEnd = new Date(saleEnd);
   const retStart = new Date(retrievalStart);
   const retEnd = new Date(retrievalEnd);
 
   if (declDate >= depStart) {
-    return 'La date limite de déclaration doit être avant le début du dépôt.';
+    return { field: 'declarationDeadline', message: 'La date limite de déclaration doit être avant le début du dépôt.' };
   }
   if (depEnd <= depStart) {
-    return 'La fin du dépôt doit être après le début du dépôt.';
+    return { field: 'depositEnd', message: 'La fin du dépôt doit être après le début du dépôt.' };
   }
-  if (salStart < depEnd) {
-    return 'Le début de la vente doit être après la fin du dépôt.';
-  }
-  if (salEnd <= salStart) {
-    return 'La fin de la vente doit être après le début de la vente.';
-  }
-  if (retStart < salEnd) {
-    return 'Le début de la récupération doit être après la fin de la vente.';
+  if (editionEnd) {
+    const edEnd = new Date(editionEnd);
+    if (retStart < edEnd) {
+      return { field: 'retrievalStart', message: 'Le début de la récupération doit être après la fin de la vente.' };
+    }
   }
   if (retEnd <= retStart) {
-    return 'La fin de la récupération doit être après le début de la récupération.';
+    return { field: 'retrievalEnd', message: 'La fin de la récupération doit être après le début de la récupération.' };
   }
 
   return null;
@@ -99,17 +96,19 @@ export function EditionDetailPage() {
   const [declarationDeadline, setDeclarationDeadline] = useState('');
   const [depositStartDatetime, setDepositStartDatetime] = useState('');
   const [depositEndDatetime, setDepositEndDatetime] = useState('');
-  const [saleStartDatetime, setSaleStartDatetime] = useState('');
-  const [saleEndDatetime, setSaleEndDatetime] = useState('');
   const [retrievalStartDatetime, setRetrievalStartDatetime] = useState('');
   const [retrievalEndDatetime, setRetrievalEndDatetime] = useState('');
   const [commissionRate, setCommissionRate] = useState('20');
 
   // UI state
+  const errorRef = useRef<HTMLDivElement>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [closureModalOpen, setClosureModalOpen] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
+  const [showSessionsSyncModal, setShowSessionsSyncModal] = useState(false);
+  const [showAttendeesSyncModal, setShowAttendeesSyncModal] = useState(false);
 
   // Auto-dismiss success message after 5 seconds
   useEffect(() => {
@@ -118,6 +117,17 @@ export function EditionDetailPage() {
       return () => clearTimeout(timer);
     }
   }, [success]);
+
+  // Scroll to first field error or global error
+  useEffect(() => {
+    const firstErrorField = Object.keys(fieldErrors)[0];
+    if (firstErrorField) {
+      const el = document.querySelector(`[data-field="${firstErrorField}"]`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (error) {
+      errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [fieldErrors, error]);
 
   // Fetch edition
   const { data: edition, isLoading, error: fetchError } = useQuery({
@@ -144,8 +154,6 @@ export function EditionDetailPage() {
       setDeclarationDeadline(formatDatetimeLocal(edition.declarationDeadline));
       setDepositStartDatetime(formatDatetimeLocal(edition.depositStartDatetime));
       setDepositEndDatetime(formatDatetimeLocal(edition.depositEndDatetime));
-      setSaleStartDatetime(formatDatetimeLocal(edition.saleStartDatetime));
-      setSaleEndDatetime(formatDatetimeLocal(edition.saleEndDatetime));
       setRetrievalStartDatetime(formatDatetimeLocal(edition.retrievalStartDatetime));
       setRetrievalEndDatetime(formatDatetimeLocal(edition.retrievalEndDatetime));
       setCommissionRate(edition.commissionRate !== null ? String(edition.commissionRate * 100) : '20');
@@ -160,11 +168,12 @@ export function EditionDetailPage() {
       await queryClient.refetchQueries({ queryKey: ['edition', id] });
       setSuccess(true);
       setError(null);
+      setFieldErrors({});
     },
     onError: (err) => {
       if (err instanceof ApiException) {
         if (err.status === 409) {
-          setError('Une édition avec ce nom existe déjà.');
+          setFieldErrors({ name: 'Une édition avec ce nom existe déjà.' });
         } else if (err.status === 422) {
           setError('Données invalides. Vérifiez les informations saisies.');
         } else {
@@ -229,41 +238,37 @@ export function EditionDetailPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setFieldErrors({});
     setError(null);
     setSuccess(false);
 
     if (!edition) return;
 
+    const errors: Record<string, string> = {};
+
     if (!name.trim()) {
-      setError("Le nom de l'édition est requis.");
-      return;
+      errors.name = "Le nom de l'édition est requis.";
     }
 
     if (!startDatetime || !endDatetime) {
-      setError('Les dates de début et de fin sont requises.');
-      return;
-    }
-
-    const start = new Date(startDatetime);
-    const end = new Date(endDatetime);
-
-    if (end <= start) {
-      setError('La date de fin doit être après la date de début.');
-      return;
+      errors.endDatetime = 'Les dates de début et de fin sont requises.';
+    } else {
+      const start = new Date(startDatetime);
+      const end = new Date(endDatetime);
+      if (end <= start) {
+        errors.endDatetime = 'La date de fin doit être après la date de début.';
+      }
     }
 
     const commissionNum = parseFloat(commissionRate);
     if (isNaN(commissionNum) || commissionNum < 0 || commissionNum > 100) {
-      setError('Le taux de commission doit être entre 0 et 100%.');
-      return;
+      errors.commissionRate = 'Le taux de commission doit être entre 0 et 100%.';
     }
 
     const hasAllConfigDates =
       declarationDeadline &&
       depositStartDatetime &&
       depositEndDatetime &&
-      saleStartDatetime &&
-      saleEndDatetime &&
       retrievalStartDatetime &&
       retrievalEndDatetime;
 
@@ -272,16 +277,19 @@ export function EditionDetailPage() {
         declarationDeadline,
         depositStart: depositStartDatetime,
         depositEnd: depositEndDatetime,
-        saleStart: saleStartDatetime,
-        saleEnd: saleEndDatetime,
+        editionEnd: endDatetime,
         retrievalStart: retrievalStartDatetime,
         retrievalEnd: retrievalEndDatetime,
       });
 
       if (dateError) {
-        setError(dateError);
-        return;
+        errors[dateError.field] = dateError.message;
       }
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
     }
 
     // Send dates as-is (local time) - backend stores without timezone
@@ -306,12 +314,6 @@ export function EditionDetailPage() {
     if (depositEndDatetime) {
       updateData.depositEndDatetime = formatLocalDatetime(depositEndDatetime);
     }
-    if (saleStartDatetime) {
-      updateData.saleStartDatetime = formatLocalDatetime(saleStartDatetime);
-    }
-    if (saleEndDatetime) {
-      updateData.saleEndDatetime = formatLocalDatetime(saleEndDatetime);
-    }
     if (retrievalStartDatetime) {
       updateData.retrievalStartDatetime = formatLocalDatetime(retrievalStartDatetime);
     }
@@ -323,7 +325,15 @@ export function EditionDetailPage() {
       await updateMutation.mutateAsync(updateData);
 
       if (hasAllConfigDates && edition.status === 'draft') {
-        await statusMutation.mutateAsync('configured');
+        try {
+          await statusMutation.mutateAsync('configured');
+        } catch (err) {
+          if (err instanceof ApiException) {
+            setError(err.message);
+          } else {
+            setError('Les modifications ont été enregistrées, mais le passage en statut "Configurée" a échoué.');
+          }
+        }
       }
     } catch {
       // Error handled by mutation
@@ -399,7 +409,7 @@ export function EditionDetailPage() {
 
       {/* Error message */}
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+        <div ref={errorRef} className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
           {error}
         </div>
       )}
@@ -414,19 +424,37 @@ export function EditionDetailPage() {
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Basic Information Section */}
         <section className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            Informations générales
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-medium text-gray-900">
+              Informations générales
+            </h2>
+            {edition.billetwebEventId && (
+              <a
+                href={`https://www.billetweb.fr/bo/dashboard.php?event=${edition.billetwebEventId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
+              >
+                Voir sur Billetweb
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            )}
+          </div>
 
           <fieldset disabled={!isEditable} className="space-y-4">
-            <Input
-              label="Nom de l'édition"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Bourse Printemps 2025"
-              required
-            />
+            <div data-field="name">
+              <Input
+                label="Nom de l'édition"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Bourse Printemps 2025"
+                required
+                error={fieldErrors.name}
+              />
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
@@ -436,13 +464,16 @@ export function EditionDetailPage() {
                 onChange={(e) => setStartDatetime(e.target.value)}
                 required
               />
-              <Input
-                label="Date et heure de fin"
-                type="datetime-local"
-                value={endDatetime}
-                onChange={(e) => setEndDatetime(e.target.value)}
-                required
-              />
+              <div data-field="endDatetime">
+                <Input
+                  label="Date et heure de fin"
+                  type="datetime-local"
+                  value={endDatetime}
+                  onChange={(e) => setEndDatetime(e.target.value)}
+                  required
+                  error={fieldErrors.endDatetime}
+                />
+              </div>
             </div>
 
             <Input
@@ -480,7 +511,7 @@ export function EditionDetailPage() {
 
           <fieldset disabled={!isEditable} className="space-y-6">
             {/* Commission Rate */}
-            <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="bg-gray-50 p-4 rounded-lg" data-field="commissionRate">
               <div className="max-w-xs">
                 <Input
                   label="Taux de commission ALPE (%)"
@@ -491,25 +522,31 @@ export function EditionDetailPage() {
                   min="0"
                   max="100"
                   step="0.1"
+                  error={fieldErrors.commissionRate}
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-2">
-                Commission prélevée sur les ventes (par défaut 20%).
-                Les frais d'inscription (5€ pour 2 listes) sont gérés via Billetweb.
-              </p>
+              {!fieldErrors.commissionRate && (
+                <p className="text-xs text-gray-500 mt-2">
+                  Commission prélevée sur les ventes (par défaut 20%).
+                  Les frais d'inscription (5€ pour 2 listes) sont gérés via Billetweb.
+                </p>
+              )}
             </div>
 
             {/* Declaration Deadline */}
-            <div>
+            <div data-field="declarationDeadline">
               <Input
                 label="Date limite de déclaration des articles"
                 type="datetime-local"
                 value={declarationDeadline}
                 onChange={(e) => setDeclarationDeadline(e.target.value)}
+                error={fieldErrors.declarationDeadline}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Après cette date, les déposants ne pourront plus modifier leurs listes.
-              </p>
+              {!fieldErrors.declarationDeadline && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Après cette date, les déposants ne pourront plus modifier leurs listes.
+                </p>
+              )}
             </div>
 
             {/* Deposit Dates */}
@@ -522,31 +559,15 @@ export function EditionDetailPage() {
                   value={depositStartDatetime}
                   onChange={(e) => setDepositStartDatetime(e.target.value)}
                 />
-                <Input
-                  label="Fin du dépôt"
-                  type="datetime-local"
-                  value={depositEndDatetime}
-                  onChange={(e) => setDepositEndDatetime(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Sale Dates */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Période de vente</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Début de la vente"
-                  type="datetime-local"
-                  value={saleStartDatetime}
-                  onChange={(e) => setSaleStartDatetime(e.target.value)}
-                />
-                <Input
-                  label="Fin de la vente"
-                  type="datetime-local"
-                  value={saleEndDatetime}
-                  onChange={(e) => setSaleEndDatetime(e.target.value)}
-                />
+                <div data-field="depositEnd">
+                  <Input
+                    label="Fin du dépôt"
+                    type="datetime-local"
+                    value={depositEndDatetime}
+                    onChange={(e) => setDepositEndDatetime(e.target.value)}
+                    error={fieldErrors.depositEnd}
+                  />
+                </div>
               </div>
             </div>
 
@@ -554,18 +575,24 @@ export function EditionDetailPage() {
             <div>
               <h3 className="text-sm font-medium text-gray-700 mb-2">Période de récupération</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Début de la récupération"
-                  type="datetime-local"
-                  value={retrievalStartDatetime}
-                  onChange={(e) => setRetrievalStartDatetime(e.target.value)}
-                />
-                <Input
-                  label="Fin de la récupération"
-                  type="datetime-local"
-                  value={retrievalEndDatetime}
-                  onChange={(e) => setRetrievalEndDatetime(e.target.value)}
-                />
+                <div data-field="retrievalStart">
+                  <Input
+                    label="Début de la récupération"
+                    type="datetime-local"
+                    value={retrievalStartDatetime}
+                    onChange={(e) => setRetrievalStartDatetime(e.target.value)}
+                    error={fieldErrors.retrievalStart}
+                  />
+                </div>
+                <div data-field="retrievalEnd">
+                  <Input
+                    label="Fin de la récupération"
+                    type="datetime-local"
+                    value={retrievalEndDatetime}
+                    onChange={(e) => setRetrievalEndDatetime(e.target.value)}
+                    error={fieldErrors.retrievalEnd}
+                  />
+                </div>
               </div>
             </div>
           </fieldset>
@@ -573,6 +600,17 @@ export function EditionDetailPage() {
 
         {/* Deposit Slots Section */}
         <section className="bg-white rounded-lg shadow p-6">
+          {edition.billetwebEventId && isEditable && (
+            <div className="mb-4 flex justify-end">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowSessionsSyncModal(true)}
+              >
+                Synchroniser créneaux Billetweb
+              </Button>
+            </div>
+          )}
           <DepositSlotsEditor editionId={edition.id} disabled={!isEditable} />
         </section>
 
@@ -586,11 +624,26 @@ export function EditionDetailPage() {
               Importez les inscriptions depuis Billetweb pour associer les déposants à cette édition.
             </p>
 
-            <BilletwebImportButton
-              edition={edition}
-              importCount={importStats?.totalDepositors ?? 0}
-              onImportSuccess={() => refetchImportStats()}
-            />
+            <div className="flex items-center gap-3 flex-wrap">
+              {edition.billetwebEventId && (
+                <Button
+                  size="sm"
+                  onClick={() => setShowAttendeesSyncModal(true)}
+                >
+                  Synchroniser via API
+                </Button>
+              )}
+              <BilletwebImportButton
+                edition={edition}
+                importCount={importStats?.totalDepositors ?? 0}
+                onImportSuccess={() => refetchImportStats()}
+              />
+            </div>
+            {edition.billetwebEventId && edition.lastBilletwebSync && (
+              <p className="text-xs text-gray-500 mt-2">
+                Derniere sync API : {new Date(edition.lastBilletwebSync).toLocaleString('fr-FR')}
+              </p>
+            )}
 
             {importStats && importStats.totalImports > 0 && (
               <div className="mt-4 bg-gray-50 rounded-lg p-4">
@@ -894,6 +947,25 @@ export function EditionDetailPage() {
         variant="warning"
         confirmLabel="Archiver"
       />
+
+      {/* Billetweb sessions sync modal */}
+      {edition?.billetwebEventId && (
+        <BilletwebSessionsSyncModal
+          isOpen={showSessionsSyncModal}
+          onClose={() => setShowSessionsSyncModal(false)}
+          editionId={edition.id}
+        />
+      )}
+
+      {/* Billetweb attendees sync modal */}
+      {edition?.billetwebEventId && (
+        <BilletwebAttendeesSyncModal
+          isOpen={showAttendeesSyncModal}
+          onClose={() => setShowAttendeesSyncModal(false)}
+          editionId={edition.id}
+          lastSync={edition.lastBilletwebSync}
+        />
+      )}
     </div>
   );
 }

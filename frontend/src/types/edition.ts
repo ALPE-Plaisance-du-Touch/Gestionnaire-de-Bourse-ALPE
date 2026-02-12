@@ -28,13 +28,13 @@ export interface Edition {
   declarationDeadline: string | null;
   depositStartDatetime: string | null;
   depositEndDatetime: string | null;
-  saleStartDatetime: string | null;
-  saleEndDatetime: string | null;
   retrievalStartDatetime: string | null;
   retrievalEndDatetime: string | null;
   commissionRate: number | null;
   createdAt: string;
   createdBy: EditionCreator | null;
+  billetwebEventId: string | null;
+  lastBilletwebSync: string | null;
   closedAt: string | null;
   closedBy: EditionCreator | null;
   archivedAt: string | null;
@@ -46,6 +46,7 @@ export interface CreateEditionRequest {
   endDatetime: string;
   location?: string;
   description?: string;
+  billetwebEventId?: string;
 }
 
 export interface UpdateEditionRequest {
@@ -57,8 +58,6 @@ export interface UpdateEditionRequest {
   declarationDeadline?: string;
   depositStartDatetime?: string;
   depositEndDatetime?: string;
-  saleStartDatetime?: string;
-  saleEndDatetime?: string;
   retrievalStartDatetime?: string;
   retrievalEndDatetime?: string;
   commissionRate?: number;

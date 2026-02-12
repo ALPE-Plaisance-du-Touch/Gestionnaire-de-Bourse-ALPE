@@ -42,6 +42,9 @@ class DepositSlot(Base, UUIDMixin, TimestampMixin):
     # Optional description
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
+    # Billetweb API integration
+    billetweb_session_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
     # Relationships
     registered_depositors: Mapped[list["EditionDepositor"]] = relationship(
         "EditionDepositor", back_populates="deposit_slot"

@@ -23,11 +23,11 @@ interface EditionApiResponse {
   declarationDeadline: string | null;
   depositStartDatetime: string | null;
   depositEndDatetime: string | null;
-  saleStartDatetime: string | null;
-  saleEndDatetime: string | null;
   retrievalStartDatetime: string | null;
   retrievalEndDatetime: string | null;
   commissionRate: string | null;  // Decimal is serialized as string by Pydantic
+  billetwebEventId: string | null;
+  lastBilletwebSync: string | null;
   createdAt: string;
   createdBy: {
     id: string;
@@ -70,11 +70,11 @@ function transformEdition(data: EditionApiResponse): Edition {
     declarationDeadline: data.declarationDeadline,
     depositStartDatetime: data.depositStartDatetime,
     depositEndDatetime: data.depositEndDatetime,
-    saleStartDatetime: data.saleStartDatetime,
-    saleEndDatetime: data.saleEndDatetime,
     retrievalStartDatetime: data.retrievalStartDatetime,
     retrievalEndDatetime: data.retrievalEndDatetime,
     commissionRate: data.commissionRate !== null ? parseFloat(data.commissionRate) : null,
+    billetwebEventId: data.billetwebEventId,
+    lastBilletwebSync: data.lastBilletwebSync,
     createdAt: data.createdAt,
     createdBy: data.createdBy,
     closedAt: data.closedAt,
@@ -125,13 +125,17 @@ export const editionsApi = {
    * Create a new edition.
    */
   createEdition: async (data: CreateEditionRequest): Promise<Edition> => {
-    const response = await apiClient.post<EditionApiResponse>('/v1/editions', {
+    const payload: Record<string, unknown> = {
       name: data.name,
       start_datetime: data.startDatetime,
       end_datetime: data.endDatetime,
       location: data.location,
       description: data.description,
-    });
+    };
+    if (data.billetwebEventId) {
+      payload.billetweb_event_id = data.billetwebEventId;
+    }
+    const response = await apiClient.post<EditionApiResponse>('/v1/editions', payload);
     return transformEdition(response.data);
   },
 
@@ -149,8 +153,6 @@ export const editionsApi = {
     if (data.declarationDeadline !== undefined) payload.declaration_deadline = data.declarationDeadline;
     if (data.depositStartDatetime !== undefined) payload.deposit_start_datetime = data.depositStartDatetime;
     if (data.depositEndDatetime !== undefined) payload.deposit_end_datetime = data.depositEndDatetime;
-    if (data.saleStartDatetime !== undefined) payload.sale_start_datetime = data.saleStartDatetime;
-    if (data.saleEndDatetime !== undefined) payload.sale_end_datetime = data.saleEndDatetime;
     if (data.retrievalStartDatetime !== undefined) payload.retrieval_start_datetime = data.retrievalStartDatetime;
     if (data.retrievalEndDatetime !== undefined) payload.retrieval_end_datetime = data.retrievalEndDatetime;
     if (data.commissionRate !== undefined) payload.commission_rate = data.commissionRate;
