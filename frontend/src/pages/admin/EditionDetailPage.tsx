@@ -38,8 +38,7 @@ function validateDateOrder(dates: {
   declarationDeadline: string;
   depositStart: string;
   depositEnd: string;
-  saleStart: string;
-  saleEnd: string;
+  editionEnd: string;
   retrievalStart: string;
   retrievalEnd: string;
 }): string | null {
@@ -47,21 +46,18 @@ function validateDateOrder(dates: {
     declarationDeadline,
     depositStart,
     depositEnd,
-    saleStart,
-    saleEnd,
+    editionEnd,
     retrievalStart,
     retrievalEnd,
   } = dates;
 
-  if (!declarationDeadline || !depositStart || !depositEnd || !saleStart || !saleEnd || !retrievalStart || !retrievalEnd) {
+  if (!declarationDeadline || !depositStart || !depositEnd || !retrievalStart || !retrievalEnd) {
     return null;
   }
 
   const declDate = new Date(declarationDeadline);
   const depStart = new Date(depositStart);
   const depEnd = new Date(depositEnd);
-  const salStart = new Date(saleStart);
-  const salEnd = new Date(saleEnd);
   const retStart = new Date(retrievalStart);
   const retEnd = new Date(retrievalEnd);
 
@@ -71,14 +67,11 @@ function validateDateOrder(dates: {
   if (depEnd <= depStart) {
     return 'La fin du dépôt doit être après le début du dépôt.';
   }
-  if (salStart < depEnd) {
-    return 'Le début de la vente doit être après la fin du dépôt.';
-  }
-  if (salEnd <= salStart) {
-    return 'La fin de la vente doit être après le début de la vente.';
-  }
-  if (retStart < salEnd) {
-    return 'Le début de la récupération doit être après la fin de la vente.';
+  if (editionEnd) {
+    const edEnd = new Date(editionEnd);
+    if (retStart < edEnd) {
+      return 'Le début de la récupération doit être après la fin de la vente.';
+    }
   }
   if (retEnd <= retStart) {
     return 'La fin de la récupération doit être après le début de la récupération.';
@@ -101,8 +94,6 @@ export function EditionDetailPage() {
   const [declarationDeadline, setDeclarationDeadline] = useState('');
   const [depositStartDatetime, setDepositStartDatetime] = useState('');
   const [depositEndDatetime, setDepositEndDatetime] = useState('');
-  const [saleStartDatetime, setSaleStartDatetime] = useState('');
-  const [saleEndDatetime, setSaleEndDatetime] = useState('');
   const [retrievalStartDatetime, setRetrievalStartDatetime] = useState('');
   const [retrievalEndDatetime, setRetrievalEndDatetime] = useState('');
   const [commissionRate, setCommissionRate] = useState('20');
@@ -148,8 +139,6 @@ export function EditionDetailPage() {
       setDeclarationDeadline(formatDatetimeLocal(edition.declarationDeadline));
       setDepositStartDatetime(formatDatetimeLocal(edition.depositStartDatetime));
       setDepositEndDatetime(formatDatetimeLocal(edition.depositEndDatetime));
-      setSaleStartDatetime(formatDatetimeLocal(edition.saleStartDatetime));
-      setSaleEndDatetime(formatDatetimeLocal(edition.saleEndDatetime));
       setRetrievalStartDatetime(formatDatetimeLocal(edition.retrievalStartDatetime));
       setRetrievalEndDatetime(formatDatetimeLocal(edition.retrievalEndDatetime));
       setCommissionRate(edition.commissionRate !== null ? String(edition.commissionRate * 100) : '20');
@@ -266,8 +255,6 @@ export function EditionDetailPage() {
       declarationDeadline &&
       depositStartDatetime &&
       depositEndDatetime &&
-      saleStartDatetime &&
-      saleEndDatetime &&
       retrievalStartDatetime &&
       retrievalEndDatetime;
 
@@ -276,8 +263,7 @@ export function EditionDetailPage() {
         declarationDeadline,
         depositStart: depositStartDatetime,
         depositEnd: depositEndDatetime,
-        saleStart: saleStartDatetime,
-        saleEnd: saleEndDatetime,
+        editionEnd: endDatetime,
         retrievalStart: retrievalStartDatetime,
         retrievalEnd: retrievalEndDatetime,
       });
@@ -309,12 +295,6 @@ export function EditionDetailPage() {
     }
     if (depositEndDatetime) {
       updateData.depositEndDatetime = formatLocalDatetime(depositEndDatetime);
-    }
-    if (saleStartDatetime) {
-      updateData.saleStartDatetime = formatLocalDatetime(saleStartDatetime);
-    }
-    if (saleEndDatetime) {
-      updateData.saleEndDatetime = formatLocalDatetime(saleEndDatetime);
     }
     if (retrievalStartDatetime) {
       updateData.retrievalStartDatetime = formatLocalDatetime(retrievalStartDatetime);
@@ -531,25 +511,6 @@ export function EditionDetailPage() {
                   type="datetime-local"
                   value={depositEndDatetime}
                   onChange={(e) => setDepositEndDatetime(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Sale Dates */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Période de vente</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Début de la vente"
-                  type="datetime-local"
-                  value={saleStartDatetime}
-                  onChange={(e) => setSaleStartDatetime(e.target.value)}
-                />
-                <Input
-                  label="Fin de la vente"
-                  type="datetime-local"
-                  value={saleEndDatetime}
-                  onChange={(e) => setSaleEndDatetime(e.target.value)}
                 />
               </div>
             </div>
