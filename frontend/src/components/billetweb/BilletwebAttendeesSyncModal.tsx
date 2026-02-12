@@ -45,8 +45,16 @@ export function BilletwebAttendeesSyncModal({
           <p className="mt-4 text-gray-500">Chargement des inscriptions...</p>
         </div>
       ) : error ? (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg">
-          Erreur lors du chargement des inscriptions Billetweb.
+        <div className="space-y-4">
+          <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg">
+            Erreur lors du chargement des inscriptions Billetweb.
+            {error instanceof Error && error.message && (
+              <p className="text-sm mt-1">{error.message}</p>
+            )}
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={onClose}>Fermer</Button>
+          </div>
         </div>
       ) : syncMutation.isSuccess ? (
         <div className="space-y-4">
@@ -147,6 +155,16 @@ export function BilletwebAttendeesSyncModal({
               Envoyer les emails d'invitation aux nouveaux deposants
             </label>
           </div>
+
+          {/* Sync error */}
+          {syncMutation.isError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">
+              Erreur lors de la synchronisation.
+              {syncMutation.error instanceof Error && syncMutation.error.message && (
+                <span className="block mt-1">{syncMutation.error.message}</span>
+              )}
+            </div>
+          )}
 
           {/* No data */}
           {stats && stats.rowsToProcess === 0 && (
