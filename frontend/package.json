@@ -14,12 +14,12 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.14",
-    "axios": "^1.13.2",
+    "axios": "^1.13.5",
     "html5-qrcode": "^2.3.8",
     "idb": "^8.0.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-router-dom": "^7.11.0",
+    "react-router-dom": "^7.13.0",
     "recharts": "^3.7.0",
     "zod": "^4.2.1"
   },
