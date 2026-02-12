@@ -58,6 +58,11 @@ export function BilletwebEventSelectModal({
                   <span className="ml-3">{event.location}</span>
                 )}
               </div>
+              {event.description && (
+                <div className="text-xs text-gray-500 mt-1 line-clamp-2">
+                  {event.description.replace(/<[^>]*>/g, '').substring(0, 150)}
+                </div>
+              )}
               <div className="text-xs text-gray-400 mt-1">ID: {event.id}</div>
             </button>
           ))}

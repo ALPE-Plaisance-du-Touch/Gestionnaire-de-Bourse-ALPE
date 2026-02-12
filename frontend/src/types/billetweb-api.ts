@@ -20,6 +20,7 @@ export interface BilletwebEventInfo {
   start: string;
   end: string;
   location: string;
+  description: string;
 }
 
 export interface BilletwebEventsListResponse {

@@ -33,6 +33,7 @@ class BilletwebEventInfo(BaseModel):
     start: str
     end: str
     location: str
+    description: str = ""
 
 
 class BilletwebEventsListResponse(BaseModel):

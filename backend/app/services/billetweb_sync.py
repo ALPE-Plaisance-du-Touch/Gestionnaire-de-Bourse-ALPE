@@ -54,6 +54,7 @@ class BilletwebSyncService:
                 "start": event.get("start", ""),
                 "end": event.get("end", ""),
                 "location": event.get("location", ""),
+                "description": event.get("description", ""),
             })
 
         return events

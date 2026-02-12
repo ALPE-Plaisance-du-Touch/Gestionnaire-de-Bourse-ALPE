@@ -74,6 +74,9 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
   const handleBilletwebSelect = (event: BilletwebEventInfo) => {
     setName(event.name);
     if (event.location) setLocation(event.location);
+    if (event.description) {
+      setDescription(event.description.replace(/<[^>]*>/g, '').trim());
+    }
     // Parse Billetweb date strings into datetime-local format
     if (event.start) {
       const parsed = event.start.replace(' ', 'T').slice(0, 16);

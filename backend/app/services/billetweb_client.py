@@ -93,8 +93,8 @@ class BilletwebClient:
         return True
 
     async def get_events(self) -> list[dict]:
-        """Get list of events."""
-        result = await self._request("GET", "/events")
+        """Get list of events (with descriptions)."""
+        result = await self._request("GET", "/events", params={"description": "1"})
         if isinstance(result, dict):
             return [result]
         return result
