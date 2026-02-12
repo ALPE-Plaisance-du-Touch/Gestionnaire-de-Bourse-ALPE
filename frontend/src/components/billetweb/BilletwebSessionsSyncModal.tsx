@@ -27,6 +27,7 @@ export function BilletwebSessionsSyncModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deposit-slots', editionId] });
       queryClient.invalidateQueries({ queryKey: ['billetweb-sessions-preview', editionId] });
+      queryClient.invalidateQueries({ queryKey: ['edition', editionId] });
     },
   });
 
