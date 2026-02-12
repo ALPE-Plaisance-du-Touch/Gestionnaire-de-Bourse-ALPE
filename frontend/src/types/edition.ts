@@ -35,6 +35,8 @@ export interface Edition {
   commissionRate: number | null;
   createdAt: string;
   createdBy: EditionCreator | null;
+  billetwebEventId: string | null;
+  lastBilletwebSync: string | null;
   closedAt: string | null;
   closedBy: EditionCreator | null;
   archivedAt: string | null;
@@ -46,6 +48,7 @@ export interface CreateEditionRequest {
   endDatetime: string;
   location?: string;
   description?: string;
+  billetwebEventId?: string;
 }
 
 export interface UpdateEditionRequest {

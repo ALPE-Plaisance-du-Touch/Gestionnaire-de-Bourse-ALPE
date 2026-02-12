@@ -1,5 +1,6 @@
 """Billetweb API integration endpoints."""
 
+import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -10,8 +11,14 @@ from app.schemas.billetweb_api import (
     BilletwebConnectionTestResponse,
     BilletwebCredentialsRequest,
     BilletwebCredentialsResponse,
+    BilletwebEventInfo,
+    BilletwebEventsListResponse,
 )
+from app.services.billetweb_client import BilletwebAPIError, BilletwebAuthError
+from app.services.billetweb_sync import BilletwebSyncService
 from app.services.settings import SettingsService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -71,34 +78,66 @@ async def test_billetweb_connection(
     current_user: Annotated[User, Depends(require_role(["administrator"]))],
 ):
     """Test the Billetweb API connection using saved credentials."""
-    service = SettingsService(db)
-    configured = await service.is_billetweb_configured()
+    sync_service = BilletwebSyncService(db)
 
+    settings_service = SettingsService(db)
+    configured = await settings_service.is_billetweb_configured()
     if not configured:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Billetweb API credentials not configured",
         )
 
-    # Import here to avoid circular dependency - will be created in iteration 2
     try:
-        from app.services.billetweb_client import BilletwebClient
-
-        user, api_key = await service.get_billetweb_credentials()
-        client = BilletwebClient(user=user, api_key=api_key)
-        await client.test_connection()
+        await sync_service.test_connection()
         return BilletwebConnectionTestResponse(
             success=True,
             message="Connection successful",
         )
-    except ImportError:
-        # BilletwebClient not yet implemented (iteration 2)
+    except BilletwebAuthError:
         return BilletwebConnectionTestResponse(
             success=False,
-            message="Billetweb client not yet available",
+            message="Identifiants invalides",
         )
-    except Exception as e:
+    except BilletwebAPIError as e:
+        logger.warning("Billetweb connection test failed: %s", e)
         return BilletwebConnectionTestResponse(
             success=False,
             message=str(e),
+        )
+
+
+@router.get(
+    "/events",
+    response_model=BilletwebEventsListResponse,
+    summary="List Billetweb events",
+)
+async def list_billetweb_events(
+    db: DBSession,
+    current_user: Annotated[User, Depends(require_role(["administrator"]))],
+):
+    """List events from Billetweb API (admin only)."""
+    sync_service = BilletwebSyncService(db)
+
+    settings_service = SettingsService(db)
+    configured = await settings_service.is_billetweb_configured()
+    if not configured:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Billetweb API credentials not configured",
+        )
+
+    try:
+        raw_events = await sync_service.list_events()
+        events = [BilletwebEventInfo(**e) for e in raw_events]
+        return BilletwebEventsListResponse(events=events)
+    except BilletwebAuthError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Identifiants Billetweb invalides",
+        )
+    except BilletwebAPIError as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=str(e),
         )

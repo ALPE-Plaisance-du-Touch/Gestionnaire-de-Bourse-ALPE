@@ -1,7 +1,9 @@
 import { useState, type FormEvent } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { editionsApi, ApiException } from '@/api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { editionsApi, ApiException, billetwebApiSettings } from '@/api';
 import { Button, Input, Modal } from '@/components/ui';
+import { BilletwebEventSelectModal } from '@/components/billetweb/BilletwebEventSelectModal';
+import type { BilletwebEventInfo } from '@/types';
 
 interface EditionCreateModalProps {
   isOpen: boolean;
@@ -16,8 +18,20 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
   const [endDatetime, setEndDatetime] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
+  const [billetwebEventId, setBilletwebEventId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [showEventSelect, setShowEventSelect] = useState(false);
+
+  // Check if Billetweb API is configured (admin only, won't error for non-admins)
+  const { data: billetwebConfig } = useQuery({
+    queryKey: ['billetweb-settings'],
+    queryFn: () => billetwebApiSettings.getConfig(),
+    enabled: isOpen,
+    retry: false,
+  });
+
+  const billetwebConfigured = billetwebConfig?.configured ?? false;
 
   const createMutation = useMutation({
     mutationFn: editionsApi.createEdition,
@@ -47,6 +61,7 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
     setEndDatetime('');
     setLocation('');
     setDescription('');
+    setBilletwebEventId(null);
     setError(null);
     setSuccess(false);
   };
@@ -54,6 +69,22 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
   const handleClose = () => {
     resetForm();
     onClose();
+  };
+
+  const handleBilletwebSelect = (event: BilletwebEventInfo) => {
+    setName(event.name);
+    if (event.location) setLocation(event.location);
+    // Parse Billetweb date strings into datetime-local format
+    if (event.start) {
+      const parsed = event.start.replace(' ', 'T').slice(0, 16);
+      setStartDatetime(parsed);
+    }
+    if (event.end) {
+      const parsed = event.end.replace(' ', 'T').slice(0, 16);
+      setEndDatetime(parsed);
+    }
+    setBilletwebEventId(event.id);
+    setShowEventSelect(false);
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -86,6 +117,7 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
       endDatetime: `${endDatetime}:00`,
       location: location.trim() || undefined,
       description: description.trim() || undefined,
+      billetwebEventId: billetwebEventId || undefined,
     });
   };
 
@@ -94,97 +126,123 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Nouvelle édition" size="lg">
-      {success ? (
-        <div className="space-y-4">
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-            <p className="font-medium">Édition créée avec succès !</p>
-            <p className="text-sm mt-1">
-              L'édition <strong>{name}</strong> a été créée en statut brouillon.
-            </p>
-          </div>
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={handleClose}>
-              Fermer
-            </Button>
-            <Button onClick={handleCreateAnother}>Créer une autre édition</Button>
-          </div>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              {error}
+    <>
+      <Modal isOpen={isOpen} onClose={handleClose} title="Nouvelle édition" size="lg">
+        {success ? (
+          <div className="space-y-4">
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+              <p className="font-medium">Édition créée avec succès !</p>
+              <p className="text-sm mt-1">
+                L'édition <strong>{name}</strong> a été créée en statut brouillon.
+              </p>
             </div>
-          )}
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={handleClose}>
+                Fermer
+              </Button>
+              <Button onClick={handleCreateAnother}>Créer une autre édition</Button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                {error}
+              </div>
+            )}
 
-          <Input
-            label="Nom de l'édition"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Bourse Printemps 2025"
-            required
-            autoFocus
-          />
+            {billetwebConfigured && (
+              <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <span className="text-sm text-blue-700">
+                  {billetwebEventId
+                    ? `Lié à l'événement Billetweb #${billetwebEventId}`
+                    : 'Pré-remplir depuis un événement Billetweb'}
+                </span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={billetwebEventId ? 'outline' : 'primary'}
+                  onClick={() => setShowEventSelect(true)}
+                >
+                  {billetwebEventId ? 'Changer' : 'Importer'}
+                </Button>
+              </div>
+            )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              label="Date et heure de début"
-              type="datetime-local"
-              value={startDatetime}
-              onChange={(e) => setStartDatetime(e.target.value)}
+              label="Nom de l'édition"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Bourse Printemps 2025"
               required
+              autoFocus
             />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Date et heure de début"
+                type="datetime-local"
+                value={startDatetime}
+                onChange={(e) => setStartDatetime(e.target.value)}
+                required
+              />
+              <Input
+                label="Date et heure de fin"
+                type="datetime-local"
+                value={endDatetime}
+                onChange={(e) => setEndDatetime(e.target.value)}
+                required
+              />
+            </div>
+
             <Input
-              label="Date et heure de fin"
-              type="datetime-local"
-              value={endDatetime}
-              onChange={(e) => setEndDatetime(e.target.value)}
-              required
+              label="Lieu"
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Salle des fêtes de Plaisance du Touch"
             />
-          </div>
 
-          <Input
-            label="Lieu"
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="Salle des fêtes de Plaisance du Touch"
-          />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Description optionnelle de l'édition..."
+                rows={3}
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Description optionnelle de l'édition..."
-              rows={3}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
-            />
-          </div>
+            <p className="text-sm text-gray-500">
+              L'édition sera créée en statut "Brouillon". Vous pourrez ensuite la configurer
+              avant d'ouvrir les inscriptions.
+            </p>
 
-          <p className="text-sm text-gray-500">
-            L'édition sera créée en statut "Brouillon". Vous pourrez ensuite la configurer
-            avant d'ouvrir les inscriptions.
-          </p>
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button type="button" variant="outline" onClick={handleClose}>
+                Annuler
+              </Button>
+              <Button
+                type="submit"
+                disabled={createMutation.isPending || !name || !startDatetime || !endDatetime}
+                isLoading={createMutation.isPending}
+              >
+                Créer l'édition
+              </Button>
+            </div>
+          </form>
+        )}
+      </Modal>
 
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={handleClose}>
-              Annuler
-            </Button>
-            <Button
-              type="submit"
-              disabled={createMutation.isPending || !name || !startDatetime || !endDatetime}
-              isLoading={createMutation.isPending}
-            >
-              Créer l'édition
-            </Button>
-          </div>
-        </form>
-      )}
-    </Modal>
+      <BilletwebEventSelectModal
+        isOpen={showEventSelect}
+        onClose={() => setShowEventSelect(false)}
+        onSelect={handleBilletwebSelect}
+      />
+    </>
   );
 }

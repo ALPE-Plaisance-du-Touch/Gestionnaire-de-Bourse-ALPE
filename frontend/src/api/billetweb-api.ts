@@ -3,6 +3,7 @@ import type {
   BilletwebCredentialsRequest,
   BilletwebCredentialsResponse,
   BilletwebConnectionTestResponse,
+  BilletwebEventsListResponse,
 } from '@/types';
 
 export const billetwebApiSettings = {
@@ -26,6 +27,13 @@ export const billetwebApiSettings = {
   testConnection: async (): Promise<BilletwebConnectionTestResponse> => {
     const response = await apiClient.post<BilletwebConnectionTestResponse>(
       '/v1/settings/billetweb/test'
+    );
+    return response.data;
+  },
+
+  listEvents: async (): Promise<BilletwebEventsListResponse> => {
+    const response = await apiClient.get<BilletwebEventsListResponse>(
+      '/v1/settings/billetweb/events'
     );
     return response.data;
   },

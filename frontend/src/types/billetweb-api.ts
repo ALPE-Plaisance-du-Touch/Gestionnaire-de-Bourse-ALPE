@@ -13,3 +13,15 @@ export interface BilletwebConnectionTestResponse {
   success: boolean;
   message: string;
 }
+
+export interface BilletwebEventInfo {
+  id: string;
+  name: string;
+  start: string;
+  end: string;
+  location: string;
+}
+
+export interface BilletwebEventsListResponse {
+  events: BilletwebEventInfo[];
+}

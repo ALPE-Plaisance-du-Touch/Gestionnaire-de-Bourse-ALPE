@@ -23,3 +23,19 @@ class BilletwebConnectionTestResponse(BaseModel):
 
     success: bool
     message: str
+
+
+class BilletwebEventInfo(BaseModel):
+    """Info about a Billetweb event."""
+
+    id: str
+    name: str
+    start: str
+    end: str
+    location: str
+
+
+class BilletwebEventsListResponse(BaseModel):
+    """Response listing Billetweb events."""
+
+    events: list[BilletwebEventInfo]

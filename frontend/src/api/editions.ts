@@ -28,6 +28,8 @@ interface EditionApiResponse {
   retrievalStartDatetime: string | null;
   retrievalEndDatetime: string | null;
   commissionRate: string | null;  // Decimal is serialized as string by Pydantic
+  billetwebEventId: string | null;
+  lastBilletwebSync: string | null;
   createdAt: string;
   createdBy: {
     id: string;
@@ -75,6 +77,8 @@ function transformEdition(data: EditionApiResponse): Edition {
     retrievalStartDatetime: data.retrievalStartDatetime,
     retrievalEndDatetime: data.retrievalEndDatetime,
     commissionRate: data.commissionRate !== null ? parseFloat(data.commissionRate) : null,
+    billetwebEventId: data.billetwebEventId,
+    lastBilletwebSync: data.lastBilletwebSync,
     createdAt: data.createdAt,
     createdBy: data.createdBy,
     closedAt: data.closedAt,
@@ -125,13 +129,17 @@ export const editionsApi = {
    * Create a new edition.
    */
   createEdition: async (data: CreateEditionRequest): Promise<Edition> => {
-    const response = await apiClient.post<EditionApiResponse>('/v1/editions', {
+    const payload: Record<string, unknown> = {
       name: data.name,
       start_datetime: data.startDatetime,
       end_datetime: data.endDatetime,
       location: data.location,
       description: data.description,
-    });
+    };
+    if (data.billetwebEventId) {
+      payload.billetweb_event_id = data.billetwebEventId;
+    }
+    const response = await apiClient.post<EditionApiResponse>('/v1/editions', payload);
     return transformEdition(response.data);
   },
 
