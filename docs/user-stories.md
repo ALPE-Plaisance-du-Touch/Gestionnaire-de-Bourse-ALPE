@@ -1432,6 +1432,7 @@ acceptance_criteria:
       • Description (optionnel, texte libre)
       • Statut initial (automatique: "Brouillon")
     AND un bouton "Créer l'édition" et un bouton "Annuler"
+    AND si la clé API Billetweb est configurée (US-012), un bouton "Importer depuis Billetweb" permet de pré-remplir le formulaire depuis un événement Billetweb existant
 
   # AC-3 : Validation et création réussie
   - GIVEN je remplis tous les champs obligatoires avec des valeurs valides
@@ -1489,6 +1490,8 @@ links:
     id: REQ-F-006  # TODO : créer exigence pour création d'éditions
   - rel: requirement
     id: REQ-NF-003  # RGPD
+  - rel: extends
+    id: US-012  # Pré-remplissage depuis Billetweb (optionnel)
   - rel: persona
     id: Administrateur
 
@@ -1701,6 +1704,8 @@ notes: |
   - Le créneau (colonne Séance) doit correspondre aux créneaux configurés dans l'édition (US-007)
   - Le tarif (colonne Tarif) indique le type de liste : standard, 1000, ou 2000
   - Volume attendu : 200-300 inscriptions par édition
+  - **Alternative automatisée : US-012 permet la synchronisation via l'API Billetweb (sans export/import de fichier)**
+  - Cet import CSV reste disponible comme fallback si l'API est indisponible
 
 acceptance_criteria:
   # AC-1 : Accès à l'import
@@ -1869,6 +1874,270 @@ test_scenarios:
   - T-US008-13 : Traçabilité de l'import dans les logs (fichier, nombre, date, gestionnaire)
   - T-US008-14 : Mapping tarif Billetweb vers type de liste (standard/1000/2000)
   - T-US008-15 : Identification Plaisançois via code postal 31830
+```
+
+## US-012 — Synchroniser les inscriptions via l'API Billetweb
+
+```yaml
+id: US-012
+title: Synchroniser les inscriptions via l'API Billetweb
+actor: gestionnaire
+benefit: "...pour automatiser l'import des inscriptions sans manipulation de fichier"
+as_a: "En tant que gestionnaire de bourse"
+i_want: "Je veux synchroniser automatiquement les inscriptions depuis Billetweb via leur API"
+so_that: "Afin d'éviter les exports/imports manuels de fichiers CSV et de disposer des données à jour en temps réel"
+
+# Contexte métier
+notes: |
+  - Évolution de US-008 : remplacement du flux CSV manuel par une intégration API directe
+  - L'API Billetweb (https://www.billetweb.fr/bo/api.php) expose des endpoints REST
+  - Authentification par couple user/key (clé API fournie par Billetweb)
+  - La clé API est configurée par un administrateur dans les paramètres de l'application
+  - L'API expose : les événements, les séances (créneaux), et les participants (attendees)
+  - Limitation API : endpoint attendees limité à 10 appels/minute
+  - L'import incrémental est supporté via le paramètre `last_update` (timestamp unix)
+  - Les mêmes règles métier que US-008 s'appliquent (validation, doublons, invitations)
+
+acceptance_criteria:
+  # --- Configuration API (administrateur uniquement) ---
+
+  # AC-1 : Configuration de la clé API Billetweb
+  - GIVEN je suis connecté en tant qu'administrateur
+    WHEN j'accède aux paramètres de l'application
+    THEN je vois une section "Intégration Billetweb" avec :
+      • Champ "Identifiant API" (user)
+      • Champ "Clé API" (key, masqué par défaut avec bouton afficher/masquer)
+      • Bouton "Tester la connexion"
+      • Bouton "Enregistrer"
+    AND seuls les administrateurs ont accès à cette section
+
+  # AC-2 : Test de connexion API
+  - GIVEN j'ai saisi un identifiant et une clé API
+    WHEN je clique sur "Tester la connexion"
+    THEN le système appelle l'API Billetweb (GET /api/events)
+    AND affiche "Connexion réussie" en vert si l'API répond correctement
+    OR affiche "Échec de connexion : [détail de l'erreur]" en rouge si l'authentification échoue
+
+  # AC-3 : Sécurité de la clé API
+  - GIVEN la clé API est enregistrée
+    THEN elle est stockée chiffrée en base de données
+    AND elle n'est jamais renvoyée en clair dans les réponses API (affichage masqué : "••••••••abcd")
+    AND elle n'apparaît pas dans les logs applicatifs
+
+  # --- Création d'édition enrichie (administrateur) ---
+
+  # AC-4 : Import depuis Billetweb lors de la création d'édition
+  - GIVEN la clé API Billetweb est configurée et valide
+    AND je suis connecté en tant qu'administrateur
+    WHEN je crée une nouvelle édition (US-006)
+    THEN je vois un bouton "Importer depuis Billetweb" à côté du formulaire de création
+    AND ce bouton n'est visible que si la clé API est configurée
+
+  # AC-5 : Sélection d'un événement Billetweb
+  - GIVEN je clique sur "Importer depuis Billetweb"
+    WHEN le système interroge l'API (GET /api/events avec past=0, online=1)
+    THEN je vois la liste des événements Billetweb en cours avec :
+      • Nom de l'événement
+      • Date de début et de fin
+      • Lieu
+    AND je peux sélectionner un événement pour pré-remplir le formulaire de création
+
+  # AC-6 : Pré-remplissage du formulaire d'édition
+  - GIVEN je sélectionne un événement Billetweb
+    WHEN les données sont chargées
+    THEN le formulaire de création d'édition est pré-rempli avec :
+      • Nom de l'édition ← nom de l'événement Billetweb
+      • Date/heure de début ← date de début de l'événement
+      • Date/heure de fin ← date de fin de l'événement
+      • Lieu ← lieu de l'événement
+    AND l'identifiant de l'événement Billetweb (event_id) est associé à l'édition
+    AND je peux modifier les champs avant de valider la création
+
+  # --- Import des créneaux (gestionnaire/administrateur) ---
+
+  # AC-7 : Import des séances comme créneaux de dépôt
+  - GIVEN une édition est créée et associée à un événement Billetweb
+    AND je suis connecté en tant que gestionnaire ou administrateur
+    WHEN j'accède à la configuration des créneaux (US-007)
+    THEN je vois un bouton "Synchroniser les créneaux depuis Billetweb"
+
+  # AC-8 : Récupération des séances
+  - GIVEN je clique sur "Synchroniser les créneaux depuis Billetweb"
+    WHEN le système interroge l'API (GET /api/event/:id/dates avec past=0)
+    THEN le système affiche une prévisualisation des séances :
+      • Nom de la séance
+      • Date/heure de début et fin
+      • Capacité (quota)
+      • Places vendues (total_sales)
+    AND je peux confirmer l'import ou annuler
+    AND les créneaux existants déjà synchronisés sont signalés
+
+  # AC-9 : Création des créneaux depuis les séances
+  - GIVEN je confirme l'import des séances
+    WHEN le système crée les créneaux de dépôt
+    THEN chaque séance Billetweb est convertie en créneau :
+      • Nom du créneau ← nom de la séance
+      • Date/heure début ← start de la séance
+      • Date/heure fin ← end de la séance
+      • Capacité ← quota de la séance
+    AND l'identifiant de la séance Billetweb (session_id) est associé au créneau
+    AND les créneaux déjà existants (même session_id) sont mis à jour, pas dupliqués
+
+  # --- Import des participants (gestionnaire/administrateur) ---
+
+  # AC-10 : Synchronisation des inscriptions
+  - GIVEN une édition est en statut "Configurée" ou supérieur
+    AND les créneaux sont configurés
+    AND je suis connecté en tant que gestionnaire ou administrateur
+    WHEN j'accède à la page de gestion de l'édition
+    THEN je vois un bouton "Synchroniser les inscriptions Billetweb"
+    AND une indication de la dernière synchronisation (date/heure) si applicable
+    AND le nombre de participants déjà importés
+
+  # AC-11 : Prévisualisation des participants
+  - GIVEN je clique sur "Synchroniser les inscriptions Billetweb"
+    WHEN le système interroge l'API (GET /api/event/:id/attendees)
+    THEN le système affiche un récapitulatif identique à US-008 AC-3 :
+      • Nombre total de participants récupérés
+      • Billets non payés ou annulés (ignorés) — order_paid != "completed", disabled != 0
+      • Billets payés et valides à traiter
+      • Déposants existants (email déjà en base)
+      • Nouveaux déposants (email inconnu)
+      • Doublons (même email, seule 1ère occurrence gardée)
+      • Déposants déjà associés à l'édition (ignorés)
+    AND un bouton "Importer" pour confirmer
+
+  # AC-12 : Import incrémental
+  - GIVEN une synchronisation a déjà été effectuée pour cette édition
+    WHEN je lance une nouvelle synchronisation
+    THEN le système n'interroge que les participants modifiés depuis la dernière synchronisation
+      (paramètre last_update = timestamp de la dernière sync)
+    AND n'importe que les nouveaux participants (pas de doublons)
+    AND affiche dans le récapitulatif : "[X] nouveaux participants depuis la dernière synchronisation"
+
+  # AC-13 : Mapping des données API vers le modèle interne
+  - GIVEN les données des participants sont récupérées via l'API
+    THEN le mapping suivant est appliqué :
+      • Email ← order_email (obligatoire, identifiant unique)
+      • Nom ← name (obligatoire)
+      • Prénom ← firstname (obligatoire)
+      • Créneau ← order_session ou session_start (doit correspondre à un créneau configuré)
+      • Type de liste ← ticket (mapping tarif → standard/1000/2000)
+      • Statut paiement ← order_paid (seuls "completed" sont importés)
+      • Annulé ← disabled (0 = actif, autre = ignoré)
+      • Téléphone ← custom.telephone ou custom.phone (si champ personnalisé configuré)
+      • Code postal ← custom.code_postal ou custom.zip (si champ personnalisé configuré)
+      • Ville ← custom.ville ou custom.city (si champ personnalisé configuré)
+      • Référence commande ← order_ext_id (pour traçabilité)
+    AND les mêmes validations que US-008 s'appliquent (email valide, créneau reconnu, etc.)
+
+  # AC-14 : Gestion des erreurs API
+  - GIVEN l'API Billetweb est indisponible ou retourne une erreur
+    WHEN je tente une synchronisation
+    THEN le système affiche un message explicite :
+      • "Impossible de contacter l'API Billetweb. Vérifiez votre connexion et réessayez."
+      • "Authentification refusée. Vérifiez la clé API dans les paramètres."
+      • "Limite d'appels API atteinte. Réessayez dans quelques minutes."
+    AND aucune donnée n'est modifiée en cas d'erreur
+
+  # AC-15 : Contrôle d'accès
+  - GIVEN je suis connecté en tant que bénévole ou déposant
+    WHEN j'essaie d'accéder à la synchronisation Billetweb
+    THEN le système refuse l'accès
+  - GIVEN je suis connecté en tant que gestionnaire
+    WHEN j'essaie d'accéder à la configuration de la clé API
+    THEN le système refuse l'accès (réservé aux administrateurs)
+
+  # AC-16 : Coexistence avec l'import CSV (US-008)
+  - GIVEN l'import via API est disponible
+    THEN l'import CSV manuel (US-008) reste disponible comme alternative
+    AND les deux méthodes d'import produisent les mêmes résultats (mêmes invitations, mêmes associations)
+    AND un gestionnaire peut choisir l'une ou l'autre méthode
+
+dependencies:
+  - US-006  # Créer une édition
+  - US-007  # Configurer les dates/créneaux
+  - US-008  # Import CSV (alternative manuelle)
+  - US-001  # Activation invitation (pour nouveaux déposants)
+
+links:
+  - rel: requirement
+    id: REQ-F-008
+  - rel: requirement
+    id: REQ-F-020  # Configuration API Billetweb
+  - rel: persona
+    id: Gestionnaire
+  - rel: persona
+    id: Administrateur
+  - rel: external
+    href: https://www.billetweb.fr/bo/api.php
+    title: Documentation API Billetweb
+
+# Règles métier complémentaires
+business_rules:
+  - Seuls les administrateurs peuvent configurer la clé API Billetweb
+  - Les gestionnaires et administrateurs peuvent lancer les synchronisations
+  - Seuls les administrateurs peuvent créer des éditions depuis Billetweb (AC-4 à AC-6)
+  - La clé API est stockée chiffrée en base, jamais en clair dans les logs ou réponses API
+  - L'import incrémental utilise last_update pour ne récupérer que les changements
+  - Les mêmes règles de validation que US-008 s'appliquent (email unique par édition, créneau valide, etc.)
+  - Limitation API : 10 appels/minute sur l'endpoint attendees — pas de sync automatique en boucle
+  - L'association event_id et session_id permet d'éviter les doublons lors des re-synchronisations
+  - L'import CSV (US-008) reste disponible comme fallback si l'API est indisponible
+
+# Données stockées
+data_model:
+  # Paramètres globaux (table app_settings ou config)
+  - billetweb_api_user (string, chiffré)
+  - billetweb_api_key (string, chiffré)
+
+  # Sur l'édition
+  - billetweb_event_id (integer, nullable) — ID de l'événement Billetweb associé
+  - billetweb_last_sync (datetime, nullable) — Horodatage de la dernière synchronisation
+
+  # Sur les créneaux (deposit_slots)
+  - billetweb_session_id (integer, nullable) — ID de la séance Billetweb associée
+
+# API Billetweb - Endpoints utilisés
+api_endpoints:
+  - method: GET
+    path: /api/events
+    params: "past=0&online=1"
+    usage: "Lister les événements actifs pour sélection lors de la création d'édition"
+    response_fields: "id, name, start, end, place"
+
+  - method: GET
+    path: /api/event/:id/dates
+    params: "past=0"
+    usage: "Récupérer les séances d'un événement pour créer les créneaux de dépôt"
+    response_fields: "id, start, end, name, place, quota, total_sales"
+
+  - method: GET
+    path: /api/event/:id/attendees
+    params: "last_update={timestamp}"
+    usage: "Récupérer les participants (import incrémental)"
+    response_fields: "id, firstname, name, ticket, ticket_id, order_email, order_paid, order_session, session_start, disabled, custom, order_ext_id"
+    rate_limit: "10 appels/minute"
+
+# Cas de test suggérés
+test_scenarios:
+  - T-US012-01 : Configuration clé API valide + test de connexion réussi
+  - T-US012-02 : Configuration clé API invalide + test de connexion échoué
+  - T-US012-03 : Clé API non visible en clair dans les réponses API
+  - T-US012-04 : Accès à la configuration refusé pour gestionnaire/bénévole/déposant
+  - T-US012-05 : Liste des événements Billetweb (création d'édition)
+  - T-US012-06 : Pré-remplissage du formulaire d'édition depuis événement Billetweb
+  - T-US012-07 : Import des séances comme créneaux de dépôt
+  - T-US012-08 : Re-synchronisation des créneaux (mise à jour, pas de doublons)
+  - T-US012-09 : Import nominal des participants (nouveaux + existants)
+  - T-US012-10 : Import incrémental (seulement les nouveaux depuis last_update)
+  - T-US012-11 : Participants non payés ou annulés ignorés
+  - T-US012-12 : Mapping des champs custom (téléphone, code postal, ville)
+  - T-US012-13 : Erreur API indisponible (message explicite, pas de modification)
+  - T-US012-14 : Erreur authentification API (message explicite)
+  - T-US012-15 : Coexistence import CSV et import API (mêmes résultats)
+  - T-US012-16 : Accès synchronisation refusé pour bénévole/déposant
+  - T-US012-17 : Bouton "Importer depuis Billetweb" absent si clé API non configurée
 ```
 
 ## US-009 — Clôturer une édition de bourse
