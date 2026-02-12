@@ -173,7 +173,7 @@ export function EditionDetailPage() {
     onError: (err) => {
       if (err instanceof ApiException) {
         if (err.status === 409) {
-          setError('Une édition avec ce nom existe déjà.');
+          setFieldErrors({ name: 'Une édition avec ce nom existe déjà.' });
         } else if (err.status === 422) {
           setError('Données invalides. Vérifiez les informations saisies.');
         } else {
