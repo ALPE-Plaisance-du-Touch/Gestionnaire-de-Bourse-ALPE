@@ -125,7 +125,7 @@ export function BilletwebSettingsPage() {
           label="Identifiant utilisateur"
           value={user}
           onChange={(e) => setUser(e.target.value)}
-          placeholder="votre-email@example.com"
+          placeholder="Votre identifiant Billetweb (ex: 158210)"
           required
         />
 
