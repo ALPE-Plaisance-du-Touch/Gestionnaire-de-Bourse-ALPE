@@ -42,6 +42,7 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.16 | Accessibilité & UX | ✅ Done |
 | 0.17 | Améliorations gestion | ✅ Done |
 | 0.18 | Page d'accueil | ✅ Done |
+| 0.19 | Intégration API Billetweb | 🚧 En cours |
 
 **Conformité specs : ~89%** (59/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
 
@@ -58,6 +59,7 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.16 | Accessibilité & UX | WCAG 2.1 AA, indicateur mot de passe, UX scanner, détection déposant | Moyenne |
 | 0.17 | Améliorations gestion | Override annulation, export Excel invitations, archivage auto, relance bulk | Basse |
 | 0.18 | Page d'accueil | Homepage publique, contrainte unicité édition active | Moyenne |
+| 0.19 | Intégration API Billetweb | Config API admin, sync événements/séances/participants | Haute |
 | 1.0.0 | Feature Freeze & Production | Bug fixes, tests intégration, perf, audit, release | - |
 
 ---
@@ -243,9 +245,57 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 
 ---
 
+## v0.19 - Intégration API Billetweb
+
+**Branche :** `feature/billetweb-auto-import`
+**Exigences :** US-012, REQ-F-020, REQ-F-021
+
+### Configuration API Billetweb (TASK-023) — AC-1, AC-2, AC-3
+
+- [ ] **0.19.1** Backend : modèle `AppSetting` (key/value chiffré) + migration, service CRUD settings
+- [ ] **0.19.2** Backend : service `BilletwebClient` (httpx async, auth user/key, gestion rate limit 10/min)
+- [ ] **0.19.3** Backend : endpoints admin `PUT /settings/billetweb` (save config) + `POST /settings/billetweb/test` (test connexion)
+- [ ] **0.19.4** Frontend : page BilletwebSettingsPage (champs user/key masqué, bouton tester, bouton enregistrer)
+
+### Création d'édition enrichie (TASK-024) — AC-4, AC-5, AC-6
+
+- [ ] **0.19.5** Backend : endpoint `GET /billetweb/events` (liste événements en cours, admin only)
+- [ ] **0.19.6** Backend : champ `billetweb_event_id` sur Edition + migration
+- [ ] **0.19.7** Frontend : bouton "Importer depuis Billetweb" dans EditionCreatePage + modal sélection événement + pré-remplissage formulaire
+
+### Synchronisation des créneaux (TASK-025) — AC-7, AC-8, AC-9
+
+- [ ] **0.19.8** Backend : endpoint `GET /billetweb/events/{event_id}/sessions` (liste séances)
+- [ ] **0.19.9** Backend : endpoint `POST /editions/{id}/sync-slots` (import séances → créneaux de dépôt)
+- [ ] **0.19.10** Backend : champ `billetweb_session_id` sur DepositSlot + migration, upsert logic
+- [ ] **0.19.11** Frontend : bouton "Synchroniser créneaux" sur DepositSlotsPage + prévisualisation + confirmation
+
+### Synchronisation des participants (TASK-026) — AC-10, AC-11, AC-12, AC-13
+
+- [ ] **0.19.12** Backend : endpoint `GET /billetweb/events/{event_id}/attendees` (liste participants avec last_update)
+- [ ] **0.19.13** Backend : service `BilletwebSyncService` (mapping attendees → déposants/inscriptions, import incrémental, même logique que US-008)
+- [ ] **0.19.14** Backend : champ `last_billetweb_sync` sur Edition + migration
+- [ ] **0.19.15** Backend : endpoint `POST /editions/{id}/sync-attendees` (preview + import)
+- [ ] **0.19.16** Frontend : bouton "Synchroniser inscriptions" sur EditionDetailPage + prévisualisation identique US-008 + indicateur dernière sync
+
+### Gestion des erreurs & contrôle d'accès (TASK-027) — AC-14, AC-15, AC-16
+
+- [ ] **0.19.17** Backend : gestion erreurs API (indisponibilité, auth refusée, rate limit) avec messages explicites
+- [ ] **0.19.18** Backend : RBAC — config API admin only, sync endpoints gestionnaire+
+- [ ] **0.19.19** Frontend : messages d'erreur contextuels + fallback vers import CSV (US-008)
+
+### Tests & docs
+
+- [ ] **0.19.20** Tests unitaires BilletwebClient (mock API, rate limit, erreurs)
+- [ ] **0.19.21** Tests unitaires BilletwebSyncService (mapping, incrémental, doublons)
+- [ ] **0.19.22** Tests unitaires endpoints (config, events, sync-slots, sync-attendees, RBAC)
+- [ ] **0.19.23** Mise à jour DEVELOPMENT.md et PLAN.md
+
+---
+
 ## v1.0.0 - Feature Freeze & Production
 
-**Prérequis :** Toutes les versions 0.12 à 0.18 terminées et testées.
+**Prérequis :** Toutes les versions 0.12 à 0.19 terminées et testées.
 
 À partir de cette version, plus aucune fonctionnalité n'est ajoutée.
 Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
@@ -295,6 +345,11 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 | TASK-020 | 0.17 | Relance invitations en masse | US-010 AC-12 |
 | TASK-021 | 0.18 | Page d'accueil publique | US-011 |
 | TASK-022 | 0.18 | Contrainte unicité édition active | REQ-F-019 |
+| TASK-023 | 0.19 | Configuration API Billetweb | REQ-F-020, US-012 AC-1/2/3 |
+| TASK-024 | 0.19 | Création édition enrichie Billetweb | US-012 AC-4/5/6 |
+| TASK-025 | 0.19 | Sync créneaux depuis Billetweb | US-012 AC-7/8/9 |
+| TASK-026 | 0.19 | Sync participants depuis Billetweb | REQ-F-021, US-012 AC-10/11/12/13 |
+| TASK-027 | 0.19 | Erreurs API & accès Billetweb | US-012 AC-14/15/16 |
 
 ---
 
@@ -304,8 +359,8 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 |----------|--------|-------------|
 | Rapport d'analyse | [docs/analysis-report-2026-02-09.md](docs/analysis-report-2026-02-09.md) | Écarts détaillés + prompts prêts à l'emploi par TASK |
 | Suivi d'avancement | [DEVELOPMENT.md](DEVELOPMENT.md) | Checkboxes détaillées par version livrée |
-| User Stories | [docs/user-stories.md](docs/user-stories.md) | US-001 à US-010, critères d'acceptation |
-| Exigences | [docs/exigences.md](docs/exigences.md) | REQ-F-001 à F-017, REQ-NF-001 à NF-012 |
+| User Stories | [docs/user-stories.md](docs/user-stories.md) | US-001 à US-012, critères d'acceptation |
+| Exigences | [docs/exigences.md](docs/exigences.md) | REQ-F-001 à F-021, REQ-NF-001 à NF-012 |
 | Architecture | [docs/architecture.md](docs/architecture.md) | C4, ADR, stack technique |
 | Sécurité | [docs/securite.md](docs/securite.md) | Matrice RBAC, RGPD, audit, anti-fraude |
 | Opérations | [docs/operations.md](docs/operations.md) | SLOs, runbooks, checklists |
