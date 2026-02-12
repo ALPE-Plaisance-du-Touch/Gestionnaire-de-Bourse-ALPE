@@ -270,7 +270,7 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
               <tbody className="bg-white divide-y divide-gray-200">
                 {editions.map((edition) => {
                   const statusInfo = STATUS_LABELS[edition.status];
-                  const canDelete = isAdmin && edition.status === 'draft';
+                  const canDelete = isAdmin && (edition.status === 'draft' || edition.status === 'configured');
 
                   return (
                     <tr key={edition.id} className="hover:bg-gray-50">

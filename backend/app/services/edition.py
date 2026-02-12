@@ -242,9 +242,9 @@ class EditionService:
         """
         edition = await self.get_edition(edition_id)
 
-        if not edition.is_draft:
+        if edition.status not in (EditionStatus.DRAFT.value, EditionStatus.CONFIGURED.value):
             raise ValidationError(
-                "Seules les éditions en brouillon peuvent être supprimées",
+                "Seules les éditions en brouillon ou configurées peuvent être supprimées",
                 field="status",
             )
 

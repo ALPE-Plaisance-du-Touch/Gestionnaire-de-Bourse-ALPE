@@ -115,6 +115,7 @@ export function EditionDetailPage() {
   const [showInvitationsConfirm, setShowInvitationsConfirm] = useState(false);
   const [showOpenRegistrationsConfirm, setShowOpenRegistrationsConfirm] = useState(false);
   const [showRevertToConfiguredConfirm, setShowRevertToConfiguredConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Auto-dismiss success message after 5 seconds
   useEffect(() => {
@@ -298,6 +299,22 @@ export function EditionDetailPage() {
         setError(err.message);
       } else {
         setError("Une erreur est survenue lors du retour en configuration.");
+      }
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => editionsApi.deleteEdition(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['editions'] });
+      navigate('/editions');
+    },
+    onError: (err) => {
+      setShowDeleteConfirm(false);
+      if (err instanceof ApiException) {
+        setError(err.message);
+      } else {
+        setError("Une erreur est survenue lors de la suppression.");
       }
     },
   });
@@ -1038,13 +1055,26 @@ export function EditionDetailPage() {
 
         {/* Actions */}
         <div className="flex justify-between items-center pt-4 border-t">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate('/editions')}
-          >
-            Annuler
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate('/editions')}
+            >
+              Annuler
+            </Button>
+            {isAdmin && (edition.status === 'draft' || edition.status === 'configured') && (
+              <Button
+                type="button"
+                variant="danger"
+                disabled={deleteMutation.isPending}
+                isLoading={deleteMutation.isPending}
+                onClick={() => setShowDeleteConfirm(true)}
+              >
+                Supprimer l'édition
+              </Button>
+            )}
+          </div>
           <Button
             type="submit"
             disabled={isPending || !isEditable}
@@ -1172,6 +1202,20 @@ export function EditionDetailPage() {
         message="L'édition repassera en statut « Configurée ». Les déposants ne pourront plus déclarer leurs articles tant que les inscriptions ne seront pas ré-ouvertes."
         variant="warning"
         confirmLabel="Confirmer"
+      />
+
+      {/* Delete edition confirmation modal */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={() => {
+          setShowDeleteConfirm(false);
+          deleteMutation.mutate();
+        }}
+        title="Supprimer l'édition"
+        message={`Êtes-vous sûr de vouloir supprimer l'édition « ${edition?.name} » ? Cette action est irréversible.`}
+        variant="danger"
+        confirmLabel="Supprimer"
       />
     </div>
   );
