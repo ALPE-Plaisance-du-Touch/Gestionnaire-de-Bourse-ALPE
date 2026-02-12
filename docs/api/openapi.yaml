@@ -740,6 +740,62 @@ paths:
         '409':
           description: Invitation déjà utilisée
 
+  /editions/{editionId}/invitations/{invitationId}:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+      - $ref: '#/components/parameters/invitationId'
+    delete:
+      tags: [Invitations]
+      summary: Supprimer une invitation
+      description: |
+        Supprime une invitation quel que soit son statut.
+        Si l'invitation n'était pas activée, le token devient invalide.
+        Le compte déposant associé (si existant) n'est pas affecté.
+      operationId: deleteInvitation
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Invitation supprimée
+        '404':
+          description: Invitation non trouvée
+
+  /editions/{editionId}/invitations/bulk-delete:
+    parameters:
+      - $ref: '#/components/parameters/editionId'
+    post:
+      tags: [Invitations]
+      summary: Supprimer plusieurs invitations
+      description: |
+        Supprime plusieurs invitations en une seule opération.
+        Retourne le nombre d'invitations effectivement supprimées.
+      operationId: bulkDeleteInvitations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ids]
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  description: Liste des IDs d'invitations à supprimer
+                  minItems: 1
+                  maxItems: 100
+      responses:
+        '200':
+          description: Suppression effectuée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkDeleteResult'
+
   # ============================================================================
   # LISTES
   # ============================================================================
@@ -1533,7 +1589,13 @@ components:
 
     InvitationStatut:
       type: string
-      enum: [envoyee, utilisee, expiree]
+      enum: [envoyee, utilisee, expiree, activee]
+      description: |
+        Statuts possibles d'une invitation :
+        - envoyee : invitation envoyée, en attente d'activation
+        - utilisee : token utilisé (alias de activee pour compatibilité)
+        - expiree : délai de 7 jours dépassé sans activation
+        - activee : compte activé par le déposant
 
     ReversementStatut:
       type: string
@@ -1851,12 +1913,19 @@ components:
         created_at:
           type: string
           format: date-time
+          description: Date de création de l'invitation
         expires_at:
           type: string
           format: date-time
+          description: Date d'expiration du token (7 jours après création/relance)
         used_at:
           type: string
           format: date-time
+          description: Date d'utilisation du token (activation du compte)
+        activated_at:
+          type: string
+          format: date-time
+          description: Date d'activation du compte déposant (alias de used_at pour clarté)
 
     InvitationCreate:
       type: object
@@ -1893,6 +1962,19 @@ components:
                 type: string
               error:
                 type: string
+
+    BulkDeleteResult:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Nombre total d'IDs demandés
+        deleted:
+          type: integer
+          description: Nombre d'invitations effectivement supprimées
+        not_found:
+          type: integer
+          description: Nombre d'IDs non trouvés (déjà supprimés ou inexistants)
 
     ImportResult:
       type: object

@@ -1,0 +1,89 @@
+{
+  "_description": "Invalid article data for error scenarios (D-E01..D-E07, D-EC01..D-EC06)",
+
+  "price_below_minimum": {
+    "description": "Barrette cheveux",
+    "category": "accessories",
+    "price": "0.50",
+    "_scenario": "D-E01: Prix minimum 1.00 EUR"
+  },
+
+  "stroller_above_max_price": {
+    "description": "Poussette luxe triple",
+    "category": "childcare",
+    "subcategory": "stroller",
+    "price": "200.00",
+    "_scenario": "D-E02: Prix maximum 150.00 EUR pour poussettes"
+  },
+
+  "forbidden_car_seat": {
+    "description": "Siege auto groupe 1/2/3",
+    "category": "childcare",
+    "subcategory": "car_seat",
+    "_scenario": "D-E05: Article interdit (siege-auto)"
+  },
+
+  "second_coat": {
+    "description": "Doudoune sans manches - 8 ans",
+    "category": "clothing",
+    "subcategory": "coat",
+    "size": "8 ans",
+    "price": "12.00",
+    "_scenario": "D-E06: 2e manteau (max 1 par liste)"
+  },
+
+  "invalid_lot_tshirts": {
+    "description": "Lot 3 t-shirts 24 mois",
+    "category": "clothing",
+    "subcategory": "tshirt",
+    "is_lot": true,
+    "lot_quantity": 3,
+    "price": "5.00",
+    "_scenario": "D-E07: Lots uniquement bodys/pyjamas"
+  },
+
+  "description_101_chars": {
+    "description": "Aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeeefffffffff0gggggggggghhhhhhhhhhiiiiiiiiiijjjjjjjjjjk",
+    "category": "toys",
+    "price": "5.00",
+    "_scenario": "D-EC02: Description 101 caracteres (> max 100)"
+  },
+
+  "description_100_chars": {
+    "description": "Aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeeefffffffff0gggggggggghhhhhhhhhhiiiiiiiiiijjjjjjjjjj",
+    "category": "toys",
+    "price": "5.00",
+    "_scenario": "D-EC01: Description 100 caracteres (= max, valide)"
+  },
+
+  "empty_description": {
+    "description": "",
+    "category": "toys",
+    "price": "5.00",
+    "_scenario": "D-EC04: Description vide"
+  },
+
+  "price_3_decimals": {
+    "description": "Jouet test",
+    "category": "toys",
+    "price": "5.999",
+    "_scenario": "D-EC03: Prix avec 3 decimales"
+  },
+
+  "lot_quantity_zero": {
+    "description": "Lot vide bodys",
+    "category": "clothing",
+    "subcategory": "bodys",
+    "is_lot": true,
+    "lot_quantity": 0,
+    "price": "3.00",
+    "_scenario": "D-EC05: Quantite de lot = 0"
+  },
+
+  "special_chars_description": {
+    "description": "T-shirt bebe 'Zara' (3 mois) - taille 62cm",
+    "category": "clothing",
+    "price": "4.00",
+    "_scenario": "D-EC06: Caracteres speciaux dans description (valide)"
+  }
+}

@@ -10,12 +10,20 @@ export interface User {
   firstName: string;
   lastName: string;
   phone: string | null;
+  address: string | null;
   role: UserRole;
   isActive: boolean;
   isVerified: boolean;
   isLocalResident: boolean;
   createdAt: string;
   lastLoginAt: string | null;
+}
+
+export interface UserProfileUpdate {
+  firstName?: string;
+  lastName?: string;
+  phone?: string | null;
+  address?: string | null;
 }
 
 export interface LoginRequest {
@@ -34,5 +42,53 @@ export interface LoginResponse {
 export interface ActivateAccountRequest {
   token: string;
   password: string;
-  passwordConfirmation: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  acceptTerms: boolean;
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+export interface TokenResponse {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
+}
+
+export interface PasswordResetRequest {
+  email: string;
+}
+
+export interface PasswordReset {
+  token: string;
+  password: string;
+}
+
+export interface UserAdminUpdate {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string | null;
+  role?: UserRole;
+  isActive?: boolean;
+  isLocalResident?: boolean;
+}
+
+export interface UserListParams {
+  role?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedUsers {
+  items: User[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
 }

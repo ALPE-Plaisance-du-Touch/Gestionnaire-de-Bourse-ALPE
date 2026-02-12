@@ -44,6 +44,35 @@ links:
   - **Priorité :** Must have
   - **Responsable validation :** Administrateur ALPE
 
+## Page d'accueil
+
+- REQ-F-019 — Le système DOIT afficher une page d'accueil informative et DOIT garantir qu'une seule édition de bourse peut être active à la fois. (US-011)
+  - **Critères d'acceptation :**
+    - Page accessible sans authentification (route `/`)
+    - **Visiteur non authentifié :**
+      - Présentation de l'association ALPE et du fonctionnement de la bourse (dépôt, vente, reversement, commission 20%)
+      - Si une édition est active : affichage de ses informations (nom, dates de vente, lieu, date limite de déclaration). Le statut technique de l'édition (configurée, inscriptions ouvertes, etc.) ne DOIT PAS être affiché aux visiteurs.
+      - Si aucune édition n'est active : message « Aucune bourse n'est programmée pour le moment. »
+      - Bouton « Se connecter » visible
+      - Lien vers la politique de confidentialité
+    - **Utilisateur connecté avec édition active :**
+      - La page d'accueil EST la bourse en cours (affichage des détails de l'édition active)
+      - Liens contextuels selon le rôle :
+        - Déposant : « Mes listes », « Mon profil »
+        - Bénévole : « Scanner des articles », « Statistiques en direct »
+        - Gestionnaire : « Gérer les invitations », « Gérer les ventes », « Étiquettes »
+        - Administrateur : tous les liens gestionnaire + « Clôturer l'édition »
+    - **Utilisateur connecté sans édition active :**
+      - Message « Aucune bourse n'est en cours actuellement. »
+      - Si administrateur : lien « Créer une nouvelle édition »
+    - **Contrainte d'unicité d'édition active :**
+      - Une seule édition peut avoir un statut actif (≠ brouillon, ≠ clôturée, ≠ archivée) à un instant donné
+      - Le système DOIT bloquer toute tentative d'activer une deuxième édition tant qu'une autre est active
+      - Message d'erreur explicite en cas de violation : « Une bourse est déjà en cours ([nom de l'édition]). Clôturez-la avant d'en activer une autre. »
+    - Page responsive et conforme WCAG 2.1 AA
+  - **Priorité :** Should have (page d'accueil) / Must have (contrainte d'unicité)
+  - **Responsable validation :** Gestionnaire + Administrateur ALPE
+
 ## Gestion des utilisateurs
 
 - REQ-F-001 — Le système DOIT permettre la création de compte déposant via activation d'invitation. (US-001)
@@ -135,6 +164,7 @@ links:
       - Formulaire de création : email (obligatoire), nom, prénom, type de liste (standard/1000/2000), commentaire interne
       - Génération automatique d'un token unique sécurisé (UUID v4 ou JWT signé, hashé SHA-256 en base)
       - Validité du token : 7 jours calendaires
+      - Tolérance aux erreurs : le token reste valide en cas d'échec de validation du formulaire (erreur mot de passe, champ manquant, etc.). Il n'est invalidé qu'après une activation réussie.
       - Envoi immédiat ou différé de l'email d'invitation
       - Validation unicité : 1 email = 1 invitation active par édition (détection doublons avec options : annuler l'ancienne ou relancer)
     - **Import en masse CSV :**
@@ -177,6 +207,28 @@ links:
       - Dashboard : graphique évolution invitations envoyées vs activées, taux d'activation global, délai moyen d'activation, taux d'expiration, nombre de relances
       - Répartition par type de liste (standard/1000/2000)
       - Export Excel : feuille invitations complètes, feuille statistiques, feuille invitations non activées
+    - **Visualisation des invitations activées :**
+      - Filtre "Activées" disponible dans le sélecteur de statut
+      - Colonne "Date d'activation" affichant la date et heure d'activation du compte
+      - Statistiques incluant le nombre d'invitations activées
+      - Historique complet visible : envoi → activation
+    - **Suppression d'invitation individuelle :**
+      - Bouton "Supprimer" sur chaque ligne du tableau (quel que soit le statut)
+      - Modal de confirmation avant suppression
+      - Si non activée : token invalidé
+      - Si activée : compte déposant non affecté (seule l'invitation est supprimée)
+      - Toast de confirmation après suppression
+      - Rafraîchissement automatique du tableau
+      - Traçabilité : logs d'audit de la suppression
+    - **Sélection multiple et suppression en masse :**
+      - Checkbox de sélection sur chaque ligne du tableau
+      - Checkbox "Sélectionner tout" dans l'en-tête (sélectionne la page courante)
+      - Compteur affichant le nombre d'éléments sélectionnés
+      - Bouton "Supprimer la sélection" visible si sélection > 0
+      - Modal de confirmation avec récapitulatif (nombre et répartition par statut)
+      - Barre de progression si suppression de >10 éléments
+      - Rapport final : nombre d'invitations supprimées
+      - Traçabilité : logs d'audit avec liste des IDs supprimés
     - **Sécurité :**
       - Tokens hashés en base de données (SHA-256), non lisibles en clair
       - Rate limiting : 100 invitations/heure par gestionnaire (anti-spam)
@@ -773,4 +825,17 @@ links:
     - Test de restauration : 1 fois par an minimum
   - **Priorité :** Must have
   - **Responsable validation :** Administrateur système
+
+# Configuration système
+
+## Paramètres généraux
+
+- REQ-C-001 — Le système DOIT permettre à un administrateur de configurer l'email de support affiché aux utilisateurs.
+  - **Critères d'acceptation :**
+    - Paramètre `SUPPORT_EMAIL` configurable via la console d'administration ou variable d'environnement
+    - Valeur par défaut : `noreply@example.com`
+    - Validation du format email (RFC 5322)
+    - Cet email est affiché sur les pages d'erreur, dans les emails transactionnels et dans le pied de page
+  - **Priorité :** Must have
+  - **Responsable validation :** Administrateur ALPE
 

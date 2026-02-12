@@ -2,6 +2,8 @@
  * ItemList (depositor list) types.
  */
 
+import type { Article } from './article';
+
 export type ListType = 'standard' | 'list_1000' | 'list_2000';
 
 export type ListStatus =
@@ -42,7 +44,48 @@ export interface ItemList {
   updatedAt: string;
 }
 
+/**
+ * Item list with articles for detail view.
+ */
+export interface ItemListDetail extends ItemList {
+  articles: Article[];
+}
+
+/**
+ * Summary for list overview.
+ */
+export interface ItemListSummary {
+  id: string;
+  number: number;
+  listType: ListType;
+  status: ListStatus;
+  articleCount: number;
+  clothingCount: number;
+  totalValue: number;
+  isValidated: boolean;
+  validatedAt: string | null;
+  createdAt: string;
+}
+
+/**
+ * Request to create a new list.
+ */
 export interface CreateItemListRequest {
-  editionId: string;
   listType?: ListType;
+}
+
+/**
+ * Request to validate a list.
+ */
+export interface ValidateItemListRequest {
+  confirmationAccepted: boolean;
+}
+
+/**
+ * Response for depositor's lists.
+ */
+export interface DepositorListsResponse {
+  lists: ItemListSummary[];
+  maxLists: number;
+  canCreateMore: boolean;
 }

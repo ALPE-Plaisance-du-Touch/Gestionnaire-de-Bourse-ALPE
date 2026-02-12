@@ -11,6 +11,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin, UUIDMixin
 
 if TYPE_CHECKING:
+    from app.models.billetweb_import_log import BilletwebImportLog
+    from app.models.deposit_slot import DepositSlot
+    from app.models.edition_depositor import EditionDepositor
     from app.models.item_list import ItemList
     from app.models.sale import Sale
     from app.models.user import User
@@ -89,12 +92,30 @@ class Edition(Base, UUIDMixin, TimestampMixin):
     )
     created_by: Mapped["User | None"] = relationship("User", foreign_keys=[created_by_id])
 
+    # Closure tracking
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    closed_by_id: Mapped[str | None] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=True,
+    )
+    closed_by: Mapped["User | None"] = relationship("User", foreign_keys=[closed_by_id])
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
     # Relationships
+    deposit_slots: Mapped[list["DepositSlot"]] = relationship(
+        "DepositSlot", back_populates="edition", cascade="all, delete-orphan"
+    )
     item_lists: Mapped[list["ItemList"]] = relationship(
         "ItemList", back_populates="edition", cascade="all, delete-orphan"
     )
     sales: Mapped[list["Sale"]] = relationship(
         "Sale", back_populates="edition", cascade="all, delete-orphan"
+    )
+    depositors: Mapped[list["EditionDepositor"]] = relationship(
+        "EditionDepositor", back_populates="edition", cascade="all, delete-orphan"
+    )
+    billetweb_imports: Mapped[list["BilletwebImportLog"]] = relationship(
+        "BilletwebImportLog", back_populates="edition", cascade="all, delete-orphan"
     )
 
     @property

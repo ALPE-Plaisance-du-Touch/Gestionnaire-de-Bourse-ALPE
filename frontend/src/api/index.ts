@@ -1,3 +1,11 @@
 export { apiClient, ApiException } from './client';
 export { authApi } from './auth';
+export { invitationsApi } from './invitations';
 export { editionsApi } from './editions';
+export { depositSlotsApi } from './deposit-slots';
+export { billetwebApi } from './billetweb';
+export { depositorListsApi } from './depositor-lists';
+export { articlesApi } from './articles';
+export { labelsApi } from './labels';
+export { salesApi } from './sales';
+export { payoutsApi } from './payouts';

@@ -1,5 +1,5 @@
 # Makefile for Bourse ALPE development
-.PHONY: help install dev up down logs shell-backend shell-frontend db-shell migrate test lint clean
+.PHONY: help install dev up down logs shell-backend shell-frontend db-shell migrate seed seed-articles seed-sales seed-payouts seed-closure seed-all test lint clean
 
 # Default target
 help:
@@ -25,6 +25,12 @@ help:
 	@echo "Database:"
 	@echo "  make migrate        Run database migrations"
 	@echo "  make migrate-new    Create new migration (NAME=description)"
+	@echo "  make seed           Populate database with E2E test data"
+	@echo "  make seed-articles  Promote articles to ON_SALE with barcodes"
+	@echo "  make seed-sales     Create sample sales"
+	@echo "  make seed-payouts   Create payout records"
+	@echo "  make seed-closure   Mark all payouts PAID (for closure test)"
+	@echo "  make seed-all       Run seed + articles + sales + payouts"
 	@echo ""
 	@echo "Testing:"
 	@echo "  make test           Run all tests"
@@ -96,6 +102,23 @@ migrate:
 
 migrate-new:
 	docker-compose exec backend alembic revision --autogenerate -m "$(NAME)"
+
+seed:
+	docker-compose exec backend python scripts/seed.py
+
+seed-articles:
+	docker-compose exec backend python scripts/seed_articles.py
+
+seed-sales:
+	docker-compose exec backend python scripts/seed_sales.py
+
+seed-payouts:
+	docker-compose exec backend python scripts/seed_payouts.py
+
+seed-closure:
+	docker-compose exec backend python scripts/seed_closure.py
+
+seed-all: seed seed-articles seed-sales seed-payouts
 
 # ============================================
 # Testing

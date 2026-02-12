@@ -1,0 +1,36 @@
+{
+  "_description": "Sale fixtures for volunteer (B-02..B-06) and manager (G-26) scenarios",
+
+  "sale_cash": {
+    "payment_method": "cash",
+    "register_number": 1,
+    "_scenario": "B-02: Enregistrer une vente en especes"
+  },
+
+  "sale_card": {
+    "payment_method": "card",
+    "register_number": 1,
+    "_scenario": "B-03: Enregistrer une vente par carte"
+  },
+
+  "sale_check": {
+    "payment_method": "check",
+    "register_number": 1,
+    "_scenario": "B-04: Enregistrer une vente par cheque"
+  },
+
+  "manual_barcode_lookup": {
+    "barcode": "EDI-001-L100-A01",
+    "_scenario": "B-06: Saisie manuelle du code-barres"
+  },
+
+  "unknown_barcode": {
+    "barcode": "EDI-999-L999-A99",
+    "_scenario": "B-E01: Scanner un code-barres inconnu"
+  },
+
+  "invalid_barcode_format": {
+    "barcode": "ABC",
+    "_scenario": "B-E05: Format de code-barres invalide"
+  }
+}

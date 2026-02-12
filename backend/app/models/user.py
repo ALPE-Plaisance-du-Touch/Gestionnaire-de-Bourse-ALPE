@@ -10,6 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin, UUIDMixin
 
 if TYPE_CHECKING:
+    from app.models.edition_depositor import EditionDepositor
     from app.models.item_list import ItemList
 
 
@@ -64,13 +65,22 @@ class User(Base, UUIDMixin, TimestampMixin):
     invitation_expires_at: Mapped[datetime | None] = mapped_column(
         DateTime, nullable=True
     )
+    # Flag to hide invitation from list (soft delete for invitation display)
+    invitation_hidden: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Last login tracking
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
+    # GDPR
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    anonymized_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
     # Relationships
     item_lists: Mapped[list["ItemList"]] = relationship(
         "ItemList", back_populates="depositor"
+    )
+    edition_registrations: Mapped[list["EditionDepositor"]] = relationship(
+        "EditionDepositor", back_populates="user"
     )
 
     @property

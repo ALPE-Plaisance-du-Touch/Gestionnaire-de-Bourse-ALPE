@@ -41,6 +41,9 @@ class Sale(Base, UUIDMixin, TimestampMixin):
     is_offline_sale: Mapped[bool] = mapped_column(default=False)
     synced_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
+    # Private sale flag (auto-detected: Friday 17h-18h = school/ALAE sale)
+    is_private_sale: Mapped[bool] = mapped_column(default=False)
+
     # Foreign keys
     edition_id: Mapped[str] = mapped_column(
         ForeignKey("editions.id", ondelete="CASCADE"),

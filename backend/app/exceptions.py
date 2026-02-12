@@ -116,14 +116,63 @@ class InvalidPriceError(ValidationError):
 class TokenExpiredError(AuthenticationError):
     """Token has expired."""
 
-    def __init__(self):
-        super().__init__("Token has expired")
+    def __init__(self, message: str = "Token has expired"):
+        super().__init__(message)
         self.code = "TOKEN_EXPIRED"
 
 
-class TokenInvalidError(AuthenticationError):
+class InvalidTokenError(AuthenticationError):
     """Token is invalid."""
 
-    def __init__(self):
-        super().__init__("Invalid token")
+    def __init__(self, message: str = "Invalid token"):
+        super().__init__(message)
         self.code = "TOKEN_INVALID"
+
+
+# Alias for backwards compatibility
+TokenInvalidError = InvalidTokenError
+
+
+class UserNotFoundError(NotFoundError):
+    """User not found."""
+
+    def __init__(self, message: str = "User not found"):
+        super().__init__(message)
+
+
+class DuplicateEmailError(AppException):
+    """Email already exists."""
+
+    def __init__(self, email: str):
+        super().__init__(
+            f"Email {email} is already registered",
+            "DUPLICATE_EMAIL",
+        )
+
+
+class PayoutNotFoundError(NotFoundError):
+    """Payout not found."""
+
+    def __init__(self, payout_id: str):
+        super().__init__(f"Payout {payout_id} not found")
+
+
+class PayoutAlreadyPaidError(AppException):
+    """Payout has already been paid."""
+
+    def __init__(self, payout_id: str):
+        super().__init__(
+            f"Payout {payout_id} has already been paid",
+            "PAYOUT_ALREADY_PAID",
+        )
+
+
+class RateLimitExceededError(AppException):
+    """Too many requests."""
+
+    def __init__(self, retry_after: int = 60):
+        self.retry_after = retry_after
+        super().__init__(
+            f"Too many requests. Please retry after {retry_after} seconds",
+            "RATE_LIMIT_EXCEEDED",
+        )

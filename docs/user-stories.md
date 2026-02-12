@@ -2239,6 +2239,57 @@ acceptance_criteria:
       • Rate limiting : max 100 invitations/heure par gestionnaire (anti-spam)
       • Logs d'audit : toutes les actions sont tracées (création, relance, annulation)
 
+  # AC-16 : Visualisation des invitations activées
+  - GIVEN je consulte la liste des invitations
+    WHEN je sélectionne le filtre "Activées" dans les options de statut
+    THEN :
+      • Le tableau affiche uniquement les invitations au statut "Activée"
+      • Une colonne "Date d'activation" affiche la date et heure d'activation du compte
+      • Les statistiques en haut de page incluent le compte des invitations activées
+      • Je peux voir l'historique complet du parcours de l'invitation (envoi → activation)
+
+  # AC-17 : Suppression d'une invitation individuelle
+  - GIVEN je consulte une invitation dans le tableau (quel que soit son statut)
+    WHEN je clique sur le bouton "Supprimer" dans la colonne Actions
+    THEN :
+      • Le système affiche une modale de confirmation :
+        "Supprimer l'invitation de sophie.martin@example.com ?
+        Cette action est irréversible. Si l'invitation était activée, le compte déposant n'est pas affecté."
+      • Si je confirme :
+        - L'invitation est supprimée de la base de données
+        - Si l'invitation n'était pas encore activée, le token devient invalide
+        - Un toast de confirmation s'affiche : "✓ Invitation supprimée"
+        - Le tableau se rafraîchit automatiquement
+        - L'action est tracée dans les logs d'audit
+      • Si j'annule : rien ne se passe, la modale se ferme
+
+  # AC-18 : Sélection multiple d'invitations
+  - GIVEN je consulte le tableau des invitations
+    WHEN je souhaite sélectionner plusieurs invitations
+    THEN :
+      • Chaque ligne du tableau a une checkbox de sélection
+      • L'en-tête du tableau contient une checkbox "Sélectionner tout" (sélectionne la page courante)
+      • Un compteur affiche le nombre d'éléments sélectionnés : "3 invitations sélectionnées"
+      • Les sélections sont préservées lors de la navigation/filtrage
+      • Je peux combiner sélection individuelle et "Sélectionner tout"
+
+  # AC-19 : Suppression en masse des invitations sélectionnées
+  - GIVEN j'ai sélectionné une ou plusieurs invitations
+    WHEN je clique sur le bouton "Supprimer la sélection" (visible si sélection > 0)
+    THEN :
+      • Le système affiche une modale de confirmation :
+        "Supprimer 5 invitations ?
+        Statuts : 3 en attente, 1 expirée, 1 activée
+        Cette action est irréversible."
+      • Si je confirme :
+        - Le système supprime toutes les invitations sélectionnées
+        - Une barre de progression s'affiche si > 10 éléments
+        - Un rapport final s'affiche : "✓ 5 invitations supprimées"
+        - Le tableau se rafraîchit automatiquement
+        - La sélection est réinitialisée
+        - L'action est tracée dans les logs d'audit (liste des IDs supprimés)
+      • Si j'annule : rien ne se passe, la sélection est préservée
+
 business_rules:
   - Une invitation = 1 email unique pour 1 édition donnée
   - Validité : 7 jours calendaires après émission
@@ -2304,5 +2355,106 @@ test_scenarios:
   - T-US010-18 : Import CSV 500 lignes (OK, traitement asynchrone, rapport final)
   - T-US010-19 : Type liste 1000/2000 dans email (OK, mention priorité affichée)
   - T-US010-20 : Gestionnaire ne voit que ses invitations (OK, isolation données)
+  - T-US010-21 : Affichage invitations activées avec date d'activation (OK, filtre "Activées", colonne date)
+  - T-US010-22 : Suppression invitation individuelle (OK, confirmation, feedback)
+  - T-US010-23 : Sélection multiple invitations (OK, checkbox, compteur)
+  - T-US010-24 : Suppression en masse invitations sélectionnées (OK, confirmation, rapport)
+```
+
+## US-011 — Consulter la page d'accueil de la plateforme
+
+```yaml
+id: US-011
+title: Consulter la page d'accueil de la plateforme
+actor: visiteur | deposant | benevole | gestionnaire | administrateur
+benefit: "...pour comprendre le fonctionnement de la bourse et connaître les prochaines dates"
+as_a: "En tant que visiteur ou utilisateur de la plateforme"
+i_want: "Je veux consulter une page d'accueil qui présente la bourse ALPE et ses prochaines dates"
+so_that: "Afin de comprendre le service proposé et savoir quand participer"
+
+# Contexte métier
+notes: |
+  - La page d'accueil est le point d'entrée principal de l'application
+  - Elle doit être accessible sans authentification (partie publique)
+  - Elle présente l'association ALPE et le concept de la bourse aux vêtements
+  - Contrainte système : une seule édition peut être active à la fois (statut ≠ brouillon, ≠ clôturée, ≠ archivée)
+  - Pour les visiteurs : présentation de l'association + informations sur la bourse active
+  - Pour les utilisateurs connectés : la page d'accueil EST la bourse en cours (accès direct aux fonctionnalités)
+  - S'il n'y a pas de bourse active, un message clair l'indique
+
+acceptance_criteria:
+  # AC-1 : Affichage de la page d'accueil pour un visiteur
+  - GIVEN je suis un visiteur non authentifié
+    WHEN j'accède à la page d'accueil (`/`)
+    THEN je vois :
+      • Un en-tête avec le nom de la plateforme "Bourse aux vêtements ALPE"
+      • Une section de présentation de l'association ALPE Plaisance du Touch :
+        - Description courte : organisation de bourses aux vêtements et articles de puériculture
+        - Fonctionnement : dépôt d'articles, vente, reversement au déposant
+        - Commission : 20% prélevés par l'association
+      • Si une bourse est active :
+        - Nom de l'édition (ex: "Bourse Printemps 2026")
+        - Dates de vente (ex: "Samedi 14 et dimanche 15 mars 2026")
+        - Lieu (ex: "Salle des fêtes, Plaisance-du-Touch")
+        - Date limite de déclaration des articles
+        - Statut courant (inscriptions ouvertes, en cours, etc.)
+      • Si aucune bourse n'est active : message "Aucune bourse n'est programmée pour le moment."
+      • Un bouton "Se connecter" redirigeant vers `/login`
+      • Un lien vers la politique de confidentialité (`/privacy`)
+
+  # AC-2 : Affichage pour un utilisateur connecté — bourse active
+  - GIVEN je suis connecté (quel que soit mon rôle)
+    AND une bourse est active
+    WHEN j'accède à la page d'accueil (`/`)
+    THEN la page d'accueil est centrée sur la bourse en cours :
+      • Nom et dates de la bourse active en évidence
+      • Message de bienvenue personnalisé : "Bonjour [Prénom] !"
+      • Selon mon rôle, accès direct aux fonctionnalités de la bourse :
+        - Déposant : lien "Mes listes" vers `/depositor/editions/:id/lists`, statut de mes listes (brouillon/validée)
+        - Bénévole : lien "Caisse" vers `/editions/:id/sales`
+        - Gestionnaire : liens "Invitations", "Étiquettes", "Reversements" vers les pages de gestion de l'édition
+        - Admin : mêmes liens que gestionnaire + "Gestion des éditions"
+
+  # AC-3 : Affichage pour un utilisateur connecté — pas de bourse active
+  - GIVEN je suis connecté (quel que soit mon rôle)
+    AND aucune bourse n'est active
+    WHEN j'accède à la page d'accueil (`/`)
+    THEN je vois :
+      • Message de bienvenue personnalisé : "Bonjour [Prénom] !"
+      • Message : "Aucune bourse n'est en cours actuellement."
+      • Admin uniquement : lien "Créer une nouvelle édition" vers `/editions`
+
+  # AC-4 : Contrainte d'unicité de la bourse active
+  - GIVEN une édition est déjà dans un statut actif (configurée, inscriptions_ouvertes, ou en_cours)
+    WHEN un administrateur tente d'activer une autre édition (passage au-delà de brouillon)
+    THEN le système bloque l'opération avec un message : "Une bourse est déjà active ([nom]). Clôturez-la avant d'en activer une autre."
+
+  # AC-5 : Responsive et accessibilité
+  - GIVEN j'accède à la page d'accueil sur un appareil mobile
+    WHEN la page se charge
+    THEN la mise en page est adaptée (responsive)
+    AND la page est conforme WCAG 2.1 AA (contraste, navigation clavier, landmarks ARIA)
+    AND le temps de chargement est inférieur à 2 secondes
+
+business_rules:
+  - La page d'accueil est accessible sans authentification (partie publique)
+  - Une seule édition peut être active à la fois (statut configurée, inscriptions_ouvertes, ou en_cours)
+  - Le système empêche l'activation d'une seconde édition si une est déjà active
+  - Pour les connectés, la page d'accueil est la bourse en cours (pas une page de présentation statique)
+  - S'il n'y a pas de bourse active, un message clair le signale à tous les utilisateurs
+  - Les informations affichées sont en lecture seule (aucune action de modification directe)
+  - Le bouton "Se connecter" n'est pas affiché si l'utilisateur est déjà connecté
+
+test_scenarios:
+  - T-US011-01 : Page d'accueil visiteur avec bourse active (OK, infos édition affichées)
+  - T-US011-02 : Page d'accueil visiteur sans bourse active (OK, message "Aucune bourse programmée")
+  - T-US011-03 : Page d'accueil déposant connecté avec bourse active (OK, bienvenue + lien "Mes listes" vers l'édition)
+  - T-US011-04 : Page d'accueil gestionnaire connecté avec bourse active (OK, liens gestion édition)
+  - T-US011-05 : Page d'accueil admin connecté sans bourse active (OK, lien "Créer une édition")
+  - T-US011-06 : Tentative d'activer 2 éditions simultanément (KO, erreur "bourse déjà active")
+  - T-US011-07 : Responsive mobile (OK, mise en page adaptée)
+  - T-US011-08 : Accessibilité WCAG 2.1 AA (OK, landmarks, contraste, clavier)
+  - T-US011-09 : Lien "Se connecter" redirige vers /login (OK)
+  - T-US011-10 : Lien politique de confidentialité accessible (OK)
 ```
 

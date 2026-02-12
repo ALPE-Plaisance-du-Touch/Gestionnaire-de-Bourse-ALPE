@@ -1,0 +1,37 @@
+{
+  "_description": "Invitation fixtures for manager scenarios (G-06 to G-12)",
+
+  "single_invitation": {
+    "email": "nouveau-deposant@example.com",
+    "first_name": "Emma",
+    "last_name": "Garcia",
+    "list_type": "standard",
+    "comment": "Nouveau deposant printemps 2026"
+  },
+
+  "invitation_1000": {
+    "email": "adherent2@alpe-bourse.fr",
+    "first_name": "Thomas",
+    "last_name": "Leroy",
+    "list_type": "list_1000",
+    "comment": "Adherent ALPE, 12h de benevolat"
+  },
+
+  "invitation_2000": {
+    "email": "ami-thomas@example.com",
+    "first_name": "Julie",
+    "last_name": "Leroy",
+    "list_type": "list_2000",
+    "comment": "Amie de Thomas Leroy (1000)"
+  },
+
+  "bulk_csv_content": "email,first_name,last_name,list_type,comment\nnouv1@example.com,Alice,Dupuis,standard,Import test 1\nnouv2@example.com,Bob,Martin,standard,Import test 2\nnouv3@example.com,Celine,Blanc,list_1000,Adherente ALPE\nnouv4@example.com,David,Noir,list_2000,Ami adherent\nnouv5@example.com,Eve,Rouge,standard,Import test 5",
+
+  "duplicate_invitation": {
+    "email": "deposant@example.com",
+    "first_name": "Jean",
+    "last_name": "Durand",
+    "list_type": "standard",
+    "_note": "Same email as depositor_standard - should trigger G-E03 duplicate error"
+  }
+}

@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
-/* Custom CSS variables for ALPE branding */
-:root {
+/* Tailwind v4: Register custom colors as theme tokens */
+@theme {
   --color-primary: #2563eb;
   --color-primary-dark: #1d4ed8;
   --color-secondary: #64748b;

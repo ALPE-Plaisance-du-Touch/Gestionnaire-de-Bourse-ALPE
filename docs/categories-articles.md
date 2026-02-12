@@ -24,13 +24,13 @@ links:
 - **Prix maximum : 150€** uniquement pour poussettes/landaus
 - **2 listes maximum** par déposant
 - **24 articles maximum par liste** dont **12 vêtements maximum**
-- **Lignes 1-12 réservées aux vêtements uniquement**
+- **Vêtements toujours en premier** dans la numérotation (numéros séquentiels sans trous)
 
 ---
 
 # Articles ACCEPTÉS
 
-## 🎽 Vêtements (12 maximum par liste, lignes 1-12)
+## 🎽 Vêtements (12 maximum par liste, numérotés en premier)
 
 ### Critères de qualité obligatoires
 - ✅ Propres et repassés
@@ -77,7 +77,7 @@ links:
 
 ---
 
-## 👞 Chaussures (lignes 13-24)
+## 👞 Chaussures (après les vêtements)
 
 ### ✅ Acceptées
 - **Chaussures spécifiques à un sport** (propres, très bon état) :
@@ -98,7 +98,7 @@ links:
 
 ---
 
-## 👶 Puériculture (lignes 13-24)
+## 👶 Puériculture (après les vêtements)
 
 ### Critères de qualité
 - ✅ **Très propres et en parfait état**
@@ -122,7 +122,7 @@ links:
 
 ---
 
-## 🧸 Jouets et jeux (lignes 13-24)
+## 🧸 Jouets et jeux (après les vêtements)
 
 ### ✅ Acceptés
 - Jouets complets, sans pièce manquante
@@ -144,7 +144,7 @@ links:
 
 ---
 
-## 📚 Livres (lignes 13-24)
+## 📚 Livres (après les vêtements)
 
 ### ✅ Acceptés
 - **Livres adultes** (**maximum 5 par liste**)
@@ -167,7 +167,7 @@ links:
 
 ---
 
-## 🎒 Accessoires (lignes 13-24)
+## 🎒 Accessoires (après les vêtements)
 
 ### ✅ Acceptés
 - **1 seul sac à main par liste**
