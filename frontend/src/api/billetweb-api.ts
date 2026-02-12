@@ -6,6 +6,8 @@ import type {
   BilletwebEventsListResponse,
   BilletwebSessionsPreviewResponse,
   BilletwebSessionsSyncResult,
+  BilletwebAttendeesPreviewResponse,
+  BilletwebAttendeesSyncResult,
 } from '@/types';
 
 export const billetwebApiSettings = {
@@ -50,6 +52,21 @@ export const billetwebApiSettings = {
   syncSessions: async (editionId: string): Promise<BilletwebSessionsSyncResult> => {
     const response = await apiClient.post<BilletwebSessionsSyncResult>(
       `/v1/editions/${editionId}/billetweb-api/sessions/sync`
+    );
+    return response.data;
+  },
+
+  previewAttendeesSync: async (editionId: string): Promise<BilletwebAttendeesPreviewResponse> => {
+    const response = await apiClient.get<BilletwebAttendeesPreviewResponse>(
+      `/v1/editions/${editionId}/billetweb-api/attendees/preview`
+    );
+    return response.data;
+  },
+
+  syncAttendees: async (editionId: string, sendEmails: boolean = true): Promise<BilletwebAttendeesSyncResult> => {
+    const response = await apiClient.post<BilletwebAttendeesSyncResult>(
+      `/v1/editions/${editionId}/billetweb-api/attendees/import`,
+      { send_emails: sendEmails }
     );
     return response.data;
   },

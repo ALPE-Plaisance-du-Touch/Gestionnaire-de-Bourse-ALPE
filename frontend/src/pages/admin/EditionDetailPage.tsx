@@ -6,6 +6,7 @@ import { Button, ConfirmModal, Input, Modal } from '@/components/ui';
 import { DepositSlotsEditor } from '@/components/editions';
 import { BilletwebImportButton } from '@/components/billetweb';
 import { BilletwebSessionsSyncModal } from '@/components/billetweb/BilletwebSessionsSyncModal';
+import { BilletwebAttendeesSyncModal } from '@/components/billetweb/BilletwebAttendeesSyncModal';
 import type { EditionStatus } from '@/types';
 
 const STATUS_LABELS: Record<EditionStatus, { label: string; className: string }> = {
@@ -112,6 +113,7 @@ export function EditionDetailPage() {
   const [closureModalOpen, setClosureModalOpen] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [showSessionsSyncModal, setShowSessionsSyncModal] = useState(false);
+  const [showAttendeesSyncModal, setShowAttendeesSyncModal] = useState(false);
 
   // Auto-dismiss success message after 5 seconds
   useEffect(() => {
@@ -599,11 +601,28 @@ export function EditionDetailPage() {
               Importez les inscriptions depuis Billetweb pour associer les déposants à cette édition.
             </p>
 
-            <BilletwebImportButton
-              edition={edition}
-              importCount={importStats?.totalDepositors ?? 0}
-              onImportSuccess={() => refetchImportStats()}
-            />
+            <div className="flex items-center gap-3 flex-wrap">
+              {edition.billetwebEventId && (
+                <div>
+                  <Button
+                    size="sm"
+                    onClick={() => setShowAttendeesSyncModal(true)}
+                  >
+                    Synchroniser via API
+                  </Button>
+                  {edition.lastBilletwebSync && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Derniere sync : {new Date(edition.lastBilletwebSync).toLocaleString('fr-FR')}
+                    </p>
+                  )}
+                </div>
+              )}
+              <BilletwebImportButton
+                edition={edition}
+                importCount={importStats?.totalDepositors ?? 0}
+                onImportSuccess={() => refetchImportStats()}
+              />
+            </div>
 
             {importStats && importStats.totalImports > 0 && (
               <div className="mt-4 bg-gray-50 rounded-lg p-4">
@@ -914,6 +933,16 @@ export function EditionDetailPage() {
           isOpen={showSessionsSyncModal}
           onClose={() => setShowSessionsSyncModal(false)}
           editionId={edition.id}
+        />
+      )}
+
+      {/* Billetweb attendees sync modal */}
+      {edition?.billetwebEventId && (
+        <BilletwebAttendeesSyncModal
+          isOpen={showAttendeesSyncModal}
+          onClose={() => setShowAttendeesSyncModal(false)}
+          editionId={edition.id}
+          lastSync={edition.lastBilletwebSync}
         />
       )}
     </div>

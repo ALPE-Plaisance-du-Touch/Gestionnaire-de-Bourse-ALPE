@@ -67,3 +67,20 @@ class BilletwebSessionsSyncResult(BaseModel):
     created: int
     updated: int
     total: int
+
+
+class BilletwebAttendeesSyncRequest(BaseModel):
+    """Options for attendees sync."""
+
+    send_emails: bool = Field(default=True, description="Send invitation/notification emails")
+    ignore_errors: bool = Field(default=False, description="Skip rows with errors")
+
+
+class BilletwebAttendeesSyncResult(BaseModel):
+    """Result of attendees sync."""
+
+    existing_linked: int
+    new_created: int
+    already_registered: int
+    invitations_sent: int
+    notifications_sent: int

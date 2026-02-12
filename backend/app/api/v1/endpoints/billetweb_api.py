@@ -8,7 +8,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.dependencies import DBSession, require_role
 from app.models import User
 from app.repositories.edition import EditionRepository
+from app.schemas.billetweb import BilletwebPreviewResponse
 from app.schemas.billetweb_api import (
+    BilletwebAttendeesSyncRequest,
+    BilletwebAttendeesSyncResult,
     BilletwebConnectionTestResponse,
     BilletwebCredentialsRequest,
     BilletwebCredentialsResponse,
@@ -224,6 +227,72 @@ async def sync_sessions(
     try:
         result = await sync_service.sync_sessions_import(edition)
         return BilletwebSessionsSyncResult(**result)
+    except BilletwebAPIError as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=str(e),
+        )
+
+
+@edition_router.get(
+    "/attendees/preview",
+    response_model=BilletwebPreviewResponse,
+    summary="Preview Billetweb attendees for this edition",
+)
+async def preview_attendees_sync(
+    edition_id: str,
+    db: DBSession,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Preview attendees from Billetweb before importing as depositors."""
+    edition = await _get_edition_or_404(db, edition_id)
+
+    if not edition.billetweb_event_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Edition is not linked to a Billetweb event",
+        )
+
+    sync_service = BilletwebSyncService(db)
+    try:
+        return await sync_service.sync_attendees_preview(edition)
+    except BilletwebAPIError as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=str(e),
+        )
+
+
+@edition_router.post(
+    "/attendees/import",
+    response_model=BilletwebAttendeesSyncResult,
+    summary="Import Billetweb attendees as depositors",
+)
+async def import_attendees_sync(
+    edition_id: str,
+    db: DBSession,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+    options: BilletwebAttendeesSyncRequest | None = None,
+):
+    """Import attendees from Billetweb API as edition depositors."""
+    edition = await _get_edition_or_404(db, edition_id)
+
+    if not edition.billetweb_event_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Edition is not linked to a Billetweb event",
+        )
+
+    send_emails = options.send_emails if options else True
+
+    sync_service = BilletwebSyncService(db)
+    try:
+        result = await sync_service.sync_attendees_import(
+            edition=edition,
+            imported_by=current_user,
+            send_emails=send_emails,
+        )
+        return BilletwebAttendeesSyncResult(**result)
     except BilletwebAPIError as e:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
