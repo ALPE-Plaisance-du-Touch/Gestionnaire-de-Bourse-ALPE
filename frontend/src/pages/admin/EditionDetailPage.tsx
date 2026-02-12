@@ -603,19 +603,12 @@ export function EditionDetailPage() {
 
             <div className="flex items-center gap-3 flex-wrap">
               {edition.billetwebEventId && (
-                <div>
-                  <Button
-                    size="sm"
-                    onClick={() => setShowAttendeesSyncModal(true)}
-                  >
-                    Synchroniser via API
-                  </Button>
-                  {edition.lastBilletwebSync && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Derniere sync : {new Date(edition.lastBilletwebSync).toLocaleString('fr-FR')}
-                    </p>
-                  )}
-                </div>
+                <Button
+                  size="sm"
+                  onClick={() => setShowAttendeesSyncModal(true)}
+                >
+                  Synchroniser via API
+                </Button>
               )}
               <BilletwebImportButton
                 edition={edition}
@@ -623,6 +616,11 @@ export function EditionDetailPage() {
                 onImportSuccess={() => refetchImportStats()}
               />
             </div>
+            {edition.billetwebEventId && edition.lastBilletwebSync && (
+              <p className="text-xs text-gray-500 mt-2">
+                Derniere sync API : {new Date(edition.lastBilletwebSync).toLocaleString('fr-FR')}
+              </p>
+            )}
 
             {importStats && importStats.totalImports > 0 && (
               <div className="mt-4 bg-gray-50 rounded-lg p-4">
