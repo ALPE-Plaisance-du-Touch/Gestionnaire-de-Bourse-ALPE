@@ -174,6 +174,10 @@ All specs are in `docs/` (v1.0.0 validated):
 | Non-functional | `REQ-NF-xxx` | REQ-NF-001 |
 | Dev Tasks | `x.y.z` | 0.2.1 |
 
+## External APIs
+
+- **Billetweb API**: https://www.billetweb.fr/bo/api.php (registration & ticketing platform used for depositor sign-ups)
+
 ## Environment Variables
 
 ### Backend (.env)
