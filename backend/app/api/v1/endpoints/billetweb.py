@@ -114,7 +114,7 @@ async def import_billetweb(
     current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
     file: UploadFile = File(..., description="Billetweb CSV export file (.csv)"),
     ignore_errors: bool = Query(False, description="Skip rows with errors instead of failing"),
-    send_emails: bool = Query(True, description="Send invitation/notification emails"),
+    send_emails: bool = Query(False, description="Send invitation/notification emails"),
 ):
     """Import depositors from a Billetweb file.
 

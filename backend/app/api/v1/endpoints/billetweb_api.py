@@ -283,7 +283,7 @@ async def import_attendees_sync(
             detail="Edition is not linked to a Billetweb event",
         )
 
-    send_emails = options.send_emails if options else True
+    send_emails = options.send_emails if options else False
 
     sync_service = BilletwebSyncService(db)
     try:

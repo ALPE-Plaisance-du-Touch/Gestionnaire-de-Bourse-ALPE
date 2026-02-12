@@ -375,7 +375,7 @@ class BilletwebSyncService:
         self,
         edition: Edition,
         imported_by: User,
-        send_emails: bool = True,
+        send_emails: bool = False,
         background_tasks: "BackgroundTasks | None" = None,
     ) -> dict:
         """Import attendees from Billetweb API.

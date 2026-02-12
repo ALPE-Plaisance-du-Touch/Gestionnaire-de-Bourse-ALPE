@@ -568,7 +568,7 @@ class BilletwebImportService:
         edition: Edition,
         imported_by: User,
         import_log: BilletwebImportLog | None = None,
-        send_emails: bool = True,
+        send_emails: bool = False,
         background_tasks: "BackgroundTasks | None" = None,
     ) -> tuple[int, int, int, int, int]:
         """Process parsed rows: create/link depositors, send emails.
@@ -713,7 +713,7 @@ class BilletwebImportService:
         file_size: int,
         imported_by: User,
         ignore_errors: bool = False,
-        send_emails: bool = True,
+        send_emails: bool = False,
         background_tasks: "BackgroundTasks | None" = None,
     ) -> tuple[BilletwebImportLog, int, int]:
         """Import depositors from a Billetweb CSV file.
@@ -817,7 +817,7 @@ class BilletwebImportService:
         slot_mapping: dict[str, str],
         edition: Edition,
         imported_by: User,
-        send_emails: bool = True,
+        send_emails: bool = False,
         background_tasks: "BackgroundTasks | None" = None,
     ) -> tuple[int, int, int, int, int]:
         """Import depositors from pre-parsed rows (used by API sync).

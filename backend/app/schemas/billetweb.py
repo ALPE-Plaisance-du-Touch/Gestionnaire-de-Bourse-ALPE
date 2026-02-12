@@ -121,7 +121,7 @@ class BilletwebImportOptions(BaseModel):
         description="If true, skip rows with errors instead of blocking the import"
     )
     send_emails: bool = Field(
-        default=True,
+        default=False,
         description="If true, send invitation/notification emails"
     )
 
