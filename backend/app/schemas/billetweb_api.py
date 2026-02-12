@@ -39,3 +39,31 @@ class BilletwebEventsListResponse(BaseModel):
     """Response listing Billetweb events."""
 
     events: list[BilletwebEventInfo]
+
+
+class BilletwebSessionPreview(BaseModel):
+    """Preview of a Billetweb session/date."""
+
+    session_id: str
+    name: str
+    start: str
+    end: str
+    capacity: int
+    sold: int
+    already_synced: bool
+
+
+class BilletwebSessionsPreviewResponse(BaseModel):
+    """Response for sessions preview."""
+
+    total_sessions: int
+    new_sessions: int
+    sessions: list[BilletwebSessionPreview]
+
+
+class BilletwebSessionsSyncResult(BaseModel):
+    """Result of sessions sync."""
+
+    created: int
+    updated: int
+    total: int

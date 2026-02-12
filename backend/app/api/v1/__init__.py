@@ -39,6 +39,11 @@ api_router.include_router(
     prefix="/settings/billetweb",
     tags=["Billetweb API"],
 )
+api_router.include_router(
+    billetweb_api.edition_router,
+    prefix="/editions/{edition_id}/billetweb-api",
+    tags=["Billetweb API Sync"],
+)
 api_router.include_router(invitations.router, prefix="/invitations", tags=["Invitations"])
 api_router.include_router(labels.router, tags=["Labels"])
 api_router.include_router(sales.router, tags=["Sales"])

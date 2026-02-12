@@ -5,6 +5,7 @@ import { editionsApi, billetwebApi, payoutsApi, ApiException } from '@/api';
 import { Button, ConfirmModal, Input, Modal } from '@/components/ui';
 import { DepositSlotsEditor } from '@/components/editions';
 import { BilletwebImportButton } from '@/components/billetweb';
+import { BilletwebSessionsSyncModal } from '@/components/billetweb/BilletwebSessionsSyncModal';
 import type { EditionStatus } from '@/types';
 
 const STATUS_LABELS: Record<EditionStatus, { label: string; className: string }> = {
@@ -110,6 +111,7 @@ export function EditionDetailPage() {
   const [success, setSuccess] = useState(false);
   const [closureModalOpen, setClosureModalOpen] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
+  const [showSessionsSyncModal, setShowSessionsSyncModal] = useState(false);
 
   // Auto-dismiss success message after 5 seconds
   useEffect(() => {
@@ -573,6 +575,17 @@ export function EditionDetailPage() {
 
         {/* Deposit Slots Section */}
         <section className="bg-white rounded-lg shadow p-6">
+          {edition.billetwebEventId && isEditable && (
+            <div className="mb-4 flex justify-end">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowSessionsSyncModal(true)}
+              >
+                Synchroniser créneaux Billetweb
+              </Button>
+            </div>
+          )}
           <DepositSlotsEditor editionId={edition.id} disabled={!isEditable} />
         </section>
 
@@ -894,6 +907,15 @@ export function EditionDetailPage() {
         variant="warning"
         confirmLabel="Archiver"
       />
+
+      {/* Billetweb sessions sync modal */}
+      {edition?.billetwebEventId && (
+        <BilletwebSessionsSyncModal
+          isOpen={showSessionsSyncModal}
+          onClose={() => setShowSessionsSyncModal(false)}
+          editionId={edition.id}
+        />
+      )}
     </div>
   );
 }

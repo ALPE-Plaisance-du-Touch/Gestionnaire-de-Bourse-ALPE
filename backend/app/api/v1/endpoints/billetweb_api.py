@@ -7,12 +7,16 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.dependencies import DBSession, require_role
 from app.models import User
+from app.repositories.edition import EditionRepository
 from app.schemas.billetweb_api import (
     BilletwebConnectionTestResponse,
     BilletwebCredentialsRequest,
     BilletwebCredentialsResponse,
     BilletwebEventInfo,
     BilletwebEventsListResponse,
+    BilletwebSessionPreview,
+    BilletwebSessionsPreviewResponse,
+    BilletwebSessionsSyncResult,
 )
 from app.services.billetweb_client import BilletwebAPIError, BilletwebAuthError
 from app.services.billetweb_sync import BilletwebSyncService
@@ -20,8 +24,14 @@ from app.services.settings import SettingsService
 
 logger = logging.getLogger(__name__)
 
+# Settings router (mounted at /settings/billetweb)
 router = APIRouter()
 
+# Edition-scoped sync router (mounted at /editions/{edition_id}/billetweb-api)
+edition_router = APIRouter()
+
+
+# --- Settings endpoints (admin only) ---
 
 @router.get(
     "",
@@ -136,6 +146,84 @@ async def list_billetweb_events(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Identifiants Billetweb invalides",
         )
+    except BilletwebAPIError as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=str(e),
+        )
+
+
+# --- Edition-scoped sync endpoints (manager+) ---
+
+async def _get_edition_or_404(db: DBSession, edition_id: str):
+    """Get edition by ID or raise 404."""
+    repo = EditionRepository(db)
+    edition = await repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} not found",
+        )
+    return edition
+
+
+@edition_router.get(
+    "/sessions/preview",
+    response_model=BilletwebSessionsPreviewResponse,
+    summary="Preview Billetweb sessions for this edition",
+)
+async def preview_sessions_sync(
+    edition_id: str,
+    db: DBSession,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Preview sessions from Billetweb before syncing as deposit slots."""
+    edition = await _get_edition_or_404(db, edition_id)
+
+    if not edition.billetweb_event_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Edition is not linked to a Billetweb event",
+        )
+
+    sync_service = BilletwebSyncService(db)
+    try:
+        result = await sync_service.sync_sessions_preview(edition)
+        return BilletwebSessionsPreviewResponse(
+            total_sessions=result["total_sessions"],
+            new_sessions=result["new_sessions"],
+            sessions=[BilletwebSessionPreview(**s) for s in result["sessions"]],
+        )
+    except BilletwebAPIError as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=str(e),
+        )
+
+
+@edition_router.post(
+    "/sessions/sync",
+    response_model=BilletwebSessionsSyncResult,
+    summary="Sync Billetweb sessions as deposit slots",
+)
+async def sync_sessions(
+    edition_id: str,
+    db: DBSession,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Import/upsert sessions from Billetweb as deposit slots."""
+    edition = await _get_edition_or_404(db, edition_id)
+
+    if not edition.billetweb_event_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Edition is not linked to a Billetweb event",
+        )
+
+    sync_service = BilletwebSyncService(db)
+    try:
+        result = await sync_service.sync_sessions_import(edition)
+        return BilletwebSessionsSyncResult(**result)
     except BilletwebAPIError as e:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
