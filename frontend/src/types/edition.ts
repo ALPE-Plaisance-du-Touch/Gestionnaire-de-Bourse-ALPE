@@ -28,8 +28,6 @@ export interface Edition {
   declarationDeadline: string | null;
   depositStartDatetime: string | null;
   depositEndDatetime: string | null;
-  saleStartDatetime: string | null;
-  saleEndDatetime: string | null;
   retrievalStartDatetime: string | null;
   retrievalEndDatetime: string | null;
   commissionRate: number | null;
@@ -60,8 +58,6 @@ export interface UpdateEditionRequest {
   declarationDeadline?: string;
   depositStartDatetime?: string;
   depositEndDatetime?: string;
-  saleStartDatetime?: string;
-  saleEndDatetime?: string;
   retrievalStartDatetime?: string;
   retrievalEndDatetime?: string;
   commissionRate?: number;

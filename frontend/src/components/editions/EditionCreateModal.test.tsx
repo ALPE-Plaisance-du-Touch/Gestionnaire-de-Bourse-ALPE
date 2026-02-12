@@ -37,8 +37,6 @@ const mockCreatedEdition: Edition = {
   declarationDeadline: null,
   depositStartDatetime: null,
   depositEndDatetime: null,
-  saleStartDatetime: null,
-  saleEndDatetime: null,
   retrievalStartDatetime: null,
   retrievalEndDatetime: null,
   commissionRate: null,

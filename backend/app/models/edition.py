@@ -64,12 +64,6 @@ class Edition(Base, UUIDMixin, TimestampMixin):
         DateTime, nullable=True
     )
 
-    # Sale dates (when items are sold to public)
-    sale_start_datetime: Mapped[datetime | None] = mapped_column(
-        DateTime, nullable=True
-    )
-    sale_end_datetime: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-
     # Retrieval dates (when depositors pick up unsold items)
     retrieval_start_datetime: Mapped[datetime | None] = mapped_column(
         DateTime, nullable=True

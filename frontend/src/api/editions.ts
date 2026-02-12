@@ -23,8 +23,6 @@ interface EditionApiResponse {
   declarationDeadline: string | null;
   depositStartDatetime: string | null;
   depositEndDatetime: string | null;
-  saleStartDatetime: string | null;
-  saleEndDatetime: string | null;
   retrievalStartDatetime: string | null;
   retrievalEndDatetime: string | null;
   commissionRate: string | null;  // Decimal is serialized as string by Pydantic
@@ -72,8 +70,6 @@ function transformEdition(data: EditionApiResponse): Edition {
     declarationDeadline: data.declarationDeadline,
     depositStartDatetime: data.depositStartDatetime,
     depositEndDatetime: data.depositEndDatetime,
-    saleStartDatetime: data.saleStartDatetime,
-    saleEndDatetime: data.saleEndDatetime,
     retrievalStartDatetime: data.retrievalStartDatetime,
     retrievalEndDatetime: data.retrievalEndDatetime,
     commissionRate: data.commissionRate !== null ? parseFloat(data.commissionRate) : null,
@@ -157,8 +153,6 @@ export const editionsApi = {
     if (data.declarationDeadline !== undefined) payload.declaration_deadline = data.declarationDeadline;
     if (data.depositStartDatetime !== undefined) payload.deposit_start_datetime = data.depositStartDatetime;
     if (data.depositEndDatetime !== undefined) payload.deposit_end_datetime = data.depositEndDatetime;
-    if (data.saleStartDatetime !== undefined) payload.sale_start_datetime = data.saleStartDatetime;
-    if (data.saleEndDatetime !== undefined) payload.sale_end_datetime = data.saleEndDatetime;
     if (data.retrievalStartDatetime !== undefined) payload.retrieval_start_datetime = data.retrievalStartDatetime;
     if (data.retrievalEndDatetime !== undefined) payload.retrieval_end_datetime = data.retrievalEndDatetime;
     if (data.commissionRate !== undefined) payload.commission_rate = data.commissionRate;

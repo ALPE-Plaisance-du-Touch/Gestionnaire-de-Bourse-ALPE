@@ -55,8 +55,6 @@ class EditionUpdate(BaseModel):
     declaration_deadline: datetime | None = None
     deposit_start_datetime: datetime | None = None
     deposit_end_datetime: datetime | None = None
-    sale_start_datetime: datetime | None = None
-    sale_end_datetime: datetime | None = None
     retrieval_start_datetime: datetime | None = None
     retrieval_end_datetime: datetime | None = None
     commission_rate: Decimal | None = Field(None, ge=0, le=1)
@@ -96,8 +94,6 @@ class EditionResponse(BaseModel):
     declaration_deadline: datetime | None = None
     deposit_start_datetime: datetime | None = None
     deposit_end_datetime: datetime | None = None
-    sale_start_datetime: datetime | None = None
-    sale_end_datetime: datetime | None = None
     retrieval_start_datetime: datetime | None = None
     retrieval_end_datetime: datetime | None = None
     commission_rate: Decimal | None = None

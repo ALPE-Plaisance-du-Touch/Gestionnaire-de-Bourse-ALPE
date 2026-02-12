@@ -92,8 +92,6 @@ async def configured_edition(db_session: AsyncSession, admin_user: User) -> Edit
         commission_rate=15.0,
         deposit_start_datetime=datetime(2025, 11, 5, 14, 0),
         deposit_end_datetime=datetime(2025, 11, 5, 22, 0),
-        sale_start_datetime=datetime(2025, 11, 6, 9, 0),
-        sale_end_datetime=datetime(2025, 11, 6, 17, 0),
         created_by_id=admin_user.id,
     )
     db_session.add(edition)
