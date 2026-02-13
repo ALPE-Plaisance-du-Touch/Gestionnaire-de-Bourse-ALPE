@@ -683,18 +683,11 @@ export function EditionDetailPage() {
 
         {/* Deposit Slots Section */}
         <section className="bg-white rounded-lg shadow p-6">
-          {edition.billetwebEventId && isEditable && (
-            <div className="mb-4 flex justify-end">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setShowSessionsSyncModal(true)}
-              >
-                Synchroniser créneaux Billetweb
-              </Button>
-            </div>
-          )}
-          <DepositSlotsEditor editionId={edition.id} disabled={!isEditable} />
+          <DepositSlotsEditor
+            editionId={edition.id}
+            disabled={!isEditable}
+            onSyncBilletweb={edition.billetwebEventId && isEditable ? () => setShowSessionsSyncModal(true) : undefined}
+          />
         </section>
 
         {/* Billetweb Import Section - Only for configured editions */}

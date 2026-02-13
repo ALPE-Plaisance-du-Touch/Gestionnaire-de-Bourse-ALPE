@@ -7,6 +7,7 @@ import type { DepositSlot, CreateDepositSlotRequest } from '@/types';
 interface DepositSlotsEditorProps {
   editionId: string;
   disabled?: boolean;
+  onSyncBilletweb?: () => void;
 }
 
 function parseLocalDatetime(datetimeString: string): Date {
@@ -50,7 +51,7 @@ function groupSlotsByDay(slots: DepositSlot[]): { dayKey: string; label: string;
   }));
 }
 
-export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlotsEditorProps) {
+export function DepositSlotsEditor({ editionId, disabled = false, onSyncBilletweb }: DepositSlotsEditorProps) {
   const queryClient = useQueryClient();
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -129,18 +130,25 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-md font-medium text-gray-900">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-md font-medium text-gray-900 whitespace-nowrap">
           Créneaux de dépôt
           {slots.length > 0 && (
             <span className="text-sm font-normal text-gray-500 ml-2">({slots.length})</span>
           )}
         </h3>
-        {!disabled && !isAdding && (
-          <Button size="sm" variant="outline" onClick={() => setIsAdding(true)}>
-            + Ajouter un créneau
-          </Button>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {onSyncBilletweb && (
+            <Button size="sm" variant="outline" onClick={onSyncBilletweb}>
+              Synchroniser créneaux Billetweb
+            </Button>
+          )}
+          {!disabled && !isAdding && (
+            <Button size="sm" variant="outline" onClick={() => setIsAdding(true)}>
+              + Ajouter un créneau
+            </Button>
+          )}
+        </div>
       </div>
 
       {error && (
