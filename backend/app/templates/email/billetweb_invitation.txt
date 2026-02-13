@@ -1,19 +1,19 @@
 Bonjour {{ first_name }},
 
-Votre inscription a la bourse "{{ edition_name }}" a bien ete enregistree via Billetweb.
+Votre inscription à la bourse "{{ edition_name }}" a bien été enregistrée via Billetweb.
 
 {% if slot_datetime %}
-Creneau de depot : {{ slot_datetime.strftime('%A %d %B %Y a %Hh%M') }}
+Créneau de dépôt : {{ slot_datetime.strftime('%A %d %B %Y à %Hh%M') }}
 {% endif %}
 
-Pour activer votre compte et declarer vos articles, cliquez sur le lien ci-dessous :
+Pour activer votre compte et déclarer vos articles, cliquez sur le lien ci-dessous :
 
 {{ activation_url }}
 
 Important : Ce lien est valide pendant {{ expiry_days }} jours.
-Passe ce delai, vous devrez demander une nouvelle invitation.
+Passé ce délai, vous devrez demander une nouvelle invitation.
 
 ---
 ALPE Plaisance du Touch
-Cet email a ete envoye automatiquement, merci de ne pas y repondre.
+Cet email a été envoyé automatiquement, merci de ne pas y répondre.
 Besoin d'aide ? Contactez-nous : {{ support_email }}

@@ -63,19 +63,19 @@
     <div class="content">
         <p>Bonjour,</p>
 
-        <p>Lors de la synchronisation des ventes hors-ligne pour l'edition <strong>{{ edition_name }}</strong>, <strong>{{ conflict_count }}</strong> conflit(s) ont ete detecte(s).</p>
+        <p>Lors de la synchronisation des ventes hors-ligne pour l'&eacute;dition <strong>{{ edition_name }}</strong>, <strong>{{ conflict_count }}</strong> conflit(s) ont &eacute;t&eacute; d&eacute;tect&eacute;(s).</p>
 
         <div class="stats">
-            <p>Synchronisation effectuee par <strong>{{ seller_name }}</strong> :</p>
+            <p>Synchronisation effectu&eacute;e par <strong>{{ seller_name }}</strong> :</p>
             <ul>
-                <li><strong>{{ synced_count }}</strong> vente(s) synchronisee(s) avec succes</li>
-                <li><strong>{{ conflict_count }}</strong> conflit(s) (article deja vendu par une autre caisse)</li>
+                <li><strong>{{ synced_count }}</strong> vente(s) synchronis&eacute;e(s) avec succ&egrave;s</li>
+                <li><strong>{{ conflict_count }}</strong> conflit(s) (article d&eacute;j&agrave; vendu par une autre caisse)</li>
                 <li><strong>{{ error_count }}</strong> erreur(s)</li>
             </ul>
         </div>
 
         <div class="conflict-box">
-            <strong>Details des conflits :</strong>
+            <strong>D&eacute;tails des conflits :</strong>
             <ul>
                 {% for conflict in conflicts %}
                 <li>{{ conflict }}</li>
@@ -83,12 +83,12 @@
             </ul>
         </div>
 
-        <p>Les conflits sont resolus par la regle "premier arrive, premier servi" : la vente enregistree en premier sur le serveur est conservee.</p>
+        <p>Les conflits sont r&eacute;solus par la r&egrave;gle &laquo; premier arriv&eacute;, premier servi &raquo; : la vente enregistr&eacute;e en premier sur le serveur est conserv&eacute;e.</p>
     </div>
 
     <div class="footer">
         <p>ALPE Plaisance du Touch</p>
-        <p>Cet email a ete envoye automatiquement, merci de ne pas y repondre.</p>
+        <p>Cet email a &eacute;t&eacute; envoy&eacute; automatiquement, merci de ne pas y r&eacute;pondre.</p>
     </div>
 </body>
 </html>

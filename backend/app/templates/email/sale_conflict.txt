@@ -2,20 +2,20 @@ Bourse ALPE - Conflits de synchronisation
 
 Bonjour,
 
-Lors de la synchronisation des ventes hors-ligne pour l'edition "{{ edition_name }}", {{ conflict_count }} conflit(s) ont ete detecte(s).
+Lors de la synchronisation des ventes hors-ligne pour l'édition "{{ edition_name }}", {{ conflict_count }} conflit(s) ont été détecté(s).
 
-Synchronisation effectuee par {{ seller_name }} :
-- {{ synced_count }} vente(s) synchronisee(s) avec succes
-- {{ conflict_count }} conflit(s) (article deja vendu par une autre caisse)
+Synchronisation effectuée par {{ seller_name }} :
+- {{ synced_count }} vente(s) synchronisée(s) avec succès
+- {{ conflict_count }} conflit(s) (article déjà vendu par une autre caisse)
 - {{ error_count }} erreur(s)
 
-Details des conflits :
+Détails des conflits :
 {% for conflict in conflicts %}
 - {{ conflict }}
 {% endfor %}
 
-Les conflits sont resolus par la regle "premier arrive, premier servi" : la vente enregistree en premier sur le serveur est conservee.
+Les conflits sont résolus par la règle "premier arrivé, premier servi" : la vente enregistrée en premier sur le serveur est conservée.
 
 ---
 ALPE Plaisance du Touch
-Cet email a ete envoye automatiquement, merci de ne pas y repondre.
+Cet email a été envoyé automatiquement, merci de ne pas y répondre.

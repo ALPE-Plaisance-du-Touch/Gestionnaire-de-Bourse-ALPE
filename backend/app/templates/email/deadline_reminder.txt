@@ -2,15 +2,15 @@ Bourse ALPE - Rappel Date limite
 
 Bonjour {{ first_name }},
 
-Nous vous rappelons que la date limite pour declarer vos articles pour la {{ edition_name }} approche.
+Nous vous rappelons que la date limite pour déclarer vos articles pour la {{ edition_name }} approche.
 
 Date limite : {{ deadline }}
 
-Pensez a finaliser la saisie de vos articles avant cette date. Passe ce delai, vous ne pourrez plus modifier vos listes.
+Pensez à finaliser la saisie de vos articles avant cette date. Passé ce délai, vous ne pourrez plus modifier vos listes.
 
-Acceder a mes listes : {{ lists_url }}
+Accéder à mes listes : {{ lists_url }}
 
 ---
 ALPE Plaisance du Touch
-Cet email a ete envoye automatiquement, merci de ne pas y repondre.
+Cet email a été envoyé automatiquement, merci de ne pas y répondre.
 Besoin d'aide ? Contactez-nous : {{ support_email }}

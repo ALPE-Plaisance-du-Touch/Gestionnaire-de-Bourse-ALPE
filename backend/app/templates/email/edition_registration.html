@@ -60,38 +60,38 @@
 <body>
     <div class="header">
         <h1>Bourse ALPE</h1>
-        <p>Bourse aux vetements et jouets d'enfants</p>
+        <p>Bourse aux v&ecirc;tements et jouets d'enfants</p>
     </div>
 
     <div class="content">
         <p>Bonjour {{ first_name }},</p>
 
-        <p>Bonne nouvelle ! Vous etes inscrit(e) a l'edition <strong>{{ edition_name }}</strong> de la bourse ALPE.</p>
+        <p>Bonne nouvelle ! Vous &ecirc;tes inscrit(e) &agrave; l'&eacute;dition <strong>{{ edition_name }}</strong> de la bourse ALPE.</p>
 
         <div class="info-box">
-            <p><strong>Edition :</strong> {{ edition_name }}</p>
+            <p><strong>&Eacute;dition :</strong> {{ edition_name }}</p>
             {% if slot_datetime %}
-            <p><strong>Creneau de depot :</strong> {{ slot_datetime.strftime('%A %d %B %Y a %Hh%M') }}</p>
+            <p><strong>Cr&eacute;neau de d&eacute;p&ocirc;t :</strong> {{ slot_datetime.strftime('%A %d %B %Y &agrave; %Hh%M') }}</p>
             {% endif %}
         </div>
 
-        <p>Vous pouvez des maintenant vous connecter pour declarer vos articles :</p>
+        <p>Vous pouvez d&egrave;s maintenant vous connecter pour d&eacute;clarer vos articles :</p>
 
         <p style="text-align: center;">
-            <a href="{{ login_url }}" class="button">Declarer mes articles</a>
+            <a href="{{ login_url }}" class="button">D&eacute;clarer mes articles</a>
         </p>
 
         <p>N'oubliez pas de :</p>
         <ul>
-            <li>Declarer vos articles avant la date limite</li>
-            <li>Imprimer vos etiquettes</li>
-            <li>Preparer vos articles pour le depot</li>
+            <li>D&eacute;clarer vos articles avant la date limite</li>
+            <li>Imprimer vos &eacute;tiquettes</li>
+            <li>Pr&eacute;parer vos articles pour le d&eacute;p&ocirc;t</li>
         </ul>
     </div>
 
     <div class="footer">
         <p>ALPE Plaisance du Touch</p>
-        <p>Cet email a ete envoye automatiquement, merci de ne pas y repondre.</p>
+        <p>Cet email a &eacute;t&eacute; envoy&eacute; automatiquement, merci de ne pas y r&eacute;pondre.</p>
         <p>Besoin d'aide ? Contactez-nous : <a href="mailto:{{ support_email }}">{{ support_email }}</a></p>
     </div>
 </body>
