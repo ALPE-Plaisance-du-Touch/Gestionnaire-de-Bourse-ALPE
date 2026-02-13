@@ -324,7 +324,7 @@ function CompactSlotChip({
       </div>
       <div className="flex items-center gap-2 mt-0.5">
         <span className={`text-xs ${occupancyClass}`}>
-          {slot.registeredCount}/{slot.maxCapacity} places
+          {slot.registeredCount ?? 0}/{slot.maxCapacity ?? 0} places
         </span>
         {slot.reservedForLocals && (
           <span className="text-xs text-purple-700 bg-purple-50 px-1 rounded">local</span>
