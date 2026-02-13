@@ -147,7 +147,7 @@ export function EditionDetailPage() {
   const { data: importStats, refetch: refetchImportStats } = useQuery({
     queryKey: ['billetweb-stats', id],
     queryFn: () => billetwebApi.getImportStats(id!),
-    enabled: !!id && edition?.status === 'configured',
+    enabled: !!id && (edition?.status === 'configured' || edition?.status === 'registrations_open'),
   });
 
   // Sync form state when edition data changes (initial load or after save)
@@ -250,6 +250,8 @@ export function EditionDetailPage() {
       setSuccess(true);
       setError(null);
       queryClient.invalidateQueries({ queryKey: ['billetweb-stats', id] });
+      queryClient.invalidateQueries({ queryKey: ['editions'] });
+      queryClient.invalidateQueries({ queryKey: ['edition', id] });
     },
     onError: (err) => {
       setShowInvitationsConfirm(false);
@@ -754,8 +756,8 @@ export function EditionDetailPage() {
           />
         </section>
 
-        {/* Billetweb Import Section - Only for configured editions */}
-        {edition.status === 'configured' && (
+        {/* Billetweb Import Section - For configured and registrations_open editions */}
+        {(edition.status === 'configured' || edition.status === 'registrations_open') && (
           <section className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-2">
               Inscriptions Billetweb
@@ -830,17 +832,24 @@ export function EditionDetailPage() {
             {/* Workflow actions: send invitations + open registrations */}
             {importStats && importStats.totalDepositors > 0 && (
               <div className="mt-4 flex items-center gap-3 flex-wrap">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="primary"
-                  onClick={() => setShowInvitationsConfirm(true)}
-                  disabled={sendInvitationsMutation.isPending || (importStats.pendingInvitations ?? 0) === 0}
-                  isLoading={sendInvitationsMutation.isPending}
-                >
-                  Envoyer les invitations ({importStats.pendingInvitations ?? 0})
-                </Button>
-                {isAdmin && (
+                {/* Send invitations button: admin only when configured, manager+ when registrations_open */}
+                {(edition.status === 'registrations_open' || isAdmin) && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="primary"
+                    onClick={() => setShowInvitationsConfirm(true)}
+                    disabled={sendInvitationsMutation.isPending || (importStats.pendingInvitations ?? 0) === 0}
+                    isLoading={sendInvitationsMutation.isPending}
+                  >
+                    {edition.status === 'configured'
+                      ? `Envoyer les invitations et ouvrir (${importStats.pendingInvitations ?? 0})`
+                      : `Envoyer les invitations (${importStats.pendingInvitations ?? 0})`
+                    }
+                  </Button>
+                )}
+                {/* Silent open registrations: admin only, configured status only */}
+                {isAdmin && edition.status === 'configured' && (
                   <Button
                     type="button"
                     size="sm"
@@ -849,7 +858,7 @@ export function EditionDetailPage() {
                     disabled={openRegistrationsMutation.isPending}
                     isLoading={openRegistrationsMutation.isPending}
                   >
-                    Ouvrir les inscriptions
+                    Ouvrir les inscriptions (sans notification)
                   </Button>
                 )}
               </div>
@@ -1394,11 +1403,15 @@ export function EditionDetailPage() {
       <Modal
         isOpen={showInvitationsConfirm}
         onClose={() => setShowInvitationsConfirm(false)}
-        title="Envoyer les invitations"
+        title={edition.status === 'configured' ? "Envoyer les invitations et ouvrir les inscriptions" : "Envoyer les invitations"}
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-700">
-            Vous allez envoyer les emails d'invitation/notification aux déposants qui ne les ont pas encore reçus.
+            {edition.status === 'configured' ? (
+              <>L'édition passera en statut <strong>Inscriptions ouvertes</strong> et les emails d'invitation seront envoyés aux déposants qui ne les ont pas encore reçus.</>
+            ) : (
+              <>Les emails d'invitation seront envoyés aux déposants qui ne les ont pas encore reçus.</>
+            )}
           </p>
           {importStats && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
@@ -1406,6 +1419,11 @@ export function EditionDetailPage() {
               <p className="text-xs text-blue-600 mt-1">
                 Les nouveaux utilisateurs recevront un lien d'activation. Les utilisateurs existants recevront une notification.
               </p>
+            </div>
+          )}
+          {edition.status === 'configured' && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
+              Cette action n'est possible que si aucune autre édition n'est déjà active.
             </div>
           )}
           <div className="flex justify-end gap-3 pt-4 border-t">
@@ -1422,22 +1440,22 @@ export function EditionDetailPage() {
               isLoading={sendInvitationsMutation.isPending}
               onClick={() => sendInvitationsMutation.mutate()}
             >
-              Envoyer les invitations
+              {edition.status === 'configured' ? "Confirmer et ouvrir" : "Envoyer les invitations"}
             </Button>
           </div>
         </div>
       </Modal>
 
-      {/* Open registrations confirmation modal */}
+      {/* Open registrations confirmation modal (silent, no notifications) */}
       <Modal
         isOpen={showOpenRegistrationsConfirm}
         onClose={() => setShowOpenRegistrationsConfirm(false)}
-        title="Ouvrir les inscriptions"
+        title="Ouvrir les inscriptions (sans notification)"
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-700">
-            L'édition passera en statut <strong>Inscriptions ouvertes</strong>.
-            Un email sera envoyé à tous les déposants inscrits pour les informer qu'ils peuvent déclarer leurs articles.
+            L'édition passera en statut <strong>Inscriptions ouvertes</strong> sans envoyer de notification aux déposants.
+            Vous pourrez envoyer les invitations séparément.
           </p>
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
             Cette action n'est possible que si aucune autre édition n'est déjà active.

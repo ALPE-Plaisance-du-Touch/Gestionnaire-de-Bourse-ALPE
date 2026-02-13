@@ -198,6 +198,7 @@ export const editionsApi = {
     invitationsSent: number;
     notificationsSent: number;
     alreadySent: number;
+    statusChanged: boolean;
   }> => {
     const response = await apiClient.post(`/v1/editions/${editionId}/send-invitations`);
     return response.data;
