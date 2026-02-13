@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { depositSlotsApi, billetwebApi, ApiException } from '@/api';
-import { Button, ConfirmModal, Input } from '@/components/ui';
+import { Button, ConfirmModal, Input, Modal } from '@/components/ui';
 import type { DepositSlot, CreateDepositSlotRequest } from '@/types';
 
 interface DepositSlotsEditorProps {
@@ -55,7 +55,7 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [slotToDelete, setSlotToDelete] = useState<string | null>(null);
-  const [expandedSlotId, setExpandedSlotId] = useState<string | null>(null);
+  const [participantsSlot, setParticipantsSlot] = useState<DepositSlot | null>(null);
 
   const [newSlot, setNewSlot] = useState<CreateDepositSlotRequest>({
     startDatetime: '',
@@ -168,11 +168,7 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
                   <CompactSlotChip
                     key={slot.id}
                     slot={slot}
-                    editionId={editionId}
-                    isExpanded={expandedSlotId === slot.id}
-                    onToggleParticipants={() =>
-                      setExpandedSlotId(expandedSlotId === slot.id ? null : slot.id)
-                    }
+                    onShowParticipants={() => setParticipantsSlot(slot)}
                     onDelete={() => setSlotToDelete(slot.id)}
                     disabled={disabled || deleteMutation.isPending}
                   />
@@ -291,22 +287,31 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
         confirmLabel="Supprimer"
         isLoading={deleteMutation.isPending}
       />
+
+      <Modal
+        isOpen={!!participantsSlot}
+        onClose={() => setParticipantsSlot(null)}
+        title={participantsSlot
+          ? `Participants — ${formatTime(participantsSlot.startDatetime)} - ${formatTime(participantsSlot.endDatetime)}`
+          : 'Participants'}
+        size="sm"
+      >
+        {participantsSlot && (
+          <SlotParticipants editionId={editionId} slotId={participantsSlot.id} />
+        )}
+      </Modal>
     </div>
   );
 }
 
 function CompactSlotChip({
   slot,
-  editionId,
-  isExpanded,
-  onToggleParticipants,
+  onShowParticipants,
   onDelete,
   disabled,
 }: {
   slot: DepositSlot;
-  editionId: string;
-  isExpanded: boolean;
-  onToggleParticipants: () => void;
+  onShowParticipants: () => void;
   onDelete: () => void;
   disabled: boolean;
 }) {
@@ -316,50 +321,45 @@ function CompactSlotChip({
   if (ratio >= 0.9) occupancyClass = 'text-red-600 font-medium';
   else if (ratio >= 0.75) occupancyClass = 'text-orange-600 font-medium';
 
-  const hasParticipants = count > 0;
-
   return (
-    <div>
-      <div className="group relative bg-white border border-gray-200 rounded-md px-3 py-2 hover:border-gray-300 transition-colors">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-900">
-            {formatTime(slot.startDatetime)} - {formatTime(slot.endDatetime)}
-          </span>
-          {!disabled && (
-            <button
-              type="button"
-              onClick={onDelete}
-              className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity -mr-1"
-              title="Supprimer"
-            >
-              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          )}
-        </div>
-        <div className="flex items-center gap-2 mt-0.5">
-          {hasParticipants ? (
-            <button
-              type="button"
-              onClick={onToggleParticipants}
-              className={`text-xs ${occupancyClass} hover:underline cursor-pointer`}
-            >
-              {count}/{slot.maxCapacity ?? 0} places {isExpanded ? '\u25B2' : '\u25BC'}
-            </button>
-          ) : (
-            <span className={`text-xs ${occupancyClass}`}>
-              {count}/{slot.maxCapacity ?? 0} places
-            </span>
-          )}
-          {slot.reservedForLocals && (
-            <span className="text-xs text-purple-700 bg-purple-50 px-1 rounded">local</span>
-          )}
-        </div>
+    <div className="group relative bg-white border border-gray-200 rounded-md px-3 py-2 hover:border-gray-300 transition-colors">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-gray-900">
+          {formatTime(slot.startDatetime)} - {formatTime(slot.endDatetime)}
+        </span>
+        {!disabled && (
+          <button
+            type="button"
+            onClick={onDelete}
+            className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity -mr-1"
+            title="Supprimer"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
-      {isExpanded && (
-        <SlotParticipants editionId={editionId} slotId={slot.id} />
-      )}
+      <div className="flex items-center gap-2 mt-0.5">
+        <span className={`text-xs ${occupancyClass}`}>
+          {count}/{slot.maxCapacity ?? 0} places
+        </span>
+        {count > 0 && (
+          <button
+            type="button"
+            onClick={onShowParticipants}
+            className="text-blue-500 hover:text-blue-700 transition-colors"
+            title="Voir les participants"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+            </svg>
+          </button>
+        )}
+        {slot.reservedForLocals && (
+          <span className="text-xs text-purple-700 bg-purple-50 px-1 rounded">local</span>
+        )}
+      </div>
     </div>
   );
 }
@@ -371,30 +371,27 @@ function SlotParticipants({ editionId, slotId }: { editionId: string; slotId: st
   });
 
   if (isLoading) {
-    return (
-      <div className="mt-1 bg-gray-50 border border-gray-200 rounded p-2 text-xs text-gray-400">
-        Chargement...
-      </div>
-    );
+    return <div className="text-sm text-gray-400">Chargement...</div>;
   }
 
   const participants = data?.items ?? [];
 
   if (participants.length === 0) {
-    return (
-      <div className="mt-1 bg-gray-50 border border-gray-200 rounded p-2 text-xs text-gray-400 italic">
-        Aucun participant
-      </div>
-    );
+    return <div className="text-sm text-gray-400 italic">Aucun participant</div>;
   }
 
   return (
-    <div className="mt-1 bg-gray-50 border border-gray-200 rounded p-2 text-xs space-y-0.5">
+    <ul className="space-y-1">
       {participants.map((p) => (
-        <div key={p.id} className="text-gray-700">
-          {p.userFirstName} {p.userLastName.toUpperCase()}
-        </div>
+        <li key={p.id} className="flex items-center justify-between text-sm">
+          <span className="text-gray-900 font-medium">
+            {p.userFirstName} {p.userLastName.toUpperCase()}
+          </span>
+          {p.userEmail && (
+            <span className="text-gray-400 text-xs ml-2 truncate">{p.userEmail}</span>
+          )}
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }
