@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { editionsApi, billetwebApi, depositSlotsApi, payoutsApi, ApiException } from '@/api';
 import { Button, ConfirmModal, Input, Modal, Select } from '@/components/ui';
 import { DepositSlotsEditor } from '@/components/editions';
-import { BilletwebImportButton } from '@/components/billetweb';
 import { BilletwebSessionsSyncModal } from '@/components/billetweb/BilletwebSessionsSyncModal';
 import { BilletwebAttendeesSyncModal } from '@/components/billetweb/BilletwebAttendeesSyncModal';
 import { useAuth } from '@/contexts/AuthContext';
@@ -756,10 +755,6 @@ export function EditionDetailPage() {
                   Synchroniser via API
                 </Button>
               )}
-              <BilletwebImportButton
-                edition={edition}
-                onImportSuccess={() => refetchImportStats()}
-              />
               <Button
                 size="sm"
                 variant="outline"
