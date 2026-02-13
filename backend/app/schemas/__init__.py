@@ -26,9 +26,6 @@ from app.schemas.auth import (
 )
 from app.schemas.billetweb import (
     BilletwebImportLogResponse,
-    BilletwebImportOptions,
-    BilletwebImportResponse,
-    BilletwebImportResult,
     BilletwebPreviewResponse,
     BilletwebPreviewStats,
     BilletwebRowError,
@@ -141,9 +138,6 @@ __all__ = [
     "PasswordResetRequest",
     "PasswordReset",
     # Billetweb
-    "BilletwebImportOptions",
-    "BilletwebImportResponse",
-    "BilletwebImportResult",
     "BilletwebImportLogResponse",
     "BilletwebPreviewResponse",
     "BilletwebPreviewStats",

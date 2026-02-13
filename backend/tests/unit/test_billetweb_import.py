@@ -1,30 +1,11 @@
 """Unit tests for the Billetweb import service."""
 
-import os
 from datetime import datetime
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import DepositSlot, Edition, User
 from app.models.item_list import ListType
-from app.services.billetweb_import import (
-    REQUIRED_COLUMN_NAMES,
-    BilletwebImportService,
-)
-
-# Path to test fixtures
-FIXTURES_PATH = Path(__file__).parent.parent / "fixtures"
-
-
-def load_fixture(filename: str) -> bytes:
-    """Load a test fixture file."""
-    filepath = FIXTURES_PATH / filename
-    with open(filepath, "rb") as f:
-        return f.read()
+from app.services.billetweb_import import BilletwebImportService
 
 
 class TestBilletwebValidation:
@@ -134,113 +115,6 @@ class TestBilletwebValidation:
         for tarif in unknown_tarifs:
             result = BilletwebImportService._map_tarif_to_list_type(tarif)
             assert result == ListType.STANDARD.value, f"Unknown tarif '{tarif}' should default to STANDARD"
-
-
-class TestBilletwebCsvParsing:
-    """Tests for CSV parsing."""
-
-    @pytest.fixture
-    def mock_db_session(self):
-        """Create a mock database session."""
-        return MagicMock(spec=AsyncSession)
-
-    @pytest.fixture
-    def service(self, mock_db_session):
-        """Create a BilletwebImportService instance."""
-        return BilletwebImportService(mock_db_session)
-
-    @pytest.fixture
-    def sample_deposit_slots(self):
-        """Create sample deposit slots for testing."""
-        slot1 = MagicMock(spec=DepositSlot)
-        slot1.id = "slot-1"
-        slot1.start_datetime = datetime(2025, 11, 5, 20, 0)
-        slot1.end_datetime = datetime(2025, 11, 5, 22, 0)
-        slot1.description = None
-
-        slot2 = MagicMock(spec=DepositSlot)
-        slot2.id = "slot-2"
-        slot2.start_datetime = datetime(2025, 11, 6, 14, 0)
-        slot2.end_datetime = datetime(2025, 11, 6, 16, 0)
-        slot2.description = None
-
-        return [slot1, slot2]
-
-    def test_parse_valid_csv(self, service, sample_deposit_slots):
-        """Test parsing a valid CSV file."""
-        content = load_fixture("billetweb_valid.csv")
-        result = service._parse_csv(content, sample_deposit_slots)
-
-        # Should have no errors
-        assert len(result.errors) == 0
-
-        # Should have parsed rows (3 total, all paid and valid)
-        assert result.stats.total_rows == 3
-        assert len(result.parsed_rows) == 3
-
-        # Check first parsed row
-        row1 = result.parsed_rows[0]
-        assert row1.nom == "Dupont"
-        assert row1.prenom == "Jean"
-        assert row1.email == "jean.dupont@example.com"
-
-    def test_parse_csv_missing_columns(self, service, sample_deposit_slots):
-        """Test parsing CSV with missing required columns."""
-        content = load_fixture("billetweb_missing_columns.csv")
-        result = service._parse_csv(content, sample_deposit_slots)
-
-        # Should have errors for missing columns
-        assert len(result.errors) > 0
-        error_messages = [e.error_message for e in result.errors]
-        assert any("colonnes manquantes" in msg.lower() for msg in error_messages)
-
-    def test_parse_csv_invalid_data(self, service, sample_deposit_slots):
-        """Test parsing CSV with invalid email/phone."""
-        content = load_fixture("billetweb_invalid_data.csv")
-        result = service._parse_csv(content, sample_deposit_slots)
-
-        # Should have validation errors
-        assert len(result.errors) > 0
-
-        # Check for email validation error
-        email_errors = [e for e in result.errors if "email" in e.error_message.lower()]
-        assert len(email_errors) > 0
-
-    def test_parse_csv_unpaid_rows_filtered(self, service, sample_deposit_slots):
-        """Test that unpaid/invalid rows are filtered out."""
-        content = load_fixture("billetweb_unpaid.csv")
-        result = service._parse_csv(content, sample_deposit_slots)
-
-        # 3 total rows, but only 1 is both paid and valid
-        assert result.stats.total_rows == 3
-        assert result.stats.rows_unpaid_invalid == 2
-        assert len(result.parsed_rows) == 1
-
-    def test_parse_csv_duplicates_detected(self, service, sample_deposit_slots):
-        """Test that duplicate emails are detected."""
-        content = load_fixture("billetweb_duplicates.csv")
-        result = service._parse_csv(content, sample_deposit_slots)
-
-        # Should detect 1 duplicate
-        assert result.stats.duplicates_in_file == 1
-
-        # Should only keep first occurrence (2 unique emails -> 2 parsed rows)
-        assert len(result.parsed_rows) == 2
-
-        # Should have a warning about duplicates
-        assert any("doublon" in w.lower() for w in result.warnings)
-
-    def test_parse_csv_slot_mapping(self, service, sample_deposit_slots):
-        """Test that slots are correctly mapped by datetime."""
-        content = load_fixture("billetweb_valid.csv")
-        result = service._parse_csv(content, sample_deposit_slots)
-
-        # Check slot mapping was created
-        assert "2025-11-05 20:00" in result.slot_mapping
-        assert result.slot_mapping["2025-11-05 20:00"] == "slot-1"
-
-        assert "2025-11-06 14:00" in result.slot_mapping
-        assert result.slot_mapping["2025-11-06 14:00"] == "slot-2"
 
 
 class TestBilletwebEmailTemplates:
