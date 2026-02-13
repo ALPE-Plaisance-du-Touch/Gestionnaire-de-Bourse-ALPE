@@ -63,6 +63,7 @@ function RoleLinks({ role, editionId }: { role: UserRole; editionId?: string }) 
     { label: 'Reversements', to: `/editions/${editionId}/payouts`, roles: ['manager', 'administrator'], needsEdition: true },
     { label: 'Gestion des ventes', to: `/editions/${editionId}/sales/manage`, roles: ['manager', 'administrator'], needsEdition: true },
     { label: 'Statistiques', to: `/editions/${editionId}/stats`, roles: ['manager', 'administrator'], needsEdition: true },
+    { label: 'Utilisateurs', to: '/admin/users', roles: ['administrator'] },
     { label: 'Gestion des éditions', to: '/editions', roles: ['administrator'] },
   ];
 
