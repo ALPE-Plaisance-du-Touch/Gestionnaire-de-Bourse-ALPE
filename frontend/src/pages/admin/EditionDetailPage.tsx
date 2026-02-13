@@ -198,6 +198,7 @@ export function EditionDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['editions'] });
       queryClient.invalidateQueries({ queryKey: ['edition', id] });
+      queryClient.invalidateQueries({ queryKey: ['active-edition'] });
     },
   });
 
@@ -215,6 +216,7 @@ export function EditionDetailPage() {
       setError(null);
       queryClient.invalidateQueries({ queryKey: ['editions'] });
       queryClient.invalidateQueries({ queryKey: ['edition', id] });
+      queryClient.invalidateQueries({ queryKey: ['active-edition'] });
     },
     onError: (err) => {
       setClosureModalOpen(false);
@@ -252,6 +254,7 @@ export function EditionDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['billetweb-stats', id] });
       queryClient.invalidateQueries({ queryKey: ['editions'] });
       queryClient.invalidateQueries({ queryKey: ['edition', id] });
+      queryClient.invalidateQueries({ queryKey: ['active-edition'] });
     },
     onError: (err) => {
       setShowInvitationsConfirm(false);
@@ -271,6 +274,7 @@ export function EditionDetailPage() {
       setError(null);
       queryClient.invalidateQueries({ queryKey: ['editions'] });
       queryClient.invalidateQueries({ queryKey: ['edition', id] });
+      queryClient.invalidateQueries({ queryKey: ['active-edition'] });
     },
     onError: (err) => {
       setShowOpenRegistrationsConfirm(false);
@@ -294,6 +298,7 @@ export function EditionDetailPage() {
       setError(null);
       queryClient.invalidateQueries({ queryKey: ['editions'] });
       queryClient.invalidateQueries({ queryKey: ['edition', id] });
+      queryClient.invalidateQueries({ queryKey: ['active-edition'] });
     },
     onError: (err) => {
       setShowRevertToConfiguredConfirm(false);
