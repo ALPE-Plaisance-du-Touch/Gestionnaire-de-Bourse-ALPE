@@ -329,10 +329,10 @@ class EditionService:
 
     async def get_active_edition(self) -> Edition | None:
         """
-        Get the currently active edition (any non-draft, non-closed status).
+        Get the currently active edition (registrations_open or in_progress).
 
         Returns the highest-priority active edition:
-        in_progress > registrations_open > configured.
+        in_progress > registrations_open.
         """
         return await self.repository.get_any_active_edition()
 

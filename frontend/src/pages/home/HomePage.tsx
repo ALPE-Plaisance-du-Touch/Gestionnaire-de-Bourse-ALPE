@@ -6,12 +6,6 @@ import { MainLayout } from '@/components/layout';
 import type { Edition } from '@/types';
 import type { UserRole } from '@/types/user';
 
-const STATUS_LABELS: Record<string, string> = {
-  configured: 'Configurée',
-  registrations_open: 'Inscriptions ouvertes',
-  in_progress: 'En cours',
-};
-
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('fr-FR', {
     weekday: 'long',
@@ -29,17 +23,10 @@ function formatDateShort(dateString: string): string {
   });
 }
 
-function EditionCard({ edition, showStatus = true }: { edition: Edition; showStatus?: boolean }) {
+function EditionCard({ edition }: { edition: Edition }) {
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-bold text-gray-900">{edition.name}</h3>
-        {showStatus && (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-            {STATUS_LABELS[edition.status] || edition.status}
-          </span>
-        )}
-      </div>
+      <h3 className="text-xl font-bold text-gray-900 mb-4">{edition.name}</h3>
       {edition.location && (
         <p className="text-gray-600 mb-3">{edition.location}</p>
       )}
@@ -165,7 +152,7 @@ function AuthenticatedHomePage({
       {edition ? (
         <>
           <div className="mb-8">
-            <EditionCard edition={edition} showStatus={role === 'manager' || role === 'administrator'} />
+            <EditionCard edition={edition} />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Accès rapide</h2>

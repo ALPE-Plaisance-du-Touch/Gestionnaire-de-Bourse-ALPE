@@ -156,14 +156,13 @@ class EditionRepository:
     async def get_any_active_edition(
         self, *, exclude_id: str | None = None
     ) -> Edition | None:
-        """Get any edition in an active status (configured, registrations_open, or in_progress).
+        """Get any edition in an active status (registrations_open or in_progress).
 
-        Returns the highest-priority active edition (in_progress > registrations_open > configured).
+        Returns the highest-priority active edition (in_progress > registrations_open).
         """
         active_statuses = [
             EditionStatus.IN_PROGRESS.value,
             EditionStatus.REGISTRATIONS_OPEN.value,
-            EditionStatus.CONFIGURED.value,
         ]
         query = (
             select(Edition)
@@ -178,6 +177,6 @@ class EditionRepository:
         if not editions:
             return None
 
-        # Return highest-priority: in_progress > registrations_open > configured
+        # Return highest-priority: in_progress > registrations_open
         priority = {s: i for i, s in enumerate(active_statuses)}
         return min(editions, key=lambda e: priority.get(e.status, 99))
