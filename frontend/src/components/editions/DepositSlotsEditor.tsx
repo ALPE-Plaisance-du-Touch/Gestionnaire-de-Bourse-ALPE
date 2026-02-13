@@ -9,39 +9,6 @@ interface DepositSlotsEditorProps {
   disabled?: boolean;
 }
 
-/**
- * Format a datetime string for datetime-local input.
- * Backend stores dates without timezone info, so we parse directly without conversion.
- */
-function formatDatetimeLocal(datetimeString: string): string {
-  // Remove timezone suffix if present and take first 16 chars (YYYY-MM-DDTHH:mm)
-  return datetimeString.replace('Z', '').substring(0, 16);
-}
-
-/**
- * Format a datetime for display.
- * Parse the date string directly to avoid timezone conversion.
- */
-function formatDisplayDateTime(datetimeString: string): string {
-  // Parse "2025-03-15T09:00:00" directly without timezone interpretation
-  const [datePart, timePart] = datetimeString.replace('Z', '').split('T');
-  const [year, month, day] = datePart.split('-').map(Number);
-  const [hours, minutes] = timePart.split(':').map(Number);
-
-  const date = new Date(year, month - 1, day, hours, minutes);
-  return date.toLocaleDateString('fr-FR', {
-    weekday: 'short',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
-/**
- * Parse a datetime string without timezone conversion.
- */
 function parseLocalDatetime(datetimeString: string): Date {
   const [datePart, timePart] = datetimeString.replace('Z', '').split('T');
   const [year, month, day] = datePart.split('-').map(Number);
@@ -49,22 +16,38 @@ function parseLocalDatetime(datetimeString: string): Date {
   return new Date(year, month - 1, day, hours, minutes, seconds);
 }
 
-/**
- * Calculate duration in hours and minutes.
- */
-function formatDuration(startDatetime: string, endDatetime: string): string {
-  const start = parseLocalDatetime(startDatetime);
-  const end = parseLocalDatetime(endDatetime);
-  const diffMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
-  const hours = Math.floor(diffMinutes / 60);
-  const minutes = diffMinutes % 60;
-  if (hours === 0) {
-    return `${minutes}min`;
+function formatTime(datetimeString: string): string {
+  const d = parseLocalDatetime(datetimeString);
+  return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatDayLabel(datetimeString: string): string {
+  const d = parseLocalDatetime(datetimeString);
+  return d.toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function getDayKey(datetimeString: string): string {
+  return datetimeString.replace('Z', '').substring(0, 10);
+}
+
+function groupSlotsByDay(slots: DepositSlot[]): { dayKey: string; label: string; slots: DepositSlot[] }[] {
+  const groups = new Map<string, { label: string; slots: DepositSlot[] }>();
+  for (const slot of slots) {
+    const key = getDayKey(slot.startDatetime);
+    if (!groups.has(key)) {
+      groups.set(key, { label: formatDayLabel(slot.startDatetime), slots: [] });
+    }
+    groups.get(key)!.slots.push(slot);
   }
-  if (minutes === 0) {
-    return `${hours}h`;
-  }
-  return `${hours}h${minutes}`;
+  return Array.from(groups.entries()).map(([dayKey, group]) => ({
+    dayKey,
+    ...group,
+  }));
 }
 
 export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlotsEditorProps) {
@@ -73,7 +56,6 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
   const [error, setError] = useState<string | null>(null);
   const [slotToDelete, setSlotToDelete] = useState<string | null>(null);
 
-  // Form state for new slot
   const [newSlot, setNewSlot] = useState<CreateDepositSlotRequest>({
     startDatetime: '',
     endDatetime: '',
@@ -82,7 +64,6 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
     description: '',
   });
 
-  // Fetch existing slots
   const { data: slotsResponse, isLoading } = useQuery({
     queryKey: ['deposit-slots', editionId],
     queryFn: () => depositSlotsApi.getDepositSlots(editionId),
@@ -90,7 +71,6 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
 
   const slots = slotsResponse?.items ?? [];
 
-  // Create slot mutation
   const createMutation = useMutation({
     mutationFn: (data: CreateDepositSlotRequest) =>
       depositSlotsApi.createDepositSlot(editionId, data),
@@ -98,7 +78,6 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
       queryClient.invalidateQueries({ queryKey: ['deposit-slots', editionId] });
       setIsAdding(false);
       setError(null);
-      // Reset form
       setNewSlot({
         startDatetime: '',
         endDatetime: '',
@@ -116,7 +95,6 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
     },
   });
 
-  // Delete slot mutation
   const deleteMutation = useMutation({
     mutationFn: (slotId: string) => depositSlotsApi.deleteDepositSlot(editionId, slotId),
     onSuccess: () => {
@@ -129,22 +107,16 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
 
   const handleAddSlot = () => {
     setError(null);
-
-    // Validation
     if (!newSlot.startDatetime || !newSlot.endDatetime) {
       setError('Les dates de début et fin sont requises.');
       return;
     }
-
     const start = new Date(newSlot.startDatetime);
     const end = new Date(newSlot.endDatetime);
-
     if (end <= start) {
       setError("L'heure de fin doit être après l'heure de début.");
       return;
     }
-
-    // Send dates as-is (local time) - backend stores without timezone
     createMutation.mutate({
       ...newSlot,
       startDatetime: `${newSlot.startDatetime}:00`,
@@ -152,21 +124,17 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
     });
   };
 
-  const handleDeleteSlot = (slotId: string) => {
-    setSlotToDelete(slotId);
-  };
-
-  const handleDeleteSlotConfirm = () => {
-    if (slotToDelete) {
-      deleteMutation.mutate(slotToDelete);
-      setSlotToDelete(null);
-    }
-  };
+  const dayGroups = groupSlotsByDay(slots);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-md font-medium text-gray-900">Créneaux de dépôt</h3>
+        <h3 className="text-md font-medium text-gray-900">
+          Créneaux de dépôt
+          {slots.length > 0 && (
+            <span className="text-sm font-normal text-gray-500 ml-2">({slots.length})</span>
+          )}
+        </h3>
         {!disabled && !isAdding && (
           <Button size="sm" variant="outline" onClick={() => setIsAdding(true)}>
             + Ajouter un créneau
@@ -180,7 +148,6 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
         </div>
       )}
 
-      {/* Existing slots list */}
       {isLoading ? (
         <div className="text-sm text-gray-500">Chargement des créneaux...</div>
       ) : slots.length === 0 && !isAdding ? (
@@ -188,19 +155,28 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
           Aucun créneau de dépôt configuré.
         </div>
       ) : (
-        <div className="space-y-2">
-          {slots.map((slot) => (
-            <SlotCard
-              key={slot.id}
-              slot={slot}
-              onDelete={() => handleDeleteSlot(slot.id)}
-              disabled={disabled || deleteMutation.isPending}
-            />
+        <div className="space-y-4">
+          {dayGroups.map((group) => (
+            <div key={group.dayKey}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm font-semibold text-gray-800 capitalize">{group.label}</span>
+                <span className="text-xs text-gray-400">{group.slots.length} créneaux</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                {group.slots.map((slot) => (
+                  <CompactSlotChip
+                    key={slot.id}
+                    slot={slot}
+                    onDelete={() => setSlotToDelete(slot.id)}
+                    disabled={disabled || deleteMutation.isPending}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}
 
-      {/* Add new slot form */}
       {isAdding && (
         <div className="border rounded-lg p-4 bg-gray-50 space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -282,7 +258,6 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
         </div>
       )}
 
-      {/* Standard slots suggestion */}
       {!disabled && slots.length === 0 && !isAdding && (
         <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded">
           <strong>Exemples de créneaux standards :</strong>
@@ -295,11 +270,15 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
         </div>
       )}
 
-      {/* Delete slot confirmation modal */}
       <ConfirmModal
         isOpen={!!slotToDelete}
         onClose={() => setSlotToDelete(null)}
-        onConfirm={handleDeleteSlotConfirm}
+        onConfirm={() => {
+          if (slotToDelete) {
+            deleteMutation.mutate(slotToDelete);
+            setSlotToDelete(null);
+          }
+        }}
         title="Supprimer le créneau"
         message="Supprimer ce créneau de dépôt ?"
         variant="danger"
@@ -310,29 +289,7 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
   );
 }
 
-/**
- * Badge showing slot occupancy with color coding.
- */
-function OccupancyBadge({ registered, max }: { registered: number; max: number }) {
-  const ratio = max > 0 ? registered / max : 0;
-  let colorClass = 'text-gray-500';
-  if (ratio >= 0.9) {
-    colorClass = 'text-red-600 font-medium';
-  } else if (ratio >= 0.75) {
-    colorClass = 'text-orange-600 font-medium';
-  }
-
-  return (
-    <span className={`text-xs ${colorClass}`}>
-      {registered} / {max} places
-    </span>
-  );
-}
-
-/**
- * Card displaying a single deposit slot.
- */
-function SlotCard({
+function CompactSlotChip({
   slot,
   onDelete,
   disabled,
@@ -341,53 +298,38 @@ function SlotCard({
   onDelete: () => void;
   disabled: boolean;
 }) {
+  const ratio = slot.maxCapacity > 0 ? slot.registeredCount / slot.maxCapacity : 0;
+  let occupancyClass = 'text-gray-500';
+  if (ratio >= 0.9) occupancyClass = 'text-red-600 font-medium';
+  else if (ratio >= 0.75) occupancyClass = 'text-orange-600 font-medium';
+
   return (
-    <div className="flex items-center justify-between bg-white border rounded-lg px-4 py-3">
-      <div className="flex-1">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-900">
-            {formatDisplayDateTime(slot.startDatetime)}
-          </span>
-          <span className="text-gray-400">-</span>
-          <span className="text-sm text-gray-600">
-            {new Date(slot.endDatetime).toLocaleTimeString('fr-FR', {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          </span>
-          <span className="text-xs text-gray-400">
-            ({formatDuration(slot.startDatetime, slot.endDatetime)})
-          </span>
-        </div>
-        <div className="flex items-center gap-3 mt-1">
-          <OccupancyBadge registered={slot.registeredCount} max={slot.maxCapacity} />
-          {slot.reservedForLocals && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
-              Plaisançois
-            </span>
-          )}
-          {slot.description && (
-            <span className="text-xs text-gray-400">{slot.description}</span>
-          )}
-        </div>
+    <div className="group relative bg-white border border-gray-200 rounded-md px-3 py-2 hover:border-gray-300 transition-colors">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-gray-900">
+          {formatTime(slot.startDatetime)} - {formatTime(slot.endDatetime)}
+        </span>
+        {!disabled && (
+          <button
+            type="button"
+            onClick={onDelete}
+            className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity -mr-1"
+            title="Supprimer"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
-      {!disabled && (
-        <button
-          type="button"
-          onClick={onDelete}
-          className="text-red-500 hover:text-red-700 p-1"
-          title="Supprimer"
-        >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-            />
-          </svg>
-        </button>
-      )}
+      <div className="flex items-center gap-2 mt-0.5">
+        <span className={`text-xs ${occupancyClass}`}>
+          {slot.registeredCount}/{slot.maxCapacity} places
+        </span>
+        {slot.reservedForLocals && (
+          <span className="text-xs text-purple-700 bg-purple-50 px-1 rounded">local</span>
+        )}
+      </div>
     </div>
   );
 }
