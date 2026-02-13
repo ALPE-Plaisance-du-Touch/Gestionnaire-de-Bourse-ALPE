@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { depositSlotsApi, ApiException } from '@/api';
+import { depositSlotsApi, billetwebApi, ApiException } from '@/api';
 import { Button, ConfirmModal, Input } from '@/components/ui';
 import type { DepositSlot, CreateDepositSlotRequest } from '@/types';
 
@@ -55,6 +55,7 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [slotToDelete, setSlotToDelete] = useState<string | null>(null);
+  const [expandedSlotId, setExpandedSlotId] = useState<string | null>(null);
 
   const [newSlot, setNewSlot] = useState<CreateDepositSlotRequest>({
     startDatetime: '',
@@ -167,6 +168,11 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
                   <CompactSlotChip
                     key={slot.id}
                     slot={slot}
+                    editionId={editionId}
+                    isExpanded={expandedSlotId === slot.id}
+                    onToggleParticipants={() =>
+                      setExpandedSlotId(expandedSlotId === slot.id ? null : slot.id)
+                    }
                     onDelete={() => setSlotToDelete(slot.id)}
                     disabled={disabled || deleteMutation.isPending}
                   />
@@ -291,45 +297,104 @@ export function DepositSlotsEditor({ editionId, disabled = false }: DepositSlots
 
 function CompactSlotChip({
   slot,
+  editionId,
+  isExpanded,
+  onToggleParticipants,
   onDelete,
   disabled,
 }: {
   slot: DepositSlot;
+  editionId: string;
+  isExpanded: boolean;
+  onToggleParticipants: () => void;
   onDelete: () => void;
   disabled: boolean;
 }) {
-  const ratio = slot.maxCapacity > 0 ? slot.registeredCount / slot.maxCapacity : 0;
+  const count = slot.registeredCount ?? 0;
+  const ratio = slot.maxCapacity > 0 ? count / slot.maxCapacity : 0;
   let occupancyClass = 'text-gray-500';
   if (ratio >= 0.9) occupancyClass = 'text-red-600 font-medium';
   else if (ratio >= 0.75) occupancyClass = 'text-orange-600 font-medium';
 
+  const hasParticipants = count > 0;
+
   return (
-    <div className="group relative bg-white border border-gray-200 rounded-md px-3 py-2 hover:border-gray-300 transition-colors">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-900">
-          {formatTime(slot.startDatetime)} - {formatTime(slot.endDatetime)}
-        </span>
-        {!disabled && (
-          <button
-            type="button"
-            onClick={onDelete}
-            className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity -mr-1"
-            title="Supprimer"
-          >
-            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        )}
+    <div>
+      <div className="group relative bg-white border border-gray-200 rounded-md px-3 py-2 hover:border-gray-300 transition-colors">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-gray-900">
+            {formatTime(slot.startDatetime)} - {formatTime(slot.endDatetime)}
+          </span>
+          {!disabled && (
+            <button
+              type="button"
+              onClick={onDelete}
+              className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity -mr-1"
+              title="Supprimer"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-2 mt-0.5">
+          {hasParticipants ? (
+            <button
+              type="button"
+              onClick={onToggleParticipants}
+              className={`text-xs ${occupancyClass} hover:underline cursor-pointer`}
+            >
+              {count}/{slot.maxCapacity ?? 0} places {isExpanded ? '\u25B2' : '\u25BC'}
+            </button>
+          ) : (
+            <span className={`text-xs ${occupancyClass}`}>
+              {count}/{slot.maxCapacity ?? 0} places
+            </span>
+          )}
+          {slot.reservedForLocals && (
+            <span className="text-xs text-purple-700 bg-purple-50 px-1 rounded">local</span>
+          )}
+        </div>
       </div>
-      <div className="flex items-center gap-2 mt-0.5">
-        <span className={`text-xs ${occupancyClass}`}>
-          {slot.registeredCount ?? 0}/{slot.maxCapacity ?? 0} places
-        </span>
-        {slot.reservedForLocals && (
-          <span className="text-xs text-purple-700 bg-purple-50 px-1 rounded">local</span>
-        )}
+      {isExpanded && (
+        <SlotParticipants editionId={editionId} slotId={slot.id} />
+      )}
+    </div>
+  );
+}
+
+function SlotParticipants({ editionId, slotId }: { editionId: string; slotId: string }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ['slot-participants', editionId, slotId],
+    queryFn: () => billetwebApi.listDepositors(editionId, { slotId, limit: 100 }),
+  });
+
+  if (isLoading) {
+    return (
+      <div className="mt-1 bg-gray-50 border border-gray-200 rounded p-2 text-xs text-gray-400">
+        Chargement...
       </div>
+    );
+  }
+
+  const participants = data?.items ?? [];
+
+  if (participants.length === 0) {
+    return (
+      <div className="mt-1 bg-gray-50 border border-gray-200 rounded p-2 text-xs text-gray-400 italic">
+        Aucun participant
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-1 bg-gray-50 border border-gray-200 rounded p-2 text-xs space-y-0.5">
+      {participants.map((p) => (
+        <div key={p.id} className="text-gray-700">
+          {p.userFirstName} {p.userLastName.toUpperCase()}
+        </div>
+      ))}
     </div>
   );
 }
