@@ -54,7 +54,7 @@ function EditionCard({ edition }: { edition: Edition }) {
   );
 }
 
-type QuickLink = { label: string; to: string; roles: UserRole[]; needsEdition?: boolean };
+type QuickLink = { label: string; to: string; roles: UserRole[]; needsEdition?: boolean; statuses?: string[] };
 
 function LinkGrid({ links }: { links: QuickLink[] }) {
   return (
@@ -72,22 +72,22 @@ function LinkGrid({ links }: { links: QuickLink[] }) {
   );
 }
 
-function RoleLinks({ role, editionId }: { role: UserRole; editionId?: string }) {
+function RoleLinks({ role, editionId, editionStatus }: { role: UserRole; editionId?: string; editionStatus?: string }) {
   const categories: { title: string; links: QuickLink[] }[] = [
     {
       title: 'Participer',
       links: [
-        { label: 'Mes listes', to: `/depositor/editions/${editionId}/lists`, roles: ['depositor', 'volunteer', 'manager', 'administrator'], needsEdition: true },
+        { label: 'Mes listes', to: `/depositor/editions/${editionId}/lists`, roles: ['depositor', 'volunteer', 'manager', 'administrator'], needsEdition: true, statuses: ['registrations_open', 'in_progress'] },
       ],
     },
     {
       title: "Gérer l'édition en cours",
       links: [
-        { label: 'Caisse', to: `/editions/${editionId}/sales`, roles: ['volunteer', 'manager', 'administrator'], needsEdition: true },
-        { label: 'Étiquettes', to: `/editions/${editionId}/labels`, roles: ['manager', 'administrator'], needsEdition: true },
-        { label: 'Gestion des ventes', to: `/editions/${editionId}/sales/manage`, roles: ['manager', 'administrator'], needsEdition: true },
-        { label: 'Reversements', to: `/editions/${editionId}/payouts`, roles: ['manager', 'administrator'], needsEdition: true },
-        { label: 'Statistiques', to: `/editions/${editionId}/stats`, roles: ['manager', 'administrator'], needsEdition: true },
+        { label: 'Caisse', to: `/editions/${editionId}/sales`, roles: ['volunteer', 'manager', 'administrator'], needsEdition: true, statuses: ['in_progress'] },
+        { label: 'Étiquettes', to: `/editions/${editionId}/labels`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['registrations_open', 'in_progress'] },
+        { label: 'Gestion des ventes', to: `/editions/${editionId}/sales/manage`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['in_progress'] },
+        { label: 'Reversements', to: `/editions/${editionId}/payouts`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['in_progress', 'closed'] },
+        { label: 'Statistiques', to: `/editions/${editionId}/stats`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['in_progress'] },
       ],
     },
     {
@@ -103,7 +103,11 @@ function RoleLinks({ role, editionId }: { role: UserRole; editionId?: string }) 
   const visibleCategories = categories
     .map((cat) => ({
       ...cat,
-      links: cat.links.filter((l) => l.roles.includes(role) && (!l.needsEdition || editionId)),
+      links: cat.links.filter((l) =>
+        l.roles.includes(role) &&
+        (!l.needsEdition || editionId) &&
+        (!l.statuses || (editionStatus && l.statuses.includes(editionStatus)))
+      ),
     }))
     .filter((cat) => cat.links.length > 0);
 
@@ -199,7 +203,7 @@ function AuthenticatedHomePage({
 
       <div>
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Accès rapide</h2>
-        <RoleLinks role={role} editionId={edition?.id} />
+        <RoleLinks role={role} editionId={edition?.id} editionStatus={edition?.status} />
       </div>
     </>
   );
