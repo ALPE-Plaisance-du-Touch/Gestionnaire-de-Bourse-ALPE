@@ -54,19 +54,19 @@ function EditionCard({ edition }: { edition: Edition }) {
   );
 }
 
-function RoleLinks({ role, editionId }: { role: UserRole; editionId: string }) {
-  const links: { label: string; to: string; roles: UserRole[] }[] = [
-    { label: 'Mes listes', to: `/depositor/editions/${editionId}/lists`, roles: ['depositor', 'volunteer', 'manager', 'administrator'] },
-    { label: 'Caisse', to: `/editions/${editionId}/sales`, roles: ['volunteer', 'manager', 'administrator'] },
+function RoleLinks({ role, editionId }: { role: UserRole; editionId?: string }) {
+  const links: { label: string; to: string; roles: UserRole[]; needsEdition?: boolean }[] = [
+    { label: 'Mes listes', to: `/depositor/editions/${editionId}/lists`, roles: ['depositor', 'volunteer', 'manager', 'administrator'], needsEdition: true },
+    { label: 'Caisse', to: `/editions/${editionId}/sales`, roles: ['volunteer', 'manager', 'administrator'], needsEdition: true },
     { label: 'Invitations', to: '/admin/invitations', roles: ['manager', 'administrator'] },
-    { label: 'Étiquettes', to: `/editions/${editionId}/labels`, roles: ['manager', 'administrator'] },
-    { label: 'Reversements', to: `/editions/${editionId}/payouts`, roles: ['manager', 'administrator'] },
-    { label: 'Gestion des ventes', to: `/editions/${editionId}/sales/manage`, roles: ['manager', 'administrator'] },
-    { label: 'Statistiques', to: `/editions/${editionId}/stats`, roles: ['manager', 'administrator'] },
+    { label: 'Étiquettes', to: `/editions/${editionId}/labels`, roles: ['manager', 'administrator'], needsEdition: true },
+    { label: 'Reversements', to: `/editions/${editionId}/payouts`, roles: ['manager', 'administrator'], needsEdition: true },
+    { label: 'Gestion des ventes', to: `/editions/${editionId}/sales/manage`, roles: ['manager', 'administrator'], needsEdition: true },
+    { label: 'Statistiques', to: `/editions/${editionId}/stats`, roles: ['manager', 'administrator'], needsEdition: true },
     { label: 'Gestion des éditions', to: '/editions', roles: ['administrator'] },
   ];
 
-  const visibleLinks = links.filter((l) => l.roles.includes(role));
+  const visibleLinks = links.filter((l) => l.roles.includes(role) && (!l.needsEdition || editionId));
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -150,30 +150,21 @@ function AuthenticatedHomePage({
       </div>
 
       {edition ? (
-        <>
-          <div className="mb-8">
-            <EditionCard edition={edition} />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Accès rapide</h2>
-            <RoleLinks role={role} editionId={edition.id} />
-          </div>
-        </>
+        <div className="mb-8">
+          <EditionCard edition={edition} />
+        </div>
       ) : (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg mb-4">
+        <div className="text-center py-8 mb-8">
+          <p className="text-gray-500 text-lg">
             Aucune bourse n'est en cours actuellement.
           </p>
-          {role === 'administrator' && (
-            <Link
-              to="/editions"
-              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 transition-colors"
-            >
-              Créer une nouvelle édition
-            </Link>
-          )}
         </div>
       )}
+
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Accès rapide</h2>
+        <RoleLinks role={role} editionId={edition?.id} />
+      </div>
     </>
   );
 }
