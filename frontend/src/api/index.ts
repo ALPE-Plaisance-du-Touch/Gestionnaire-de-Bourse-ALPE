@@ -9,4 +9,5 @@ export { articlesApi } from './articles';
 export { labelsApi } from './labels';
 export { salesApi } from './sales';
 export { payoutsApi } from './payouts';
+export { usersApi } from './users';
 export { billetwebApiSettings } from './billetweb-api';

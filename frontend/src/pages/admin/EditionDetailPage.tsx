@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { editionsApi, billetwebApi, depositSlotsApi, payoutsApi, ApiException } from '@/api';
+import { editionsApi, billetwebApi, depositSlotsApi, payoutsApi, usersApi, ApiException } from '@/api';
 import { Button, ConfirmModal, Input, Modal, Select } from '@/components/ui';
 import { DepositSlotsEditor } from '@/components/editions';
 import { BilletwebSessionsSyncModal } from '@/components/billetweb/BilletwebSessionsSyncModal';
 import { BilletwebAttendeesSyncModal } from '@/components/billetweb/BilletwebAttendeesSyncModal';
 import { useAuth } from '@/contexts/AuthContext';
-import type { EditionStatus } from '@/types';
+import type { EditionStatus, User } from '@/types';
 
 const STATUS_LABELS: Record<EditionStatus, { label: string; className: string }> = {
   draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-800' },
@@ -331,6 +331,21 @@ export function EditionDetailPage() {
     city: '',
   });
   const [manualDepositorError, setManualDepositorError] = useState<string | null>(null);
+  const [depositorMode, setDepositorMode] = useState<'new' | 'existing'>('new');
+  const [userSearch, setUserSearch] = useState('');
+  const [debouncedUserSearch, setDebouncedUserSearch] = useState('');
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedUserSearch(userSearch), 300);
+    return () => clearTimeout(timer);
+  }, [userSearch]);
+
+  const { data: userSearchResults, isLoading: isSearchingUsers } = useQuery({
+    queryKey: ['user-search', debouncedUserSearch],
+    queryFn: () => usersApi.listUsers({ search: debouncedUserSearch, limit: 5 }),
+    enabled: !!debouncedUserSearch && debouncedUserSearch.length >= 2 && depositorMode === 'existing' && !selectedUser,
+  });
 
   const { data: depositSlots } = useQuery({
     queryKey: ['deposit-slots', id],
@@ -353,6 +368,9 @@ export function EditionDetailPage() {
       setShowManualDepositorModal(false);
       setManualDepositorForm({ email: '', firstName: '', lastName: '', phone: '', depositSlotId: '', listType: 'standard', postalCode: '', city: '' });
       setManualDepositorError(null);
+      setDepositorMode('new');
+      setUserSearch('');
+      setSelectedUser(null);
       queryClient.invalidateQueries({ queryKey: ['billetweb-stats', id] });
       queryClient.invalidateQueries({ queryKey: ['deposit-slots', id] });
     },
@@ -1170,41 +1188,147 @@ export function EditionDetailPage() {
         onClose={() => {
           setShowManualDepositorModal(false);
           setManualDepositorError(null);
+          setDepositorMode('new');
+          setUserSearch('');
+          setSelectedUser(null);
+          setManualDepositorForm({ email: '', firstName: '', lastName: '', phone: '', depositSlotId: '', listType: 'standard', postalCode: '', city: '' });
         }}
-        title="Ajouter un déposant"
+        title="Inscrire un déposant"
       >
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200 mb-4">
+          <button
+            type="button"
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${depositorMode === 'new' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            onClick={() => {
+              setDepositorMode('new');
+              setUserSearch('');
+              setSelectedUser(null);
+              setManualDepositorForm({ email: '', firstName: '', lastName: '', phone: '', depositSlotId: '', listType: 'standard', postalCode: '', city: '' });
+              setManualDepositorError(null);
+            }}
+          >
+            Nouveau
+          </button>
+          <button
+            type="button"
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${depositorMode === 'existing' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            onClick={() => {
+              setDepositorMode('existing');
+              setSelectedUser(null);
+              setManualDepositorForm({ email: '', firstName: '', lastName: '', phone: '', depositSlotId: '', listType: 'standard', postalCode: '', city: '' });
+              setManualDepositorError(null);
+            }}
+          >
+            Existant
+          </button>
+        </div>
+
         <form onSubmit={(e) => { e.preventDefault(); manualDepositorMutation.mutate(); }} className="space-y-4">
           {manualDepositorError && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
               {manualDepositorError}
             </div>
           )}
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Prénom"
-              required
-              value={manualDepositorForm.firstName}
-              onChange={(e) => setManualDepositorForm(f => ({ ...f, firstName: e.target.value }))}
-            />
-            <Input
-              label="Nom"
-              required
-              value={manualDepositorForm.lastName}
-              onChange={(e) => setManualDepositorForm(f => ({ ...f, lastName: e.target.value }))}
-            />
-          </div>
-          <Input
-            label="Email"
-            type="email"
-            required
-            value={manualDepositorForm.email}
-            onChange={(e) => setManualDepositorForm(f => ({ ...f, email: e.target.value }))}
-          />
-          <Input
-            label="Téléphone"
-            value={manualDepositorForm.phone}
-            onChange={(e) => setManualDepositorForm(f => ({ ...f, phone: e.target.value }))}
-          />
+
+          {depositorMode === 'existing' && (
+            <>
+              {!selectedUser ? (
+                <div>
+                  <Input
+                    label="Rechercher un utilisateur"
+                    placeholder="Nom ou email..."
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                  />
+                  {isSearchingUsers && (
+                    <p className="text-sm text-gray-500 mt-2">Recherche...</p>
+                  )}
+                  {userSearchResults && userSearchResults.items.length > 0 && (
+                    <ul className="mt-2 border border-gray-200 rounded-lg divide-y divide-gray-100 max-h-48 overflow-y-auto">
+                      {userSearchResults.items.map(user => (
+                        <li key={user.id}>
+                          <button
+                            type="button"
+                            className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center justify-between"
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setManualDepositorForm(f => ({
+                                ...f,
+                                email: user.email,
+                                firstName: user.firstName,
+                                lastName: user.lastName,
+                                phone: user.phone || '',
+                              }));
+                              setUserSearch('');
+                            }}
+                          >
+                            <div>
+                              <span className="font-medium text-sm">{user.firstName} {user.lastName}</span>
+                              <span className="text-gray-500 text-sm ml-2">{user.email}</span>
+                            </div>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{user.role}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {userSearchResults && userSearchResults.items.length === 0 && debouncedUserSearch.length >= 2 && (
+                    <p className="text-sm text-gray-500 mt-2">Aucun utilisateur trouvé</p>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
+                  <div>
+                    <span className="font-medium text-sm">{selectedUser.firstName} {selectedUser.lastName}</span>
+                    <span className="text-gray-600 text-sm ml-2">{selectedUser.email}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                    onClick={() => {
+                      setSelectedUser(null);
+                      setManualDepositorForm(f => ({ ...f, email: '', firstName: '', lastName: '', phone: '' }));
+                    }}
+                  >
+                    Changer
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+
+          {depositorMode === 'new' && (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  label="Prénom"
+                  required
+                  value={manualDepositorForm.firstName}
+                  onChange={(e) => setManualDepositorForm(f => ({ ...f, firstName: e.target.value }))}
+                />
+                <Input
+                  label="Nom"
+                  required
+                  value={manualDepositorForm.lastName}
+                  onChange={(e) => setManualDepositorForm(f => ({ ...f, lastName: e.target.value }))}
+                />
+              </div>
+              <Input
+                label="Email"
+                type="email"
+                required
+                value={manualDepositorForm.email}
+                onChange={(e) => setManualDepositorForm(f => ({ ...f, email: e.target.value }))}
+              />
+              <Input
+                label="Téléphone"
+                value={manualDepositorForm.phone}
+                onChange={(e) => setManualDepositorForm(f => ({ ...f, phone: e.target.value }))}
+              />
+            </>
+          )}
+
           <Select
             label="Créneau de dépôt"
             required
@@ -1214,7 +1338,7 @@ export function EditionDetailPage() {
             options={
               depositSlots?.items.map(slot => ({
                 value: slot.id,
-                label: `${new Date(slot.startDatetime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} - ${new Date(slot.endDatetime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} (${slot.registeredCount}/${slot.maxCapacity} places)`,
+                label: `${new Date(slot.startDatetime).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} ${new Date(slot.startDatetime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} - ${new Date(slot.endDatetime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} (${slot.registeredCount}/${slot.maxCapacity} places)`,
               })) ?? []
             }
           />
@@ -1247,16 +1371,20 @@ export function EditionDetailPage() {
               onClick={() => {
                 setShowManualDepositorModal(false);
                 setManualDepositorError(null);
+                setDepositorMode('new');
+                setUserSearch('');
+                setSelectedUser(null);
+                setManualDepositorForm({ email: '', firstName: '', lastName: '', phone: '', depositSlotId: '', listType: 'standard', postalCode: '', city: '' });
               }}
             >
               Annuler
             </Button>
             <Button
               type="submit"
-              disabled={manualDepositorMutation.isPending}
+              disabled={manualDepositorMutation.isPending || (depositorMode === 'existing' && !selectedUser)}
               isLoading={manualDepositorMutation.isPending}
             >
-              Ajouter
+              Inscrire
             </Button>
           </div>
         </form>
