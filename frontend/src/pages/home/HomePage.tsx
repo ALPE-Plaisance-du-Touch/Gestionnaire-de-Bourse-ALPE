@@ -54,24 +54,12 @@ function EditionCard({ edition }: { edition: Edition }) {
   );
 }
 
-function RoleLinks({ role, editionId }: { role: UserRole; editionId?: string }) {
-  const links: { label: string; to: string; roles: UserRole[]; needsEdition?: boolean }[] = [
-    { label: 'Mes listes', to: `/depositor/editions/${editionId}/lists`, roles: ['depositor', 'volunteer', 'manager', 'administrator'], needsEdition: true },
-    { label: 'Caisse', to: `/editions/${editionId}/sales`, roles: ['volunteer', 'manager', 'administrator'], needsEdition: true },
-    { label: 'Invitations', to: '/admin/invitations', roles: ['manager', 'administrator'] },
-    { label: 'Étiquettes', to: `/editions/${editionId}/labels`, roles: ['manager', 'administrator'], needsEdition: true },
-    { label: 'Reversements', to: `/editions/${editionId}/payouts`, roles: ['manager', 'administrator'], needsEdition: true },
-    { label: 'Gestion des ventes', to: `/editions/${editionId}/sales/manage`, roles: ['manager', 'administrator'], needsEdition: true },
-    { label: 'Statistiques', to: `/editions/${editionId}/stats`, roles: ['manager', 'administrator'], needsEdition: true },
-    { label: 'Utilisateurs', to: '/admin/users', roles: ['administrator'] },
-    { label: 'Gestion des éditions', to: '/editions', roles: ['administrator'] },
-  ];
+type QuickLink = { label: string; to: string; roles: UserRole[]; needsEdition?: boolean };
 
-  const visibleLinks = links.filter((l) => l.roles.includes(role) && (!l.needsEdition || editionId));
-
+function LinkGrid({ links }: { links: QuickLink[] }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {visibleLinks.map((link) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {links.map((link) => (
         <Link
           key={link.to}
           to={link.to}
@@ -79,6 +67,53 @@ function RoleLinks({ role, editionId }: { role: UserRole; editionId?: string }) 
         >
           {link.label}
         </Link>
+      ))}
+    </div>
+  );
+}
+
+function RoleLinks({ role, editionId }: { role: UserRole; editionId?: string }) {
+  const categories: { title: string; links: QuickLink[] }[] = [
+    {
+      title: 'Participer',
+      links: [
+        { label: 'Mes listes', to: `/depositor/editions/${editionId}/lists`, roles: ['depositor', 'volunteer', 'manager', 'administrator'], needsEdition: true },
+        { label: 'Caisse', to: `/editions/${editionId}/sales`, roles: ['volunteer', 'manager', 'administrator'], needsEdition: true },
+      ],
+    },
+    {
+      title: "Gérer l'édition en cours",
+      links: [
+        { label: 'Étiquettes', to: `/editions/${editionId}/labels`, roles: ['manager', 'administrator'], needsEdition: true },
+        { label: 'Gestion des ventes', to: `/editions/${editionId}/sales/manage`, roles: ['manager', 'administrator'], needsEdition: true },
+        { label: 'Reversements', to: `/editions/${editionId}/payouts`, roles: ['manager', 'administrator'], needsEdition: true },
+        { label: 'Statistiques', to: `/editions/${editionId}/stats`, roles: ['manager', 'administrator'], needsEdition: true },
+      ],
+    },
+    {
+      title: 'Administrer la plateforme',
+      links: [
+        { label: 'Gestion des éditions', to: '/editions', roles: ['manager', 'administrator'] },
+        { label: 'Invitations', to: '/admin/invitations', roles: ['manager', 'administrator'] },
+        { label: 'Utilisateurs', to: '/admin/users', roles: ['administrator'] },
+      ],
+    },
+  ];
+
+  const visibleCategories = categories
+    .map((cat) => ({
+      ...cat,
+      links: cat.links.filter((l) => l.roles.includes(role) && (!l.needsEdition || editionId)),
+    }))
+    .filter((cat) => cat.links.length > 0);
+
+  return (
+    <div className="space-y-6">
+      {visibleCategories.map((cat) => (
+        <div key={cat.title}>
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{cat.title}</h3>
+          <LinkGrid links={cat.links} />
+        </div>
       ))}
     </div>
   );
