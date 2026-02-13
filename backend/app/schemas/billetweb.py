@@ -193,3 +193,16 @@ class EditionDepositorsListResponse(BaseModel):
     page: int
     limit: int
     pages: int
+
+
+class ManualDepositorCreateRequest(BaseModel):
+    """Request schema for manually adding a depositor to an edition."""
+
+    email: str = Field(..., min_length=1)
+    first_name: str = Field(..., min_length=1, max_length=100)
+    last_name: str = Field(..., min_length=1, max_length=100)
+    phone: str | None = Field(None, max_length=20)
+    deposit_slot_id: str
+    list_type: str = Field(default="standard")
+    postal_code: str | None = Field(None, max_length=10)
+    city: str | None = Field(None, max_length=100)

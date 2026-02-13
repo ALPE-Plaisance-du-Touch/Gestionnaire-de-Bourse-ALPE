@@ -10,6 +10,8 @@ from app.exceptions import EditionNotFoundError
 from app.models import User
 from app.models.edition import EditionStatus
 from app.repositories import BilletwebImportLogRepository, EditionDepositorRepository, EditionRepository
+from app.repositories.deposit_slot import DepositSlotRepository
+from app.repositories.user import UserRepository
 from app.schemas.billetweb import (
     BilletwebImportLogResponse,
     BilletwebImportOptions,
@@ -18,6 +20,7 @@ from app.schemas.billetweb import (
     BilletwebPreviewResponse,
     EditionDepositorWithUserResponse,
     EditionDepositorsListResponse,
+    ManualDepositorCreateRequest,
 )
 from app.services.billetweb_import import BilletwebImportService
 
@@ -254,6 +257,98 @@ async def list_edition_depositors(
         page=page,
         limit=limit,
         pages=math.ceil(total / limit) if total > 0 else 0,
+    )
+
+
+@router.post(
+    "/depositors/manual",
+    response_model=EditionDepositorWithUserResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Manually add depositor",
+    description="Manually add a depositor to an edition with a deposit slot.",
+)
+async def create_manual_depositor(
+    edition_id: str,
+    request: ManualDepositorCreateRequest,
+    db: DBSession,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Manually add a depositor to an edition."""
+    edition = await get_edition_or_404(db, edition_id)
+
+    if edition.is_closed:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Impossible de modifier une édition clôturée",
+        )
+
+    # Verify deposit slot exists and belongs to edition
+    slot_repo = DepositSlotRepository(db)
+    slot = await slot_repo.get_by_id(request.deposit_slot_id)
+    if not slot or slot.edition_id != edition_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Créneau de dépôt introuvable",
+        )
+
+    # Verify slot not full
+    depositor_repo = EditionDepositorRepository(db)
+    slot_count = await depositor_repo.count_by_slot(slot.id)
+    if slot_count >= slot.max_capacity:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Ce créneau est complet",
+        )
+
+    # Find or create user
+    user_repo = UserRepository(db)
+    user = await user_repo.get_by_email(request.email)
+    if not user:
+        user = await user_repo.create(
+            email=request.email,
+            first_name=request.first_name,
+            last_name=request.last_name,
+            role_name="depositor",
+            phone=request.phone,
+            is_active=False,
+        )
+
+    # Verify user not already registered
+    if await depositor_repo.exists(edition_id, user.id):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Ce déposant est déjà inscrit à cette édition",
+        )
+
+    # Create edition depositor
+    dep = await depositor_repo.create(
+        edition_id=edition_id,
+        user_id=user.id,
+        deposit_slot_id=request.deposit_slot_id,
+        list_type=request.list_type,
+        postal_code=request.postal_code,
+        city=request.city,
+    )
+
+    return EditionDepositorWithUserResponse(
+        id=dep.id,
+        edition_id=dep.edition_id,
+        user_id=dep.user_id,
+        deposit_slot_id=dep.deposit_slot_id,
+        list_type=dep.list_type,
+        billetweb_order_ref=dep.billetweb_order_ref,
+        billetweb_session=dep.billetweb_session,
+        billetweb_tarif=dep.billetweb_tarif,
+        imported_at=dep.imported_at,
+        postal_code=dep.postal_code,
+        city=dep.city,
+        created_at=dep.created_at,
+        user_email=user.email,
+        user_first_name=user.first_name,
+        user_last_name=user.last_name,
+        user_phone=user.phone,
+        slot_start_datetime=slot.start_datetime,
+        slot_end_datetime=slot.end_datetime,
     )
 
 

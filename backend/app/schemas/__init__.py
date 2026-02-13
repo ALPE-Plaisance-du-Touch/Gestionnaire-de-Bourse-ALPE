@@ -35,6 +35,7 @@ from app.schemas.billetweb import (
     EditionDepositorResponse,
     EditionDepositorsListResponse,
     EditionDepositorWithUserResponse,
+    ManualDepositorCreateRequest,
 )
 from app.schemas.common import ErrorResponse, MessageResponse, PaginatedResponse
 from app.schemas.deposit_slot import (
@@ -150,6 +151,7 @@ __all__ = [
     "EditionDepositorResponse",
     "EditionDepositorWithUserResponse",
     "EditionDepositorsListResponse",
+    "ManualDepositorCreateRequest",
     # Common
     "PaginatedResponse",
     "ErrorResponse",
