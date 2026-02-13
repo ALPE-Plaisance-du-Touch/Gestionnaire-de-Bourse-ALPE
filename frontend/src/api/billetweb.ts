@@ -4,6 +4,8 @@ import type {
   BilletwebImportResponse,
   BilletwebImportOptions,
   EditionDepositorsListResponse,
+  EditionDepositorWithUser,
+  ManualDepositorCreateRequest,
   BilletwebImportLog,
   BilletwebImportStats,
   ListType,
@@ -113,6 +115,26 @@ export const billetwebApi = {
   getImportStats: async (editionId: string): Promise<BilletwebImportStats> => {
     const response = await apiClient.get<BilletwebImportStats>(
       `/v1/editions/${editionId}/billetweb/stats`
+    );
+    return response.data;
+  },
+
+  createManualDepositor: async (
+    editionId: string,
+    request: ManualDepositorCreateRequest
+  ): Promise<EditionDepositorWithUser> => {
+    const response = await apiClient.post<EditionDepositorWithUser>(
+      `/v1/editions/${editionId}/billetweb/depositors/manual`,
+      {
+        email: request.email,
+        first_name: request.firstName,
+        last_name: request.lastName,
+        phone: request.phone,
+        deposit_slot_id: request.depositSlotId,
+        list_type: request.listType || 'standard',
+        postal_code: request.postalCode,
+        city: request.city,
+      }
     );
     return response.data;
   },

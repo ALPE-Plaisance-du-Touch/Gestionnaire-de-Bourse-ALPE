@@ -107,6 +107,17 @@ export interface EditionDepositorsListResponse {
   pages: number;
 }
 
+export interface ManualDepositorCreateRequest {
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  depositSlotId: string;
+  listType?: ListType;
+  postalCode?: string;
+  city?: string;
+}
+
 // --- Import Log Types ---
 
 export interface BilletwebImportLog {

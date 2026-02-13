@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { editionsApi, billetwebApi, payoutsApi, ApiException } from '@/api';
-import { Button, ConfirmModal, Input, Modal } from '@/components/ui';
+import { editionsApi, billetwebApi, depositSlotsApi, payoutsApi, ApiException } from '@/api';
+import { Button, ConfirmModal, Input, Modal, Select } from '@/components/ui';
 import { DepositSlotsEditor } from '@/components/editions';
 import { BilletwebImportButton } from '@/components/billetweb';
 import { BilletwebSessionsSyncModal } from '@/components/billetweb/BilletwebSessionsSyncModal';
@@ -116,6 +116,7 @@ export function EditionDetailPage() {
   const [showOpenRegistrationsConfirm, setShowOpenRegistrationsConfirm] = useState(false);
   const [showRevertToConfiguredConfirm, setShowRevertToConfiguredConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showManualDepositorModal, setShowManualDepositorModal] = useState(false);
 
   // Auto-dismiss success message after 5 seconds
   useEffect(() => {
@@ -315,6 +316,52 @@ export function EditionDetailPage() {
         setError(err.message);
       } else {
         setError("Une erreur est survenue lors de la suppression.");
+      }
+    },
+  });
+
+  // Manual depositor form state
+  const [manualDepositorForm, setManualDepositorForm] = useState({
+    email: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    depositSlotId: '',
+    listType: 'standard',
+    postalCode: '',
+    city: '',
+  });
+  const [manualDepositorError, setManualDepositorError] = useState<string | null>(null);
+
+  const { data: depositSlots } = useQuery({
+    queryKey: ['deposit-slots', id],
+    queryFn: () => depositSlotsApi.getDepositSlots(id!),
+    enabled: !!id && showManualDepositorModal,
+  });
+
+  const manualDepositorMutation = useMutation({
+    mutationFn: () => billetwebApi.createManualDepositor(id!, {
+      email: manualDepositorForm.email,
+      firstName: manualDepositorForm.firstName,
+      lastName: manualDepositorForm.lastName,
+      phone: manualDepositorForm.phone || undefined,
+      depositSlotId: manualDepositorForm.depositSlotId,
+      listType: manualDepositorForm.listType as 'standard' | 'list_1000' | 'list_2000',
+      postalCode: manualDepositorForm.postalCode || undefined,
+      city: manualDepositorForm.city || undefined,
+    }),
+    onSuccess: () => {
+      setShowManualDepositorModal(false);
+      setManualDepositorForm({ email: '', firstName: '', lastName: '', phone: '', depositSlotId: '', listType: 'standard', postalCode: '', city: '' });
+      setManualDepositorError(null);
+      queryClient.invalidateQueries({ queryKey: ['billetweb-stats', id] });
+      queryClient.invalidateQueries({ queryKey: ['deposit-slots', id] });
+    },
+    onError: (err) => {
+      if (err instanceof ApiException) {
+        setManualDepositorError(err.message);
+      } else {
+        setManualDepositorError("Une erreur est survenue lors de l'ajout du déposant.");
       }
     },
   });
@@ -714,6 +761,13 @@ export function EditionDetailPage() {
                 importCount={importStats?.totalDepositors ?? 0}
                 onImportSuccess={() => refetchImportStats()}
               />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowManualDepositorModal(true)}
+              >
+                + Ajouter un déposant
+              </Button>
             </div>
             {edition.billetwebEventId && edition.lastBilletwebSync && (
               <p className="text-xs text-gray-500 mt-2">
@@ -1110,6 +1164,104 @@ export function EditionDetailPage() {
           lastSync={edition.lastBilletwebSync}
         />
       )}
+
+      {/* Manual depositor modal */}
+      <Modal
+        isOpen={showManualDepositorModal}
+        onClose={() => {
+          setShowManualDepositorModal(false);
+          setManualDepositorError(null);
+        }}
+        title="Ajouter un déposant"
+      >
+        <form onSubmit={(e) => { e.preventDefault(); manualDepositorMutation.mutate(); }} className="space-y-4">
+          {manualDepositorError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+              {manualDepositorError}
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Prénom"
+              required
+              value={manualDepositorForm.firstName}
+              onChange={(e) => setManualDepositorForm(f => ({ ...f, firstName: e.target.value }))}
+            />
+            <Input
+              label="Nom"
+              required
+              value={manualDepositorForm.lastName}
+              onChange={(e) => setManualDepositorForm(f => ({ ...f, lastName: e.target.value }))}
+            />
+          </div>
+          <Input
+            label="Email"
+            type="email"
+            required
+            value={manualDepositorForm.email}
+            onChange={(e) => setManualDepositorForm(f => ({ ...f, email: e.target.value }))}
+          />
+          <Input
+            label="Téléphone"
+            value={manualDepositorForm.phone}
+            onChange={(e) => setManualDepositorForm(f => ({ ...f, phone: e.target.value }))}
+          />
+          <Select
+            label="Créneau de dépôt"
+            required
+            value={manualDepositorForm.depositSlotId}
+            onChange={(e) => setManualDepositorForm(f => ({ ...f, depositSlotId: e.target.value }))}
+            placeholder="Sélectionner un créneau"
+            options={
+              depositSlots?.items.map(slot => ({
+                value: slot.id,
+                label: `${new Date(slot.startDatetime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} - ${new Date(slot.endDatetime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} (${slot.registeredCount}/${slot.maxCapacity} places)`,
+              })) ?? []
+            }
+          />
+          <Select
+            label="Type de liste"
+            value={manualDepositorForm.listType}
+            onChange={(e) => setManualDepositorForm(f => ({ ...f, listType: e.target.value }))}
+            options={[
+              { value: 'standard', label: 'Standard' },
+              { value: 'list_1000', label: 'Liste 1000' },
+              { value: 'list_2000', label: 'Liste 2000' },
+            ]}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Code postal"
+              value={manualDepositorForm.postalCode}
+              onChange={(e) => setManualDepositorForm(f => ({ ...f, postalCode: e.target.value }))}
+            />
+            <Input
+              label="Ville"
+              value={manualDepositorForm.city}
+              onChange={(e) => setManualDepositorForm(f => ({ ...f, city: e.target.value }))}
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowManualDepositorModal(false);
+                setManualDepositorError(null);
+              }}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              disabled={manualDepositorMutation.isPending}
+              isLoading={manualDepositorMutation.isPending}
+            >
+              Ajouter
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Send invitations confirmation modal */}
       <Modal
