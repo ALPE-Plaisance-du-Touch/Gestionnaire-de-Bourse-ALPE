@@ -6,12 +6,6 @@ import { MainLayout } from '@/components/layout';
 import type { Edition } from '@/types';
 import type { UserRole } from '@/types/user';
 
-const STATUS_LABELS: Record<string, string> = {
-  configured: 'Configurée',
-  registrations_open: 'Inscriptions ouvertes',
-  in_progress: 'En cours',
-};
-
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('fr-FR', {
     weekday: 'long',
@@ -29,17 +23,10 @@ function formatDateShort(dateString: string): string {
   });
 }
 
-function EditionCard({ edition, showStatus = true }: { edition: Edition; showStatus?: boolean }) {
+function EditionCard({ edition }: { edition: Edition }) {
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-bold text-gray-900">{edition.name}</h3>
-        {showStatus && (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-            {STATUS_LABELS[edition.status] || edition.status}
-          </span>
-        )}
-      </div>
+      <h3 className="text-xl font-bold text-gray-900 mb-4">{edition.name}</h3>
       {edition.location && (
         <p className="text-gray-600 mb-3">{edition.location}</p>
       )}
@@ -67,23 +54,12 @@ function EditionCard({ edition, showStatus = true }: { edition: Edition; showSta
   );
 }
 
-function RoleLinks({ role, editionId }: { role: UserRole; editionId: string }) {
-  const links: { label: string; to: string; roles: UserRole[] }[] = [
-    { label: 'Mes listes', to: `/depositor/editions/${editionId}/lists`, roles: ['depositor', 'volunteer', 'manager', 'administrator'] },
-    { label: 'Caisse', to: `/editions/${editionId}/sales`, roles: ['volunteer', 'manager', 'administrator'] },
-    { label: 'Invitations', to: '/admin/invitations', roles: ['manager', 'administrator'] },
-    { label: 'Étiquettes', to: `/editions/${editionId}/labels`, roles: ['manager', 'administrator'] },
-    { label: 'Reversements', to: `/editions/${editionId}/payouts`, roles: ['manager', 'administrator'] },
-    { label: 'Gestion des ventes', to: `/editions/${editionId}/sales/manage`, roles: ['manager', 'administrator'] },
-    { label: 'Statistiques', to: `/editions/${editionId}/stats`, roles: ['manager', 'administrator'] },
-    { label: 'Gestion des éditions', to: '/editions', roles: ['administrator'] },
-  ];
+type QuickLink = { label: string; to: string; roles: UserRole[]; needsEdition?: boolean; statuses?: string[] };
 
-  const visibleLinks = links.filter((l) => l.roles.includes(role));
-
+function LinkGrid({ links }: { links: QuickLink[] }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {visibleLinks.map((link) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {links.map((link) => (
         <Link
           key={link.to}
           to={link.to}
@@ -91,6 +67,58 @@ function RoleLinks({ role, editionId }: { role: UserRole; editionId: string }) {
         >
           {link.label}
         </Link>
+      ))}
+    </div>
+  );
+}
+
+function RoleLinks({ role, editionId, editionStatus }: { role: UserRole; editionId?: string; editionStatus?: string }) {
+  const categories: { title: string; links: QuickLink[] }[] = [
+    {
+      title: 'Participer',
+      links: [
+        { label: 'Mes listes', to: `/depositor/editions/${editionId}/lists`, roles: ['depositor', 'volunteer', 'manager', 'administrator'], needsEdition: true, statuses: ['registrations_open', 'in_progress'] },
+      ],
+    },
+    {
+      title: "Gérer l'édition en cours",
+      links: [
+        { label: 'Détails', to: `/editions/${editionId}`, roles: ['manager', 'administrator'], needsEdition: true },
+        { label: 'Caisse', to: `/editions/${editionId}/sales`, roles: ['volunteer', 'manager', 'administrator'], needsEdition: true, statuses: ['in_progress'] },
+        { label: 'Étiquettes', to: `/editions/${editionId}/labels`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['registrations_open', 'in_progress'] },
+        { label: 'Gestion des ventes', to: `/editions/${editionId}/sales/manage`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['in_progress'] },
+        { label: 'Reversements', to: `/editions/${editionId}/payouts`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['in_progress', 'closed'] },
+        { label: 'Statistiques', to: `/editions/${editionId}/stats`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['in_progress'] },
+      ],
+    },
+    {
+      title: 'Administrer la plateforme',
+      links: [
+        { label: 'Gestion des éditions', to: '/editions', roles: ['manager', 'administrator'] },
+        { label: 'Invitations', to: '/admin/invitations', roles: ['manager', 'administrator'] },
+        { label: 'Utilisateurs', to: '/admin/users', roles: ['administrator'] },
+      ],
+    },
+  ];
+
+  const visibleCategories = categories
+    .map((cat) => ({
+      ...cat,
+      links: cat.links.filter((l) =>
+        l.roles.includes(role) &&
+        (!l.needsEdition || editionId) &&
+        (!l.statuses || (editionStatus && l.statuses.includes(editionStatus)))
+      ),
+    }))
+    .filter((cat) => cat.links.length > 0);
+
+  return (
+    <div className="space-y-6">
+      {visibleCategories.map((cat) => (
+        <div key={cat.title}>
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{cat.title}</h3>
+          <LinkGrid links={cat.links} />
+        </div>
       ))}
     </div>
   );
@@ -163,30 +191,21 @@ function AuthenticatedHomePage({
       </div>
 
       {edition ? (
-        <>
-          <div className="mb-8">
-            <EditionCard edition={edition} showStatus={role === 'manager' || role === 'administrator'} />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Accès rapide</h2>
-            <RoleLinks role={role} editionId={edition.id} />
-          </div>
-        </>
+        <div className="mb-8">
+          <EditionCard edition={edition} />
+        </div>
       ) : (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg mb-4">
+        <div className="text-center py-8 mb-8">
+          <p className="text-gray-500 text-lg">
             Aucune bourse n'est en cours actuellement.
           </p>
-          {role === 'administrator' && (
-            <Link
-              to="/editions"
-              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 transition-colors"
-            >
-              Créer une nouvelle édition
-            </Link>
-          )}
         </div>
       )}
+
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Accès rapide</h2>
+        <RoleLinks role={role} editionId={edition?.id} editionStatus={edition?.status} />
+      </div>
     </>
   );
 }

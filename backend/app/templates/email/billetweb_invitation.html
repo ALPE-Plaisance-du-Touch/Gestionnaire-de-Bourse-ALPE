@@ -68,22 +68,22 @@
 <body>
     <div class="header">
         <h1>Bourse ALPE</h1>
-        <p>Bourse aux vetements et jouets d'enfants</p>
+        <p>Bourse aux v&ecirc;tements et jouets d'enfants</p>
     </div>
 
     <div class="content">
         <p>Bonjour {{ first_name }},</p>
 
-        <p>Votre inscription a la bourse <strong>{{ edition_name }}</strong> a bien ete enregistree via Billetweb.</p>
+        <p>Votre inscription &agrave; la bourse <strong>{{ edition_name }}</strong> a bien &eacute;t&eacute; enregistr&eacute;e via Billetweb.</p>
 
         <div class="info-box">
-            <p><strong>Edition :</strong> {{ edition_name }}</p>
+            <p><strong>&Eacute;dition :</strong> {{ edition_name }}</p>
             {% if slot_datetime %}
-            <p><strong>Creneau de depot :</strong> {{ slot_datetime.strftime('%A %d %B %Y a %Hh%M') }}</p>
+            <p><strong>Cr&eacute;neau de d&eacute;p&ocirc;t :</strong> {{ slot_datetime.strftime('%A %d %B %Y &agrave; %Hh%M') }}</p>
             {% endif %}
         </div>
 
-        <p>Pour activer votre compte et declarer vos articles, cliquez sur le bouton ci-dessous :</p>
+        <p>Pour activer votre compte et d&eacute;clarer vos articles, cliquez sur le bouton ci-dessous :</p>
 
         <p style="text-align: center;">
             <a href="{{ activation_url }}" class="button">Activer mon compte</a>
@@ -94,13 +94,13 @@
 
         <div class="warning">
             <strong>Important :</strong> Ce lien est valide pendant {{ expiry_days }} jours.
-            Passe ce delai, vous devrez demander une nouvelle invitation.
+            Pass&eacute; ce d&eacute;lai, vous devrez demander une nouvelle invitation.
         </div>
     </div>
 
     <div class="footer">
         <p>ALPE Plaisance du Touch</p>
-        <p>Cet email a ete envoye automatiquement, merci de ne pas y repondre.</p>
+        <p>Cet email a &eacute;t&eacute; envoy&eacute; automatiquement, merci de ne pas y r&eacute;pondre.</p>
         <p>Besoin d'aide ? Contactez-nous : <a href="mailto:{{ support_email }}">{{ support_email }}</a></p>
     </div>
 </body>

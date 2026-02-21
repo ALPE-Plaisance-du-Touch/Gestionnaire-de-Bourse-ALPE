@@ -1,7 +1,7 @@
 """Billetweb synchronization service."""
 
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 
 from sqlalchemy import select
@@ -144,6 +144,10 @@ class BilletwebSyncService:
             if not start_dt or not end_dt:
                 logger.warning("Skipping session %s: invalid dates", session_id)
                 continue
+
+            # Default to 30 minutes if duration is zero or missing
+            if end_dt <= start_dt:
+                end_dt = start_dt + timedelta(minutes=30)
 
             existing = existing_slots.get(session_id)
             if existing:
@@ -375,7 +379,7 @@ class BilletwebSyncService:
         self,
         edition: Edition,
         imported_by: User,
-        send_emails: bool = True,
+        send_emails: bool = False,
         background_tasks: "BackgroundTasks | None" = None,
     ) -> dict:
         """Import attendees from Billetweb API.

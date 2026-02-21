@@ -1,77 +1,8 @@
 /**
- * Billetweb import types.
+ * Billetweb types.
  */
 
 export type ListType = 'standard' | 'list_1000' | 'list_2000';
-
-// --- Preview Types ---
-
-export interface BilletwebRowError {
-  rowNumber: number;
-  email: string | null;
-  errorType: string;
-  errorMessage: string;
-  fieldName: string | null;
-  fieldValue: string | null;
-}
-
-export interface BilletwebPreviewStats {
-  totalRows: number;
-  rowsUnpaidInvalid: number;
-  rowsToProcess: number;
-  existingDepositors: number;
-  newDepositors: number;
-  duplicatesInFile: number;
-  alreadyRegistered: number;
-  errorsCount: number;
-}
-
-export interface SlotOccupancy {
-  slotId: string;
-  slotDescription: string;
-  current: number;
-  incoming: number;
-  maxCapacity: number;
-  overCapacity: boolean;
-}
-
-export interface ListTypeBreakdown {
-  standard: number;
-  list_1000: number;
-  list_2000: number;
-}
-
-export interface BilletwebPreviewResponse {
-  stats: BilletwebPreviewStats;
-  errors: BilletwebRowError[];
-  warnings: string[];
-  canImport: boolean;
-  availableSlots: string[];
-  slotOccupancy: SlotOccupancy[];
-  listTypeBreakdown: ListTypeBreakdown;
-}
-
-// --- Import Types ---
-
-export interface BilletwebImportResult {
-  importLogId: string;
-  existingDepositorsLinked: number;
-  newDepositorsCreated: number;
-  invitationsSent: number;
-  notificationsSent: number;
-  rowsSkipped: number;
-}
-
-export interface BilletwebImportResponse {
-  success: boolean;
-  message: string;
-  result: BilletwebImportResult;
-}
-
-export interface BilletwebImportOptions {
-  ignoreErrors?: boolean;
-  sendEmails?: boolean;
-}
 
 // --- Edition Depositor Types ---
 
@@ -107,6 +38,17 @@ export interface EditionDepositorsListResponse {
   pages: number;
 }
 
+export interface ManualDepositorCreateRequest {
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  depositSlotId: string;
+  listType?: ListType;
+  postalCode?: string;
+  city?: string;
+}
+
 // --- Import Log Types ---
 
 export interface BilletwebImportLog {
@@ -132,5 +74,6 @@ export interface BilletwebImportStats {
   totalDepositors: number;
   totalImports: number;
   totalImported: number;
+  pendingInvitations: number;
   latestImport: BilletwebImportLog | null;
 }

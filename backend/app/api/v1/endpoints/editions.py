@@ -15,6 +15,7 @@ from app.exceptions import (
     ValidationError,
 )
 from app.models import User
+from app.models.edition import EditionStatus
 from app.models.edition_depositor import EditionDepositor
 from app.models.user import Role
 from app.schemas import (
@@ -360,6 +361,99 @@ async def delete_edition(
             status_code=status.HTTP_409_CONFLICT,
             detail=e.message,
         )
+
+
+@router.post(
+    "/{edition_id}/send-invitations",
+    summary="Send invitation emails to depositors",
+    description=(
+        "Send activation/notification emails to depositors who haven't received them yet. "
+        "If the edition is in 'configured' status, transitions it to 'registrations_open' first (admin only). "
+        "If already 'registrations_open', sends pending invitations only (manager+)."
+    ),
+)
+async def send_invitations(
+    edition_id: str,
+    edition_service: EditionServiceDep,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Send invitation/notification emails to depositors.
+
+    Also transitions edition to registrations_open if currently configured.
+    """
+    try:
+        edition = await edition_service.get_edition(edition_id)
+    except EditionNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} not found",
+        )
+
+    status_changed = False
+
+    if edition.status == EditionStatus.CONFIGURED.value:
+        # Transitioning status requires admin role
+        if current_user.role.name != "administrator":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Seul un administrateur peut ouvrir les inscriptions.",
+            )
+        try:
+            await edition_service.update_status(
+                edition_id, EditionStatus.REGISTRATIONS_OPEN
+            )
+            status_changed = True
+        except ValidationError as e:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=e.message,
+            )
+    elif edition.status != EditionStatus.REGISTRATIONS_OPEN.value:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="L'édition doit être en statut 'configurée' ou 'inscriptions ouvertes'.",
+        )
+
+    try:
+        result = await edition_service.send_invitations_to_depositors(edition_id)
+    except EditionNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} not found",
+        )
+
+    result["status_changed"] = status_changed
+    return result
+
+
+@router.post(
+    "/{edition_id}/open-registrations",
+    response_model=EditionResponse,
+    summary="Open registrations (silent)",
+    description="Transition edition to registrations_open without sending notifications. Admin only.",
+)
+async def open_registrations(
+    edition_id: str,
+    edition_service: EditionServiceDep,
+    current_user: Annotated[User, Depends(require_role(["administrator"]))],
+):
+    """Open registrations for an edition without sending notifications."""
+    try:
+        edition = await edition_service.update_status(
+            edition_id, EditionStatus.REGISTRATIONS_OPEN
+        )
+    except EditionNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} not found",
+        )
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=e.message,
+        )
+
+    return EditionResponse.model_validate(edition)
 
 
 @router.post(

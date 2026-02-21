@@ -17,6 +17,7 @@ interface DepositSlotApiResponse {
   maxCapacity: number;
   reservedForLocals: boolean;
   description: string | null;
+  registeredCount: number;
   createdAt: string;
 }
 
@@ -38,6 +39,7 @@ function transformDepositSlot(data: DepositSlotApiResponse): DepositSlot {
     maxCapacity: data.maxCapacity,
     reservedForLocals: data.reservedForLocals,
     description: data.description,
+    registeredCount: data.registeredCount ?? 0,
     createdAt: data.createdAt,
   };
 }

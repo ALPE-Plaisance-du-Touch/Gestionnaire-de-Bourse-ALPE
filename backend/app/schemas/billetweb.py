@@ -84,48 +84,6 @@ class BilletwebPreviewResponse(BaseModel):
     )
 
 
-# --- Import Response Schemas ---
-
-
-class BilletwebImportResult(BaseModel):
-    """Result of a successful import."""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    import_log_id: str = Field(..., description="ID of the import log for audit")
-    existing_depositors_linked: int = Field(..., description="Number of existing depositors associated")
-    new_depositors_created: int = Field(..., description="Number of new depositors created and invited")
-    invitations_sent: int = Field(..., description="Number of invitation emails sent")
-    notifications_sent: int = Field(..., description="Number of notification emails sent to existing users")
-    rows_skipped: int = Field(..., description="Total rows skipped (duplicates, already registered, etc.)")
-
-
-class BilletwebImportResponse(BaseModel):
-    """Response for import endpoint."""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    success: bool = True
-    message: str
-    result: BilletwebImportResult
-
-
-# --- Import Options Schema ---
-
-
-class BilletwebImportOptions(BaseModel):
-    """Options for the import process."""
-
-    ignore_errors: bool = Field(
-        default=False,
-        description="If true, skip rows with errors instead of blocking the import"
-    )
-    send_emails: bool = Field(
-        default=True,
-        description="If true, send invitation/notification emails"
-    )
-
-
 # --- Edition Depositor Schemas ---
 
 
@@ -193,3 +151,16 @@ class EditionDepositorsListResponse(BaseModel):
     page: int
     limit: int
     pages: int
+
+
+class ManualDepositorCreateRequest(BaseModel):
+    """Request schema for manually adding a depositor to an edition."""
+
+    email: str = Field(..., min_length=1)
+    first_name: str = Field(..., min_length=1, max_length=100)
+    last_name: str = Field(..., min_length=1, max_length=100)
+    phone: str | None = Field(None, max_length=20)
+    deposit_slot_id: str
+    list_type: str = Field(default="standard")
+    postal_code: str | None = Field(None, max_length=10)
+    city: str | None = Field(None, max_length=100)

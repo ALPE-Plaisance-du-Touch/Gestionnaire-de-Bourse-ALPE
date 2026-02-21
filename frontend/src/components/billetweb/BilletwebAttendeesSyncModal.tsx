@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { billetwebApiSettings } from '@/api/billetweb-api';
 import { Button } from '@/components/ui/Button';
@@ -18,7 +17,6 @@ export function BilletwebAttendeesSyncModal({
   lastSync,
 }: BilletwebAttendeesSyncModalProps) {
   const queryClient = useQueryClient();
-  const [sendEmails, setSendEmails] = useState(true);
 
   const { data: preview, isLoading, error } = useQuery({
     queryKey: ['billetweb-attendees-preview', editionId],
@@ -27,7 +25,7 @@ export function BilletwebAttendeesSyncModal({
   });
 
   const syncMutation = useMutation({
-    mutationFn: () => billetwebApiSettings.syncAttendees(editionId, sendEmails),
+    mutationFn: () => billetwebApiSettings.syncAttendees(editionId, false),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['billetweb-stats', editionId] });
       queryClient.invalidateQueries({ queryKey: ['billetweb-attendees-preview', editionId] });
@@ -65,11 +63,6 @@ export function BilletwebAttendeesSyncModal({
               {syncMutation.data.existingLinked} existant(s) associe(s),{' '}
               {syncMutation.data.alreadyRegistered} deja inscrit(s).
             </p>
-            {syncMutation.data.invitationsSent > 0 && (
-              <p className="text-sm mt-1">
-                {syncMutation.data.invitationsSent} email(s) d'invitation envoye(s).
-              </p>
-            )}
           </div>
           <div className="flex justify-end">
             <Button onClick={onClose}>Fermer</Button>
@@ -142,19 +135,6 @@ export function BilletwebAttendeesSyncModal({
               ))}
             </div>
           )}
-
-          {/* Email option */}
-          <div className="mb-4">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={sendEmails}
-                onChange={(e) => setSendEmails(e.target.checked)}
-                className="rounded border-gray-300"
-              />
-              Envoyer les emails d'invitation aux nouveaux deposants
-            </label>
-          </div>
 
           {/* Sync error */}
           {syncMutation.isError && (

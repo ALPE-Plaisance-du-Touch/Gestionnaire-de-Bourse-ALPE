@@ -57,6 +57,9 @@ class EditionDepositor(Base, UUIDMixin, TimestampMixin):
         nullable=True,
     )
 
+    # Invitation tracking
+    invitation_sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
     # Additional info from Billetweb
     postal_code: Mapped[str | None] = mapped_column(String(10), nullable=True)
     city: Mapped[str | None] = mapped_column(String(100), nullable=True)

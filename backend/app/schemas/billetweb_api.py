@@ -73,7 +73,7 @@ class BilletwebSessionsSyncResult(BaseModel):
 class BilletwebAttendeesSyncRequest(BaseModel):
     """Options for attendees sync."""
 
-    send_emails: bool = Field(default=True, description="Send invitation/notification emails")
+    send_emails: bool = Field(default=False, description="Send invitation/notification emails")
     ignore_errors: bool = Field(default=False, description="Skip rows with errors")
 
 

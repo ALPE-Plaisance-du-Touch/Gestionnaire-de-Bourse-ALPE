@@ -359,5 +359,37 @@ class EmailService:
         )
 
 
+    async def send_registrations_open_email(
+        self,
+        to_email: str,
+        first_name: str,
+        edition_name: str,
+        declaration_deadline: str | None = None,
+    ) -> bool:
+        """Send an email notifying depositors that registrations are open."""
+        lists_url = f"{settings.frontend_url}/my-lists"
+
+        html_template = self.jinja_env.get_template("registrations_open.html")
+        text_template = self.jinja_env.get_template("registrations_open.txt")
+
+        context = {
+            "first_name": first_name or "Deposant",
+            "edition_name": edition_name,
+            "declaration_deadline": declaration_deadline,
+            "lists_url": lists_url,
+            "support_email": settings.support_email,
+        }
+
+        html_content = html_template.render(**context)
+        text_content = text_template.render(**context)
+
+        return await self._send_email(
+            to_email=to_email,
+            subject=f"Inscriptions ouvertes - {edition_name}",
+            html_content=html_content,
+            text_content=text_content,
+        )
+
+
 # Singleton instance
 email_service = EmailService()

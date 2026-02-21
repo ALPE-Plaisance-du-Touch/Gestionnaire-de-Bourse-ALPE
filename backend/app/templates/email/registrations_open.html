@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rappel - Date limite de d&eacute;claration</title>
+    <title>Les inscriptions sont ouvertes !</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,7 +14,7 @@
             padding: 20px;
         }
         .header {
-            background-color: #d97706;
+            background-color: #059669;
             color: white;
             padding: 20px;
             text-align: center;
@@ -26,17 +26,6 @@
             border: 1px solid #e5e7eb;
             border-top: none;
         }
-        .deadline-box {
-            display: inline-block;
-            background-color: #fef3c7;
-            border: 2px solid #d97706;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #92400e;
-            margin: 16px 0;
-        }
         .btn {
             display: inline-block;
             background-color: #2563eb;
@@ -46,6 +35,13 @@
             border-radius: 6px;
             font-weight: bold;
             margin-top: 16px;
+        }
+        .info-box {
+            background-color: #ecfdf5;
+            border: 1px solid #059669;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 16px 0;
         }
         .footer {
             text-align: center;
@@ -61,23 +57,27 @@
 <body>
     <div class="header">
         <h1>Bourse ALPE</h1>
-        <p>Rappel - Date limite de d&eacute;claration</p>
+        <p>Les inscriptions sont ouvertes !</p>
     </div>
 
     <div class="content">
         <p>Bonjour {{ first_name }},</p>
 
-        <p>Nous vous rappelons que la date limite pour d&eacute;clarer vos articles pour la <strong>{{ edition_name }}</strong> approche.</p>
+        <p>Les inscriptions pour la <strong>{{ edition_name }}</strong> sont maintenant ouvertes !</p>
+
+        <p>Vous pouvez d&egrave;s &agrave; pr&eacute;sent d&eacute;clarer vos articles en vous connectant &agrave; votre espace d&eacute;posant.</p>
+
+        {% if declaration_deadline %}
+        <div class="info-box">
+            <strong>Date limite de d&eacute;claration :</strong> {{ declaration_deadline }}
+        </div>
+        {% endif %}
 
         <p style="text-align: center;">
-            <span class="deadline-box">Date limite : {{ deadline }}</span>
+            <a class="btn" href="{{ lists_url }}">D&eacute;clarer mes articles</a>
         </p>
 
-        <p>Pensez &agrave; finaliser la saisie de vos articles avant cette date. Pass&eacute; ce d&eacute;lai, vous ne pourrez plus modifier vos listes.</p>
-
-        <p style="text-align: center;">
-            <a class="btn" href="{{ lists_url }}">Acc&eacute;der &agrave; mes listes</a>
-        </p>
+        <p>Si vous n'avez pas encore activ&eacute; votre compte, utilisez le lien d'activation que vous avez re&ccedil;u par email.</p>
     </div>
 
     <div class="footer">

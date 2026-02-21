@@ -1,0 +1,18 @@
+Bourse ALPE - Les inscriptions sont ouvertes !
+
+Bonjour {{ first_name }},
+
+Les inscriptions pour la {{ edition_name }} sont maintenant ouvertes !
+
+Vous pouvez dès à présent déclarer vos articles en vous connectant à votre espace déposant.
+
+{% if declaration_deadline %}Date limite de déclaration : {{ declaration_deadline }}{% endif %}
+
+Déclarer mes articles : {{ lists_url }}
+
+Si vous n'avez pas encore activé votre compte, utilisez le lien d'activation que vous avez reçu par email.
+
+---
+ALPE Plaisance du Touch
+Cet email a été envoyé automatiquement, merci de ne pas y répondre.
+Besoin d'aide ? Contactez-nous : {{ support_email }}

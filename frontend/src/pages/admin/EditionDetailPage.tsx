@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { editionsApi, billetwebApi, payoutsApi, ApiException } from '@/api';
-import { Button, ConfirmModal, Input, Modal } from '@/components/ui';
+import { editionsApi, billetwebApi, depositSlotsApi, payoutsApi, usersApi, ApiException } from '@/api';
+import { Button, ConfirmModal, Input, Modal, Select } from '@/components/ui';
 import { DepositSlotsEditor } from '@/components/editions';
-import { BilletwebImportButton } from '@/components/billetweb';
 import { BilletwebSessionsSyncModal } from '@/components/billetweb/BilletwebSessionsSyncModal';
 import { BilletwebAttendeesSyncModal } from '@/components/billetweb/BilletwebAttendeesSyncModal';
-import type { EditionStatus } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
+import type { EditionStatus, User } from '@/types';
 
 const STATUS_LABELS: Record<EditionStatus, { label: string; className: string }> = {
   draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-800' },
@@ -86,6 +86,8 @@ export function EditionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user: currentUser } = useAuth();
+  const isAdmin = currentUser?.role === 'administrator';
 
   // Form state
   const [name, setName] = useState('');
@@ -109,6 +111,11 @@ export function EditionDetailPage() {
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [showSessionsSyncModal, setShowSessionsSyncModal] = useState(false);
   const [showAttendeesSyncModal, setShowAttendeesSyncModal] = useState(false);
+  const [showInvitationsConfirm, setShowInvitationsConfirm] = useState(false);
+  const [showOpenRegistrationsConfirm, setShowOpenRegistrationsConfirm] = useState(false);
+  const [showRevertToConfiguredConfirm, setShowRevertToConfiguredConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showManualDepositorModal, setShowManualDepositorModal] = useState(false);
 
   // Auto-dismiss success message after 5 seconds
   useEffect(() => {
@@ -140,7 +147,7 @@ export function EditionDetailPage() {
   const { data: importStats, refetch: refetchImportStats } = useQuery({
     queryKey: ['billetweb-stats', id],
     queryFn: () => billetwebApi.getImportStats(id!),
-    enabled: !!id && edition?.status === 'configured',
+    enabled: !!id && (edition?.status === 'configured' || edition?.status === 'registrations_open'),
   });
 
   // Sync form state when edition data changes (initial load or after save)
@@ -191,6 +198,7 @@ export function EditionDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['editions'] });
       queryClient.invalidateQueries({ queryKey: ['edition', id] });
+      queryClient.invalidateQueries({ queryKey: ['active-edition'] });
     },
   });
 
@@ -208,6 +216,7 @@ export function EditionDetailPage() {
       setError(null);
       queryClient.invalidateQueries({ queryKey: ['editions'] });
       queryClient.invalidateQueries({ queryKey: ['edition', id] });
+      queryClient.invalidateQueries({ queryKey: ['active-edition'] });
     },
     onError: (err) => {
       setClosureModalOpen(false);
@@ -232,6 +241,151 @@ export function EditionDetailPage() {
         setError(err.message);
       } else {
         setError("Une erreur est survenue lors de l'archivage.");
+      }
+    },
+  });
+
+  const sendInvitationsMutation = useMutation({
+    mutationFn: () => editionsApi.sendInvitations(id!),
+    onSuccess: () => {
+      setShowInvitationsConfirm(false);
+      setSuccess(true);
+      setError(null);
+      queryClient.invalidateQueries({ queryKey: ['billetweb-stats', id] });
+      queryClient.invalidateQueries({ queryKey: ['editions'] });
+      queryClient.invalidateQueries({ queryKey: ['edition', id] });
+      queryClient.invalidateQueries({ queryKey: ['active-edition'] });
+    },
+    onError: (err) => {
+      setShowInvitationsConfirm(false);
+      if (err instanceof ApiException) {
+        setError(err.message);
+      } else {
+        setError("Une erreur est survenue lors de l'envoi des invitations.");
+      }
+    },
+  });
+
+  const openRegistrationsMutation = useMutation({
+    mutationFn: () => editionsApi.openRegistrations(id!),
+    onSuccess: () => {
+      setShowOpenRegistrationsConfirm(false);
+      setSuccess(true);
+      setError(null);
+      queryClient.invalidateQueries({ queryKey: ['editions'] });
+      queryClient.invalidateQueries({ queryKey: ['edition', id] });
+      queryClient.invalidateQueries({ queryKey: ['active-edition'] });
+    },
+    onError: (err) => {
+      setShowOpenRegistrationsConfirm(false);
+      if (err instanceof ApiException) {
+        if (err.status === 409) {
+          setError(err.message);
+        } else {
+          setError(err.message);
+        }
+      } else {
+        setError("Une erreur est survenue lors de l'ouverture des inscriptions.");
+      }
+    },
+  });
+
+  const revertToConfiguredMutation = useMutation({
+    mutationFn: () => editionsApi.updateEditionStatus(id!, 'configured'),
+    onSuccess: () => {
+      setShowRevertToConfiguredConfirm(false);
+      setSuccess(true);
+      setError(null);
+      queryClient.invalidateQueries({ queryKey: ['editions'] });
+      queryClient.invalidateQueries({ queryKey: ['edition', id] });
+      queryClient.invalidateQueries({ queryKey: ['active-edition'] });
+    },
+    onError: (err) => {
+      setShowRevertToConfiguredConfirm(false);
+      if (err instanceof ApiException) {
+        setError(err.message);
+      } else {
+        setError("Une erreur est survenue lors du retour en configuration.");
+      }
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => editionsApi.deleteEdition(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['editions'] });
+      navigate('/editions');
+    },
+    onError: (err) => {
+      setShowDeleteConfirm(false);
+      if (err instanceof ApiException) {
+        setError(err.message);
+      } else {
+        setError("Une erreur est survenue lors de la suppression.");
+      }
+    },
+  });
+
+  // Manual depositor form state
+  const [manualDepositorForm, setManualDepositorForm] = useState({
+    email: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    depositSlotId: '',
+    listType: 'standard',
+    postalCode: '',
+    city: '',
+  });
+  const [manualDepositorError, setManualDepositorError] = useState<string | null>(null);
+  const [depositorMode, setDepositorMode] = useState<'new' | 'existing'>('new');
+  const [userSearch, setUserSearch] = useState('');
+  const [debouncedUserSearch, setDebouncedUserSearch] = useState('');
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedUserSearch(userSearch), 300);
+    return () => clearTimeout(timer);
+  }, [userSearch]);
+
+  const { data: userSearchResults, isLoading: isSearchingUsers } = useQuery({
+    queryKey: ['user-search', debouncedUserSearch],
+    queryFn: () => usersApi.listUsers({ search: debouncedUserSearch, limit: 5 }),
+    enabled: !!debouncedUserSearch && debouncedUserSearch.length >= 2 && depositorMode === 'existing' && !selectedUser,
+  });
+
+  const { data: depositSlots } = useQuery({
+    queryKey: ['deposit-slots', id],
+    queryFn: () => depositSlotsApi.getDepositSlots(id!),
+    enabled: !!id && showManualDepositorModal,
+  });
+
+  const manualDepositorMutation = useMutation({
+    mutationFn: () => billetwebApi.createManualDepositor(id!, {
+      email: manualDepositorForm.email,
+      firstName: manualDepositorForm.firstName,
+      lastName: manualDepositorForm.lastName,
+      phone: manualDepositorForm.phone || undefined,
+      depositSlotId: manualDepositorForm.depositSlotId,
+      listType: manualDepositorForm.listType as 'standard' | 'list_1000' | 'list_2000',
+      postalCode: manualDepositorForm.postalCode || undefined,
+      city: manualDepositorForm.city || undefined,
+    }),
+    onSuccess: () => {
+      setShowManualDepositorModal(false);
+      setManualDepositorForm({ email: '', firstName: '', lastName: '', phone: '', depositSlotId: '', listType: 'standard', postalCode: '', city: '' });
+      setManualDepositorError(null);
+      setDepositorMode('new');
+      setUserSearch('');
+      setSelectedUser(null);
+      queryClient.invalidateQueries({ queryKey: ['billetweb-stats', id] });
+      queryClient.invalidateQueries({ queryKey: ['deposit-slots', id] });
+    },
+    onError: (err) => {
+      if (err instanceof ApiException) {
+        setManualDepositorError(err.message);
+      } else {
+        setManualDepositorError("Une erreur est survenue lors de l'ajout du déposant.");
       }
     },
   });
@@ -600,22 +754,15 @@ export function EditionDetailPage() {
 
         {/* Deposit Slots Section */}
         <section className="bg-white rounded-lg shadow p-6">
-          {edition.billetwebEventId && isEditable && (
-            <div className="mb-4 flex justify-end">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setShowSessionsSyncModal(true)}
-              >
-                Synchroniser créneaux Billetweb
-              </Button>
-            </div>
-          )}
-          <DepositSlotsEditor editionId={edition.id} disabled={!isEditable} />
+          <DepositSlotsEditor
+            editionId={edition.id}
+            disabled={!isEditable}
+            onSyncBilletweb={edition.billetwebEventId && isEditable ? () => setShowSessionsSyncModal(true) : undefined}
+          />
         </section>
 
-        {/* Billetweb Import Section - Only for configured editions */}
-        {edition.status === 'configured' && (
+        {/* Billetweb Import Section - For configured and registrations_open editions */}
+        {(edition.status === 'configured' || edition.status === 'registrations_open') && (
           <section className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-2">
               Inscriptions Billetweb
@@ -633,11 +780,18 @@ export function EditionDetailPage() {
                   Synchroniser via API
                 </Button>
               )}
-              <BilletwebImportButton
-                edition={edition}
-                importCount={importStats?.totalDepositors ?? 0}
-                onImportSuccess={() => refetchImportStats()}
-              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowManualDepositorModal(true)}
+                leftIcon={
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                }
+              >
+                Ajouter un déposant
+              </Button>
             </div>
             {edition.billetwebEventId && edition.lastBilletwebSync && (
               <p className="text-xs text-gray-500 mt-2">
@@ -645,7 +799,7 @@ export function EditionDetailPage() {
               </p>
             )}
 
-            {importStats && importStats.totalImports > 0 && (
+            {importStats && importStats.totalDepositors > 0 && (
               <div className="mt-4 bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-medium text-gray-700">Historique des imports</h4>
@@ -659,7 +813,7 @@ export function EditionDetailPage() {
                     Voir les déposants
                   </Link>
                 </div>
-                <div className="grid grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-4 gap-4 text-sm">
                   <div>
                     <p className="text-gray-500">Déposants inscrits</p>
                     <p className="text-xl font-semibold text-gray-900">{importStats.totalDepositors}</p>
@@ -672,7 +826,46 @@ export function EditionDetailPage() {
                     <p className="text-gray-500">Lignes importées</p>
                     <p className="text-xl font-semibold text-gray-900">{importStats.totalImported}</p>
                   </div>
+                  <div>
+                    <p className="text-gray-500">Invitations en attente</p>
+                    <p className="text-xl font-semibold text-gray-900">{importStats.pendingInvitations ?? 0}</p>
+                  </div>
                 </div>
+              </div>
+            )}
+
+            {/* Workflow actions: send invitations + open registrations */}
+            {importStats && importStats.totalDepositors > 0 && (
+              <div className="mt-4 flex items-center gap-3 flex-wrap">
+                {/* Send invitations button: admin only when configured, manager+ when registrations_open */}
+                {(edition.status === 'registrations_open' || isAdmin) && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="primary"
+                    onClick={() => setShowInvitationsConfirm(true)}
+                    disabled={sendInvitationsMutation.isPending || (importStats.pendingInvitations ?? 0) === 0}
+                    isLoading={sendInvitationsMutation.isPending}
+                  >
+                    {edition.status === 'configured'
+                      ? `Envoyer les invitations et ouvrir (${importStats.pendingInvitations ?? 0})`
+                      : `Envoyer les invitations (${importStats.pendingInvitations ?? 0})`
+                    }
+                  </Button>
+                )}
+                {/* Silent open registrations: admin only, configured status only */}
+                {isAdmin && edition.status === 'configured' && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setShowOpenRegistrationsConfirm(true)}
+                    disabled={openRegistrationsMutation.isPending}
+                    isLoading={openRegistrationsMutation.isPending}
+                  >
+                    Ouvrir les inscriptions (sans notification)
+                  </Button>
+                )}
               </div>
             )}
           </section>
@@ -715,15 +908,38 @@ export function EditionDetailPage() {
           </div>
         )}
 
+        {/* Revert to configured */}
+        {edition.status === 'registrations_open' && isAdmin && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-yellow-900">Revenir en configuration</h3>
+                <p className="text-sm text-yellow-700">
+                  Annuler l'ouverture des inscriptions et repasser l'édition en statut "Configurée".
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={revertToConfiguredMutation.isPending}
+                isLoading={revertToConfiguredMutation.isPending}
+                onClick={() => setShowRevertToConfiguredConfirm(true)}
+              >
+                Revenir en configuration
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Sales & Stats links */}
         {edition.status === 'in_progress' && (
           <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">Ventes</h3>
-                <p className="text-sm text-gray-500">Accédez à la caisse et aux statistiques en direct.</p>
+                <p className="text-sm text-gray-500">Accédez à la caisse, la gestion des ventes et aux statistiques en direct.</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Link
                   to={`/editions/${edition.id}/sales`}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
@@ -732,6 +948,15 @@ export function EditionDetailPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
                   </svg>
                   Caisse
+                </Link>
+                <Link
+                  to={`/editions/${edition.id}/sales/manage`}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                  </svg>
+                  Gestion des ventes
                 </Link>
                 <Link
                   to={`/editions/${edition.id}/stats`}
@@ -917,13 +1142,26 @@ export function EditionDetailPage() {
 
         {/* Actions */}
         <div className="flex justify-between items-center pt-4 border-t">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate('/editions')}
-          >
-            Annuler
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate('/editions')}
+            >
+              Annuler
+            </Button>
+            {isAdmin && (edition.status === 'draft' || edition.status === 'configured') && (
+              <Button
+                type="button"
+                variant="danger"
+                disabled={deleteMutation.isPending}
+                isLoading={deleteMutation.isPending}
+                onClick={() => setShowDeleteConfirm(true)}
+              >
+                Supprimer l'édition
+              </Button>
+            )}
+          </div>
           <Button
             type="submit"
             disabled={isPending || !isEditable}
@@ -966,6 +1204,323 @@ export function EditionDetailPage() {
           lastSync={edition.lastBilletwebSync}
         />
       )}
+
+      {/* Manual depositor modal */}
+      <Modal
+        isOpen={showManualDepositorModal}
+        onClose={() => {
+          setShowManualDepositorModal(false);
+          setManualDepositorError(null);
+          setDepositorMode('new');
+          setUserSearch('');
+          setSelectedUser(null);
+          setManualDepositorForm({ email: '', firstName: '', lastName: '', phone: '', depositSlotId: '', listType: 'standard', postalCode: '', city: '' });
+        }}
+        title="Inscrire un déposant"
+      >
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200 mb-4">
+          <button
+            type="button"
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${depositorMode === 'new' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            onClick={() => {
+              setDepositorMode('new');
+              setUserSearch('');
+              setSelectedUser(null);
+              setManualDepositorForm({ email: '', firstName: '', lastName: '', phone: '', depositSlotId: '', listType: 'standard', postalCode: '', city: '' });
+              setManualDepositorError(null);
+            }}
+          >
+            Nouveau
+          </button>
+          <button
+            type="button"
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${depositorMode === 'existing' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            onClick={() => {
+              setDepositorMode('existing');
+              setSelectedUser(null);
+              setManualDepositorForm({ email: '', firstName: '', lastName: '', phone: '', depositSlotId: '', listType: 'standard', postalCode: '', city: '' });
+              setManualDepositorError(null);
+            }}
+          >
+            Existant
+          </button>
+        </div>
+
+        <form onSubmit={(e) => { e.preventDefault(); manualDepositorMutation.mutate(); }} className="space-y-4">
+          {manualDepositorError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+              {manualDepositorError}
+            </div>
+          )}
+
+          {depositorMode === 'existing' && (
+            <>
+              {!selectedUser ? (
+                <div>
+                  <Input
+                    label="Rechercher un utilisateur"
+                    placeholder="Nom ou email..."
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                  />
+                  {isSearchingUsers && (
+                    <p className="text-sm text-gray-500 mt-2">Recherche...</p>
+                  )}
+                  {userSearchResults && userSearchResults.items.length > 0 && (
+                    <ul className="mt-2 border border-gray-200 rounded-lg divide-y divide-gray-100 max-h-48 overflow-y-auto">
+                      {userSearchResults.items.map(user => (
+                        <li key={user.id}>
+                          <button
+                            type="button"
+                            className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center justify-between"
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setManualDepositorForm(f => ({
+                                ...f,
+                                email: user.email,
+                                firstName: user.firstName,
+                                lastName: user.lastName,
+                                phone: user.phone || '',
+                              }));
+                              setUserSearch('');
+                            }}
+                          >
+                            <div>
+                              <span className="font-medium text-sm">{user.firstName} {user.lastName}</span>
+                              <span className="text-gray-500 text-sm ml-2">{user.email}</span>
+                            </div>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{user.role}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {userSearchResults && userSearchResults.items.length === 0 && debouncedUserSearch.length >= 2 && (
+                    <p className="text-sm text-gray-500 mt-2">Aucun utilisateur trouvé</p>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
+                  <div>
+                    <span className="font-medium text-sm">{selectedUser.firstName} {selectedUser.lastName}</span>
+                    <span className="text-gray-600 text-sm ml-2">{selectedUser.email}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                    onClick={() => {
+                      setSelectedUser(null);
+                      setManualDepositorForm(f => ({ ...f, email: '', firstName: '', lastName: '', phone: '' }));
+                    }}
+                  >
+                    Changer
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+
+          {depositorMode === 'new' && (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  label="Prénom"
+                  required
+                  value={manualDepositorForm.firstName}
+                  onChange={(e) => setManualDepositorForm(f => ({ ...f, firstName: e.target.value }))}
+                />
+                <Input
+                  label="Nom"
+                  required
+                  value={manualDepositorForm.lastName}
+                  onChange={(e) => setManualDepositorForm(f => ({ ...f, lastName: e.target.value }))}
+                />
+              </div>
+              <Input
+                label="Email"
+                type="email"
+                required
+                value={manualDepositorForm.email}
+                onChange={(e) => setManualDepositorForm(f => ({ ...f, email: e.target.value }))}
+              />
+              <Input
+                label="Téléphone"
+                value={manualDepositorForm.phone}
+                onChange={(e) => setManualDepositorForm(f => ({ ...f, phone: e.target.value }))}
+              />
+            </>
+          )}
+
+          <Select
+            label="Créneau de dépôt"
+            required
+            value={manualDepositorForm.depositSlotId}
+            onChange={(e) => setManualDepositorForm(f => ({ ...f, depositSlotId: e.target.value }))}
+            placeholder="Sélectionner un créneau"
+            options={
+              depositSlots?.items.map(slot => ({
+                value: slot.id,
+                label: `${new Date(slot.startDatetime).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} ${new Date(slot.startDatetime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} - ${new Date(slot.endDatetime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} (${slot.registeredCount}/${slot.maxCapacity} places)`,
+              })) ?? []
+            }
+          />
+          <Select
+            label="Type de liste"
+            value={manualDepositorForm.listType}
+            onChange={(e) => setManualDepositorForm(f => ({ ...f, listType: e.target.value }))}
+            options={[
+              { value: 'standard', label: 'Standard' },
+              { value: 'list_1000', label: 'Liste 1000' },
+              { value: 'list_2000', label: 'Liste 2000' },
+            ]}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Code postal"
+              value={manualDepositorForm.postalCode}
+              onChange={(e) => setManualDepositorForm(f => ({ ...f, postalCode: e.target.value }))}
+            />
+            <Input
+              label="Ville"
+              value={manualDepositorForm.city}
+              onChange={(e) => setManualDepositorForm(f => ({ ...f, city: e.target.value }))}
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowManualDepositorModal(false);
+                setManualDepositorError(null);
+                setDepositorMode('new');
+                setUserSearch('');
+                setSelectedUser(null);
+                setManualDepositorForm({ email: '', firstName: '', lastName: '', phone: '', depositSlotId: '', listType: 'standard', postalCode: '', city: '' });
+              }}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              disabled={manualDepositorMutation.isPending || (depositorMode === 'existing' && !selectedUser)}
+              isLoading={manualDepositorMutation.isPending}
+            >
+              Inscrire
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Send invitations confirmation modal */}
+      <Modal
+        isOpen={showInvitationsConfirm}
+        onClose={() => setShowInvitationsConfirm(false)}
+        title={edition.status === 'configured' ? "Envoyer les invitations et ouvrir les inscriptions" : "Envoyer les invitations"}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-700">
+            {edition.status === 'configured' ? (
+              <>L'édition passera en statut <strong>Inscriptions ouvertes</strong> et les emails d'invitation seront envoyés aux déposants qui ne les ont pas encore reçus.</>
+            ) : (
+              <>Les emails d'invitation seront envoyés aux déposants qui ne les ont pas encore reçus.</>
+            )}
+          </p>
+          {importStats && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+              <p><strong>{importStats.pendingInvitations ?? 0}</strong> invitation(s) en attente d'envoi</p>
+              <p className="text-xs text-blue-600 mt-1">
+                Les nouveaux utilisateurs recevront un lien d'activation. Les utilisateurs existants recevront une notification.
+              </p>
+            </div>
+          )}
+          {edition.status === 'configured' && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
+              Cette action n'est possible que si aucune autre édition n'est déjà active.
+            </div>
+          )}
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowInvitationsConfirm(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="button"
+              disabled={sendInvitationsMutation.isPending}
+              isLoading={sendInvitationsMutation.isPending}
+              onClick={() => sendInvitationsMutation.mutate()}
+            >
+              {edition.status === 'configured' ? "Confirmer et ouvrir" : "Envoyer les invitations"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Open registrations confirmation modal (silent, no notifications) */}
+      <Modal
+        isOpen={showOpenRegistrationsConfirm}
+        onClose={() => setShowOpenRegistrationsConfirm(false)}
+        title="Ouvrir les inscriptions (sans notification)"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-700">
+            L'édition passera en statut <strong>Inscriptions ouvertes</strong> sans envoyer de notification aux déposants.
+            Vous pourrez envoyer les invitations séparément.
+          </p>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
+            Cette action n'est possible que si aucune autre édition n'est déjà active.
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowOpenRegistrationsConfirm(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="button"
+              disabled={openRegistrationsMutation.isPending}
+              isLoading={openRegistrationsMutation.isPending}
+              onClick={() => openRegistrationsMutation.mutate()}
+            >
+              Confirmer l'ouverture
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Revert to configured confirmation modal */}
+      <ConfirmModal
+        isOpen={showRevertToConfiguredConfirm}
+        onClose={() => setShowRevertToConfiguredConfirm(false)}
+        onConfirm={() => {
+          setShowRevertToConfiguredConfirm(false);
+          revertToConfiguredMutation.mutate();
+        }}
+        title="Revenir en configuration"
+        message="L'édition repassera en statut « Configurée ». Les déposants ne pourront plus déclarer leurs articles tant que les inscriptions ne seront pas ré-ouvertes."
+        variant="warning"
+        confirmLabel="Confirmer"
+      />
+
+      {/* Delete edition confirmation modal */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={() => {
+          setShowDeleteConfirm(false);
+          deleteMutation.mutate();
+        }}
+        title="Supprimer l'édition"
+        message={`Êtes-vous sûr de vouloir supprimer l'édition « ${edition?.name} » ? Cette action est irréversible.`}
+        variant="danger"
+        confirmLabel="Supprimer"
+      />
     </div>
   );
 }

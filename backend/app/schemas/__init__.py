@@ -26,15 +26,13 @@ from app.schemas.auth import (
 )
 from app.schemas.billetweb import (
     BilletwebImportLogResponse,
-    BilletwebImportOptions,
-    BilletwebImportResponse,
-    BilletwebImportResult,
     BilletwebPreviewResponse,
     BilletwebPreviewStats,
     BilletwebRowError,
     EditionDepositorResponse,
     EditionDepositorsListResponse,
     EditionDepositorWithUserResponse,
+    ManualDepositorCreateRequest,
 )
 from app.schemas.common import ErrorResponse, MessageResponse, PaginatedResponse
 from app.schemas.deposit_slot import (
@@ -140,9 +138,6 @@ __all__ = [
     "PasswordResetRequest",
     "PasswordReset",
     # Billetweb
-    "BilletwebImportOptions",
-    "BilletwebImportResponse",
-    "BilletwebImportResult",
     "BilletwebImportLogResponse",
     "BilletwebPreviewResponse",
     "BilletwebPreviewStats",
@@ -150,6 +145,7 @@ __all__ = [
     "EditionDepositorResponse",
     "EditionDepositorWithUserResponse",
     "EditionDepositorsListResponse",
+    "ManualDepositorCreateRequest",
     # Common
     "PaginatedResponse",
     "ErrorResponse",

@@ -172,13 +172,13 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
         <div className="bg-white rounded-lg shadow p-4">
           <p className="text-sm text-gray-500">Brouillons</p>
           <p className="text-2xl font-bold text-gray-600">
-            {editions.filter((e) => e.status === 'draft').length}
+            {editions.filter((e) => e.status === 'draft' || e.status === 'configured').length}
           </p>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
           <p className="text-sm text-gray-500">En cours</p>
           <p className="text-2xl font-bold text-green-600">
-            {editions.filter((e) => e.status === 'in_progress').length}
+            {editions.filter((e) => e.status === 'registrations_open' || e.status === 'in_progress').length}
           </p>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
@@ -270,7 +270,7 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
               <tbody className="bg-white divide-y divide-gray-200">
                 {editions.map((edition) => {
                   const statusInfo = STATUS_LABELS[edition.status];
-                  const canDelete = isAdmin && edition.status === 'draft';
+                  const canDelete = isAdmin && (edition.status === 'draft' || edition.status === 'configured');
 
                   return (
                     <tr key={edition.id} className="hover:bg-gray-50">

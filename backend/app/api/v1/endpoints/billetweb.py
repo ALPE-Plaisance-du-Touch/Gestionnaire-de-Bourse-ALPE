@@ -1,32 +1,23 @@
-"""Billetweb import API endpoints."""
+"""Billetweb API endpoints."""
 
 import math
 from typing import Annotated
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.dependencies import DBSession, require_role
-from app.exceptions import EditionNotFoundError
 from app.models import User
-from app.models.edition import EditionStatus
 from app.repositories import BilletwebImportLogRepository, EditionDepositorRepository, EditionRepository
+from app.repositories.deposit_slot import DepositSlotRepository
+from app.repositories.user import UserRepository
 from app.schemas.billetweb import (
     BilletwebImportLogResponse,
-    BilletwebImportOptions,
-    BilletwebImportResponse,
-    BilletwebImportResult,
-    BilletwebPreviewResponse,
     EditionDepositorWithUserResponse,
     EditionDepositorsListResponse,
+    ManualDepositorCreateRequest,
 )
-from app.services.billetweb_import import BilletwebImportService
 
 router = APIRouter()
-
-# Maximum file size: 5 MB
-MAX_FILE_SIZE = 5 * 1024 * 1024
-# Maximum rows: 500
-MAX_ROWS = 500
 
 
 async def get_edition_or_404(db: DBSession, edition_id: str):
@@ -39,159 +30,6 @@ async def get_edition_or_404(db: DBSession, edition_id: str):
             detail=f"Edition {edition_id} not found",
         )
     return edition
-
-
-@router.post(
-    "/preview",
-    response_model=BilletwebPreviewResponse,
-    summary="Preview Billetweb import",
-    description="Parse and validate a Billetweb CSV file without importing. Returns statistics and errors.",
-)
-async def preview_billetweb_import(
-    edition_id: str,
-    db: DBSession,
-    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
-    file: UploadFile = File(..., description="Billetweb CSV export file (.csv)"),
-):
-    """Preview a Billetweb import file.
-
-    Validates the file and returns:
-    - Statistics (total rows, paid/valid, new/existing depositors)
-    - Any validation errors
-    - Whether the import can proceed
-    """
-    # Validate file type
-    if not file.filename or not file.filename.endswith(".csv"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid file type. Only .csv files are accepted.",
-        )
-
-    # Read file content
-    content = await file.read()
-
-    # Validate file size
-    if len(content) > MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"File too large. Maximum size is {MAX_FILE_SIZE // (1024 * 1024)} MB.",
-        )
-
-    # Get edition
-    edition = await get_edition_or_404(db, edition_id)
-
-    # Check edition status
-    if edition.status != EditionStatus.CONFIGURED.value:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Cannot import to edition in status '{edition.status}'. Edition must be in 'configured' status.",
-        )
-
-    # Preview import
-    service = BilletwebImportService(db)
-    result = await service.preview(edition, content, file.filename)
-
-    # Check row count
-    if result.stats.total_rows > MAX_ROWS:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"File contains too many rows ({result.stats.total_rows}). Maximum is {MAX_ROWS} rows.",
-        )
-
-    return result
-
-
-@router.post(
-    "/import",
-    response_model=BilletwebImportResponse,
-    summary="Import Billetweb file",
-    description="Import depositors from a Billetweb CSV file. Sends invitations to new depositors.",
-)
-async def import_billetweb(
-    edition_id: str,
-    db: DBSession,
-    background_tasks: BackgroundTasks,
-    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
-    file: UploadFile = File(..., description="Billetweb CSV export file (.csv)"),
-    ignore_errors: bool = Query(False, description="Skip rows with errors instead of failing"),
-    send_emails: bool = Query(True, description="Send invitation/notification emails"),
-):
-    """Import depositors from a Billetweb file.
-
-    This endpoint:
-    1. Validates the file
-    2. Associates existing depositors with the edition
-    3. Creates new user accounts with invitations
-    4. Sends emails (if enabled)
-    5. Returns import statistics
-    """
-    # Validate file type
-    if not file.filename or not file.filename.endswith(".csv"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid file type. Only .csv files are accepted.",
-        )
-
-    # Read file content
-    content = await file.read()
-    file_size = len(content)
-
-    # Validate file size
-    if file_size > MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"File too large. Maximum size is {MAX_FILE_SIZE // (1024 * 1024)} MB.",
-        )
-
-    # Get edition
-    edition = await get_edition_or_404(db, edition_id)
-
-    # Check edition status
-    if edition.status != EditionStatus.CONFIGURED.value:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Cannot import to edition in status '{edition.status}'. Edition must be in 'configured' status.",
-        )
-
-    # Import
-    service = BilletwebImportService(db)
-    try:
-        import_log, invitations_sent, notifications_sent = await service.import_file(
-            edition=edition,
-            file_content=content,
-            filename=file.filename,
-            file_size=file_size,
-            imported_by=current_user,
-            ignore_errors=ignore_errors,
-            send_emails=send_emails,
-            background_tasks=background_tasks,
-        )
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=str(e),
-        )
-
-    # Calculate skipped rows
-    rows_skipped = (
-        import_log.rows_skipped_invalid
-        + import_log.rows_skipped_unpaid
-        + import_log.rows_skipped_duplicate
-        + import_log.rows_skipped_already_registered
-    )
-
-    return BilletwebImportResponse(
-        success=True,
-        message=f"Import réussi : {import_log.existing_depositors_linked} déposants existants associés, {import_log.new_depositors_created} nouvelles invitations créées.",
-        result=BilletwebImportResult(
-            import_log_id=import_log.id,
-            existing_depositors_linked=import_log.existing_depositors_linked,
-            new_depositors_created=import_log.new_depositors_created,
-            invitations_sent=invitations_sent,
-            notifications_sent=notifications_sent,
-            rows_skipped=rows_skipped,
-        ),
-    )
 
 
 @router.get(
@@ -257,6 +95,98 @@ async def list_edition_depositors(
     )
 
 
+@router.post(
+    "/depositors/manual",
+    response_model=EditionDepositorWithUserResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Manually add depositor",
+    description="Manually add a depositor to an edition with a deposit slot.",
+)
+async def create_manual_depositor(
+    edition_id: str,
+    request: ManualDepositorCreateRequest,
+    db: DBSession,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Manually add a depositor to an edition."""
+    edition = await get_edition_or_404(db, edition_id)
+
+    if edition.is_closed:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Impossible de modifier une édition clôturée",
+        )
+
+    # Verify deposit slot exists and belongs to edition
+    slot_repo = DepositSlotRepository(db)
+    slot = await slot_repo.get_by_id(request.deposit_slot_id)
+    if not slot or slot.edition_id != edition_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Créneau de dépôt introuvable",
+        )
+
+    # Verify slot not full
+    depositor_repo = EditionDepositorRepository(db)
+    slot_count = await depositor_repo.count_by_slot(slot.id)
+    if slot_count >= slot.max_capacity:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Ce créneau est complet",
+        )
+
+    # Find or create user
+    user_repo = UserRepository(db)
+    user = await user_repo.get_by_email(request.email)
+    if not user:
+        user = await user_repo.create(
+            email=request.email,
+            first_name=request.first_name,
+            last_name=request.last_name,
+            role_name="depositor",
+            phone=request.phone,
+            is_active=False,
+        )
+
+    # Verify user not already registered
+    if await depositor_repo.exists(edition_id, user.id):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Ce déposant est déjà inscrit à cette édition",
+        )
+
+    # Create edition depositor
+    dep = await depositor_repo.create(
+        edition_id=edition_id,
+        user_id=user.id,
+        deposit_slot_id=request.deposit_slot_id,
+        list_type=request.list_type,
+        postal_code=request.postal_code,
+        city=request.city,
+    )
+
+    return EditionDepositorWithUserResponse(
+        id=dep.id,
+        edition_id=dep.edition_id,
+        user_id=dep.user_id,
+        deposit_slot_id=dep.deposit_slot_id,
+        list_type=dep.list_type,
+        billetweb_order_ref=dep.billetweb_order_ref,
+        billetweb_session=dep.billetweb_session,
+        billetweb_tarif=dep.billetweb_tarif,
+        imported_at=dep.imported_at,
+        postal_code=dep.postal_code,
+        city=dep.city,
+        created_at=dep.created_at,
+        user_email=user.email,
+        user_first_name=user.first_name,
+        user_last_name=user.last_name,
+        user_phone=user.phone,
+        slot_start_datetime=slot.start_datetime,
+        slot_end_datetime=slot.end_datetime,
+    )
+
+
 @router.get(
     "/import-logs",
     response_model=list[BilletwebImportLogResponse],
@@ -302,9 +232,15 @@ async def get_import_stats(
     total_imported = await import_repo.get_total_imported_for_edition(edition_id)
     latest_import = await import_repo.get_latest_import(edition_id)
 
+    # Count depositors who haven't received their invitation email yet
+    from app.services import EditionService
+    edition_service = EditionService(db)
+    pending_invitations = await edition_service.get_pending_invitations_count(edition_id)
+
     return {
         "total_depositors": total_depositors,
         "total_imports": total_imports,
         "total_imported": total_imported,
+        "pending_invitations": pending_invitations,
         "latest_import": BilletwebImportLogResponse.model_validate(latest_import) if latest_import else None,
     }
