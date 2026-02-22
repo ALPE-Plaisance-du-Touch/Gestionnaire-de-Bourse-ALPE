@@ -231,7 +231,7 @@ export function MyListsPage() {
               </svg>
             </div>
             <p className="text-gray-500 mb-4">Vous n'avez pas encore créé de liste.</p>
-            <Button onClick={handleCreateList} disabled={createMutation.isPending}>
+            <Button onClick={handleCreateList} disabled={!canCreateMore || createMutation.isPending}>
               Créer ma première liste
             </Button>
           </div>
