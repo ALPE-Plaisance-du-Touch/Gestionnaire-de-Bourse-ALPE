@@ -29,7 +29,6 @@ interface ArticleApiResponse {
   isLot: boolean;
   lotQuantity: number | null;
   status: string;
-  conformityCertified: boolean;
   barcode: string | null;
   notes: string | null;
   itemListId: string;
@@ -93,7 +92,6 @@ function transformArticle(data: ArticleApiResponse): Article {
     isLot: data.isLot,
     lotQuantity: data.lotQuantity,
     status: data.status as ArticleStatus,
-    conformityCertified: data.conformityCertified,
     barcode: data.barcode,
     notes: data.notes,
     itemListId: data.itemListId,
@@ -151,7 +149,6 @@ export const articlesApi = {
         gender: data.gender,
         is_lot: data.isLot,
         lot_quantity: data.lotQuantity,
-        conformity_certified: data.conformityCertified,
       }
     );
     return transformArticle(response.data);
@@ -177,8 +174,6 @@ export const articlesApi = {
     if (data.gender !== undefined) payload.gender = data.gender;
     if (data.isLot !== undefined) payload.is_lot = data.isLot;
     if (data.lotQuantity !== undefined) payload.lot_quantity = data.lotQuantity;
-    if (data.conformityCertified !== undefined) payload.conformity_certified = data.conformityCertified;
-
     const response = await apiClient.put<ArticleApiResponse>(
       `/v1/depositor/lists/${listId}/articles/${articleId}`,
       payload

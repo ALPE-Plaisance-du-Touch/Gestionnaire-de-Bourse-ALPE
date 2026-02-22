@@ -134,12 +134,6 @@ class ArticleCreate(BaseModel):
     is_lot: bool = False
     lot_quantity: int | None = Field(None, ge=1, le=MAX_LOT_SIZE)
 
-    # Conformity certification
-    conformity_certified: bool = Field(
-        default=False,
-        description="Depositor certifies article is clean and in good condition",
-    )
-
     @field_validator("price")
     @classmethod
     def validate_price_minimum(cls, v: Decimal) -> Decimal:
@@ -175,8 +169,6 @@ class ArticleUpdate(BaseModel):
     is_lot: bool | None = None
     lot_quantity: int | None = Field(None, ge=1, le=MAX_LOT_SIZE)
 
-    # Can update certification
-    conformity_certified: bool | None = None
 
 
 class ArticleResponse(BaseModel):
@@ -199,7 +191,6 @@ class ArticleResponse(BaseModel):
     lot_quantity: int | None = None
 
     status: str
-    conformity_certified: bool
     barcode: str | None = None
     notes: str | None = None
 

@@ -42,7 +42,6 @@ export interface Article {
   isLot: boolean;
   lotQuantity: number | null;
   status: ArticleStatus;
-  conformityCertified: boolean;
   barcode: string | null;
   notes: string | null;
   itemListId: string;
@@ -60,7 +59,6 @@ export interface CreateArticleRequest {
   gender?: ArticleGender;
   isLot?: boolean;
   lotQuantity?: number;
-  conformityCertified: boolean;
 }
 
 export interface UpdateArticleRequest {
@@ -74,7 +72,6 @@ export interface UpdateArticleRequest {
   gender?: ArticleGender;
   isLot?: boolean;
   lotQuantity?: number;
-  conformityCertified?: boolean;
 }
 
 /**

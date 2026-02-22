@@ -253,7 +253,6 @@ async def get_list_detail(
                     "is_lot": a.is_lot,
                     "lot_quantity": a.lot_quantity,
                     "status": a.status,
-                    "conformity_certified": a.conformity_certified,
                     "barcode": a.barcode,
                     "notes": a.notes,
                     "item_list_id": a.item_list_id,

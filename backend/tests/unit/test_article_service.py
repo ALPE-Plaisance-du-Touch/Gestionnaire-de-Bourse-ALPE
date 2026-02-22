@@ -191,7 +191,7 @@ class TestValidateArticleConstraints:
             category=ArticleCategory.CLOTHING,
             description="Test",
             price=Decimal("5.00"),
-            conformity_certified=True,
+
         )
 
         with pytest.raises(MaxArticlesExceededError):
@@ -208,7 +208,7 @@ class TestValidateArticleConstraints:
             category=ArticleCategory.CLOTHING,
             description="Test",
             price=Decimal("5.00"),
-            conformity_certified=True,
+
         )
 
         with pytest.raises(MaxClothingExceededError):
@@ -226,7 +226,7 @@ class TestValidateArticleConstraints:
             subcategory="car_seat",
             description="Test",
             price=Decimal("50.00"),
-            conformity_certified=True,
+
         )
 
         with pytest.raises(BlacklistedCategoryError):
@@ -245,7 +245,7 @@ class TestValidateArticleConstraints:
             subcategory="coat",  # Max 1 per list
             description="Test",
             price=Decimal("20.00"),
-            conformity_certified=True,
+
         )
 
         with pytest.raises(CategoryLimitExceededError):
@@ -263,7 +263,7 @@ class TestValidateArticleConstraints:
             category=ArticleCategory.CLOTHING,
             description="Test",
             price=Decimal("5.00"),
-            conformity_certified=True,
+
         )
 
         # Should not raise
@@ -296,7 +296,7 @@ class TestAddArticle:
             category=ArticleCategory.CLOTHING,
             description="Test article",
             price=Decimal("5.00"),
-            conformity_certified=True,
+
         )
 
         result = await service.add_article(

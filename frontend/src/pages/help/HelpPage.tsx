@@ -34,21 +34,10 @@ export function HelpPage() {
             <li><strong>Prêt à être vendu :</strong> l'article doit être dans un état présentable pour un acheteur</li>
           </ul>
 
-          <h3 className="text-base font-medium text-gray-900 mt-4">Comment certifier un article ?</h3>
+          <h3 className="text-base font-medium text-gray-900 mt-4">Certification lors de la validation</h3>
           <p className="text-sm text-gray-700">
-            Lors de l'ajout ou la modification d'un article, une case à cocher
-            {' '}<em>« Je certifie que cet article est propre et en bon état »</em>{' '}
-            est présente dans le formulaire. En cochant cette case, vous attestez que l'article
-            répond aux critères de conformité listés ci-dessus.
-          </p>
-
-          <h3 className="text-base font-medium text-gray-900 mt-4">Pourquoi est-ce obligatoire ?</h3>
-          <p className="text-sm text-gray-700">
-            La certification de tous les articles est requise pour pouvoir valider votre liste.
-            Tant que tous les articles ne sont pas certifiés conformes, le bouton de validation reste inactif.
-            Cette étape permet de s'assurer que vous avez vérifié chaque article avant de le confier à la bourse.
-          </p>
-          <p className="text-sm text-gray-700">
+            Lors de la validation de votre liste, vous devez cocher une case certifiant que
+            tous vos articles sont propres, en bon état et conformes aux conditions de vente.
             Les articles non conformes découverts lors du dépôt pourront être refusés par les bénévoles.
           </p>
         </section>

@@ -252,14 +252,6 @@ class ItemListService:
                 field="articles",
             )
 
-        # Check all articles have conformity certified
-        for article in item_list.articles:
-            if not article.conformity_certified:
-                raise ValidationError(
-                    "Tous les articles doivent avoir la certification de conformité cochée",
-                    field="conformity_certified",
-                )
-
         return await self.repository.validate_list(item_list)
 
     async def delete_list(self, list_id: str, depositor: User) -> None:

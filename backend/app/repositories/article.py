@@ -138,7 +138,6 @@ class ArticleRepository:
         gender: str | None = None,
         is_lot: bool = False,
         lot_quantity: int | None = None,
-        conformity_certified: bool = False,
     ) -> Article:
         """Create a new article."""
         article = Article(
@@ -154,7 +153,6 @@ class ArticleRepository:
             is_lot=is_lot,
             lot_quantity=lot_quantity,
             status=ArticleStatus.DRAFT.value,
-            conformity_certified=conformity_certified,
             item_list_id=item_list.id,
         )
 
