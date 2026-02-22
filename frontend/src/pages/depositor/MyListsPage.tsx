@@ -327,8 +327,8 @@ export function MyListsPage() {
         <ul className="text-sm text-blue-800 space-y-1">
           <li>1. Créez une liste et ajoutez vos articles (max 24 articles, dont 12 vêtements)</li>
           <li>2. Validez votre liste une fois tous les articles saisis</li>
-          <li>3. Imprimez vos étiquettes et fixez-les sur chaque article</li>
-          <li>4. Déposez vos articles lors des créneaux de dépôt</li>
+          <li>3. Déposez vos articles lors des créneaux de dépôt</li>
+          <li>4. Les bénévoles s'occupent de la vente de vos articles</li>
           <li>5. Récupérez vos invendus puis recevez le paiement de vos ventes</li>
         </ul>
         <p className="mt-3 text-xs text-blue-700">
