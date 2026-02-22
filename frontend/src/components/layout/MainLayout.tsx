@@ -23,15 +23,15 @@ export function MainLayout({ children }: MainLayoutProps) {
       </main>
       <footer className="bg-gray-50 border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-center items-center gap-4 text-sm text-gray-500">
+          <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1 text-sm text-gray-500">
             <span>
               &copy; {new Date().getFullYear()} ALPE Plaisance du Touch.
               Tous droits réservés.
             </span>
-            <Link to="/aide" className="hover:text-gray-700 underline">
+            <Link to="/aide" className="hover:text-gray-700 underline py-2">
               Aide
             </Link>
-            <Link to="/privacy" className="hover:text-gray-700 underline">
+            <Link to="/privacy" className="hover:text-gray-700 underline py-2">
               Politique de confidentialité
             </Link>
           </div>

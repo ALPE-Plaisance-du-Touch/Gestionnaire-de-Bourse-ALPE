@@ -131,7 +131,7 @@ export function LabelsManagementPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb */}
       <nav className="mb-6">
-        <ol className="flex items-center space-x-2 text-sm text-gray-500">
+        <ol className="flex flex-wrap items-center space-x-2 text-sm text-gray-500">
           <li><Link to="/editions" className="hover:text-gray-700">Éditions</Link></li>
           <li>/</li>
           <li><Link to={`/editions/${editionId}`} className="hover:text-gray-700">{edition?.name || '...'}</Link></li>

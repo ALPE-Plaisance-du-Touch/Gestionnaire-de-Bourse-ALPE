@@ -87,7 +87,18 @@ export function Header() {
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
+  // Block body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isMobileMenuOpen]);
+
   return (
+    <>
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
@@ -204,7 +215,7 @@ export function Header() {
             {isAuthenticated && (
               <button
                 type="button"
-                className="md:hidden p-2 text-gray-600 hover:text-gray-900 rounded-md"
+                className="md:hidden p-3 text-gray-600 hover:text-gray-900 rounded-md"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-menu"
@@ -261,86 +272,114 @@ export function Header() {
           </div>
         </div>
       </div>
+    </header>
 
-      {/* Mobile menu */}
-      {isMobileMenuOpen && isAuthenticated && (
-        <div id="mobile-menu" className="md:hidden border-t border-gray-200 bg-white">
-          <nav className="px-4 py-3 space-y-1" aria-label="Navigation mobile">
-            {isManagerOrAdmin && (
+    {/* Mobile menu backdrop */}
+    {isMobileMenuOpen && isAuthenticated && (
+      <div
+        className="fixed inset-0 bg-black/50 z-40 md:hidden"
+        onClick={closeMobileMenu}
+        aria-hidden="true"
+      />
+    )}
+
+    {/* Mobile menu drawer */}
+    {isAuthenticated && (
+      <div
+        id="mobile-menu"
+        className={`fixed inset-y-0 right-0 w-64 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out md:hidden ${
+          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
+          <span className="font-semibold text-gray-900">Menu</span>
+          <button
+            type="button"
+            onClick={closeMobileMenu}
+            className="p-2 text-gray-500 hover:text-gray-900 rounded-md"
+            aria-label="Fermer le menu"
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <nav className="px-4 py-4 space-y-1 overflow-y-auto" aria-label="Navigation mobile">
+          {isManagerOrAdmin && (
+            <Link
+              to="/editions"
+              className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+              onClick={closeMobileMenu}
+            >
+              Éditions
+            </Link>
+          )}
+          <Link
+            to="/lists"
+            className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+            onClick={closeMobileMenu}
+          >
+            Mes listes
+          </Link>
+
+          {isManagerOrAdmin && (
+            <>
+              <div className="border-t border-gray-200 my-2" />
+              <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Administration
+              </p>
               <Link
-                to="/editions"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                to="/admin"
+                className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
                 onClick={closeMobileMenu}
               >
-                Éditions
+                Tableau de bord
               </Link>
-            )}
-            <Link
-              to="/lists"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-              onClick={closeMobileMenu}
-            >
-              Mes listes
-            </Link>
+              <Link
+                to="/admin/invitations"
+                className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                onClick={closeMobileMenu}
+              >
+                Invitations
+              </Link>
+              {user?.role === 'administrator' && (
+                <>
+                  <Link
+                    to="/admin/users"
+                    className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                    onClick={closeMobileMenu}
+                  >
+                    Utilisateurs
+                  </Link>
+                  <Link
+                    to="/admin/audit-logs"
+                    className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                    onClick={closeMobileMenu}
+                  >
+                    Journal d'audit
+                  </Link>
+                </>
+              )}
+            </>
+          )}
 
-            {isManagerOrAdmin && (
-              <>
-                <div className="border-t border-gray-200 my-2" />
-                <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Administration
-                </p>
-                <Link
-                  to="/admin"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                  onClick={closeMobileMenu}
-                >
-                  Tableau de bord
-                </Link>
-                <Link
-                  to="/admin/invitations"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                  onClick={closeMobileMenu}
-                >
-                  Invitations
-                </Link>
-                {user?.role === 'administrator' && (
-                  <>
-                    <Link
-                      to="/admin/users"
-                      className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                      onClick={closeMobileMenu}
-                    >
-                      Utilisateurs
-                    </Link>
-                    <Link
-                      to="/admin/audit-logs"
-                      className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                      onClick={closeMobileMenu}
-                    >
-                      Journal d'audit
-                    </Link>
-                  </>
-                )}
-              </>
-            )}
-
-            <div className="border-t border-gray-200 my-2" />
-            <Link
-              to="/profile"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-              onClick={closeMobileMenu}
-            >
-              Mon profil
-            </Link>
-            <button
-              onClick={() => { closeMobileMenu(); handleLogout(); }}
-              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-            >
-              Déconnexion
-            </button>
-          </nav>
-        </div>
-      )}
-    </header>
+          <div className="border-t border-gray-200 my-2" />
+          <Link
+            to="/profile"
+            className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+            onClick={closeMobileMenu}
+          >
+            Mon profil
+          </Link>
+          <button
+            onClick={() => { closeMobileMenu(); handleLogout(); }}
+            className="block w-full text-left px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+          >
+            Déconnexion
+          </button>
+        </nav>
+      </div>
+    )}
+    </>
   );
 }

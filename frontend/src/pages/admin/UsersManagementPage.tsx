@@ -185,7 +185,47 @@ export function UsersManagementPage() {
               Aucun utilisateur trouvé.
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            {/* Mobile card layout */}
+            <div className="md:hidden divide-y divide-gray-200">
+              {users.map((user) => {
+                const roleInfo = ROLE_LABELS[user.role] || ROLE_LABELS.depositor;
+                return (
+                  <div key={user.id} className="p-4 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="font-medium text-gray-900">{user.firstName} {user.lastName}</div>
+                        <div className="text-sm text-gray-500 truncate">{user.email}</div>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${roleInfo.className}`}>
+                          {roleInfo.label}
+                        </span>
+                        <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
+                          user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {user.isActive ? 'Actif' : 'Inactif'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <span>Résident : {user.isLocalResident ? 'Oui' : 'Non'}</span>
+                      <span>Connexion : {formatDate(user.lastLoginAt)}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => openEditModal(user)}
+                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                    >
+                      Modifier
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -242,6 +282,7 @@ export function UsersManagementPage() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
 
           {/* Pagination */}

@@ -362,11 +362,11 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
 
       {/* Selection bar */}
       {selectedIds.size > 0 && (
-        <div className="mb-4 bg-blue-50 border border-blue-200 px-4 py-3 rounded-lg flex justify-between items-center">
+        <div className="mb-4 bg-blue-50 border border-blue-200 px-4 py-3 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <span className="text-blue-700">
             {selectedIds.size} invitation{selectedIds.size > 1 ? 's' : ''} sélectionnée{selectedIds.size > 1 ? 's' : ''}
           </span>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -415,7 +415,91 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* Mobile card layout */}
+          <div className="md:hidden">
+            <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 border-b border-gray-200">
+              <input
+                type="checkbox"
+                checked={isAllSelected}
+                ref={(el) => { if (el) el.indeterminate = isSomeSelected; }}
+                onChange={handleSelectAll}
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                aria-label="Sélectionner tout"
+              />
+              <span className="text-xs text-gray-500">{invitations.length} invitation{invitations.length > 1 ? 's' : ''}</span>
+            </div>
+            <div className="divide-y divide-gray-200">
+              {invitations.map((invitation) => {
+                const statusInfo = STATUS_LABELS[invitation.status] || {
+                  label: invitation.status,
+                  className: 'bg-gray-100 text-gray-800',
+                };
+                const canResend =
+                  invitation.status === 'pending' ||
+                  invitation.status === 'sent' ||
+                  invitation.status === 'expired';
+                return (
+                  <div key={invitation.id} className="p-4 space-y-2">
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(invitation.id)}
+                        onChange={() => handleSelectOne(invitation.id)}
+                        className="h-4 w-4 mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        aria-label={`Sélectionner ${invitation.email}`}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="font-medium text-gray-900 text-sm truncate">{invitation.email}</div>
+                          <span className={`inline-flex shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full ${statusInfo.className}`}>
+                            {statusInfo.label}
+                          </span>
+                        </div>
+                        {(invitation.firstName || invitation.lastName) && (
+                          <div className="text-sm text-gray-500">
+                            {`${invitation.firstName || ''} ${invitation.lastName || ''}`.trim()}
+                          </div>
+                        )}
+                        <div className="text-xs text-gray-400 mt-1">
+                          Créée le {formatShortDate(invitation.createdAt)}
+                          {invitation.status === 'activated' && invitation.usedAt
+                            ? ` · Activée le ${formatShortDate(invitation.usedAt)}`
+                            : invitation.expiresAt
+                              ? ` · Expire le ${formatShortDate(invitation.expiresAt)}`
+                              : ''}
+                        </div>
+                        <div className="flex items-center gap-2 mt-2">
+                          {canResend && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setInvitationToResend(invitation)}
+                              disabled={resendMutation.isPending}
+                            >
+                              Relancer
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteClick(invitation)}
+                            disabled={deleteMutation.isPending}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            Supprimer
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -529,6 +613,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
 

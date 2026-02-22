@@ -64,3 +64,6 @@ backups/
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Audit screenshots
+audit-screenshots/

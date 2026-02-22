@@ -97,7 +97,7 @@ export function LoginPage() {
           <div className="flex items-center justify-between">
             <Link
               to="/forgot-password"
-              className="text-sm text-blue-600 hover:text-blue-500"
+              className="text-sm text-blue-600 hover:text-blue-500 py-2 inline-block"
             >
               Mot de passe oublié ?
             </Link>
@@ -116,7 +116,7 @@ export function LoginPage() {
           Vous avez reçu une invitation ?{' '}
           <Link
             to="/activate"
-            className="text-blue-600 hover:text-blue-500 font-medium"
+            className="text-blue-600 hover:text-blue-500 font-medium py-2 inline-block"
           >
             Activer mon compte
           </Link>

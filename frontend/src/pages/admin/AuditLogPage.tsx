@@ -108,7 +108,40 @@ export function AuditLogPage() {
 
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile card layout */}
+        {isLoading ? (
+          <div className="md:hidden p-8 text-center text-gray-500">Chargement...</div>
+        ) : !data?.items.length ? (
+          <div className="md:hidden p-8 text-center text-gray-500">Aucune entrée de journal trouvée.</div>
+        ) : (
+          <div className="md:hidden divide-y divide-gray-200">
+            {data.items.map((log) => (
+              <div key={log.id} className="p-4 space-y-1">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="text-sm font-medium text-gray-900">
+                    {ACTION_LABELS[log.action] || log.action}
+                  </div>
+                  <span className={`inline-flex shrink-0 px-2 py-0.5 text-xs font-medium rounded-full ${RESULT_STYLES[log.result] || 'bg-gray-100 text-gray-800'}`}>
+                    {log.result}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500">{formatDate(log.timestamp)}</div>
+                <div className="text-sm text-gray-600">
+                  {log.userEmail || '-'}{log.role ? ` (${log.role})` : ''}
+                </div>
+                {log.ipAddress && (
+                  <div className="text-xs text-gray-400 font-mono">{log.ipAddress}</div>
+                )}
+                {log.detail && (
+                  <div className="text-sm text-gray-600 break-words">{log.detail}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>

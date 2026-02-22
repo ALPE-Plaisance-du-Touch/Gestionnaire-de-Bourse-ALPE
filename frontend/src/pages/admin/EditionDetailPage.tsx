@@ -536,14 +536,14 @@ export function EditionDetailPage() {
           </svg>
           Retour aux éditions
         </Link>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{edition.name}</h1>
             <p className="mt-1 text-gray-600">
               Configurez les dates clés et les créneaux de dépôt.
             </p>
           </div>
-          <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${statusInfo.className}`}>
+          <span className={`inline-flex self-start sm:self-auto px-3 py-1 text-sm font-semibold rounded-full ${statusInfo.className}`}>
             {statusInfo.label}
           </span>
         </div>
