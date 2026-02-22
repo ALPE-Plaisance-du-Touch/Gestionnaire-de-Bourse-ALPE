@@ -49,6 +49,13 @@ export interface ManualDepositorCreateRequest {
   city?: string;
 }
 
+export interface DepositorUpdateRequest {
+  depositSlotId?: string;
+  listType?: ListType;
+  postalCode?: string;
+  city?: string;
+}
+
 // --- Import Log Types ---
 
 export interface BilletwebImportLog {

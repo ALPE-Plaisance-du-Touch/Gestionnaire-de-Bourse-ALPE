@@ -3,6 +3,7 @@ import type {
   EditionDepositorsListResponse,
   EditionDepositorWithUser,
   ManualDepositorCreateRequest,
+  DepositorUpdateRequest,
   BilletwebImportLog,
   BilletwebImportStats,
   ListType,
@@ -88,5 +89,31 @@ export const billetwebApi = {
       }
     );
     return response.data;
+  },
+
+  updateDepositor: async (
+    editionId: string,
+    depositorId: string,
+    request: DepositorUpdateRequest
+  ): Promise<EditionDepositorWithUser> => {
+    const response = await apiClient.put<EditionDepositorWithUser>(
+      `/v1/editions/${editionId}/billetweb/depositors/${depositorId}`,
+      {
+        deposit_slot_id: request.depositSlotId,
+        list_type: request.listType,
+        postal_code: request.postalCode,
+        city: request.city,
+      }
+    );
+    return response.data;
+  },
+
+  deleteDepositor: async (
+    editionId: string,
+    depositorId: string
+  ): Promise<void> => {
+    await apiClient.delete(
+      `/v1/editions/${editionId}/billetweb/depositors/${depositorId}`
+    );
   },
 };

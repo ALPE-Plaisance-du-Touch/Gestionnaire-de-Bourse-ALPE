@@ -1,15 +1,21 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { editionsApi, billetwebApi } from '@/api';
-import { Button } from '@/components/ui';
-import type { ListType } from '@/types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { editionsApi, billetwebApi, depositSlotsApi } from '@/api';
+import { Button, Modal, ConfirmModal, Select, Input } from '@/components/ui';
+import type { ListType, EditionDepositorWithUser, DepositorUpdateRequest } from '@/types';
 
 const LIST_TYPE_LABELS: Record<ListType, { label: string; className: string }> = {
   standard: { label: 'Standard', className: 'bg-gray-100 text-gray-800' },
   list_1000: { label: 'Liste 1000', className: 'bg-blue-100 text-blue-800' },
   list_2000: { label: 'Liste 2000', className: 'bg-purple-100 text-purple-800' },
 };
+
+const LIST_TYPE_OPTIONS = [
+  { value: 'standard', label: 'Standard' },
+  { value: 'list_1000', label: 'Liste 1000' },
+  { value: 'list_2000', label: 'Liste 2000' },
+];
 
 /**
  * Format a datetime string for display.
@@ -30,9 +36,18 @@ function formatDatetime(datetimeString: string | null): string {
 
 export function EditionDepositorsPage() {
   const { id } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [listTypeFilter, setListTypeFilter] = useState<ListType | ''>('');
   const limit = 20;
+
+  // Edit modal state
+  const [editingDepositor, setEditingDepositor] = useState<EditionDepositorWithUser | null>(null);
+  const [editForm, setEditForm] = useState<DepositorUpdateRequest>({});
+
+  // Delete modal state
+  const [deletingDepositor, setDeletingDepositor] = useState<EditionDepositorWithUser | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Fetch edition
   const { data: edition, isLoading: editionLoading } = useQuery({
@@ -52,6 +67,69 @@ export function EditionDepositorsPage() {
       }),
     enabled: !!id,
   });
+
+  // Fetch deposit slots for edit modal
+  const { data: slotsData } = useQuery({
+    queryKey: ['deposit-slots', id],
+    queryFn: () => depositSlotsApi.getDepositSlots(id!),
+    enabled: !!id && !!editingDepositor,
+  });
+
+  const isEditionLocked = edition?.status === 'closed' || edition?.status === 'archived';
+
+  // Update mutation
+  const updateMutation = useMutation({
+    mutationFn: (params: { depositorId: string; request: DepositorUpdateRequest }) =>
+      billetwebApi.updateDepositor(id!, params.depositorId, params.request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['edition-depositors', id] });
+      queryClient.invalidateQueries({ queryKey: ['deposit-slots', id] });
+      setEditingDepositor(null);
+    },
+  });
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: (depositorId: string) => billetwebApi.deleteDepositor(id!, depositorId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['edition-depositors', id] });
+      queryClient.invalidateQueries({ queryKey: ['deposit-slots', id] });
+      setDeletingDepositor(null);
+      setDeleteError(null);
+    },
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : 'Erreur lors de la suppression';
+      setDeleteError(message);
+    },
+  });
+
+  function openEditModal(depositor: EditionDepositorWithUser) {
+    setEditingDepositor(depositor);
+    setEditForm({
+      depositSlotId: depositor.depositSlotId ?? undefined,
+      listType: depositor.listType,
+      postalCode: depositor.postalCode ?? undefined,
+      city: depositor.city ?? undefined,
+    });
+  }
+
+  function handleEditSubmit() {
+    if (!editingDepositor) return;
+    updateMutation.mutate({
+      depositorId: editingDepositor.id,
+      request: editForm,
+    });
+  }
+
+  function openDeleteModal(depositor: EditionDepositorWithUser) {
+    setDeletingDepositor(depositor);
+    setDeleteError(null);
+  }
+
+  function handleDeleteConfirm() {
+    if (!deletingDepositor) return;
+    deleteMutation.mutate(deletingDepositor.id);
+  }
 
   const isLoading = editionLoading || depositorsLoading;
 
@@ -83,6 +161,11 @@ export function EditionDepositorsPage() {
   const depositors = depositorsData?.items ?? [];
   const total = depositorsData?.total ?? 0;
   const totalPages = depositorsData?.pages ?? 1;
+
+  const slotOptions = (slotsData?.items ?? []).map((slot) => ({
+    value: slot.id,
+    label: `${formatDatetime(slot.startDatetime)} - ${formatDatetime(slot.endDatetime)} (${slot.registeredCount}/${slot.maxCapacity})`,
+  }));
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
@@ -154,12 +237,17 @@ export function EditionDepositorsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ville
                 </th>
+                {!isEditionLocked && (
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {depositors.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={isEditionLocked ? 6 : 7} className="px-6 py-12 text-center text-gray-500">
                     {listTypeFilter
                       ? 'Aucun déposant trouvé avec ce type de liste.'
                       : 'Aucun déposant inscrit pour cette édition.'}
@@ -204,6 +292,26 @@ export function EditionDepositorsPage() {
                             : '-'}
                         </div>
                       </td>
+                      {!isEditionLocked && (
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openEditModal(depositor)}
+                            >
+                              Modifier
+                            </Button>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              onClick={() => openDeleteModal(depositor)}
+                            >
+                              Supprimer
+                            </Button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   );
                 })
@@ -239,6 +347,82 @@ export function EditionDepositorsPage() {
           </div>
         )}
       </div>
+
+      {/* Edit Modal */}
+      <Modal
+        isOpen={!!editingDepositor}
+        onClose={() => setEditingDepositor(null)}
+        title={`Modifier - ${editingDepositor?.userFirstName} ${editingDepositor?.userLastName}`}
+        size="lg"
+      >
+        <div className="space-y-4">
+          <Select
+            label="Créneau de dépôt"
+            options={slotOptions}
+            value={editForm.depositSlotId ?? ''}
+            onChange={(e) => setEditForm({ ...editForm, depositSlotId: e.target.value || undefined })}
+            placeholder="Sélectionner un créneau"
+          />
+          <Select
+            label="Type de liste"
+            options={LIST_TYPE_OPTIONS}
+            value={editForm.listType ?? 'standard'}
+            onChange={(e) => setEditForm({ ...editForm, listType: e.target.value as ListType })}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Code postal"
+              value={editForm.postalCode ?? ''}
+              onChange={(e) => setEditForm({ ...editForm, postalCode: e.target.value || undefined })}
+              maxLength={10}
+            />
+            <Input
+              label="Ville"
+              value={editForm.city ?? ''}
+              onChange={(e) => setEditForm({ ...editForm, city: e.target.value || undefined })}
+              maxLength={100}
+            />
+          </div>
+          {updateMutation.isError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">
+              {updateMutation.error instanceof Error
+                ? updateMutation.error.message
+                : 'Erreur lors de la modification'}
+            </div>
+          )}
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="outline" onClick={() => setEditingDepositor(null)} disabled={updateMutation.isPending}>
+              Annuler
+            </Button>
+            <Button variant="primary" onClick={handleEditSubmit} isLoading={updateMutation.isPending}>
+              Enregistrer
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!deletingDepositor}
+        onClose={() => { setDeletingDepositor(null); setDeleteError(null); }}
+        onConfirm={handleDeleteConfirm}
+        title="Supprimer le déposant"
+        confirmLabel="Supprimer"
+        variant="danger"
+        isLoading={deleteMutation.isPending}
+      >
+        <p className="text-gray-600">
+          Voulez-vous vraiment supprimer <strong>{deletingDepositor?.userFirstName} {deletingDepositor?.userLastName}</strong> ({deletingDepositor?.userEmail}) de cette édition ?
+        </p>
+        <p className="text-sm text-gray-500 mt-2">
+          Cette action est irréversible. Le déposant devra être réinscrit manuellement.
+        </p>
+        {deleteError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm mt-3">
+            {deleteError}
+          </div>
+        )}
+      </ConfirmModal>
     </div>
   );
 }
