@@ -89,6 +89,19 @@ class EditionDepositorRepository:
 
         return depositor
 
+    async def update(
+        self,
+        depositor: EditionDepositor,
+        **kwargs,
+    ) -> EditionDepositor:
+        """Update an edition depositor with given fields."""
+        for key, value in kwargs.items():
+            if hasattr(depositor, key):
+                setattr(depositor, key, value)
+        await self.db.commit()
+        await self.db.refresh(depositor, ["user", "deposit_slot"])
+        return depositor
+
     async def delete(self, depositor: EditionDepositor) -> None:
         """Delete an edition depositor."""
         await self.db.delete(depositor)
