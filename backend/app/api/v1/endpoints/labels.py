@@ -11,7 +11,7 @@ from app.models import User
 from app.models.edition_depositor import EditionDepositor
 from app.repositories import EditionRepository, ItemListRepository
 from app.schemas import LabelGenerationRequest, LabelStatsResponse
-from app.schemas.label import LabelGenerationMode
+from app.schemas.label import LabelDepositorResponse, LabelGenerationMode
 from app.services.label import generate_labels_pdf, _format_slot_label
 
 router = APIRouter()
@@ -101,6 +101,35 @@ async def generate_labels(
         media_type="application/pdf",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+@router.get(
+    "/editions/{edition_id}/labels/depositors",
+    response_model=list[LabelDepositorResponse],
+    summary="List depositors with validated lists",
+    description="Get depositors who have validated item lists for label generation.",
+)
+async def list_label_depositors(
+    edition_id: str,
+    item_list_repo: ItemListRepoDep,
+    edition_repo: EditionRepoDep,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """List depositors with validated lists for label selection."""
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Édition non trouvée")
+
+    depositors = await item_list_repo.get_depositors_with_validated_lists(edition_id)
+    return [
+        LabelDepositorResponse(
+            id=d.id,
+            first_name=d.first_name,
+            last_name=d.last_name,
+            email=d.email,
+        )
+        for d in depositors
+    ]
 
 
 @router.get(

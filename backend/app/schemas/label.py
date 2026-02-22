@@ -40,6 +40,15 @@ class LabelGenerationRequest(BaseModel):
         return self
 
 
+class LabelDepositorResponse(BaseModel):
+    """A depositor with validated lists for label selection."""
+
+    id: str
+    first_name: str | None = None
+    last_name: str | None = None
+    email: str
+
+
 class LabelStatsResponse(BaseModel):
     """Response for label statistics."""
 

@@ -273,6 +273,21 @@ class ItemListRepository:
         result = await self.db.execute(query)
         return list(result.unique().scalars().all())
 
+    async def get_depositors_with_validated_lists(
+        self, edition_id: str
+    ) -> list[User]:
+        """Get unique depositors who have validated lists for an edition."""
+        query = (
+            select(User)
+            .join(ItemList, ItemList.depositor_id == User.id)
+            .where(ItemList.edition_id == edition_id)
+            .where(ItemList.is_validated == True)  # noqa: E712
+            .distinct()
+            .order_by(User.last_name, User.first_name)
+        )
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
+
     async def get_label_stats(self, edition_id: str) -> dict:
         """Get label generation statistics for an edition."""
         # Count validated lists
