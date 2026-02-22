@@ -18,10 +18,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 "Gestionnaire de Bourse ALPE" is a web application to manage second-hand goods sales events organized by ALPE Plaisance du Touch (France). The target audience is depositors (sellers) and volunteer staff.
 
-**Current status**: Development phase - v0.3 (Edition Management complete)
-**Next milestone**: v0.4 - Billetweb Import (US-008)
+**Current status**: Development phase - v0.19 complete (Billetweb API Integration)
+**Next milestone**: v1.0.0 - Production Release
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed progress tracking and task breakdown.
+See [PLAN.md](PLAN.md) for the unified roadmap and [DEVELOPMENT.md](DEVELOPMENT.md) for detailed task breakdown.
 
 ## Tech Stack
 
@@ -50,7 +50,7 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed progress tracking and task bre
 ├── backend/
 │   ├── app/
 │   │   ├── api/v1/          # API routes
-│   │   │   └── endpoints/   # auth, editions, deposit_slots, invitations
+│   │   │   └── endpoints/   # auth, editions, deposit_slots, invitations, billetweb, articles, labels, sales, payouts, users, audit, config
 │   │   ├── models/          # SQLAlchemy models (User, Edition, DepositSlot, etc.)
 │   │   ├── repositories/    # Data access layer
 │   │   ├── schemas/         # Pydantic schemas
@@ -64,19 +64,23 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed progress tracking and task bre
 │   └── Dockerfile
 ├── frontend/
 │   ├── src/
-│   │   ├── api/             # Axios client + API modules (auth, editions, invitations, deposit-slots)
-│   │   ├── components/      # UI components (ui/, auth/, editions/, invitations/)
+│   │   ├── api/             # Axios client + API modules (auth, editions, invitations, deposit-slots, articles, billetweb, labels, sales, payouts, users, config)
+│   │   ├── components/      # UI components (ui/, auth/, editions/, invitations/, articles/, billetweb/, layout/, payouts/, sales/)
 │   │   ├── contexts/        # React contexts (AuthContext)
-│   │   ├── hooks/           # Custom hooks (useConfig)
-│   │   ├── pages/           # Page components (auth/, admin/)
+│   │   ├── hooks/           # Custom hooks (useConfig, useNetworkStatus, useOfflineSales)
+│   │   ├── pages/           # Page components (auth/, admin/, depositor/, volunteer/, home/, account/, help/)
+│   │   ├── services/        # IndexedDB offline services
 │   │   ├── types/           # TypeScript types
-│   │   ├── App.tsx
 │   │   └── routes.tsx
 │   └── Dockerfile
 ├── docs/                    # Specifications (v1.0.0)
+├── scripts/                 # Backup/restore, deployment scripts
+├── tests/                   # E2E test scripts and fixtures
 ├── docker-compose.yml
+├── docker-compose.prod.yml  # Production config with nginx/SSL
 ├── Makefile
-└── DEVELOPMENT.md           # Progress tracking
+├── PLAN.md                  # Unified roadmap (source of truth)
+└── DEVELOPMENT.md           # Detailed task breakdown per version
 ```
 
 ## Shell Commands
@@ -138,7 +142,7 @@ All specs are in `docs/` (v1.0.0 validated):
 |----------|---------|
 | [README.md](docs/README.md) | Vision, objectives, navigation |
 | [glossaire.md](docs/glossaire.md) | French domain terminology |
-| [user-stories.md](docs/user-stories.md) | US-001 to US-010 with acceptance criteria |
+| [user-stories.md](docs/user-stories.md) | US-001 to US-012 with acceptance criteria |
 | [exigences.md](docs/exigences.md) | Functional/non-functional requirements |
 | [domain-model.md](docs/domain-model.md) | Entity model, lifecycles, business rules |
 | [architecture.md](docs/architecture.md) | Technical architecture |
@@ -148,11 +152,12 @@ All specs are in `docs/` (v1.0.0 validated):
 ## Key Domain Concepts
 
 ### Edition Lifecycle
-1. **Brouillon** → Created by admin (US-006)
-2. **Configurée** → Dates/commission set (US-007)
-3. **Inscriptions_ouvertes** → Billetweb import done (US-008)
-4. **En_cours** → Deposits and sales active
-5. **Clôturée** → Final state (US-009)
+1. **Brouillon** (draft) → Created by admin (US-006)
+2. **Configurée** (configured) → Dates/commission set (US-007)
+3. **Inscriptions_ouvertes** (registrations_open) → Billetweb import done (US-008)
+4. **En_cours** (in_progress) → Deposits and sales active
+5. **Clôturée** (closed) → Edition closed (US-009)
+6. **Archivée** (archived) → Auto-archived after retention period
 
 ### Roles (hierarchical)
 - **Déposant** (seller) - declares articles, views sales
@@ -199,24 +204,31 @@ VITE_API_URL=http://localhost:8000/api
 ## Testing
 
 - **Backend**: pytest with async support, fixtures in `conftest.py`
-- **Frontend**: Vitest + React Testing Library (109 tests)
+- **Frontend**: Vitest + React Testing Library
+- **E2E**: Functional test scripts in `tests/` (119/142 scenarios passing)
 - **Coverage target**: 80%+ for business logic
 
-## Implemented Features
+## Implemented Features (v0.1–v0.18)
 
-### v0.2 - Authentication ✅
-- Login/logout with JWT tokens
-- Account activation via invitation link
-- Password reset flow
-- Role-based access control (depositor, volunteer, manager, administrator)
-- Invitation management (single + bulk CSV import)
+- **Authentication** (v0.2): JWT login, account activation, password reset, RBAC (4 roles), invitation management (single + bulk CSV)
+- **Edition Management** (v0.3): CRUD, configuration, deposit slots, automatic status transitions
+- **Billetweb Import** (v0.4): CSV file import of registrations from Billetweb
+- **Article Declaration** (v0.5): Depositor article lists, article CRUD, list validation
+- **Label Generation** (v0.6): PDF label generation (WeasyPrint), QR codes, bulk printing
+- **Sales & Checkout** (v0.7): Barcode scanning, sale recording, volunteer sales interface
+- **Payout Calculation** (v0.8): Commission calculation, payout reports, PDF receipts
+- **Dashboard & Reports** (v0.9): Admin dashboard, live stats, invitation stats
+- **Edition Closure** (v0.10): Closing workflow, summary reports, auto-archiving
+- **PWA & Offline Mode** (v0.11): Service worker, IndexedDB offline sales, sync on reconnect
+- **GDPR & Security** (v0.12): Data export/deletion, audit logging, security headers, privacy policy
+- **Ops & Deployment** (v0.13): Docker production config, nginx/SSL, backup/restore scripts
+- **Special Lists** (v0.14): Liste 1000/2000, declaration deadline, slot capacity enforcement
+- **Secondary Features** (v0.15): Private school sales, retrieval reminder, pricing help, preview
+- **Accessibility & UX** (v0.16): WCAG 2.1 AA, password strength indicator, scanner UX
+- **Management Enhancements** (v0.17): Cancellation override, Excel export, bulk reminders
+- **Homepage** (v0.18): Public homepage, active edition constraint
 
-### v0.3 - Edition Management ✅
-- Edition CRUD (create, list, update, delete)
-- Edition configuration (operational dates, commission rate)
-- Deposit slots management (capacity, local reservation)
-- Automatic status transitions (draft → configured)
-- Protected routes for manager/admin roles
+See [PLAN.md](PLAN.md) for the full roadmap including v0.19 (Billetweb API Integration) in progress.
 
 ## Technical Notes
 
@@ -229,6 +241,9 @@ The Axios client has an interceptor that automatically converts snake_case (back
 Backend stores datetimes without timezone info. Frontend should:
 - Send dates as local time strings (e.g., `2025-03-15T09:00:00`)
 - Parse dates directly without `new Date()` conversion to avoid timezone shifts
+
+### Axios Blob Responses
+The response interceptor in `client.ts` calls `keysToCamelCase` on `response.data`, which destroys Blob/ArrayBuffer responses. The interceptor checks `instanceof Blob` and `instanceof ArrayBuffer` before transforming.
 
 ### Billetweb API Field Mapping
 The Billetweb REST API uses non-obvious field names for attendees:
