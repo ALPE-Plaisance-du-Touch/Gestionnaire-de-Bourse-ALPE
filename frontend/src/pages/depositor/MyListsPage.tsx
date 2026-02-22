@@ -237,15 +237,9 @@ export function MyListsPage() {
               </svg>
             </div>
             <p className="text-gray-500 mb-4">Vous n'avez pas encore créé de liste.</p>
-            {!canCreateMore ? (
-              <p className="text-sm text-orange-600">
-                La date limite de déclaration est dépassée. Vous ne pouvez plus créer de liste.
-              </p>
-            ) : (
-              <Button onClick={handleCreateList} disabled={createMutation.isPending}>
-                Créer ma première liste
-              </Button>
-            )}
+            <Button onClick={handleCreateList} disabled={!canCreateMore || createMutation.isPending}>
+              Créer ma première liste
+            </Button>
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
