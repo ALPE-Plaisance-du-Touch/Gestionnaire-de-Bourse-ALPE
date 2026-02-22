@@ -185,6 +185,7 @@ export function UsersManagementPage() {
               Aucun utilisateur trouvé.
             </div>
           ) : (
+            <>
             {/* Mobile card layout */}
             <div className="md:hidden divide-y divide-gray-200">
               {users.map((user) => {
@@ -281,6 +282,7 @@ export function UsersManagementPage() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
 
           {/* Pagination */}

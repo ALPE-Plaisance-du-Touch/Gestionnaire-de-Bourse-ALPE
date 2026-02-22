@@ -246,6 +246,7 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
             )}
           </div>
         ) : (
+          <>
           {/* Mobile card layout */}
           <div className="md:hidden divide-y divide-gray-200">
             {editions.map((edition) => {
@@ -428,6 +429,7 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
 

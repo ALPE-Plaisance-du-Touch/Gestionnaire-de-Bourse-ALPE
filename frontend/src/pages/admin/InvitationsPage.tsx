@@ -415,6 +415,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
             )}
           </div>
         ) : (
+          <>
           {/* Mobile card layout */}
           <div className="md:hidden">
             <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 border-b border-gray-200">
@@ -612,6 +613,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
 
