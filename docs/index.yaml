@@ -15,11 +15,6 @@ documents:
     type: overview
     status: validated
 
-  - id: DOC-005-PLAN
-    path: docs/plan.md
-    type: planning
-    status: validated
-
   - id: DOC-099-CHANGELOG
     path: docs/CHANGELOG.md
     type: changelog
