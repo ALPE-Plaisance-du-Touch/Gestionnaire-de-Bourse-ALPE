@@ -16,6 +16,29 @@ links:
 
 # Historique des versions
 
+## [1.1.0] - 2026-02-22
+- **Nouvelle fonctionnalité : Refus d'article au dépôt physique**
+  - **US-013** : Refuser un article non conforme lors du dépôt (acteur : bénévole)
+    - 5 critères d'acceptation
+    - 7 scénarios de test (T-US013-01 à T-US013-07)
+    - 7 règles métier (motif optionnel, irréversible, exclu des compteurs, zone "Refusés")
+  - **REQ-F-022** : Refus d'article au dépôt physique (priorité : Should have)
+    - Rôles autorisés : bénévole, gestionnaire, administrateur
+    - Motif optionnel (max 200 caractères)
+    - Article exclu des compteurs, affiché dans zone dédiée
+    - Refus irréversible, horodaté et tracé
+  - **Modèle de domaine** : ajout statut "Refusé" dans le cycle de vie Article
+    - Transition : Déposé → Refusé (via bénévole/gestionnaire/admin)
+  - **Traçabilité** : matrice mise à jour (11 US, 19 REQ-F, 110 AC, 141+ tests)
+
+### Métriques mises à jour
+- **User Stories** : 11 (US-001 à US-010, US-013)
+- **Critères d'acceptation** : 110
+- **Scénarios de test** : 141+
+- **Exigences fonctionnelles** : 19
+- **Exigences non-fonctionnelles** : 4
+- **Couverture traçabilité** : 87%
+
 ## [1.0.0] - 2025-12-28
 - **Release officielle des spécifications v1.0.0**
   - **Validation complète** de tous les documents de spécification

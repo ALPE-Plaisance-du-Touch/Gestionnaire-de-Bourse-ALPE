@@ -34,7 +34,7 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 | US | Titre | REQ associées | Nb AC | Nb Tests | Couverture |
 |----|-------|---------------|-------|----------|------------|
 | US-001 | Activer compte déposant | REQ-F-001, REQ-NF-003 | 14 | 16 | ✅ 100% |
-| US-002 | Déclarer articles | REQ-F-002, REQ-F-002-BIS, REQ-F-011 | 16 | 15 | ✅ 100% |
+| US-002 | Déclarer articles | REQ-F-002, REQ-F-002-BIS, REQ-F-011 | 16 | 20 | ✅ 100% |
 | US-003 | Générer étiquettes | REQ-F-003 | 15 | 18 | ✅ 100% |
 | US-004 | Scanner article et vente | REQ-F-004, REQ-NF-001, REQ-NF-002 | 15 | 20 | ✅ 100% |
 | US-005 | Générer reversements | REQ-F-005, REQ-F-015, REQ-F-016 | 13 | 20 | ✅ 100% |
@@ -43,7 +43,8 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 | US-008 | Importer Billetweb | REQ-F-008, REQ-F-013, REQ-F-014 | 13 | 15 | ✅ 100% |
 | US-009 | Clôturer édition | REQ-F-009 | 8 | 9 | ✅ 100% |
 | US-010 | Émettre invitations | REQ-F-018 | 15 | 20 | ✅ 100% |
-| **TOTAL** | **9 US** | **18 REQ-F + 4 REQ-NF** | **105** | **134+** | **100%** |
+| US-013 | Refuser article au dépôt | REQ-F-022, REQ-F-012 | 5 | 7 | ✅ 100% |
+| **TOTAL** | **11 US** | **19 REQ-F + 4 REQ-NF** | **110** | **141+** | **100%** |
 
 **Légende** :
 - ✅ 100% : US complète avec REQ et tests
@@ -398,6 +399,30 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 
 ---
 
+## US-013 — Refuser un article non conforme lors du dépôt
+
+**Actor** : benevole (+ gestionnaire, administrateur)
+**Exigences couvertes** :
+- **REQ-F-022** : Refus d'article au dépôt physique
+  - Bénévole/gestionnaire/admin peut refuser un article "Déposé"
+  - Motif optionnel (texte libre, max 200 caractères)
+  - Article exclu des compteurs, affiché dans zone "Refusés"
+  - Refus irréversible, horodaté et tracé
+- **REQ-F-012** : Rappels réglementaires jour dépôt (lien contextuel)
+
+**Tests associés** : T-US013-01 à T-US013-07 (7 tests)
+- T-US013-01 : Refus d'un article par un bénévole avec motif (OK, statut "Refusé", exclu des compteurs)
+- T-US013-02 : Refus d'un article sans motif (OK)
+- T-US013-03 : Consultation des articles refusés par le déposant (OK, zone "Refusés" visible)
+- T-US013-04 : Tentative de refus par un déposant (KO, bouton non visible)
+- T-US013-05 : Tentative de remettre en vente un article refusé (KO, irréversible)
+- T-US013-06 : Refus d'un article — compteurs mis à jour (OK)
+- T-US013-07 : Traçabilité du refus — horodatage et utilisateur (OK)
+
+**Couverture** : ✅ Complète
+
+---
+
 # Vue détaillée par Exigence
 
 ## REQ-F-001 — Création compte déposant via invitation
@@ -512,7 +537,7 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 
 ## REQ-F-012 — Rappels réglementaires jour dépôt
 
-**User Stories couvertes** : US-002 (implicite dans affichages)
+**User Stories couvertes** : US-002 (implicite dans affichages), US-013 (lien contextuel lors du refus)
 **Tests associés** : À ajouter dans US-002
 **Priorité** : Should have
 **Statut** : ⚠️ Spécifiée, tests à ajouter
@@ -577,6 +602,15 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 
 ---
 
+## REQ-F-022 — Refus d'article au dépôt physique
+
+**User Stories couvertes** : US-013
+**Tests associés** : T-US013-01 à T-US013-07
+**Priorité** : Should have
+**Statut** : ✅ Spécifiée et testée
+
+---
+
 ## REQ-NF-001 — Disponibilité ≥ 99.5% pendant bourse
 
 **User Stories couvertes** : US-004 (caisse)
@@ -619,10 +653,10 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 
 | Statut | Nombre | Pourcentage |
 |--------|--------|-------------|
-| ✅ US avec REQ complètes | 9 | 100% |
+| ✅ US avec REQ complètes | 11 | 100% |
 | ⚠️ US avec REQ manquantes | 0 | 0% |
 | ❌ US sans REQ | 0 | 0% |
-| **TOTAL** | **9 US** | **100%** |
+| **TOTAL** | **11 US** | **100%** |
 
 **Actions requises** :
 1. ✅ **REQ-F-018 créée** pour US-010 (émission invitations manuelles) — Terminé
@@ -633,10 +667,10 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 
 | Statut | Nombre | Pourcentage |
 |--------|--------|-------------|
-| ✅ REQ testées complètement | 13 | 59% |
-| ⚠️ REQ testées partiellement | 8 | 36% |
+| ✅ REQ testées complètement | 14 | 61% |
+| ⚠️ REQ testées partiellement | 8 | 35% |
 | ❌ REQ non testées | 0 | 0% |
-| **TOTAL** | **22 REQ (18 F + 4 NF)** | **100%** |
+| **TOTAL** | **23 REQ (19 F + 4 NF)** | **100%** |
 
 **REQ testées partiellement** :
 - **REQ-F-012** : Rappels réglementaires (tests à ajouter)
@@ -659,14 +693,14 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 
 | Indicateur | Valeur |
 |------------|--------|
-| **User Stories spécifiées** | 9/9 (100%) |
-| **Critères d'acceptation** | 105 |
-| **Scénarios de test** | 134+ |
-| **Exigences fonctionnelles** | 18 |
+| **User Stories spécifiées** | 11/11 (100%) |
+| **Critères d'acceptation** | 110 |
+| **Scénarios de test** | 141+ |
+| **Exigences fonctionnelles** | 19 |
 | **Exigences non-fonctionnelles** | 4 |
-| **Taux de couverture US → REQ** | 100% (9/9) |
-| **Taux de couverture REQ → Tests** | 59% complet, 36% partiel |
-| **Moyenne tests par US** | 14,9 tests/US |
+| **Taux de couverture US → REQ** | 100% (11/11) |
+| **Taux de couverture REQ → Tests** | 61% complet, 35% partiel |
+| **Moyenne tests par US** | 12,8 tests/US |
 
 ---
 
@@ -685,6 +719,7 @@ graph TD
         US008[US-008: Import Billetweb]
         US009[US-009: Clôturer édition]
         US010[US-010: Invitations masse]
+        US013[US-013: Refuser article dépôt]
     end
 
     subgraph "Exigences Fonctionnelles"
@@ -706,6 +741,7 @@ graph TD
         REQ016[REQ-F-016: Restitution]
         REQ017[REQ-F-017: Vente privée]
         REQ018[REQ-F-018: Invitations]
+        REQ022[REQ-F-022: Refus article]
     end
 
     subgraph "Exigences Non-Fonctionnelles"
@@ -749,6 +785,9 @@ graph TD
 
     US010 --> REQ018
 
+    US013 --> REQ022
+    US013 --> REQ012
+
     %% Dépendances entre US
     US002 -.-> US001
     US003 -.-> US002
@@ -757,6 +796,8 @@ graph TD
     US008 -.-> US007
     US009 -.-> US005
     US010 -.-> US006
+    US013 -.-> US002
+    US013 -.-> US003
 
     %% REQ transverse
     REQ010 -.-> US001
@@ -822,18 +863,19 @@ graph TD
 
 ## Points forts ✅
 
-- **9 User Stories** complètement spécifiées avec AC et tests
-- **105 critères d'acceptation** détaillés
-- **134+ scénarios de test** couvrant les parcours nominaux et alternatifs
-- **✅ Couverture fonctionnelle complète** : 100% des US ont leurs REQ (18 REQ-F)
+- **11 User Stories** complètement spécifiées avec AC et tests
+- **110 critères d'acceptation** détaillés
+- **141+ scénarios de test** couvrant les parcours nominaux et alternatifs
+- **✅ Couverture fonctionnelle complète** : 100% des US ont leurs REQ (19 REQ-F)
 - **REQ-F-018 créée** : Émission invitations manuelles (2025-11-25)
+- **US-013 + REQ-F-022 créées** : Refus d'article au dépôt (2026-02-22)
 - **Tests offline-first** bien spécifiés (US-004)
 - **Format Billetweb** détaillé avec colonnes exactes (US-008)
 - **Traçabilité bidirectionnelle** établie US ↔ REQ ↔ Tests
 
 ## Points d'attention ⚠️
 
-- **8 REQ partiellement testées** (36%) nécessitent des tests complémentaires
+- **8 REQ partiellement testées** (35%) nécessitent des tests complémentaires
 - **Tests non-fonctionnels** à renforcer (charge, accessibilité, RGPD exhaustif)
 - **REQ transverses** (REQ-F-010 rôles, REQ-F-015 listes 1000/2000) nécessitent des tests dédiés
 
@@ -843,9 +885,9 @@ graph TD
 |-----------|------------|
 | Spécification US | 100% |
 | Couverture US → REQ | ✅ **100%** |
-| Couverture REQ → Tests (complet) | 59% |
-| Couverture REQ → Tests (partiel) | 36% |
-| **Score global** | **86%** |
+| Couverture REQ → Tests (complet) | 61% |
+| Couverture REQ → Tests (partiel) | 35% |
+| **Score global** | **87%** |
 
 **Objectif** : Atteindre 95% de couverture complète avant le début du développement.
-**Progression** : +4% depuis dernière mise à jour (REQ-F-018 créée)
+**Progression** : +1% depuis dernière mise à jour (US-013 + REQ-F-022 créées)
