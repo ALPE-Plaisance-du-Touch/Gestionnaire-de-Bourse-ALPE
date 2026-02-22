@@ -11,7 +11,7 @@ from app.models import User
 from app.models.edition_depositor import EditionDepositor
 from app.repositories import EditionRepository, ItemListRepository
 from app.schemas import LabelGenerationRequest, LabelStatsResponse
-from app.schemas.label import LabelDepositorResponse, LabelGenerationMode
+from app.schemas.label import LabelDepositorResponse, LabelGenerationMode, LabelSlotResponse
 from app.services.label import generate_labels_pdf, _format_slot_label
 
 router = APIRouter()
@@ -129,6 +129,34 @@ async def list_label_depositors(
             email=d.email,
         )
         for d in depositors
+    ]
+
+
+@router.get(
+    "/editions/{edition_id}/labels/slots",
+    response_model=list[LabelSlotResponse],
+    summary="List slots with validated lists",
+    description="Get deposit slots that have at least one depositor with validated lists.",
+)
+async def list_label_slots(
+    edition_id: str,
+    item_list_repo: ItemListRepoDep,
+    edition_repo: EditionRepoDep,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """List deposit slots with validated lists for label generation."""
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Édition non trouvée")
+
+    slots = await item_list_repo.get_slots_with_validated_lists(edition_id)
+    return [
+        LabelSlotResponse(
+            id=row[0],
+            start_datetime=row[1].isoformat(),
+            end_datetime=row[2].isoformat(),
+        )
+        for row in slots
     ]
 
 

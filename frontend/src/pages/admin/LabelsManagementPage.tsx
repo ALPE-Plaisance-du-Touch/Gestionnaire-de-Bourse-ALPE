@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { editionsApi } from '@/api/editions';
-import { depositSlotsApi } from '@/api/deposit-slots';
 import { labelsApi } from '@/api/labels';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
@@ -53,11 +52,11 @@ export function LabelsManagementPage() {
     enabled: !!editionId,
   });
 
-  // Fetch deposit slots
+  // Fetch deposit slots with validated lists (for slot mode)
   const { data: slotsData } = useQuery({
-    queryKey: ['deposit-slots', editionId],
-    queryFn: () => depositSlotsApi.getSlots(editionId!),
-    enabled: !!editionId,
+    queryKey: ['label-slots', editionId],
+    queryFn: () => labelsApi.getSlots(editionId!),
+    enabled: !!editionId && mode === 'slot',
   });
 
   // Fetch depositors with validated lists (for selection mode)
@@ -123,7 +122,7 @@ export function LabelsManagementPage() {
     }
   };
 
-  const slots = slotsData?.items || [];
+  const slots = slotsData || [];
   const depositors = depositorsData || [];
 
   return (

@@ -49,6 +49,14 @@ class LabelDepositorResponse(BaseModel):
     email: str
 
 
+class LabelSlotResponse(BaseModel):
+    """A deposit slot that has at least one validated list."""
+
+    id: str
+    start_datetime: str
+    end_datetime: str
+
+
 class LabelStatsResponse(BaseModel):
     """Response for label statistics."""
 

@@ -569,22 +569,22 @@ def generate_labels_pdf(
             /* ===== LABEL GRID ===== */
             .label-grid {{
                 page-break-before: always;
-                display: grid;
-                grid-template-columns: repeat(3, 70mm);
-                grid-template-rows: repeat(4, 74mm);
-                gap: 0;
-                width: 210mm;
-                justify-content: center;
+                width: 190mm;
+                font-size: 0;
             }}
 
             .label {{
-                width: 70mm;
-                height: 74mm;
+                width: 63mm;
+                height: 68mm;
                 border: 1px dashed #999;
                 box-sizing: border-box;
                 padding: 3mm;
                 overflow: hidden;
                 page-break-inside: avoid;
+                display: inline-block;
+                vertical-align: top;
+                margin: 0;
+                font-size: 10pt;
             }}
 
             .label-top {{

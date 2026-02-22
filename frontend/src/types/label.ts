@@ -17,6 +17,12 @@ export interface LabelDepositor {
   email: string;
 }
 
+export interface LabelSlot {
+  id: string;
+  startDatetime: string;
+  endDatetime: string;
+}
+
 export interface LabelStats {
   totalDepositors: number;
   totalLists: number;
