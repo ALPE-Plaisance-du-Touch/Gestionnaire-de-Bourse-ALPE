@@ -395,6 +395,19 @@ links:
   - **Priorité :** Must have
   - **Responsable validation :** Bénévole (vérification physique lors du dépôt)
 
+- REQ-F-022 — Le système DOIT permettre à un bénévole, gestionnaire ou administrateur de refuser un article lors du dépôt physique.
+  - **Critères d'acceptation :**
+    - Un article au statut "Déposé" (liste validée) peut être marqué comme "Refusé" par un bénévole, gestionnaire ou administrateur
+    - Le motif de refus est optionnel (champ texte libre, max 200 caractères)
+    - L'article refusé reste enregistré en base de données (pas de suppression)
+    - L'article refusé est exclu des compteurs de la liste (nombre d'articles en vente, valeur totale estimée)
+    - L'article refusé est affiché dans une zone distincte "Articles refusés" dans le détail de la liste
+    - Le déposant peut consulter ses articles refusés et le motif éventuel
+    - Le refus est irréversible (un article refusé ne peut pas être remis en vente)
+    - Traçabilité : horodatage du refus et identifiant de l'utilisateur ayant refusé
+  - **Priorité :** Should have
+  - **Responsable validation :** Bénévole + Gestionnaire
+
 - REQ-F-003 — Le système DOIT permettre la génération et l'impression en masse des étiquettes par les gestionnaires (règlement intérieur : impression à la charge d'ALPE). (US-003)
   - **Critères d'acceptation :**
     - **Interface de gestion des étiquettes :**

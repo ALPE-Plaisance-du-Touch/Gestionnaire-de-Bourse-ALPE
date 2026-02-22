@@ -2727,3 +2727,92 @@ test_scenarios:
   - T-US011-10 : Lien politique de confidentialité accessible (OK)
 ```
 
+## US-013 — Refuser un article non conforme lors du dépôt
+
+```yaml
+id: US-013
+title: Refuser un article non conforme lors du dépôt
+actor: benevole
+benefit: "...pour garantir la qualité des articles mis en vente et respecter le règlement"
+as_a: "En tant que bénévole, gestionnaire ou administrateur présent lors du dépôt physique"
+i_want: "Je veux pouvoir refuser un article taché, abîmé, incomplet ou non conforme"
+so_that: "Afin que seuls les articles conformes soient mis en vente, tout en conservant la trace des articles refusés"
+
+# Contexte métier
+notes: |
+  - Le règlement stipule que "l'association se réserve le droit de refuser tout article taché, abîmé, incomplet, cassé ou non conforme"
+  - Le refus intervient lors du dépôt physique, quand le bénévole vérifie les articles du déposant
+  - L'article refusé n'est pas supprimé : il reste en mémoire pour traçabilité mais est exclu des compteurs
+  - Le déposant peut consulter ses articles refusés et le motif éventuel depuis son espace
+  - Le motif de refus est optionnel (le bénévole peut refuser sans justifier)
+
+acceptance_criteria:
+  # AC-1 : Refus d'un article au dépôt
+  - GIVEN je suis un bénévole, gestionnaire ou administrateur
+    AND je consulte les articles d'une liste au statut "Validée" ou "Déposée"
+    AND un article est au statut "Déposé" (validé)
+    WHEN je clique sur "Refuser" pour cet article
+    THEN le système affiche une modale de confirmation avec :
+      • Le résumé de l'article (description, catégorie, prix)
+      • Un champ texte optionnel "Motif du refus" (max 200 caractères)
+      • Un bouton "Confirmer le refus"
+      • Un bouton "Annuler"
+
+  # AC-2 : Confirmation du refus
+  - GIVEN la modale de refus est ouverte
+    WHEN je confirme le refus (avec ou sans motif)
+    THEN le système :
+      • Passe le statut de l'article à "Refusé"
+      • Enregistre le motif de refus (si renseigné)
+      • Enregistre l'horodatage du refus et l'identifiant de l'utilisateur
+      • Exclut l'article des compteurs de la liste (articles en vente, valeur totale)
+      • Affiche un message de confirmation : "Article refusé"
+
+  # AC-3 : Affichage des articles refusés dans la liste
+  - GIVEN une liste contient des articles refusés
+    WHEN je consulte le détail de la liste (bénévole, gestionnaire ou déposant)
+    THEN les articles refusés sont affichés dans une zone distincte "Articles refusés" :
+      • Séparés visuellement des articles actifs (en dessous, avec un titre de section)
+      • Chaque article refusé affiche : description, prix, motif de refus (si renseigné)
+      • Les articles refusés ne sont pas comptés dans le total d'articles ni dans la valeur totale
+
+  # AC-4 : Irréversibilité du refus
+  - GIVEN un article a été refusé
+    WHEN je consulte cet article
+    THEN le bouton "Refuser" n'est plus visible
+    AND aucune action ne permet de remettre l'article en vente
+
+  # AC-5 : Restrictions d'accès
+  - GIVEN je suis un déposant
+    WHEN je consulte ma liste
+    THEN je ne vois pas de bouton "Refuser" sur mes articles
+    AND je peux consulter mes articles refusés et leur motif en lecture seule
+
+dependencies:
+  - US-002  # Déclaration des articles
+  - US-003  # Génération des étiquettes (articles déposés)
+
+links:
+  - rel: requirement
+    id: REQ-F-022  # Refus d'article au dépôt
+  - rel: requirement
+    id: REQ-F-012  # Rappels réglementaires dépôt
+
+business_rules:
+  - Seuls les bénévoles, gestionnaires et administrateurs peuvent refuser un article
+  - Un article ne peut être refusé que s'il est au statut "Déposé" (validé)
+  - Le motif de refus est optionnel (champ texte libre, max 200 caractères)
+  - Le refus est irréversible
+  - L'article refusé reste en base de données mais est exclu de tous les compteurs (articles en vente, valeur totale, reversements)
+  - Le refus est horodaté et tracé (utilisateur ayant refusé)
+
+test_scenarios:
+  - T-US013-01 : Refus d'un article par un bénévole avec motif (OK, statut "Refusé", exclu des compteurs)
+  - T-US013-02 : Refus d'un article sans motif (OK)
+  - T-US013-03 : Consultation des articles refusés par le déposant (OK, zone "Refusés" visible, motif affiché)
+  - T-US013-04 : Tentative de refus par un déposant (KO, bouton non visible)
+  - T-US013-05 : Tentative de remettre en vente un article refusé (KO, irréversible)
+  - T-US013-06 : Refus d'un article — vérification que les compteurs sont mis à jour (OK)
+  - T-US013-07 : Traçabilité du refus — horodatage et identifiant de l'utilisateur (OK)
+```
+
