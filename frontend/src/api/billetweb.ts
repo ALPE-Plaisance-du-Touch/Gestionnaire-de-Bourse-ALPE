@@ -99,6 +99,9 @@ export const billetwebApi = {
     const response = await apiClient.put<EditionDepositorWithUser>(
       `/v1/editions/${editionId}/billetweb/depositors/${depositorId}`,
       {
+        first_name: request.firstName,
+        last_name: request.lastName,
+        phone: request.phone,
         deposit_slot_id: request.depositSlotId,
         list_type: request.listType,
         postal_code: request.postalCode,

@@ -218,6 +218,19 @@ async def update_depositor(
             detail="Déposant introuvable",
         )
 
+    # Update user info if provided
+    user_update = {}
+    if request.first_name is not None:
+        user_update["first_name"] = request.first_name
+    if request.last_name is not None:
+        user_update["last_name"] = request.last_name
+    if request.phone is not None:
+        user_update["phone"] = request.phone
+
+    if user_update:
+        user_repo = UserRepository(db)
+        await user_repo.update(dep.user, **user_update)
+
     update_data = {}
 
     # Validate new slot if changing

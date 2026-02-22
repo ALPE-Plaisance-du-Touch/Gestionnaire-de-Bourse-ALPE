@@ -106,6 +106,9 @@ export function EditionDepositorsPage() {
   function openEditModal(depositor: EditionDepositorWithUser) {
     setEditingDepositor(depositor);
     setEditForm({
+      firstName: depositor.userFirstName,
+      lastName: depositor.userLastName,
+      phone: depositor.userPhone ?? undefined,
       depositSlotId: depositor.depositSlotId ?? undefined,
       listType: depositor.listType,
       postalCode: depositor.postalCode ?? undefined,
@@ -355,8 +358,29 @@ export function EditionDepositorsPage() {
         <div className="space-y-4">
           <div className="text-sm text-gray-500">
             {editingDepositor?.userEmail}
-            {editingDepositor?.userPhone && ` — ${editingDepositor.userPhone}`}
           </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Prénom"
+              value={editForm.firstName ?? ''}
+              onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
+              required
+              maxLength={100}
+            />
+            <Input
+              label="Nom"
+              value={editForm.lastName ?? ''}
+              onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
+              required
+              maxLength={100}
+            />
+          </div>
+          <Input
+            label="Téléphone"
+            value={editForm.phone ?? ''}
+            onChange={(e) => setEditForm({ ...editForm, phone: e.target.value || undefined })}
+            maxLength={20}
+          />
           <Select
             label="Créneau de dépôt"
             options={slotOptions}

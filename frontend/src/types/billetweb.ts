@@ -50,6 +50,9 @@ export interface ManualDepositorCreateRequest {
 }
 
 export interface DepositorUpdateRequest {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
   depositSlotId?: string;
   listType?: ListType;
   postalCode?: string;

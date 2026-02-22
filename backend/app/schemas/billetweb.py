@@ -169,6 +169,9 @@ class ManualDepositorCreateRequest(BaseModel):
 class DepositorUpdateRequest(BaseModel):
     """Request schema for updating a depositor registration."""
 
+    first_name: str | None = Field(None, min_length=1, max_length=100)
+    last_name: str | None = Field(None, min_length=1, max_length=100)
+    phone: str | None = Field(None, max_length=20)
     deposit_slot_id: str | None = Field(None, description="New deposit slot ID")
     list_type: str | None = Field(None, description="New list type")
     postal_code: str | None = Field(None, max_length=10)
