@@ -408,6 +408,28 @@ links:
   - **Priorité :** Should have
   - **Responsable validation :** Bénévole + Gestionnaire
 
+- REQ-F-023 — Le système DOIT fournir un tableau de bord de suivi de l'avancement des déclarations d'articles par les déposants. (US-014)
+  - **Critères d'acceptation :**
+    - **Statistiques globales :**
+      - Nombre total de déposants inscrits à l'édition
+      - Répartition par état : aucune liste créée / au moins une liste en brouillon / toutes listes validées
+      - Nombre total de listes par statut (brouillon, validées)
+      - Nombre total d'articles déclarés et valeur totale estimée
+      - Barre de progression : pourcentage de déposants ayant validé au moins une liste
+      - Rappel de la date limite de déclaration avec nombre de jours restants
+    - **Tableau détaillé par déposant :**
+      - Colonnes : nom, prénom, créneau de dépôt, type de liste, listes créées/max, statut global, nombre d'articles, dernière modification
+      - Tri par chaque colonne
+      - Filtres : par statut global (aucune liste, brouillon, validée), par créneau de dépôt
+    - **Accès :**
+      - Réservé aux gestionnaires et administrateurs
+      - Disponible uniquement pour les éditions aux statuts inscriptions_ouvertes ou en_cours
+    - **Cohérence des données :**
+      - Les articles refusés (REQ-F-022) ne sont pas comptés dans les totaux
+      - Les statistiques sont calculées en temps réel
+  - **Priorité :** Should have
+  - **Responsable validation :** Gestionnaire
+
 - REQ-F-003 — Le système DOIT permettre la génération et l'impression en masse des étiquettes par les gestionnaires (règlement intérieur : impression à la charge d'ALPE). (US-003)
   - **Critères d'acceptation :**
     - **Interface de gestion des étiquettes :**

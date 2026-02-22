@@ -2816,3 +2816,99 @@ test_scenarios:
   - T-US013-07 : Traçabilité du refus — horodatage et identifiant de l'utilisateur (OK)
 ```
 
+## US-014 — Suivre l'avancement des déclarations des déposants
+
+```yaml
+id: US-014
+title: Suivre l'avancement des déclarations des déposants
+actor: gestionnaire
+benefit: "...pour anticiper la logistique du dépôt et relancer les déposants en retard"
+as_a: "En tant que gestionnaire ou administrateur"
+i_want: "Je veux consulter un tableau de bord montrant l'état d'avancement des déclarations d'articles par les déposants"
+so_that: "Afin de savoir combien de déposants ont rempli et validé leurs listes avant la date limite, et d'identifier ceux qui n'ont pas encore commencé"
+
+# Contexte métier
+notes: |
+  - Avant le dépôt, les gestionnaires doivent préparer la logistique (impression étiquettes, organisation des créneaux)
+  - Il est crucial de savoir combien de déposants ont validé leurs listes pour dimensionner l'impression
+  - Les déposants qui n'ont pas commencé ou qui sont en brouillon peuvent être relancés
+  - La date limite de déclaration (3 semaines avant le dépôt) rend ce suivi particulièrement important
+  - Ce tableau de bord complète la page des déposants existante qui ne montre que les informations d'inscription
+
+acceptance_criteria:
+  # AC-1 : Accès au tableau de bord des déclarations
+  - GIVEN je suis gestionnaire ou administrateur
+    AND je consulte la page de détail d'une édition
+    WHEN je clique sur "Suivi des déclarations" (ou accède à `/editions/:id/declarations`)
+    THEN je vois un tableau de bord avec les statistiques globales :
+      • Nombre total de déposants inscrits
+      • Nombre de déposants n'ayant aucune liste créée
+      • Nombre de déposants avec au moins une liste en brouillon
+      • Nombre de déposants avec toutes les listes validées
+      • Nombre total de listes (par statut : brouillon, validées)
+      • Nombre total d'articles déclarés
+      • Valeur totale estimée des articles
+
+  # AC-2 : Barre de progression visuelle
+  - GIVEN le tableau de bord est affiché
+    WHEN je consulte la section progression
+    THEN je vois une barre de progression indiquant le pourcentage de déposants ayant validé au moins une liste
+    AND je vois un rappel de la date limite de déclaration avec le nombre de jours restants
+
+  # AC-3 : Liste détaillée des déposants avec état des listes
+  - GIVEN le tableau de bord est affiché
+    WHEN je consulte la section détaillée
+    THEN je vois un tableau avec une ligne par déposant :
+      • Nom, prénom
+      • Créneau de dépôt
+      • Type de liste (standard, 1000, 2000)
+      • Nombre de listes créées / max autorisé
+      • Statut global : "Aucune liste", "Brouillon", "Validée"
+      • Nombre d'articles déclarés (total sur toutes les listes)
+      • Date de dernière modification
+    AND le tableau est triable par chaque colonne
+    AND le tableau est filtrable par statut global et par créneau de dépôt
+
+  # AC-4 : Filtres par statut
+  - GIVEN le tableau détaillé est affiché
+    WHEN je filtre par statut "Aucune liste"
+    THEN seuls les déposants n'ayant créé aucune liste sont affichés
+    AND le compteur indique le nombre de résultats
+
+  # AC-5 : Restrictions d'accès
+  - GIVEN je suis bénévole ou déposant
+    WHEN je tente d'accéder à `/editions/:id/declarations`
+    THEN je suis redirigé ou le système affiche une erreur d'accès insuffisant
+
+dependencies:
+  - US-002  # Déclaration des articles
+  - US-008  # Import Billetweb (inscriptions déposants)
+
+links:
+  - rel: requirement
+    id: REQ-F-023  # Tableau de bord suivi des déclarations
+  - rel: requirement
+    id: REQ-F-011  # Date limite de déclaration
+
+business_rules:
+  - Seuls les gestionnaires et administrateurs ont accès à ce tableau de bord
+  - Les statistiques sont calculées en temps réel (pas de cache)
+  - Un déposant "validé" est un déposant dont toutes les listes sont au statut "Validée"
+  - Un déposant "brouillon" a au moins une liste mais aucune validée
+  - Un déposant "aucune liste" n'a créé aucune liste
+  - Les articles refusés (US-013) ne sont pas comptés dans les totaux
+  - Le tableau de bord n'est disponible que pour les éditions aux statuts inscriptions_ouvertes ou en_cours
+
+test_scenarios:
+  - T-US014-01 : Accès au tableau de bord par un gestionnaire (OK, statistiques affichées)
+  - T-US014-02 : Statistiques globales cohérentes (OK, totaux déposants/listes/articles corrects)
+  - T-US014-03 : Barre de progression correcte (OK, pourcentage = déposants validés / total déposants)
+  - T-US014-04 : Tableau détaillé avec tri par colonne (OK)
+  - T-US014-05 : Filtre par statut "Aucune liste" (OK, seuls les déposants sans liste affichés)
+  - T-US014-06 : Filtre par créneau de dépôt (OK)
+  - T-US014-07 : Accès refusé pour un bénévole (KO, erreur accès insuffisant)
+  - T-US014-08 : Accès refusé pour un déposant (KO, erreur accès insuffisant)
+  - T-US014-09 : Date limite affichée avec jours restants (OK)
+  - T-US014-10 : Édition en brouillon — tableau de bord non accessible (KO, pas encore d'inscriptions)
+```
+

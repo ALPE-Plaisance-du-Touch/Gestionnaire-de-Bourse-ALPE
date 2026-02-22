@@ -45,7 +45,7 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.19 | Intégration API Billetweb | ✅ Done |
 
 **Conformité specs : ~89%** (59/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
-**Specs : 11 US, 19 REQ-F, 110 AC, 141+ tests** — couverture traçabilité 87%
+**Specs : 12 US, 20 REQ-F, 115 AC, 151+ tests** — couverture traçabilité 88%
 
 ---
 
@@ -313,6 +313,7 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 - [x] **1.0.7** ~~Créer REQ-F-018 pour US-010~~ — **FAIT** (déjà créée)
 - [ ] **1.0.8** Revue documentation (README utilisateur, guides déploiement)
 - [ ] **1.0.9bis** Implémenter US-013 / REQ-F-022 : refus d'article au dépôt (spec prête, dev à faire)
+- [ ] **1.0.9ter** Implémenter US-014 / REQ-F-023 : tableau de bord suivi déclarations (spec prête, dev à faire)
 
 ### Stabilisation
 - [ ] **1.0.9** Optimisation performance (lazy loading, bundle size, requêtes N+1)
@@ -353,6 +354,7 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 | TASK-026 | 0.19 | Sync participants depuis Billetweb | REQ-F-021, US-012 AC-10/11/12/13 |
 | TASK-027 | 0.19 | Erreurs API & accès Billetweb | US-012 AC-14/15/16 |
 | TASK-028 | 1.0 | Refus article au dépôt | US-013, REQ-F-022 |
+| TASK-029 | 1.0 | Suivi déclarations déposants | US-014, REQ-F-023 |
 
 ---
 
@@ -362,8 +364,8 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 |----------|--------|-------------|
 | Rapport d'analyse | [docs/analysis-report-2026-02-09.md](docs/analysis-report-2026-02-09.md) | Écarts détaillés + prompts prêts à l'emploi par TASK |
 | Suivi d'avancement | [DEVELOPMENT.md](DEVELOPMENT.md) | Checkboxes détaillées par version livrée |
-| User Stories | [docs/user-stories.md](docs/user-stories.md) | US-001 à US-013, critères d'acceptation |
-| Exigences | [docs/exigences.md](docs/exigences.md) | REQ-F-001 à F-022, REQ-NF-001 à NF-012 |
+| User Stories | [docs/user-stories.md](docs/user-stories.md) | US-001 à US-014, critères d'acceptation |
+| Exigences | [docs/exigences.md](docs/exigences.md) | REQ-F-001 à F-023, REQ-NF-001 à NF-012 |
 | Architecture | [docs/architecture.md](docs/architecture.md) | C4, ADR, stack technique |
 | Sécurité | [docs/securite.md](docs/securite.md) | Matrice RBAC, RGPD, audit, anti-fraude |
 | Opérations | [docs/operations.md](docs/operations.md) | SLOs, runbooks, checklists |

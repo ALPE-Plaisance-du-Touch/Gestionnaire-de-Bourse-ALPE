@@ -44,7 +44,8 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 | US-009 | Clôturer édition | REQ-F-009 | 8 | 9 | ✅ 100% |
 | US-010 | Émettre invitations | REQ-F-018 | 15 | 20 | ✅ 100% |
 | US-013 | Refuser article au dépôt | REQ-F-022, REQ-F-012 | 5 | 7 | ✅ 100% |
-| **TOTAL** | **11 US** | **19 REQ-F + 4 REQ-NF** | **110** | **141+** | **100%** |
+| US-014 | Suivi déclarations déposants | REQ-F-023, REQ-F-011 | 5 | 10 | ✅ 100% |
+| **TOTAL** | **12 US** | **20 REQ-F + 4 REQ-NF** | **115** | **151+** | **100%** |
 
 **Légende** :
 - ✅ 100% : US complète avec REQ et tests
@@ -423,6 +424,33 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 
 ---
 
+## US-014 — Suivre l'avancement des déclarations des déposants
+
+**Actor** : gestionnaire (+ administrateur)
+**Exigences couvertes** :
+- **REQ-F-023** : Tableau de bord suivi des déclarations
+  - Statistiques globales (déposants par état, listes par statut, articles, valeur)
+  - Barre de progression (% déposants ayant validé)
+  - Tableau détaillé par déposant (tri, filtres par statut et créneau)
+  - Rappel date limite avec jours restants
+- **REQ-F-011** : Date limite déclaration articles (rappel contextuel)
+
+**Tests associés** : T-US014-01 à T-US014-10 (10 tests)
+- T-US014-01 : Accès au tableau de bord par un gestionnaire (OK, statistiques affichées)
+- T-US014-02 : Statistiques globales cohérentes (OK, totaux corrects)
+- T-US014-03 : Barre de progression correcte (OK, pourcentage correct)
+- T-US014-04 : Tableau détaillé avec tri par colonne (OK)
+- T-US014-05 : Filtre par statut "Aucune liste" (OK)
+- T-US014-06 : Filtre par créneau de dépôt (OK)
+- T-US014-07 : Accès refusé pour un bénévole (KO)
+- T-US014-08 : Accès refusé pour un déposant (KO)
+- T-US014-09 : Date limite affichée avec jours restants (OK)
+- T-US014-10 : Édition en brouillon — tableau de bord non accessible (KO)
+
+**Couverture** : ✅ Complète
+
+---
+
 # Vue détaillée par Exigence
 
 ## REQ-F-001 — Création compte déposant via invitation
@@ -611,6 +639,15 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 
 ---
 
+## REQ-F-023 — Tableau de bord suivi des déclarations
+
+**User Stories couvertes** : US-014
+**Tests associés** : T-US014-01 à T-US014-10
+**Priorité** : Should have
+**Statut** : ✅ Spécifiée et testée
+
+---
+
 ## REQ-NF-001 — Disponibilité ≥ 99.5% pendant bourse
 
 **User Stories couvertes** : US-004 (caisse)
@@ -653,10 +690,10 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 
 | Statut | Nombre | Pourcentage |
 |--------|--------|-------------|
-| ✅ US avec REQ complètes | 11 | 100% |
+| ✅ US avec REQ complètes | 12 | 100% |
 | ⚠️ US avec REQ manquantes | 0 | 0% |
 | ❌ US sans REQ | 0 | 0% |
-| **TOTAL** | **11 US** | **100%** |
+| **TOTAL** | **12 US** | **100%** |
 
 **Actions requises** :
 1. ✅ **REQ-F-018 créée** pour US-010 (émission invitations manuelles) — Terminé
@@ -667,10 +704,10 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 
 | Statut | Nombre | Pourcentage |
 |--------|--------|-------------|
-| ✅ REQ testées complètement | 14 | 61% |
-| ⚠️ REQ testées partiellement | 8 | 35% |
+| ✅ REQ testées complètement | 15 | 63% |
+| ⚠️ REQ testées partiellement | 8 | 33% |
 | ❌ REQ non testées | 0 | 0% |
-| **TOTAL** | **23 REQ (19 F + 4 NF)** | **100%** |
+| **TOTAL** | **24 REQ (20 F + 4 NF)** | **100%** |
 
 **REQ testées partiellement** :
 - **REQ-F-012** : Rappels réglementaires (tests à ajouter)
@@ -693,14 +730,14 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 
 | Indicateur | Valeur |
 |------------|--------|
-| **User Stories spécifiées** | 11/11 (100%) |
-| **Critères d'acceptation** | 110 |
-| **Scénarios de test** | 141+ |
-| **Exigences fonctionnelles** | 19 |
+| **User Stories spécifiées** | 12/12 (100%) |
+| **Critères d'acceptation** | 115 |
+| **Scénarios de test** | 151+ |
+| **Exigences fonctionnelles** | 20 |
 | **Exigences non-fonctionnelles** | 4 |
-| **Taux de couverture US → REQ** | 100% (11/11) |
-| **Taux de couverture REQ → Tests** | 61% complet, 35% partiel |
-| **Moyenne tests par US** | 12,8 tests/US |
+| **Taux de couverture US → REQ** | 100% (12/12) |
+| **Taux de couverture REQ → Tests** | 63% complet, 33% partiel |
+| **Moyenne tests par US** | 12,6 tests/US |
 
 ---
 
@@ -720,6 +757,7 @@ graph TD
         US009[US-009: Clôturer édition]
         US010[US-010: Invitations masse]
         US013[US-013: Refuser article dépôt]
+        US014[US-014: Suivi déclarations]
     end
 
     subgraph "Exigences Fonctionnelles"
@@ -742,6 +780,7 @@ graph TD
         REQ017[REQ-F-017: Vente privée]
         REQ018[REQ-F-018: Invitations]
         REQ022[REQ-F-022: Refus article]
+        REQ023[REQ-F-023: Suivi déclarations]
     end
 
     subgraph "Exigences Non-Fonctionnelles"
@@ -788,6 +827,9 @@ graph TD
     US013 --> REQ022
     US013 --> REQ012
 
+    US014 --> REQ023
+    US014 --> REQ011
+
     %% Dépendances entre US
     US002 -.-> US001
     US003 -.-> US002
@@ -798,6 +840,8 @@ graph TD
     US010 -.-> US006
     US013 -.-> US002
     US013 -.-> US003
+    US014 -.-> US002
+    US014 -.-> US008
 
     %% REQ transverse
     REQ010 -.-> US001
@@ -863,19 +907,20 @@ graph TD
 
 ## Points forts ✅
 
-- **11 User Stories** complètement spécifiées avec AC et tests
-- **110 critères d'acceptation** détaillés
-- **141+ scénarios de test** couvrant les parcours nominaux et alternatifs
-- **✅ Couverture fonctionnelle complète** : 100% des US ont leurs REQ (19 REQ-F)
+- **12 User Stories** complètement spécifiées avec AC et tests
+- **115 critères d'acceptation** détaillés
+- **151+ scénarios de test** couvrant les parcours nominaux et alternatifs
+- **✅ Couverture fonctionnelle complète** : 100% des US ont leurs REQ (20 REQ-F)
 - **REQ-F-018 créée** : Émission invitations manuelles (2025-11-25)
 - **US-013 + REQ-F-022 créées** : Refus d'article au dépôt (2026-02-22)
+- **US-014 + REQ-F-023 créées** : Suivi déclarations déposants (2026-02-22)
 - **Tests offline-first** bien spécifiés (US-004)
 - **Format Billetweb** détaillé avec colonnes exactes (US-008)
 - **Traçabilité bidirectionnelle** établie US ↔ REQ ↔ Tests
 
 ## Points d'attention ⚠️
 
-- **8 REQ partiellement testées** (35%) nécessitent des tests complémentaires
+- **8 REQ partiellement testées** (33%) nécessitent des tests complémentaires
 - **Tests non-fonctionnels** à renforcer (charge, accessibilité, RGPD exhaustif)
 - **REQ transverses** (REQ-F-010 rôles, REQ-F-015 listes 1000/2000) nécessitent des tests dédiés
 
@@ -885,9 +930,9 @@ graph TD
 |-----------|------------|
 | Spécification US | 100% |
 | Couverture US → REQ | ✅ **100%** |
-| Couverture REQ → Tests (complet) | 61% |
-| Couverture REQ → Tests (partiel) | 35% |
-| **Score global** | **87%** |
+| Couverture REQ → Tests (complet) | 63% |
+| Couverture REQ → Tests (partiel) | 33% |
+| **Score global** | **88%** |
 
 **Objectif** : Atteindre 95% de couverture complète avant le début du développement.
-**Progression** : +1% depuis dernière mise à jour (US-013 + REQ-F-022 créées)
+**Progression** : +2% depuis dernière mise à jour (US-013, US-014, REQ-F-022, REQ-F-023 créées)

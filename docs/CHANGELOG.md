@@ -29,15 +29,24 @@ links:
     - Refus irréversible, horodaté et tracé
   - **Modèle de domaine** : ajout statut "Refusé" dans le cycle de vie Article
     - Transition : Déposé → Refusé (via bénévole/gestionnaire/admin)
-  - **Traçabilité** : matrice mise à jour (11 US, 19 REQ-F, 110 AC, 141+ tests)
+- **Nouvelle fonctionnalité : Suivi des déclarations des déposants**
+  - **US-014** : Tableau de bord de suivi des déclarations (acteur : gestionnaire)
+    - 5 critères d'acceptation
+    - 10 scénarios de test (T-US014-01 à T-US014-10)
+    - Statistiques globales, barre de progression, tableau détaillé par déposant
+  - **REQ-F-023** : Tableau de bord suivi des déclarations (priorité : Should have)
+    - Répartition déposants par état (aucune liste, brouillon, validée)
+    - Tri et filtres par statut et créneau de dépôt
+    - Rappel date limite avec jours restants
+- **Traçabilité** : matrice mise à jour (12 US, 20 REQ-F, 115 AC, 151+ tests)
 
 ### Métriques mises à jour
-- **User Stories** : 11 (US-001 à US-010, US-013)
-- **Critères d'acceptation** : 110
-- **Scénarios de test** : 141+
-- **Exigences fonctionnelles** : 19
+- **User Stories** : 12 (US-001 à US-010, US-013, US-014)
+- **Critères d'acceptation** : 115
+- **Scénarios de test** : 151+
+- **Exigences fonctionnelles** : 20
 - **Exigences non-fonctionnelles** : 4
-- **Couverture traçabilité** : 87%
+- **Couverture traçabilité** : 88%
 
 ## [1.0.0] - 2025-12-28
 - **Release officielle des spécifications v1.0.0**
