@@ -18,7 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 "Gestionnaire de Bourse ALPE" is a web application to manage second-hand goods sales events organized by ALPE Plaisance du Touch (France). The target audience is depositors (sellers) and volunteer staff.
 
-**Current status**: Development phase - v0.18 complete, v0.19 (Billetweb API Integration) in progress
+**Current status**: Development phase - v0.19 complete (Billetweb API Integration)
 **Next milestone**: v1.0.0 - Production Release
 
 See [PLAN.md](PLAN.md) for the unified roadmap and [DEVELOPMENT.md](DEVELOPMENT.md) for detailed task breakdown.
