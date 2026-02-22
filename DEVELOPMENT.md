@@ -32,10 +32,11 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.16 | Accessibility & UX | ✅ Done | 100% |
 | 0.17 | Management Enhancements | ✅ Done | 100% |
 | 0.18 | Homepage & Edition Constraint | ✅ Done | 100% |
+| 0.19 | Billetweb API Integration | ✅ Done | 100% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.18 (Homepage & Edition Constraint complete)
-**Next Target:** 1.0.0 - Production Release
+**Current Version:** 0.19 (Billetweb API Integration complete)
+**Next Target:** v1.0.0 - Production Release
 
 ---
 
@@ -637,9 +638,40 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
+## v0.19 - Billetweb API Integration (US-012) ✅
+
+**Branch:** `feature/billetweb-auto-import`
+
+### Backend Tasks ✅
+- [x] **0.19.1** AppSetting model (key/value encrypted) + migration, CRUD settings service
+- [x] **0.19.2** BilletwebClient service (httpx async, auth user/key, rate limit 10/min)
+- [x] **0.19.3** Admin endpoints: `PUT /settings/billetweb`, `POST /settings/billetweb/test`
+- [x] **0.19.5** `GET /billetweb/events` endpoint (list current events)
+- [x] **0.19.6** `billetweb_event_id` field on Edition + migration
+- [x] **0.19.8** `GET /billetweb-api/sessions/preview` (list sessions from Billetweb)
+- [x] **0.19.9** `POST /billetweb-api/sessions/sync` (import sessions as deposit slots)
+- [x] **0.19.10** `billetweb_session_id` on DepositSlot + `last_billetweb_sync` on Edition + migration
+- [x] **0.19.12** `GET /billetweb-api/attendees/preview` (list attendees with preview)
+- [x] **0.19.13** BilletwebSyncService (mapping attendees to depositors, incremental import)
+- [x] **0.19.15** `POST /billetweb-api/attendees/sync` (preview + import)
+- [x] **0.19.17** Error handling (API unavailability, auth refused, rate limit)
+- [x] **0.19.18** RBAC: config admin-only, sync endpoints manager+
+- [x] **0.19.20** Unit tests: BilletwebClient (mock API, rate limit, errors)
+- [x] **0.19.21** Unit tests: BilletwebSyncService (mapping, incremental, duplicates)
+- [x] **0.19.22** Integration tests: endpoints (config, events, sync-slots, sync-attendees, RBAC)
+
+### Frontend Tasks ✅
+- [x] **0.19.4** BilletwebSettingsPage (user/key masked fields, test button, save button)
+- [x] **0.19.7** Billetweb event selection in edition creation (not yet: import button + modal)
+- [x] **0.19.11** BilletwebSessionsSyncModal (sync slots preview + confirmation)
+- [x] **0.19.16** BilletwebAttendeesSyncModal (sync attendees preview + last sync indicator)
+- [x] **0.19.19** Contextual error messages + CSV fallback (US-008)
+
+---
+
 ## v1.0.0 - Production Release
 
-**Prerequisites:** All versions 0.1 through 0.18 completed and tested.
+**Prerequisites:** All versions 0.1 through 0.19 completed and tested.
 
 - [ ] **1.0.1** Final integration testing
 - [ ] **1.0.2** Performance optimization
