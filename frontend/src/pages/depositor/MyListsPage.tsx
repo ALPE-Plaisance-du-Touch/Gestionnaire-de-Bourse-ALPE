@@ -188,9 +188,15 @@ export function MyListsPage() {
       {edition?.declarationDeadline && <DeadlineBanner deadline={edition.declarationDeadline} />}
 
       {/* Info messages */}
-      {!canCreateMore && lists.length > 0 && (
+      {!canCreateMore && lists.length >= maxLists && (
         <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg">
           Vous avez atteint le nombre maximum de listes ({maxLists}).
+        </div>
+      )}
+
+      {!canCreateMore && lists.length < maxLists && (
+        <div className="mb-4 bg-orange-50 border border-orange-200 text-orange-700 px-4 py-3 rounded-lg">
+          La date limite de déclaration est dépassée. Vous ne pouvez plus créer de nouvelles listes.
         </div>
       )}
 
@@ -231,9 +237,15 @@ export function MyListsPage() {
               </svg>
             </div>
             <p className="text-gray-500 mb-4">Vous n'avez pas encore créé de liste.</p>
-            <Button onClick={handleCreateList} disabled={!canCreateMore || createMutation.isPending}>
-              Créer ma première liste
-            </Button>
+            {!canCreateMore ? (
+              <p className="text-sm text-orange-600">
+                La date limite de déclaration est dépassée. Vous ne pouvez plus créer de liste.
+              </p>
+            ) : (
+              <Button onClick={handleCreateList} disabled={createMutation.isPending}>
+                Créer ma première liste
+              </Button>
+            )}
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
