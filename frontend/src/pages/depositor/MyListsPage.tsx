@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { depositorListsApi } from '@/api';
 import { Button, ConfirmModal } from '@/components/ui';
@@ -323,7 +323,14 @@ export function MyListsPage() {
           <li>2. Validez votre liste une fois tous les articles saisis</li>
           <li>3. Imprimez vos étiquettes et fixez-les sur chaque article</li>
           <li>4. Déposez vos articles lors des créneaux de dépôt</li>
+          <li>5. Récupérez vos invendus puis recevez le paiement de vos ventes</li>
         </ul>
+        <p className="mt-3 text-xs text-blue-700">
+          Votre liste passe par plusieurs étapes : Brouillon, Validée, Déposée, Récupérée, puis Paiement.{' '}
+          <Link to="/aide#cycle-de-vie" className="underline font-medium hover:text-blue-900">
+            Voir le détail du cycle de vie
+          </Link>
+        </p>
       </div>
 
       {/* Delete confirmation modal */}
