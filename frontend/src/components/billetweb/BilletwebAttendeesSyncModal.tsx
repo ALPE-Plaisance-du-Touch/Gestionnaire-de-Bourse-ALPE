@@ -33,6 +33,7 @@ export function BilletwebAttendeesSyncModal({
       queryClient.invalidateQueries({ queryKey: ['billetweb-attendees-preview', editionId] });
       queryClient.invalidateQueries({ queryKey: ['edition', editionId] });
       queryClient.invalidateQueries({ queryKey: ['edition-depositors', editionId] });
+      queryClient.invalidateQueries({ queryKey: ['deposit-slots', editionId] });
     },
   });
 
