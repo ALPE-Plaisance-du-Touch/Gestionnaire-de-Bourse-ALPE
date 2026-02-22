@@ -215,7 +215,7 @@ export function Header() {
             {isAuthenticated && (
               <button
                 type="button"
-                className="md:hidden p-2 text-gray-600 hover:text-gray-900 rounded-md"
+                className="md:hidden p-3 text-gray-600 hover:text-gray-900 rounded-md"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-menu"
@@ -308,7 +308,7 @@ export function Header() {
           {isManagerOrAdmin && (
             <Link
               to="/editions"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+              className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
               onClick={closeMobileMenu}
             >
               Éditions
@@ -316,7 +316,7 @@ export function Header() {
           )}
           <Link
             to="/lists"
-            className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+            className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
             onClick={closeMobileMenu}
           >
             Mes listes
@@ -330,14 +330,14 @@ export function Header() {
               </p>
               <Link
                 to="/admin"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
                 onClick={closeMobileMenu}
               >
                 Tableau de bord
               </Link>
               <Link
                 to="/admin/invitations"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
                 onClick={closeMobileMenu}
               >
                 Invitations
@@ -346,14 +346,14 @@ export function Header() {
                 <>
                   <Link
                     to="/admin/users"
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                    className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
                     onClick={closeMobileMenu}
                   >
                     Utilisateurs
                   </Link>
                   <Link
                     to="/admin/audit-logs"
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                    className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
                     onClick={closeMobileMenu}
                   >
                     Journal d'audit
@@ -366,14 +366,14 @@ export function Header() {
           <div className="border-t border-gray-200 my-2" />
           <Link
             to="/profile"
-            className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+            className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
             onClick={closeMobileMenu}
           >
             Mon profil
           </Link>
           <button
             onClick={() => { closeMobileMenu(); handleLogout(); }}
-            className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+            className="block w-full text-left px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
           >
             Déconnexion
           </button>
