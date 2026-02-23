@@ -139,6 +139,7 @@ async def activate_account(
             is_active=user.is_active,
             is_verified=user.is_verified,
             is_local_resident=user.is_local_resident,
+            is_tester=user.is_tester,
             created_at=user.created_at,
             last_login_at=user.last_login_at,
         )
@@ -174,6 +175,7 @@ async def get_current_user_profile(
         is_active=current_user.is_active,
         is_verified=current_user.is_verified,
         is_local_resident=current_user.is_local_resident,
+        is_tester=current_user.is_tester,
         created_at=current_user.created_at,
         last_login_at=current_user.last_login_at,
     )
