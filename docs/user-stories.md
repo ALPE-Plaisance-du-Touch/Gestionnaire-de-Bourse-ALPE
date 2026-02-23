@@ -2912,3 +2912,106 @@ test_scenarios:
   - T-US014-10 : Édition en brouillon — tableau de bord non accessible (KO, pas encore d'inscriptions)
 ```
 
+## US-015 — Créer et utiliser une bourse en mode Formation
+
+```yaml
+id: US-015
+title: Créer et utiliser une bourse en mode Formation
+actor: administrateur
+benefit: "...pour former les bénévoles et gestionnaires avant les vraies bourses"
+as_a: "En tant qu'administrateur"
+i_want: "Je veux créer une édition de bourse en mode Formation, forcer manuellement les transitions d'étapes et restreindre sa visibilité aux utilisateurs testeurs"
+so_that: "Afin de permettre aux bénévoles et gestionnaires de s'entraîner sur le cycle complet d'une bourse sans impacter les données réelles ni les déposants"
+
+# Contexte métier
+notes: |
+  - Les bénévoles et gestionnaires doivent être formés sur l'application avant chaque saison de bourse
+  - Il est nécessaire de pouvoir simuler tout le cycle de vie d'une édition (inscription, déclaration, dépôt, vente, clôture, reversement)
+  - Les dates réelles ne doivent pas bloquer les transitions d'étapes en mode formation
+  - Les déposants normaux ne doivent pas voir cette édition pour éviter toute confusion
+  - Des utilisateurs marqués "testeurs" peuvent jouer le rôle de déposant pour tester le parcours complet
+  - Un bandeau visuel permanent permet de distinguer clairement la bourse de formation d'une vraie bourse
+
+acceptance_criteria:
+  # AC-1 : Création d'une édition en mode formation
+  - GIVEN je suis administrateur
+    WHEN je crée une nouvelle édition
+    THEN je peux cocher une option "Mode formation" (flag is_training)
+    AND si une autre édition formation est déjà active (non clôturée), la création est refusée avec un message explicite
+    AND cette contrainte est indépendante de la limitation sur les éditions réelles (REQ-F-019)
+
+  # AC-2 : Forçage manuel des transitions d'étapes
+  - GIVEN une édition formation existe
+    AND je suis administrateur ou gestionnaire
+    WHEN je consulte la page de détail de cette édition
+    THEN je vois un sélecteur permettant de forcer la transition vers n'importe quelle étape suivante du cycle de vie :
+      Brouillon → Configurée → Inscriptions ouvertes → En cours → Clôturée
+    AND la transition s'effectue sans vérification des dates, des prérequis de configuration ni des contraintes habituelles
+    AND un message de confirmation indique la nouvelle étape
+
+  # AC-3 : Bandeau visuel "Bourse de formation"
+  - GIVEN une édition est en mode formation
+    WHEN n'importe quel utilisateur (admin, gestionnaire, bénévole, déposant testeur) consulte un écran lié à cette édition
+    THEN un bandeau bien visible "Bourse de formation" est affiché en permanence sur tous les écrans de cette édition
+    AND le bandeau est visuellement distinct (couleur différente des alertes existantes, par exemple violet ou jaune)
+
+  # AC-4 : Invisibilité pour les déposants normaux
+  - GIVEN une édition formation existe
+    AND je suis un déposant sans le flag testeur
+    WHEN je consulte la liste de mes éditions disponibles
+    THEN l'édition formation n'apparaît pas dans la liste
+    AND si je tente d'accéder directement à l'URL de l'édition formation, je reçois une erreur d'accès
+
+  # AC-5 : Activation du mode testeur sur un utilisateur
+  - GIVEN je suis administrateur
+    WHEN je consulte la gestion des utilisateurs
+    THEN je peux activer ou désactiver le flag "testeur" (is_tester) sur n'importe quel compte
+    AND un utilisateur testeur avec le rôle déposant peut voir et participer aux éditions formation
+    AND les gestionnaires, bénévoles et administrateurs n'ont pas besoin du flag testeur (ils ont déjà accès via leur rôle)
+
+  # AC-6 : Parcours complet de la bourse de formation
+  - GIVEN une édition formation est active
+    AND des déposants testeurs sont inscrits
+    WHEN je parcours le cycle complet (déclaration d'articles, dépôt, vente, clôture, reversements)
+    THEN toutes les fonctionnalités se comportent normalement
+    AND les données de l'édition formation sont isolées des éditions réelles
+
+  # AC-7 : Restrictions d'accès - déposant non testeur
+  - GIVEN je suis un déposant sans le flag testeur
+    WHEN je tente d'accéder à une édition formation (via URL directe ou API)
+    THEN le système retourne une erreur 403 (accès insuffisant)
+    AND aucune donnée de l'édition formation n'est exposée
+
+dependencies:
+  - US-006  # Création d'édition
+  - US-007  # Configuration des dates
+  - US-009  # Clôture d'édition
+
+links:
+  - rel: requirement
+    id: REQ-F-024  # Mode formation
+
+business_rules:
+  - Seul un administrateur peut créer une édition en mode formation
+  - Maximum 1 édition formation non clôturée à la fois
+  - La contrainte d'édition active unique (REQ-F-019) ne s'applique pas aux éditions formation
+  - Les transitions d'étapes en mode formation ne vérifient ni les dates ni les prérequis
+  - Les déposants doivent avoir le flag is_tester pour accéder à une édition formation
+  - Les bénévoles, gestionnaires et administrateurs accèdent à l'édition formation sans flag testeur
+  - Le bandeau "Bourse de formation" est affiché sur tous les écrans liés à l'édition
+  - Les données d'une édition formation (listes, articles, ventes) sont stockées normalement mais isolées par l'édition
+
+test_scenarios:
+  - T-US015-01 : Création d'une édition formation par un administrateur (OK)
+  - T-US015-02 : Création refusée si une édition formation non clôturée existe déjà (KO, message explicite)
+  - T-US015-03 : Création refusée pour un gestionnaire (KO, accès insuffisant)
+  - T-US015-04 : Forçage de transition Brouillon → En cours sans configuration de dates (OK)
+  - T-US015-05 : Bandeau "Bourse de formation" visible sur la page de détail (OK)
+  - T-US015-06 : Bandeau visible sur les pages déposant testeur (listes, articles) (OK)
+  - T-US015-07 : Édition formation invisible pour un déposant normal (OK, n'apparaît pas dans la liste)
+  - T-US015-08 : Accès direct par URL refusé pour un déposant non testeur (KO, erreur 403)
+  - T-US015-09 : Activation du flag testeur sur un utilisateur (OK)
+  - T-US015-10 : Déposant testeur voit l'édition formation dans sa liste (OK)
+  - T-US015-11 : Parcours complet : déclaration, dépôt, vente, clôture (OK)
+  - T-US015-12 : Coexistence d'une édition formation et d'une édition réelle active (OK, pas de conflit)
+```

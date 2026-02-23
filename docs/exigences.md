@@ -430,6 +430,29 @@ links:
   - **Priorité :** Should have
   - **Responsable validation :** Gestionnaire
 
+- REQ-F-024 — Le système DOIT permettre de créer et d'utiliser une édition en mode Formation pour entraîner les bénévoles et gestionnaires. (US-015)
+  - **Critères d'acceptation :**
+    - **Création d'une édition formation :**
+      - Un administrateur peut créer une édition avec le flag `is_training`
+      - Maximum 1 édition formation non clôturée à la fois
+      - Cette contrainte est indépendante de la limitation sur les éditions réelles (REQ-F-019)
+    - **Forçage des transitions d'étapes :**
+      - Un administrateur ou gestionnaire peut forcer la transition vers n'importe quelle étape suivante du cycle de vie
+      - Aucune vérification de dates, de configuration ou de prérequis n'est effectuée en mode formation
+    - **Bandeau visuel :**
+      - Un bandeau "Bourse de formation" est affiché en permanence sur tous les écrans liés à l'édition formation
+      - Le bandeau est visuellement distinct des alertes existantes
+    - **Visibilité restreinte :**
+      - L'édition formation n'apparaît pas pour les déposants normaux (sans flag `is_tester`)
+      - Un administrateur peut activer/désactiver le flag `is_tester` sur n'importe quel compte utilisateur
+      - Les bénévoles, gestionnaires et administrateurs accèdent à l'édition formation sans flag testeur
+      - Un déposant non testeur qui tente d'accéder à l'édition formation reçoit une erreur 403
+    - **Parcours complet :**
+      - Toutes les fonctionnalités (déclaration, dépôt, vente, clôture, reversements) fonctionnent normalement
+      - Les données sont isolées par l'édition (pas d'impact sur les éditions réelles)
+  - **Priorité :** Should have
+  - **Responsable validation :** Administrateur
+
 - REQ-F-003 — Le système DOIT permettre la génération et l'impression en masse des étiquettes par les gestionnaires (règlement intérieur : impression à la charge d'ALPE). (US-003)
   - **Critères d'acceptation :**
     - **Interface de gestion des étiquettes :**
