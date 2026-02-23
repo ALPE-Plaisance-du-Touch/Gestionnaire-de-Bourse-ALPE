@@ -22,7 +22,7 @@ links:
 |---|---|
 | Bourse | Événement d'échange/vente organisé par ALPE avec dépôt d'articles, vente, reversement. |
 | Édition (de bourse) | Instance spécifique d'une bourse avec ses propres dates, lieu et règles. Généralement deux éditions par an : printemps et automne. Synonyme : Session de bourse. |
-| Cycle de vie d'une édition | Séquence d'étapes : Création → Configuration → Inscriptions → Dépôts → Vente → Récupération invendus → Clôture. |
+| Cycle de vie d'une édition | Séquence d'étapes : Brouillon → Inscriptions ouvertes → Dépôt → Vente → Bilan → Clôturée → Archivée. |
 
 ## Acteurs et rôles
 
@@ -62,7 +62,7 @@ links:
 | Date de vente | Période durant laquelle la bourse est ouverte au public pour acheter les articles. Généralement samedi 9h-18h et dimanche 9h-13h. |
 | Vente privée | Vente réservée aux écoles et ALAE de Plaisance-du-Touch, le vendredi 17h-18h précédant la vente publique. |
 | Date de récupération des invendus | Date à laquelle les déposants viennent récupérer leurs articles non vendus. Lundi 18h30-19h30 pour déposants classiques, dimanche 17h-18h pour listes 1000/2000. Articles non récupérés sont donnés à des associations caritatives. |
-| Clôture d'édition | Opération finale effectuée par un administrateur marquant la fin d'une édition (calcul des reversements, archivage). |
+| Clôture d'édition | Opération effectuée par un administrateur après le bilan, marquant le passage en lecture seule. L'édition reste dans la liste principale jusqu'à son archivage. |
 
 ## Outils externes
 

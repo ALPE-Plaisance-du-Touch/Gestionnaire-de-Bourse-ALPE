@@ -152,12 +152,13 @@ All specs are in `docs/` (v1.0.0 validated):
 ## Key Domain Concepts
 
 ### Edition Lifecycle
-1. **Brouillon** (draft) → Created by admin (US-006)
-2. **Configurée** (configured) → Dates/commission set (US-007)
-3. **Inscriptions_ouvertes** (registrations_open) → Billetweb import done (US-008)
-4. **En_cours** (in_progress) → Deposits and sales active
-5. **Clôturée** (closed) → Edition closed (US-009)
-6. **Archivée** (archived) → Auto-archived after retention period
+1. **Brouillon** (draft) → Created by admin, configuration happens here (US-006, US-007)
+2. **Inscriptions_ouvertes** (registrations_open) → Billetweb import done, depositors declare lists (US-008)
+3. **Dépôt** (deposit) → Depositors bring articles, volunteers verify/accept
+4. **Vente** (sale) → Articles on sale to public
+5. **Bilan** (settlement) → Inventory of unsold items, payout calculations
+6. **Clôturée** (closed) → Edition closed, read-only (US-009)
+7. **Archivée** (archived) → Auto-archived after retention period
 
 ### Roles (hierarchical)
 - **Déposant** (seller) - declares articles, views sales

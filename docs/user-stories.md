@@ -258,7 +258,7 @@ notes: |
 acceptance_criteria:
   # AC-1 : Accès à la déclaration d'articles
   - GIVEN je suis connecté en tant que déposant
-    AND je suis inscrit à une édition active (statut "Inscriptions ouvertes" ou "En cours")
+    AND je suis inscrit à une édition active (statut "Inscriptions ouvertes", "Dépôt" ou "Vente")
     AND la date limite de déclaration n'est pas dépassée
     WHEN j'accède à mon espace déposant
     THEN je vois :
@@ -614,7 +614,7 @@ notes: |
 acceptance_criteria:
   # AC-1 : Accès à la génération en masse
   - GIVEN je suis connecté en tant que gestionnaire
-    AND une édition est en statut "Inscriptions ouvertes" ou "En cours"
+    AND une édition est en statut "Inscriptions ouvertes", "Dépôt" ou "Vente"
     WHEN j'accède à la section "Gestion des étiquettes"
     THEN je vois :
       • Un tableau listant tous les déposants avec leurs listes validées
@@ -1502,14 +1502,15 @@ business_rules:
   - Une édition créée est en statut "Brouillon" par défaut
   - Une édition en brouillon ne peut pas recevoir d'inscriptions ni d'articles
   - La date/heure de fin doit être strictement postérieure à la date/heure de début
-  - Le statut passe de "Brouillon" à "Configurée" après configuration des dates opérationnelles (US-007)
+  - La configuration des dates opérationnelles se fait dans le statut "Brouillon" (pas de statut "Configurée" séparé)
 
 # États du cycle de vie d'une édition
 edition_lifecycle:
-  - Brouillon : créée mais non configurée
-  - Configurée : dates définies, prête pour inscriptions
-  - Inscriptions ouvertes : import Billetweb possible
-  - En cours : période de dépôt/vente active
+  - Brouillon : préparation de l'édition (configuration des dates, commission, créneaux)
+  - Inscriptions ouvertes : les déposants s'inscrivent et déclarent leurs listes
+  - Dépôt : les déposants déposent physiquement leurs articles, les bénévoles vérifient
+  - Vente : la bourse est ouverte au public, articles en vente
+  - Bilan : inventaire des invendus, calcul des reversements
   - Clôturée : terminée, en lecture seule
   - Archivée : historique, non modifiable
 
@@ -1565,12 +1566,12 @@ notes: |
   - Cette configuration suit la création d'édition (US-006)
   - Un gestionnaire (ou administrateur) peut configurer les dates
   - Les dates doivent être cohérentes chronologiquement
-  - Une fois les dates définies, l'édition passe en statut "Configurée"
+  - La configuration des dates se fait dans le statut "Brouillon" (pas de statut "Configurée" séparé)
 
 acceptance_criteria:
   # AC-1 : Accès à la configuration
   - GIVEN je suis connecté avec le rôle gestionnaire ou administrateur
-    AND une édition existe en statut "Brouillon" ou "Configurée"
+    AND une édition existe en statut "Brouillon"
     WHEN j'accède à la page de configuration de cette édition
     THEN je vois un formulaire avec les champs de dates suivants :
       • Date de début des inscriptions (optionnel, informatif - géré par Billetweb)
@@ -1590,8 +1591,7 @@ acceptance_criteria:
     AND je définis un taux de commission valide (entre 0 et 100%, par défaut 20%)
     WHEN je valide le formulaire
     THEN le système enregistre toutes les dates et le taux de commission
-    AND passe l'édition au statut "Configurée"
-    AND affiche un message : "Configuration enregistrée. L'édition est maintenant prête pour l'import des inscriptions."
+    AND affiche un message : "Configuration enregistrée."
     AND les déposants pourront déclarer leurs articles jusqu'à la date limite configurée
 
   # AC-2bis : Configuration des créneaux de dépôt avec capacités
@@ -1657,7 +1657,7 @@ business_rules:
   - Tarification ALPE : 5€ frais d'inscription (Billetweb, non remboursable) + 20% commission sur ventes
   - Modification possible sans restriction tant qu'aucune inscription n'est importée
   - Modification avec notification obligatoire si des déposants sont actifs
-  - Le statut passe de "Brouillon" à "Configurée" après validation
+  - La configuration se fait dans le statut "Brouillon" (pas de transition automatique vers un autre statut)
   - Après la date limite de déclaration, les déposants ne peuvent plus modifier leurs listes
 
 # Données de configuration
@@ -1680,7 +1680,7 @@ test_scenarios:
   - T-US007-05 : Modification avec inscriptions actives (notification requise)
   - T-US007-06 : Accès refusé pour bénévole
   - T-US007-07 : Accès refusé pour déposant
-  - T-US007-08 : Changement de statut Brouillon → Configurée
+  - T-US007-08 : Configuration enregistrée dans le statut Brouillon (pas de transition)
 ```
 
 ## US-008 — Importer les inscriptions depuis Billetweb
@@ -1710,7 +1710,7 @@ notes: |
 acceptance_criteria:
   # AC-1 : Accès à l'import
   - GIVEN je suis connecté en tant que gestionnaire ou administrateur
-    AND une édition existe en statut "Configurée" (dates définies)
+    AND une édition existe en statut "Brouillon" (dates configurées)
     WHEN j'accède à la page de gestion de cette édition
     THEN je vois un bouton "Importer les inscriptions Billetweb"
     AND une indication du nombre d'inscriptions déjà importées pour cette édition
@@ -1816,7 +1816,7 @@ links:
 
 # Règles métier complémentaires
 business_rules:
-  - L'import n'est possible que si l'édition est en statut "Configurée"
+  - L'import n'est possible que si l'édition est en statut "Brouillon" (avec dates configurées) ou "Inscriptions ouvertes"
   - Seuls les billets avec Payé="Oui" ET Valide="Oui" sont importés
   - Un email ne peut être associé qu'une seule fois à une édition donnée
   - Les créneaux (colonne Séance) doivent correspondre exactement aux créneaux configurés (US-007)
@@ -1986,7 +1986,7 @@ acceptance_criteria:
   # --- Import des participants (gestionnaire/administrateur) ---
 
   # AC-10 : Synchronisation des inscriptions
-  - GIVEN une édition est en statut "Configurée" ou supérieur
+  - GIVEN une édition est en statut "Brouillon" (avec dates configurées) ou supérieur
     AND les créneaux sont configurés
     AND je suis connecté en tant que gestionnaire ou administrateur
     WHEN j'accède à la page de gestion de l'édition
@@ -2161,7 +2161,7 @@ notes: |
 acceptance_criteria:
   # AC-1 : Accès à la clôture
   - GIVEN je suis connecté en tant qu'administrateur
-    AND une édition existe en statut "En cours"
+    AND une édition existe en statut "Bilan"
     AND la date de récupération est passée
     WHEN j'accède à la page de gestion de cette édition
     THEN je vois un bouton "Clôturer l'édition"
@@ -2945,7 +2945,7 @@ acceptance_criteria:
     AND je suis administrateur ou gestionnaire
     WHEN je consulte la page de détail de cette édition
     THEN je vois un sélecteur permettant de forcer la transition vers n'importe quelle étape suivante du cycle de vie :
-      Brouillon → Configurée → Inscriptions ouvertes → En cours → Clôturée
+      Brouillon → Inscriptions ouvertes → Dépôt → Vente → Bilan → Clôturée
     AND la transition s'effectue sans vérification des dates, des prérequis de configuration ni des contraintes habituelles
     AND un message de confirmation indique la nouvelle étape
 
@@ -3005,7 +3005,7 @@ test_scenarios:
   - T-US015-01 : Création d'une édition formation par un administrateur (OK)
   - T-US015-02 : Création refusée si une édition formation non clôturée existe déjà (KO, message explicite)
   - T-US015-03 : Création refusée pour un gestionnaire (KO, accès insuffisant)
-  - T-US015-04 : Forçage de transition Brouillon → En cours sans configuration de dates (OK)
+  - T-US015-04 : Forçage de transition Brouillon → Vente sans configuration de dates (OK)
   - T-US015-05 : Bandeau "Bourse de formation" visible sur la page de détail (OK)
   - T-US015-06 : Bandeau visible sur les pages déposant testeur (listes, articles) (OK)
   - T-US015-07 : Édition formation invisible pour un déposant normal (OK, n'apparaît pas dans la liste)
