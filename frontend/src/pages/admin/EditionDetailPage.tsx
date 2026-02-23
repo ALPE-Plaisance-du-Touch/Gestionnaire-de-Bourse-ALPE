@@ -953,43 +953,51 @@ export function EditionDetailPage() {
         )}
 
         {/* Training mode: Force status transition (US-015) */}
-        {edition.isTraining && edition.status !== 'closed' && edition.status !== 'archived' && (
+        {edition.isTraining && edition.status !== 'archived' && (
           <div className="bg-amber-50 border border-amber-300 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-amber-900 mb-2">Forcer l'étape suivante (formation)</h3>
+            <h3 className="text-sm font-semibold text-amber-900 mb-2">Forcer le changement d'étape (formation)</h3>
             <p className="text-sm text-amber-700 mb-3">
-              En mode formation, vous pouvez avancer manuellement vers l'étape suivante sans vérification des prérequis.
+              En mode formation, vous pouvez changer librement l'étape du cycle de vie sans vérification des prérequis.
             </p>
             <div className="flex gap-2 flex-wrap">
-              {edition.status === 'draft' && (
-                <Button type="button" size="sm" variant="secondary"
+              {edition.status !== 'draft' && (
+                <Button type="button" size="sm" variant="outline"
+                  onClick={() => forceStatusMutation.mutate('draft')}
+                  disabled={forceStatusMutation.isPending}
+                  isLoading={forceStatusMutation.isPending}>
+                  ← Brouillon
+                </Button>
+              )}
+              {edition.status !== 'configured' && (
+                <Button type="button" size="sm" variant={edition.status === 'draft' ? 'secondary' : 'outline'}
                   onClick={() => forceStatusMutation.mutate('configured')}
                   disabled={forceStatusMutation.isPending}
                   isLoading={forceStatusMutation.isPending}>
-                  Forcer → Configurée
+                  {edition.status === 'draft' ? '→' : '←'} Configurée
                 </Button>
               )}
-              {(edition.status === 'draft' || edition.status === 'configured') && (
-                <Button type="button" size="sm" variant="secondary"
+              {edition.status !== 'registrations_open' && (
+                <Button type="button" size="sm" variant={edition.status === 'in_progress' || edition.status === 'closed' ? 'outline' : 'secondary'}
                   onClick={() => forceStatusMutation.mutate('registrations_open')}
                   disabled={forceStatusMutation.isPending}
                   isLoading={forceStatusMutation.isPending}>
-                  Forcer → Inscriptions ouvertes
+                  {edition.status === 'in_progress' || edition.status === 'closed' ? '←' : '→'} Inscriptions ouvertes
                 </Button>
               )}
               {edition.status !== 'in_progress' && (
-                <Button type="button" size="sm" variant="secondary"
+                <Button type="button" size="sm" variant={edition.status === 'closed' ? 'outline' : 'secondary'}
                   onClick={() => forceStatusMutation.mutate('in_progress')}
                   disabled={forceStatusMutation.isPending}
                   isLoading={forceStatusMutation.isPending}>
-                  Forcer → En cours
+                  {edition.status === 'closed' ? '←' : '→'} En cours
                 </Button>
               )}
-              {edition.status === 'in_progress' && (
+              {edition.status !== 'closed' && (
                 <Button type="button" size="sm" variant="danger"
                   onClick={() => forceStatusMutation.mutate('closed')}
                   disabled={forceStatusMutation.isPending}
                   isLoading={forceStatusMutation.isPending}>
-                  Forcer → Clôturée
+                  → Clôturée
                 </Button>
               )}
             </div>

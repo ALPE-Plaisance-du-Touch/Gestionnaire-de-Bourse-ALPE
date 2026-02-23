@@ -247,7 +247,8 @@ class EditionService:
 
         Bypasses date checks and prerequisite validations.
         Only validates that the edition is a training edition and the
-        transition direction is forward in the lifecycle.
+        target status is different from the current one.
+        Allows both forward and backward transitions.
         """
         edition = await self.get_edition(edition_id)
 
@@ -257,25 +258,23 @@ class EditionService:
                 field="status",
             )
 
-        # Validate forward transition only
-        status_order = [
+        # Validate target status is in the allowed lifecycle
+        allowed_statuses = [
             EditionStatus.DRAFT,
             EditionStatus.CONFIGURED,
             EditionStatus.REGISTRATIONS_OPEN,
             EditionStatus.IN_PROGRESS,
             EditionStatus.CLOSED,
         ]
-        current_idx = next(
-            (i for i, s in enumerate(status_order) if s.value == edition.status), -1
-        )
-        new_idx = next(
-            (i for i, s in enumerate(status_order) if s == new_status), -1
-        )
-
-        if new_idx <= current_idx:
+        if new_status not in allowed_statuses:
             raise ValidationError(
-                f"Transition de '{edition.status}' vers '{new_status.value}' non autorisée "
-                "(seules les transitions en avant sont possibles)",
+                f"Le statut '{new_status.value}' n'est pas un statut valide pour le forçage",
+                field="status",
+            )
+
+        if new_status.value == edition.status:
+            raise ValidationError(
+                f"L'édition est déjà au statut '{edition.status}'",
                 field="status",
             )
 
