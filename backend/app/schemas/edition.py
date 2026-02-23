@@ -60,6 +60,9 @@ class EditionUpdate(BaseModel):
     retrieval_end_datetime: datetime | None = None
     commission_rate: Decimal | None = Field(None, ge=0, le=1)
 
+    # Training mode toggle
+    is_training: bool | None = None
+
 
 class EditionStatusUpdate(BaseModel):
     """Schema for updating edition status."""

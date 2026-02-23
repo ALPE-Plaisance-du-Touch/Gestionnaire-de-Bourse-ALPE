@@ -317,6 +317,23 @@ export function EditionDetailPage() {
     },
   });
 
+  const trainingToggleMutation = useMutation({
+    mutationFn: (isTraining: boolean) => editionsApi.updateEdition(id!, { is_training: isTraining }),
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ['editions'] });
+      await queryClient.refetchQueries({ queryKey: ['edition', id] });
+      setSuccess(true);
+      setError(null);
+    },
+    onError: (err) => {
+      if (err instanceof ApiException) {
+        setError(err.message);
+      } else {
+        setError('Une erreur est survenue lors du changement de mode formation.');
+      }
+    },
+  });
+
   const forceStatusMutation = useMutation({
     mutationFn: (status: EditionStatus) => editionsApi.forceTrainingStatus(id!, status),
     onSuccess: () => {
@@ -1096,6 +1113,31 @@ export function EditionDetailPage() {
               ? 'Clôturée'
               : 'Archivée'}
           </div>
+
+          {/* Training mode toggle */}
+          {isAdmin && (
+            <div className="bg-amber-50 border border-amber-300 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-amber-900">Mode formation</h3>
+                  <p className="text-sm text-amber-700">
+                    {edition.isTraining
+                      ? 'Cette édition est en mode formation. Les données sont destinées à l\'entraînement uniquement.'
+                      : 'Activer le mode formation pour pouvoir forcer les changements d\'étape et utiliser cette édition pour l\'entraînement.'}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant={edition.isTraining ? 'outline' : 'secondary'}
+                  disabled={trainingToggleMutation.isPending}
+                  isLoading={trainingToggleMutation.isPending}
+                  onClick={() => trainingToggleMutation.mutate(!edition.isTraining)}
+                >
+                  {edition.isTraining ? 'Désactiver' : 'Activer'}
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Training mode: Force status transition (US-015) */}
           {edition.isTraining && (

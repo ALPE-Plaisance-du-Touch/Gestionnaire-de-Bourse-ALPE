@@ -161,6 +161,7 @@ export const editionsApi = {
     if (data.retrievalStartDatetime !== undefined) payload.retrieval_start_datetime = data.retrievalStartDatetime;
     if (data.retrievalEndDatetime !== undefined) payload.retrieval_end_datetime = data.retrievalEndDatetime;
     if (data.commissionRate !== undefined) payload.commission_rate = data.commissionRate;
+    if (data.is_training !== undefined) payload.is_training = data.is_training;
 
     const response = await apiClient.put<EditionApiResponse>(`/v1/editions/${editionId}`, payload);
     return transformEdition(response.data);

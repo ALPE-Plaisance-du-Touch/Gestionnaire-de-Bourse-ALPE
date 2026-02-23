@@ -63,6 +63,7 @@ export interface UpdateEditionRequest {
   retrievalStartDatetime?: string;
   retrievalEndDatetime?: string;
   commissionRate?: number;
+  is_training?: boolean;
 }
 
 export interface ClosureCheckItem {

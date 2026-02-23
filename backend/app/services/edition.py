@@ -160,8 +160,18 @@ class EditionService:
         """
         edition = await self.get_edition(edition_id)
 
-        # Check if edition is closed
-        if edition.is_closed:
+        # Validate is_training toggle (allowed on non-archived editions)
+        if data.is_training is not None and data.is_training != edition.is_training:
+            if edition.status == EditionStatus.ARCHIVED.value:
+                raise ValidationError(
+                    "Impossible de modifier le mode formation d'une édition archivée",
+                    field="is_training",
+                )
+
+        # Check if edition is closed (allow is_training-only updates on closed editions)
+        update_fields = data.model_dump(exclude_unset=True)
+        is_training_only = set(update_fields.keys()) == {"is_training"}
+        if edition.is_closed and not is_training_only:
             raise EditionClosedError(edition_id)
 
         # Check for duplicate name if name is being changed
