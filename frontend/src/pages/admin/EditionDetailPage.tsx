@@ -12,9 +12,10 @@ import type { EditionStatus, User } from '@/types';
 
 const STATUS_LABELS: Record<EditionStatus, { label: string; className: string }> = {
   draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-800' },
-  configured: { label: 'Configuré', className: 'bg-blue-100 text-blue-800' },
   registrations_open: { label: 'Inscriptions ouvertes', className: 'bg-purple-100 text-purple-800' },
-  in_progress: { label: 'En cours', className: 'bg-green-100 text-green-800' },
+  deposit: { label: 'Dépôt', className: 'bg-blue-100 text-blue-800' },
+  sale: { label: 'Vente', className: 'bg-green-100 text-green-800' },
+  settlement: { label: 'Bilan', className: 'bg-yellow-100 text-yellow-800' },
   closed: { label: 'Clôturé', className: 'bg-orange-100 text-orange-800' },
   archived: { label: 'Archivé', className: 'bg-gray-100 text-gray-500' },
 };
@@ -117,7 +118,7 @@ export function EditionDetailPage() {
   const [showAttendeesSyncModal, setShowAttendeesSyncModal] = useState(false);
   const [showInvitationsConfirm, setShowInvitationsConfirm] = useState(false);
   const [showOpenRegistrationsConfirm, setShowOpenRegistrationsConfirm] = useState(false);
-  const [showRevertToConfiguredConfirm, setShowRevertToConfiguredConfirm] = useState(false);
+  const [showRevertToDraftConfirm, setShowRevertToDraftConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showManualDepositorModal, setShowManualDepositorModal] = useState(false);
 
@@ -200,8 +201,8 @@ export function EditionDetailPage() {
   });
 
   const statusMutation = useMutation({
-    mutationFn: (status: 'configured') =>
-      editionsApi.updateEditionStatus(id!, status),
+    mutationFn: (newStatus: EditionStatus) =>
+      editionsApi.updateEditionStatus(id!, newStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['editions'] });
       queryClient.invalidateQueries({ queryKey: ['edition', id] });
@@ -297,10 +298,10 @@ export function EditionDetailPage() {
     },
   });
 
-  const revertToConfiguredMutation = useMutation({
-    mutationFn: () => editionsApi.updateEditionStatus(id!, 'configured'),
+  const revertToDraftMutation = useMutation({
+    mutationFn: () => editionsApi.updateEditionStatus(id!, 'draft'),
     onSuccess: () => {
-      setShowRevertToConfiguredConfirm(false);
+      setShowRevertToDraftConfirm(false);
       setSuccess(true);
       setError(null);
       queryClient.invalidateQueries({ queryKey: ['editions'] });
@@ -308,11 +309,11 @@ export function EditionDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['active-edition'] });
     },
     onError: (err) => {
-      setShowRevertToConfiguredConfirm(false);
+      setShowRevertToDraftConfirm(false);
       if (err instanceof ApiException) {
         setError(err.message);
       } else {
-        setError("Une erreur est survenue lors du retour en configuration.");
+        setError("Une erreur est survenue lors du retour en brouillon.");
       }
     },
   });
@@ -519,18 +520,6 @@ export function EditionDetailPage() {
 
     try {
       await updateMutation.mutateAsync(updateData);
-
-      if (hasAllConfigDates && edition.status === 'draft') {
-        try {
-          await statusMutation.mutateAsync('configured');
-        } catch (err) {
-          if (err instanceof ApiException) {
-            setError(err.message);
-          } else {
-            setError('Les modifications ont été enregistrées, mais le passage en statut "Configurée" a échoué.');
-          }
-        }
-      }
     } catch {
       // Error handled by mutation
     }
@@ -569,10 +558,10 @@ export function EditionDetailPage() {
   const visibleTabs: { id: TabId; label: string }[] = [
     { id: 'config', label: 'Configuration' },
   ];
-  if (['configured', 'registrations_open', 'in_progress', 'closed', 'archived'].includes(edition.status)) {
+  if (['registrations_open', 'deposit', 'sale', 'settlement', 'closed', 'archived'].includes(edition.status)) {
     visibleTabs.push({ id: 'deposants', label: 'Déposants' });
   }
-  if (['registrations_open', 'in_progress', 'closed', 'archived'].includes(edition.status)) {
+  if (['deposit', 'sale', 'settlement', 'closed', 'archived'].includes(edition.status)) {
     visibleTabs.push({ id: 'operations', label: 'Opérations' });
   }
   if (edition.status !== 'archived') {
@@ -870,7 +859,7 @@ export function EditionDetailPage() {
               Importez les inscriptions depuis Billetweb pour associer les déposants à cette édition.
             </p>
 
-            {(edition.status === 'configured' || edition.status === 'registrations_open') && (
+            {(edition.status === 'draft' || edition.status === 'registrations_open') && (
               <div className="flex items-center gap-3 flex-wrap">
                 {edition.billetwebEventId && (
                   <Button
@@ -936,7 +925,7 @@ export function EditionDetailPage() {
             )}
 
             {/* Workflow actions: send invitations + open registrations */}
-            {(edition.status === 'configured' || edition.status === 'registrations_open') && importStats && importStats.totalDepositors > 0 && (
+            {(edition.status === 'draft' || edition.status === 'registrations_open') && importStats && importStats.totalDepositors > 0 && (
               <div className="mt-4 flex items-center gap-3 flex-wrap">
                 {(edition.status === 'registrations_open' || isAdmin) && (
                   <Button
@@ -947,13 +936,13 @@ export function EditionDetailPage() {
                     disabled={sendInvitationsMutation.isPending || (importStats.pendingInvitations ?? 0) === 0}
                     isLoading={sendInvitationsMutation.isPending}
                   >
-                    {edition.status === 'configured'
+                    {edition.status === 'draft'
                       ? `Envoyer les invitations et ouvrir (${importStats.pendingInvitations ?? 0})`
                       : `Envoyer les invitations (${importStats.pendingInvitations ?? 0})`
                     }
                   </Button>
                 )}
-                {isAdmin && edition.status === 'configured' && (
+                {isAdmin && edition.status === 'draft' && (
                   <Button
                     type="button"
                     size="sm"
@@ -975,7 +964,7 @@ export function EditionDetailPage() {
       {currentTab === 'operations' && (
         <div className="space-y-6">
           {/* Labels */}
-          {(edition.status === 'registrations_open' || edition.status === 'in_progress') && (
+          {['registrations_open', 'deposit', 'sale'].includes(edition.status) && (
             <div className="bg-white border border-gray-200 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -996,7 +985,7 @@ export function EditionDetailPage() {
           )}
 
           {/* Sales & Stats */}
-          {edition.status === 'in_progress' && (
+          {edition.status === 'sale' && (
             <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
@@ -1037,7 +1026,7 @@ export function EditionDetailPage() {
           )}
 
           {/* Payouts */}
-          {(edition.status === 'in_progress' || edition.status === 'closed') && (
+          {['sale', 'settlement', 'closed'].includes(edition.status) && (
             <div className="bg-white border border-gray-200 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -1102,13 +1091,15 @@ export function EditionDetailPage() {
           <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
             <strong>Statut actuel :</strong>{' '}
             {edition.status === 'draft'
-              ? 'Brouillon - Configurez les dates pour passer en statut "Configurée"'
-              : edition.status === 'configured'
-              ? 'Configurée - Prête pour l\'import des inscriptions'
+              ? 'Brouillon - Configurez les dates et ouvrez les inscriptions'
               : edition.status === 'registrations_open'
-              ? 'Inscriptions ouvertes'
-              : edition.status === 'in_progress'
-              ? 'En cours'
+              ? 'Inscriptions ouvertes - Les déposants peuvent s\'inscrire et déclarer leurs listes'
+              : edition.status === 'deposit'
+              ? 'Dépôt - Les déposants déposent leurs articles'
+              : edition.status === 'sale'
+              ? 'Vente - La bourse est ouverte au public'
+              : edition.status === 'settlement'
+              ? 'Bilan - Inventaire des invendus et calcul des reversements'
               : edition.status === 'closed'
               ? 'Clôturée'
               : 'Archivée'}
@@ -1155,28 +1146,36 @@ export function EditionDetailPage() {
                     ← Brouillon
                   </Button>
                 )}
-                {edition.status !== 'configured' && (
-                  <Button type="button" size="sm" variant={edition.status === 'draft' ? 'secondary' : 'outline'}
-                    onClick={() => forceStatusMutation.mutate('configured')}
-                    disabled={forceStatusMutation.isPending}
-                    isLoading={forceStatusMutation.isPending}>
-                    {edition.status === 'draft' ? '→' : '←'} Configurée
-                  </Button>
-                )}
                 {edition.status !== 'registrations_open' && (
-                  <Button type="button" size="sm" variant={edition.status === 'in_progress' || edition.status === 'closed' ? 'outline' : 'secondary'}
+                  <Button type="button" size="sm" variant={['sale', 'deposit', 'settlement', 'closed'].includes(edition.status) ? 'outline' : 'secondary'}
                     onClick={() => forceStatusMutation.mutate('registrations_open')}
                     disabled={forceStatusMutation.isPending}
                     isLoading={forceStatusMutation.isPending}>
-                    {edition.status === 'in_progress' || edition.status === 'closed' ? '←' : '→'} Inscriptions ouvertes
+                    {['sale', 'deposit', 'settlement', 'closed'].includes(edition.status) ? '←' : '→'} Inscriptions ouvertes
                   </Button>
                 )}
-                {edition.status !== 'in_progress' && (
-                  <Button type="button" size="sm" variant={edition.status === 'closed' ? 'outline' : 'secondary'}
-                    onClick={() => forceStatusMutation.mutate('in_progress')}
+                {edition.status !== 'deposit' && (
+                  <Button type="button" size="sm" variant={['sale', 'settlement', 'closed'].includes(edition.status) ? 'outline' : 'secondary'}
+                    onClick={() => forceStatusMutation.mutate('deposit')}
                     disabled={forceStatusMutation.isPending}
                     isLoading={forceStatusMutation.isPending}>
-                    {edition.status === 'closed' ? '←' : '→'} En cours
+                    {['sale', 'settlement', 'closed'].includes(edition.status) ? '←' : '→'} Dépôt
+                  </Button>
+                )}
+                {edition.status !== 'sale' && (
+                  <Button type="button" size="sm" variant={['settlement', 'closed'].includes(edition.status) ? 'outline' : 'secondary'}
+                    onClick={() => forceStatusMutation.mutate('sale')}
+                    disabled={forceStatusMutation.isPending}
+                    isLoading={forceStatusMutation.isPending}>
+                    {['settlement', 'closed'].includes(edition.status) ? '←' : '→'} Vente
+                  </Button>
+                )}
+                {edition.status !== 'settlement' && (
+                  <Button type="button" size="sm" variant={edition.status === 'closed' ? 'outline' : 'secondary'}
+                    onClick={() => forceStatusMutation.mutate('settlement')}
+                    disabled={forceStatusMutation.isPending}
+                    isLoading={forceStatusMutation.isPending}>
+                    {edition.status === 'closed' ? '←' : '→'} Bilan
                   </Button>
                 )}
                 {edition.status !== 'closed' && (
@@ -1191,31 +1190,31 @@ export function EditionDetailPage() {
             </div>
           )}
 
-          {/* Revert to configured */}
+          {/* Revert to draft */}
           {edition.status === 'registrations_open' && isAdmin && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-yellow-900">Revenir en configuration</h3>
+                  <h3 className="text-sm font-semibold text-yellow-900">Revenir en brouillon</h3>
                   <p className="text-sm text-yellow-700">
-                    Annuler l'ouverture des inscriptions et repasser l'édition en statut "Configurée".
+                    Annuler l'ouverture des inscriptions et repasser l'édition en brouillon.
                   </p>
                 </div>
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={revertToConfiguredMutation.isPending}
-                  isLoading={revertToConfiguredMutation.isPending}
-                  onClick={() => setShowRevertToConfiguredConfirm(true)}
+                  disabled={revertToDraftMutation.isPending}
+                  isLoading={revertToDraftMutation.isPending}
+                  onClick={() => setShowRevertToDraftConfirm(true)}
                 >
-                  Revenir en configuration
+                  Revenir en brouillon
                 </Button>
               </div>
             </div>
           )}
 
           {/* Closure */}
-          {edition.status === 'in_progress' && (
+          {edition.status === 'settlement' && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -1259,7 +1258,7 @@ export function EditionDetailPage() {
           )}
 
           {/* Delete */}
-          {isAdmin && (edition.status === 'draft' || edition.status === 'configured') && (
+          {isAdmin && edition.status === 'draft' && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -1595,11 +1594,11 @@ export function EditionDetailPage() {
       <Modal
         isOpen={showInvitationsConfirm}
         onClose={() => setShowInvitationsConfirm(false)}
-        title={edition.status === 'configured' ? "Envoyer les invitations et ouvrir les inscriptions" : "Envoyer les invitations"}
+        title={edition.status === 'draft' ? "Envoyer les invitations et ouvrir les inscriptions" : "Envoyer les invitations"}
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-700">
-            {edition.status === 'configured' ? (
+            {edition.status === 'draft' ? (
               <>L'édition passera en statut <strong>Inscriptions ouvertes</strong> et les emails d'invitation seront envoyés aux déposants qui ne les ont pas encore reçus.</>
             ) : (
               <>Les emails d'invitation seront envoyés aux déposants qui ne les ont pas encore reçus.</>
@@ -1613,7 +1612,7 @@ export function EditionDetailPage() {
               </p>
             </div>
           )}
-          {edition.status === 'configured' && (
+          {edition.status === 'draft' && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
               Cette action n'est possible que si aucune autre édition n'est déjà active.
             </div>
@@ -1632,7 +1631,7 @@ export function EditionDetailPage() {
               isLoading={sendInvitationsMutation.isPending}
               onClick={() => sendInvitationsMutation.mutate()}
             >
-              {edition.status === 'configured' ? "Confirmer et ouvrir" : "Envoyer les invitations"}
+              {edition.status === 'draft' ? "Confirmer et ouvrir" : "Envoyer les invitations"}
             </Button>
           </div>
         </div>
@@ -1672,16 +1671,16 @@ export function EditionDetailPage() {
         </div>
       </Modal>
 
-      {/* Revert to configured confirmation modal */}
+      {/* Revert to draft confirmation modal */}
       <ConfirmModal
-        isOpen={showRevertToConfiguredConfirm}
-        onClose={() => setShowRevertToConfiguredConfirm(false)}
+        isOpen={showRevertToDraftConfirm}
+        onClose={() => setShowRevertToDraftConfirm(false)}
         onConfirm={() => {
-          setShowRevertToConfiguredConfirm(false);
-          revertToConfiguredMutation.mutate();
+          setShowRevertToDraftConfirm(false);
+          revertToDraftMutation.mutate();
         }}
-        title="Revenir en configuration"
-        message="L'édition repassera en statut « Configurée ». Les déposants ne pourront plus déclarer leurs articles tant que les inscriptions ne seront pas ré-ouvertes."
+        title="Revenir en brouillon"
+        message="L'édition repassera en statut « Brouillon ». Les déposants ne pourront plus déclarer leurs articles tant que les inscriptions ne seront pas ré-ouvertes."
         variant="warning"
         confirmLabel="Confirmer"
       />

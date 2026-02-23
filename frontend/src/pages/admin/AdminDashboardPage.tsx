@@ -8,9 +8,10 @@ import type { EditionStatus } from '@/types';
 
 const STATUS_LABELS: Record<EditionStatus, { label: string; className: string }> = {
   draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-800' },
-  configured: { label: 'Configurée', className: 'bg-blue-100 text-blue-800' },
   registrations_open: { label: 'Inscriptions ouvertes', className: 'bg-purple-100 text-purple-800' },
-  in_progress: { label: 'En cours', className: 'bg-green-100 text-green-800' },
+  deposit: { label: 'Dépôt', className: 'bg-blue-100 text-blue-800' },
+  sale: { label: 'Vente', className: 'bg-green-100 text-green-800' },
+  settlement: { label: 'Bilan', className: 'bg-yellow-100 text-yellow-800' },
   closed: { label: 'Clôturée', className: 'bg-orange-100 text-orange-800' },
   archived: { label: 'Archivée', className: 'bg-gray-100 text-gray-500' },
 };

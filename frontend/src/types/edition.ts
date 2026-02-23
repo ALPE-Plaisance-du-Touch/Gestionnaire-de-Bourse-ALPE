@@ -4,9 +4,10 @@
 
 export type EditionStatus =
   | 'draft'
-  | 'configured'
   | 'registrations_open'
-  | 'in_progress'
+  | 'deposit'
+  | 'sale'
+  | 'settlement'
   | 'closed'
   | 'archived';
 
