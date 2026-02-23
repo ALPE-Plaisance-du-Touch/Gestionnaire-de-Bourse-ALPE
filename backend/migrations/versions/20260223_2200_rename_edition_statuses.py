@@ -1,6 +1,6 @@
 """rename edition statuses: remove configured, split in_progress
 
-Revision ID: a1b2c3d4e5f6
+Revision ID: 7f8e9d0c1b2a
 Revises: 2ac229d84aaa
 Create Date: 2026-02-23 22:00:00.000000+00:00
 
@@ -11,7 +11,7 @@ from typing import Sequence, Union
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "a1b2c3d4e5f6"
+revision: str = "7f8e9d0c1b2a"
 down_revision: Union[str, None] = "2ac229d84aaa"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
