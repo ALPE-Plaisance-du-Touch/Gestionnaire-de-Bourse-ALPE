@@ -160,7 +160,7 @@ class TestCalculatePayouts:
     async def test_basic_calculation(self):
         db = AsyncMock()
         edition = MagicMock()
-        edition.status = "in_progress"
+        edition.status = "settlement"
         edition.commission_rate = Decimal("0.20")
 
         sold_article = _make_article(price=Decimal("10.00"), status=ArticleStatus.SOLD.value)
@@ -219,7 +219,7 @@ class TestCalculatePayouts:
     async def test_all_sold(self):
         db = AsyncMock()
         edition = MagicMock()
-        edition.status = "in_progress"
+        edition.status = "settlement"
         edition.commission_rate = Decimal("0.20")
 
         articles = [
@@ -251,7 +251,7 @@ class TestCalculatePayouts:
         """When list fees exceed gross - commission, net should be 0."""
         db = AsyncMock()
         edition = MagicMock()
-        edition.status = "in_progress"
+        edition.status = "settlement"
         edition.commission_rate = Decimal("0.20")
 
         # 0.50€ sold, commission=0.10, list_fee=1.00 → net would be -0.60 → clipped to 0
@@ -278,7 +278,7 @@ class TestCalculatePayouts:
     async def test_skips_paid_payouts(self):
         db = AsyncMock()
         edition = MagicMock()
-        edition.status = "in_progress"
+        edition.status = "settlement"
         edition.commission_rate = Decimal("0.20")
 
         article = _make_article(price=Decimal("10.00"), status=ArticleStatus.SOLD.value)
