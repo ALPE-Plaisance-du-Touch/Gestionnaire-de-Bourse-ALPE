@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { payoutsApi } from '@/api';
-import { Button, ConfirmModal } from '@/components/ui';
+import { Button, ConfirmModal, TrainingBanner } from '@/components/ui';
 import { PaymentModal } from '@/components/payouts/PaymentModal';
 import type { PayoutResponse } from '@/types';
 
@@ -239,6 +239,8 @@ export function PayoutsManagementPage() {
           Actualisation automatique toutes les 10 secondes
         </p>
       </div>
+
+      <TrainingBanner editionId={editionId!} />
 
       {/* Messages */}
       {successMessage && (

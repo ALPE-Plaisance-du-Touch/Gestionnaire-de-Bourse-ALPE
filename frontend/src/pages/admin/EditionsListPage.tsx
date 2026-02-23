@@ -255,7 +255,12 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
               return (
                 <div key={edition.id} className="p-4 space-y-2">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="font-medium text-gray-900 min-w-0">{edition.name}</div>
+                    <div className="font-medium text-gray-900 min-w-0">
+                      {edition.name}
+                      {edition.isTraining && (
+                        <span className="ml-2 inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-amber-100 text-amber-800">Formation</span>
+                      )}
+                    </div>
                     <span className={`inline-flex shrink-0 px-2 py-1 text-xs font-semibold rounded-full ${statusInfo.className}`}>
                       {statusInfo.label}
                     </span>
@@ -350,6 +355,9 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
                           {edition.name}
+                          {edition.isTraining && (
+                            <span className="ml-2 inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-amber-100 text-amber-800">Formation</span>
+                          )}
                         </div>
                         {edition.description && (
                           <div className="text-sm text-gray-500 truncate max-w-xs">

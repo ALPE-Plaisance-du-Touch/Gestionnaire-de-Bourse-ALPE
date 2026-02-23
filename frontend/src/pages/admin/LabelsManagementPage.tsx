@@ -5,6 +5,7 @@ import { editionsApi } from '@/api/editions';
 import { labelsApi } from '@/api/labels';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
+import { TrainingBanner } from '@/components/ui/TrainingBanner';
 import type { LabelGenerationMode, LabelStats, LabelDepositor } from '@/types';
 
 function formatSlotLabel(startDatetime: string, endDatetime: string): string {
@@ -145,6 +146,8 @@ export function LabelsManagementPage() {
           Générez les étiquettes PDF pour les listes validées de cette édition.
         </p>
       </div>
+
+      <TrainingBanner editionId={editionId!} />
 
       {/* Stats cards */}
       {stats && (

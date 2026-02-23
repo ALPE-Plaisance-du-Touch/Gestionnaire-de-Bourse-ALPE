@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { salesApi } from '@/api';
 import { QrScanner } from '@/components/sales/QrScanner';
 import { OfflineBanner } from '@/components/ui/OfflineBanner';
+import { TrainingBanner } from '@/components/ui/TrainingBanner';
 import { useOfflineSales } from '@/hooks/useOfflineSales';
 import { useAuth } from '@/contexts';
 import { playSuccessBeep, playErrorBeep } from '@/utils/sound';
@@ -171,6 +172,7 @@ export function SalesPage() {
       {/* Offline banner */}
       <div className="mb-4">
         <OfflineBanner isOnline={isOnline} pendingCount={pendingCount} lastSyncCount={lastSyncCount} conflicts={conflicts} />
+        <TrainingBanner editionId={editionId!} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

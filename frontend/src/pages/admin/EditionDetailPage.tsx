@@ -6,6 +6,7 @@ import { Button, ConfirmModal, Input, Modal, Select } from '@/components/ui';
 import { DepositSlotsEditor } from '@/components/editions';
 import { BilletwebSessionsSyncModal } from '@/components/billetweb/BilletwebSessionsSyncModal';
 import { BilletwebAttendeesSyncModal } from '@/components/billetweb/BilletwebAttendeesSyncModal';
+import { TrainingBanner } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import type { EditionStatus, User } from '@/types';
 
@@ -566,6 +567,8 @@ export function EditionDetailPage() {
           </span>
         </div>
       </div>
+
+      <TrainingBanner editionId={id!} />
 
       {/* Success message */}
       {success && (
