@@ -153,7 +153,7 @@ class TestCalculatePayouts:
         with patch("app.services.payout.EditionRepository") as MockEditionRepo:
             MockEditionRepo.return_value.get_by_id = AsyncMock(return_value=edition)
 
-            with pytest.raises(ValidationError, match="in progress or closed"):
+            with pytest.raises(ValidationError, match="sale, settlement or closed"):
                 await calculate_payouts("edition-123", _make_user(), db)
 
     @pytest.mark.asyncio
