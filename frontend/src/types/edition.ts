@@ -38,6 +38,7 @@ export interface Edition {
   closedAt: string | null;
   closedBy: EditionCreator | null;
   archivedAt: string | null;
+  isTraining: boolean;
 }
 
 export interface CreateEditionRequest {
@@ -47,6 +48,7 @@ export interface CreateEditionRequest {
   location?: string;
   description?: string;
   billetwebEventId?: string;
+  isTraining?: boolean;
 }
 
 export interface UpdateEditionRequest {

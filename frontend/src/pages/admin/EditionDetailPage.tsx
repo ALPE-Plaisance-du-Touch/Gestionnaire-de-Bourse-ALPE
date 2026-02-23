@@ -310,6 +310,24 @@ export function EditionDetailPage() {
     },
   });
 
+  const forceStatusMutation = useMutation({
+    mutationFn: (status: EditionStatus) => editionsApi.forceTrainingStatus(id!, status),
+    onSuccess: () => {
+      setSuccess(true);
+      setError(null);
+      queryClient.invalidateQueries({ queryKey: ['editions'] });
+      queryClient.invalidateQueries({ queryKey: ['edition', id] });
+      queryClient.invalidateQueries({ queryKey: ['active-edition'] });
+    },
+    onError: (err) => {
+      if (err instanceof ApiException) {
+        setError(err.message);
+      } else {
+        setError("Une erreur est survenue lors du forçage d'étape.");
+      }
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: () => editionsApi.deleteEdition(id!),
     onSuccess: () => {
@@ -927,6 +945,50 @@ export function EditionDetailPage() {
               >
                 Revenir en configuration
               </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Training mode: Force status transition (US-015) */}
+        {edition.isTraining && edition.status !== 'closed' && edition.status !== 'archived' && (
+          <div className="bg-amber-50 border border-amber-300 rounded-lg p-4">
+            <h3 className="text-sm font-semibold text-amber-900 mb-2">Forcer l'étape suivante (formation)</h3>
+            <p className="text-sm text-amber-700 mb-3">
+              En mode formation, vous pouvez avancer manuellement vers l'étape suivante sans vérification des prérequis.
+            </p>
+            <div className="flex gap-2 flex-wrap">
+              {edition.status === 'draft' && (
+                <Button type="button" size="sm" variant="secondary"
+                  onClick={() => forceStatusMutation.mutate('configured')}
+                  disabled={forceStatusMutation.isPending}
+                  isLoading={forceStatusMutation.isPending}>
+                  Forcer → Configurée
+                </Button>
+              )}
+              {(edition.status === 'draft' || edition.status === 'configured') && (
+                <Button type="button" size="sm" variant="secondary"
+                  onClick={() => forceStatusMutation.mutate('registrations_open')}
+                  disabled={forceStatusMutation.isPending}
+                  isLoading={forceStatusMutation.isPending}>
+                  Forcer → Inscriptions ouvertes
+                </Button>
+              )}
+              {edition.status !== 'in_progress' && (
+                <Button type="button" size="sm" variant="secondary"
+                  onClick={() => forceStatusMutation.mutate('in_progress')}
+                  disabled={forceStatusMutation.isPending}
+                  isLoading={forceStatusMutation.isPending}>
+                  Forcer → En cours
+                </Button>
+              )}
+              {edition.status === 'in_progress' && (
+                <Button type="button" size="sm" variant="danger"
+                  onClick={() => forceStatusMutation.mutate('closed')}
+                  disabled={forceStatusMutation.isPending}
+                  isLoading={forceStatusMutation.isPending}>
+                  Forcer → Clôturée
+                </Button>
+              )}
             </div>
           </div>
         )}

@@ -15,6 +15,7 @@ export interface User {
   isActive: boolean;
   isVerified: boolean;
   isLocalResident: boolean;
+  isTester: boolean;
   createdAt: string;
   lastLoginAt: string | null;
 }
@@ -76,6 +77,7 @@ export interface UserAdminUpdate {
   role?: UserRole;
   isActive?: boolean;
   isLocalResident?: boolean;
+  isTester?: boolean;
 }
 
 export interface UserListParams {
