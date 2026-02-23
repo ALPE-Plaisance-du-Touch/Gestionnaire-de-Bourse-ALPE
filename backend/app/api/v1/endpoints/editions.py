@@ -147,6 +147,13 @@ async def update_edition(
 
     Closed editions cannot be updated.
     """
+    # Only administrators can toggle training mode
+    if request.is_training is not None and not current_user.is_administrator:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Seuls les administrateurs peuvent modifier le mode formation",
+        )
+
     try:
         edition = await edition_service.update_edition(edition_id, request)
         return EditionResponse.model_validate(edition)
