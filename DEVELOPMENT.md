@@ -33,9 +33,10 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.17 | Management Enhancements | ✅ Done | 100% |
 | 0.18 | Homepage & Edition Constraint | ✅ Done | 100% |
 | 0.19 | Billetweb API Integration | ✅ Done | 100% |
+| 0.20 | Training Mode (US-015) | ✅ Done | 100% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.19 (Billetweb API Integration complete)
+**Current Version:** 0.20 (Training Mode complete)
 **Next Target:** v1.0.0 - Production Release
 
 ---
@@ -669,9 +670,34 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
+## v0.20 - Training Mode (US-015) ✅
+
+**Branch:** `feature/us-015-training-mode`
+
+### Backend Tasks ✅
+- [x] **0.20.1** Add `is_training` (Boolean) to Edition model + `is_tester` (Boolean) to User model
+- [x] **0.20.2** Alembic migration for new fields
+- [x] **0.20.3** Max 1 active training edition validation in EditionService
+- [x] **0.20.4** Exclude training editions from REQ-F-019 (active edition constraint)
+- [x] **0.20.5** `POST /editions/{id}/force-status` endpoint (forward-only, bypasses prerequisites)
+- [x] **0.20.6** Force-status restricted to training editions only
+- [x] **0.20.7** Training edition filtering: hide from non-tester depositors in `get_my_editions`
+- [x] **0.20.8** `is_tester` toggle in UserUpdate/UserResponse schemas + all response builders
+- [x] **0.20.9** Access guard: 403 for non-tester depositors on training edition endpoints
+
+### Frontend Tasks ✅
+- [x] **0.20.10** `isTraining` in Edition types, CreateEditionRequest, API transform
+- [x] **0.20.11** Training checkbox in EditionCreateModal + force-status buttons in EditionDetailPage
+- [x] **0.20.12** Tester toggle checkbox in UsersManagementPage edit modal
+- [x] **0.20.13** TrainingBanner reusable component (amber warning styling)
+- [x] **0.20.14** Banner integrated in all edition pages (admin, volunteer, depositor)
+- [x] **0.20.15** "Formation" badge in editions list view
+
+---
+
 ## v1.0.0 - Production Release
 
-**Prerequisites:** All versions 0.1 through 0.19 completed and tested.
+**Prerequisites:** All versions 0.1 through 0.20 completed and tested.
 
 - [ ] **1.0.1** Final integration testing
 - [ ] **1.0.2** Performance optimization
