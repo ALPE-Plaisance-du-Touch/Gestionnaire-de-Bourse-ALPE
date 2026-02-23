@@ -28,10 +28,11 @@ class EditionService:
 
     # Valid status transitions
     VALID_TRANSITIONS = {
-        EditionStatus.DRAFT: [EditionStatus.CONFIGURED],
-        EditionStatus.CONFIGURED: [EditionStatus.DRAFT, EditionStatus.REGISTRATIONS_OPEN],
-        EditionStatus.REGISTRATIONS_OPEN: [EditionStatus.CONFIGURED, EditionStatus.IN_PROGRESS],
-        EditionStatus.IN_PROGRESS: [EditionStatus.CLOSED],
+        EditionStatus.DRAFT: [EditionStatus.REGISTRATIONS_OPEN],
+        EditionStatus.REGISTRATIONS_OPEN: [EditionStatus.DRAFT, EditionStatus.DEPOSIT],
+        EditionStatus.DEPOSIT: [EditionStatus.REGISTRATIONS_OPEN, EditionStatus.SALE],
+        EditionStatus.SALE: [EditionStatus.DEPOSIT, EditionStatus.SETTLEMENT],
+        EditionStatus.SETTLEMENT: [EditionStatus.SALE, EditionStatus.CLOSED],
         EditionStatus.CLOSED: [EditionStatus.ARCHIVED],
         EditionStatus.ARCHIVED: [],  # Terminal state
     }
@@ -228,12 +229,12 @@ class EditionService:
             )
 
         # REQ-F-019: Enforce single active edition constraint
-        # Only registrations_open and in_progress count as "active"
-        # Multiple editions can be in configured status simultaneously
         # Training editions are excluded from this constraint (US-015)
         truly_active_statuses = [
             EditionStatus.REGISTRATIONS_OPEN,
-            EditionStatus.IN_PROGRESS,
+            EditionStatus.DEPOSIT,
+            EditionStatus.SALE,
+            EditionStatus.SETTLEMENT,
         ]
         if new_status in truly_active_statuses and not edition.is_training:
             other = await self.repository.get_any_active_edition(
@@ -271,9 +272,10 @@ class EditionService:
         # Validate target status is in the allowed lifecycle
         allowed_statuses = [
             EditionStatus.DRAFT,
-            EditionStatus.CONFIGURED,
             EditionStatus.REGISTRATIONS_OPEN,
-            EditionStatus.IN_PROGRESS,
+            EditionStatus.DEPOSIT,
+            EditionStatus.SALE,
+            EditionStatus.SETTLEMENT,
             EditionStatus.CLOSED,
         ]
         if new_status not in allowed_statuses:
@@ -305,9 +307,9 @@ class EditionService:
         """
         edition = await self.get_edition(edition_id)
 
-        if edition.status not in (EditionStatus.DRAFT.value, EditionStatus.CONFIGURED.value):
+        if edition.status != EditionStatus.DRAFT.value:
             raise ValidationError(
-                "Seules les éditions en brouillon ou configurées peuvent être supprimées",
+                "Seules les éditions en brouillon peuvent être supprimées",
                 field="status",
             )
 
@@ -320,11 +322,11 @@ class EditionService:
         edition = await self.get_edition(edition_id)
         checks: list[ClosureCheckItem] = []
 
-        # Check 1: Edition must be in_progress
+        # Check 1: Edition must be in settlement status
         checks.append(ClosureCheckItem(
-            label="Edition en cours",
-            passed=edition.status == EditionStatus.IN_PROGRESS.value,
-            detail="L'edition doit etre en statut 'En cours'" if edition.status != EditionStatus.IN_PROGRESS.value else None,
+            label="Bilan en cours",
+            passed=edition.status == EditionStatus.SETTLEMENT.value,
+            detail="L'edition doit etre en statut 'Bilan'" if edition.status != EditionStatus.SETTLEMENT.value else None,
         ))
 
         # Check 2: Retrieval end date must be passed
@@ -392,10 +394,10 @@ class EditionService:
 
     async def get_active_edition(self) -> Edition | None:
         """
-        Get the currently active edition (registrations_open or in_progress).
+        Get the currently active edition.
 
         Returns the highest-priority active edition:
-        in_progress > registrations_open.
+        sale > deposit > registrations_open.
         """
         return await self.repository.get_any_active_edition()
 

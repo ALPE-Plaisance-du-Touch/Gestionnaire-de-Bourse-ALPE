@@ -329,7 +329,7 @@ class ItemListService:
         # 1. Edition is in appropriate status
         # 2. Declaration deadline has not passed
 
-        allowed_statuses = ["registrations_open", "configured"]
+        allowed_statuses = ["draft", "registrations_open"]
         if edition.status not in allowed_statuses:
             return False
 

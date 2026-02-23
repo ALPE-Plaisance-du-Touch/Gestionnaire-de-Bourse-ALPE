@@ -23,9 +23,10 @@ class EditionStatus(str, Enum):
     """Edition lifecycle status."""
 
     DRAFT = "draft"
-    CONFIGURED = "configured"
     REGISTRATIONS_OPEN = "registrations_open"
-    IN_PROGRESS = "in_progress"
+    DEPOSIT = "deposit"
+    SALE = "sale"
+    SETTLEMENT = "settlement"
     CLOSED = "closed"
     ARCHIVED = "archived"
 
@@ -126,8 +127,13 @@ class Edition(Base, UUIDMixin, TimestampMixin):
 
     @property
     def is_active(self) -> bool:
-        """Check if edition is currently active (in progress)."""
-        return self.status == EditionStatus.IN_PROGRESS.value
+        """Check if edition is currently active (not draft, closed or archived)."""
+        return self.status in (
+            EditionStatus.REGISTRATIONS_OPEN.value,
+            EditionStatus.DEPOSIT.value,
+            EditionStatus.SALE.value,
+            EditionStatus.SETTLEMENT.value,
+        )
 
     @property
     def is_closed(self) -> bool:
@@ -141,7 +147,7 @@ class Edition(Base, UUIDMixin, TimestampMixin):
     def can_accept_declarations(self) -> bool:
         """Check if edition can accept article declarations."""
         if self.status not in (
-            EditionStatus.CONFIGURED.value,
+            EditionStatus.DRAFT.value,
             EditionStatus.REGISTRATIONS_OPEN.value,
         ):
             return False

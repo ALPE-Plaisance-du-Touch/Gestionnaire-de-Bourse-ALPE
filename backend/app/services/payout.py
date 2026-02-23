@@ -90,8 +90,8 @@ async def calculate_payouts(
     if not edition:
         raise EditionNotFoundError(edition_id)
 
-    if edition.status not in ("in_progress", "closed"):
-        raise ValidationError("Payouts can only be calculated for editions in progress or closed")
+    if edition.status not in ("sale", "settlement", "closed"):
+        raise ValidationError("Payouts can only be calculated for editions in sale, settlement or closed status")
 
     commission_rate = edition.commission_rate or Decimal("0.20")
 

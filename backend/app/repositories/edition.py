@@ -146,11 +146,11 @@ class EditionRepository:
         return editions, total
 
     async def get_active_edition(self) -> Edition | None:
-        """Get the currently active edition (in_progress status)."""
+        """Get the currently active edition (sale status)."""
         result = await self.db.execute(
             select(Edition)
             .options(joinedload(Edition.created_by))
-            .where(Edition.status == EditionStatus.IN_PROGRESS.value)
+            .where(Edition.status == EditionStatus.SALE.value)
             .limit(1)
         )
         return result.scalar_one_or_none()
@@ -158,12 +158,15 @@ class EditionRepository:
     async def get_any_active_edition(
         self, *, exclude_id: str | None = None
     ) -> Edition | None:
-        """Get any edition in an active status (registrations_open or in_progress).
+        """Get any edition in an active status.
 
-        Returns the highest-priority active edition (in_progress > registrations_open).
+        Returns the highest-priority active edition:
+        sale > deposit > settlement > registrations_open.
         """
         active_statuses = [
-            EditionStatus.IN_PROGRESS.value,
+            EditionStatus.SALE.value,
+            EditionStatus.DEPOSIT.value,
+            EditionStatus.SETTLEMENT.value,
             EditionStatus.REGISTRATIONS_OPEN.value,
         ]
         query = (
@@ -180,7 +183,7 @@ class EditionRepository:
         if not editions:
             return None
 
-        # Return highest-priority: in_progress > registrations_open
+        # Return highest-priority: sale > deposit > settlement > registrations_open
         priority = {s: i for i, s in enumerate(active_statuses)}
         return min(editions, key=lambda e: priority.get(e.status, 99))
 

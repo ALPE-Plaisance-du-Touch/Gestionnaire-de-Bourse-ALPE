@@ -11,9 +11,10 @@ class EditionStatus(str, Enum):
     """Edition lifecycle status."""
 
     DRAFT = "draft"
-    CONFIGURED = "configured"
     REGISTRATIONS_OPEN = "registrations_open"
-    IN_PROGRESS = "in_progress"
+    DEPOSIT = "deposit"
+    SALE = "sale"
+    SETTLEMENT = "settlement"
     CLOSED = "closed"
     ARCHIVED = "archived"
 
