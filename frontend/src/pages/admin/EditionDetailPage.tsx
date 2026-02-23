@@ -727,7 +727,7 @@ export function EditionDetailPage() {
           </h2>
           <p className="text-sm text-gray-500 mb-4">
             Définissez les dates clés et le taux de commission.
-            {edition.status === 'draft' && " Une fois toutes les dates renseignées, l'édition passera en statut \"Configurée\"."}
+            {edition.status === 'draft' && " Une fois les dates configurées, vous pourrez ouvrir les inscriptions."}
           </p>
 
           <fieldset disabled={!isEditable} className="space-y-6">
