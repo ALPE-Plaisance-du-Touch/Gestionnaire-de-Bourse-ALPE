@@ -205,6 +205,34 @@ async def update_edition_status(
         )
 
 
+@router.post(
+    "/{edition_id}/force-status",
+    response_model=EditionResponse,
+    summary="Force edition status (training only)",
+    description="Force status transition for training editions, bypassing date and prerequisite checks. Manager/admin only.",
+)
+async def force_edition_status(
+    edition_id: str,
+    request: EditionStatusUpdate,
+    edition_service: EditionServiceDep,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Force status transition for training editions (US-015)."""
+    try:
+        edition = await edition_service.force_training_status(edition_id, request.status)
+        return EditionResponse.model_validate(edition)
+    except EditionNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} not found",
+        )
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=e.message,
+        )
+
+
 @router.get(
     "/{edition_id}/closure-check",
     response_model=ClosureCheckResponse,

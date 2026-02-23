@@ -49,6 +49,7 @@ class EditionRepository:
         location: str | None = None,
         description: str | None = None,
         billetweb_event_id: str | None = None,
+        is_training: bool = False,
     ) -> Edition:
         """Create a new edition."""
         edition = Edition(
@@ -60,6 +61,7 @@ class EditionRepository:
             status=EditionStatus.DRAFT.value,
             created_by_id=created_by.id,
             billetweb_event_id=billetweb_event_id,
+            is_training=is_training,
         )
 
         self.db.add(edition)
@@ -168,6 +170,7 @@ class EditionRepository:
             select(Edition)
             .options(joinedload(Edition.created_by), joinedload(Edition.closed_by))
             .where(Edition.status.in_(active_statuses))
+            .where(Edition.is_training == False)  # noqa: E712 - REQ-F-019 excludes training editions
         )
         if exclude_id:
             query = query.where(Edition.id != exclude_id)
@@ -180,3 +183,17 @@ class EditionRepository:
         # Return highest-priority: in_progress > registrations_open
         priority = {s: i for i, s in enumerate(active_statuses)}
         return min(editions, key=lambda e: priority.get(e.status, 99))
+
+    async def has_active_training_edition(self, *, exclude_id: str | None = None) -> bool:
+        """Check if a non-closed training edition already exists."""
+        closed_statuses = [EditionStatus.CLOSED.value, EditionStatus.ARCHIVED.value]
+        query = (
+            select(func.count())
+            .select_from(Edition)
+            .where(Edition.is_training == True)  # noqa: E712
+            .where(Edition.status.not_in(closed_statuses))
+        )
+        if exclude_id:
+            query = query.where(Edition.id != exclude_id)
+        result = await self.db.execute(query)
+        return result.scalar_one() > 0

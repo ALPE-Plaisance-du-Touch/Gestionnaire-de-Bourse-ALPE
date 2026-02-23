@@ -5,7 +5,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDMixin
@@ -82,6 +82,9 @@ class Edition(Base, UUIDMixin, TimestampMixin):
     # Billetweb API integration
     billetweb_event_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     last_billetweb_sync: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    # Training mode (US-015)
+    is_training: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Creator
     created_by_id: Mapped[str | None] = mapped_column(

@@ -40,6 +40,7 @@ class EditionCreate(EditionBase):
     """Schema for creating a new edition."""
 
     billetweb_event_id: str | None = None
+    is_training: bool = False
 
 
 class EditionUpdate(BaseModel):
@@ -105,6 +106,9 @@ class EditionResponse(BaseModel):
     # Billetweb API integration
     billetweb_event_id: str | None = None
     last_billetweb_sync: datetime | None = None
+
+    # Training mode (US-015)
+    is_training: bool = False
 
     # Closure tracking
     closed_at: datetime | None = None
