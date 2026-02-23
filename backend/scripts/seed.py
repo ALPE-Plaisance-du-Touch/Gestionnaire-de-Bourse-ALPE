@@ -8,7 +8,7 @@ Usage:
 Creates data matching tests/data/ fixtures for MCP Chrome DevTools E2E scenarios:
 - 4 roles
 - 8 test users (6 active + 2 inactive with invitation tokens)
-- 5 editions (draft, configured, in_progress, closed, old_closed)
+- 5 editions (draft, registrations_open, sale, closed, old_closed)
 - 6 deposit slots on active edition
 - 3 edition-depositor registrations
 - 1 item list with 6 articles for standard depositor
@@ -135,7 +135,7 @@ TEST_EDITIONS = [
         "name": "Bourse Printemps 2026",
         "description": "Bourse de printemps ALPE Plaisance du Touch",
         "location": "Salle des fetes, 1 Place de la Mairie, Plaisance du Touch",
-        "status": "in_progress",
+        "status": "sale",
         "start_datetime": datetime(2026, 3, 14, 9, 0),
         "end_datetime": datetime(2026, 3, 15, 18, 0),
         "declaration_deadline": datetime(2026, 2, 21, 23, 59),
@@ -156,11 +156,11 @@ TEST_EDITIONS = [
         "commission_rate": Decimal("0.20"),
     },
     {
-        "key": "configured",
+        "key": "registrations_open",
         "name": "Bourse Printemps 2027",
         "description": "Prochaine edition",
         "location": "Salle des fetes, Plaisance du Touch",
-        "status": "configured",
+        "status": "registrations_open",
         "start_datetime": datetime(2027, 3, 13, 9, 0),
         "end_datetime": datetime(2027, 3, 14, 18, 0),
         "declaration_deadline": datetime(2027, 2, 20, 23, 59),

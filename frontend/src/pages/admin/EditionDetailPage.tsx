@@ -151,7 +151,7 @@ export function EditionDetailPage() {
     enabled: !!id,
   });
 
-  // Fetch import stats for configured editions
+  // Fetch import stats for non-draft editions
   const { data: importStats, refetch: refetchImportStats } = useQuery({
     queryKey: ['billetweb-stats', id],
     queryFn: () => billetwebApi.getImportStats(id!),

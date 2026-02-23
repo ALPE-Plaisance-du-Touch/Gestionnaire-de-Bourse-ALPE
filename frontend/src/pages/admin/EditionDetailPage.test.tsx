@@ -60,19 +60,14 @@ const mockEdition: Edition = {
   createdBy: null,
 };
 
-const mockConfiguredEdition: Edition = {
+const mockClosedEdition: Edition = {
   ...mockEdition,
-  status: 'configured' as EditionStatus,
+  status: 'closed' as EditionStatus,
   declarationDeadline: '2025-03-10T23:59:00Z',
   depositStartDatetime: '2025-03-12T09:00:00Z',
   depositEndDatetime: '2025-03-14T18:00:00Z',
   retrievalStartDatetime: '2025-03-16T17:00:00Z',
   retrievalEndDatetime: '2025-03-16T19:00:00Z',
-};
-
-const mockClosedEdition: Edition = {
-  ...mockConfiguredEdition,
-  status: 'closed' as EditionStatus,
 };
 
 describe('EditionDetailPage', () => {
@@ -133,16 +128,6 @@ describe('EditionDetailPage', () => {
     await waitFor(() => {
       const statusBadge = screen.getByText('Brouillon');
       expect(statusBadge).toHaveClass('bg-gray-100', 'text-gray-800');
-    });
-  });
-
-  it('shows configured status for configured edition', async () => {
-    vi.mocked(editionsApi.getEdition).mockResolvedValue(mockConfiguredEdition);
-
-    renderWithProviders(<EditionDetailPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Configuré')).toBeInTheDocument();
     });
   });
 
@@ -296,39 +281,6 @@ describe('EditionDetailPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/existe déjà/i)).toBeInTheDocument();
-    });
-  });
-
-  it('transitions to configured status when all dates set on draft edition', async () => {
-    vi.mocked(editionsApi.getEdition).mockResolvedValue(mockEdition);
-    vi.mocked(editionsApi.updateEdition).mockResolvedValue(mockConfiguredEdition);
-    vi.mocked(editionsApi.updateEditionStatus).mockResolvedValue(mockConfiguredEdition);
-
-    renderWithProviders(<EditionDetailPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Bourse Printemps 2025')).toBeInTheDocument();
-    });
-
-    // Fill all configuration dates
-    const allInputs = document.querySelectorAll('input[type="datetime-local"]');
-    const declarationInput = allInputs[2] as HTMLInputElement;
-    const depositStartInput = allInputs[3] as HTMLInputElement;
-    const depositEndInput = allInputs[4] as HTMLInputElement;
-    const retrievalStartInput = allInputs[5] as HTMLInputElement;
-    const retrievalEndInput = allInputs[6] as HTMLInputElement;
-
-    await userEvent.type(declarationInput, '2025-03-01T12:00');
-    await userEvent.type(depositStartInput, '2025-03-02T09:00');
-    await userEvent.type(depositEndInput, '2025-03-03T18:00');
-    await userEvent.type(retrievalStartInput, '2025-03-16T17:00');
-    await userEvent.type(retrievalEndInput, '2025-03-16T19:00');
-
-    // Submit
-    await userEvent.click(screen.getByText(/Enregistrer les modifications/i));
-
-    await waitFor(() => {
-      expect(editionsApi.updateEditionStatus).toHaveBeenCalledWith('test-edition-id', 'configured');
     });
   });
 
