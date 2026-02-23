@@ -43,9 +43,10 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.17 | Améliorations gestion | ✅ Done |
 | 0.18 | Page d'accueil | ✅ Done |
 | 0.19 | Intégration API Billetweb | ✅ Done |
+| 0.20 | Mode Formation | 🔄 In Progress |
 
 **Conformité specs : ~89%** (59/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
-**Specs : 12 US, 20 REQ-F, 115 AC, 151+ tests** — couverture traçabilité 88%
+**Specs : 15 US, 24 REQ-F, 115+ AC, 151+ tests** — couverture traçabilité 88%
 
 ---
 
@@ -61,6 +62,7 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.17 | Améliorations gestion | Override annulation, export Excel invitations, archivage auto, relance bulk | Basse |
 | 0.18 | Page d'accueil | Homepage publique, contrainte unicité édition active | Moyenne |
 | 0.19 | Intégration API Billetweb | Config API admin, sync événements/séances/participants | Haute |
+| 0.20 | Mode Formation | Édition formation, forçage étapes, flag testeur, bandeau visuel | Haute |
 | 1.0.0 | Feature Freeze & Production | Bug fixes, tests intégration, perf, audit, release | - |
 
 ---
@@ -294,9 +296,44 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 
 ---
 
+## v0.20 - Mode Formation (US-015)
+
+**Branche :** `feature/us-015-training-mode`
+**Exigences :** US-015, REQ-F-024
+
+### Backend : modèle et migration (TASK-030)
+- [ ] **0.20.1** Champ `is_training` sur Edition + migration
+- [ ] **0.20.2** Champ `is_tester` sur User + migration
+- [ ] **0.20.3** Validation : max 1 édition formation non clôturée
+- [ ] **0.20.4** Exclusion des éditions formation de la contrainte REQ-F-019 (unicité édition active)
+
+### Backend : forçage transitions (TASK-031)
+- [ ] **0.20.5** Endpoint `POST /editions/{id}/force-status` (admin/gestionnaire, formation uniquement)
+- [ ] **0.20.6** Bypass des vérifications de dates et prérequis pour les éditions formation
+
+### Backend : visibilité et accès (TASK-032)
+- [ ] **0.20.7** Filtrage des éditions formation dans les endpoints déposant (exclure si non testeur)
+- [ ] **0.20.8** Endpoint `PATCH /users/{id}/tester` (admin only, toggle is_tester)
+- [ ] **0.20.9** Guard d'accès : 403 si déposant non testeur tente d'accéder à une édition formation
+
+### Frontend : création et gestion (TASK-033)
+- [ ] **0.20.10** Checkbox "Mode formation" dans EditionCreateModal
+- [ ] **0.20.11** Bouton/sélecteur forçage d'étape sur EditionDetailPage (si formation)
+- [ ] **0.20.12** Toggle testeur dans la gestion des utilisateurs (AdminUsersPage)
+
+### Frontend : bandeau visuel (TASK-034)
+- [ ] **0.20.13** Composant TrainingBanner affiché sur tous les écrans liés à une édition formation
+- [ ] **0.20.14** Intégration du bandeau dans les pages admin, déposant et bénévole
+
+### Tests & docs
+- [ ] **0.20.15** Tests unitaires backend (création, forçage, visibilité, accès)
+- [ ] **0.20.16** Mise à jour DEVELOPMENT.md et PLAN.md
+
+---
+
 ## v1.0.0 - Feature Freeze & Production
 
-**Prérequis :** Toutes les versions 0.1 à 0.19 terminées et testées. ✅
+**Prérequis :** Toutes les versions 0.1 à 0.20 terminées et testées.
 
 À partir de cette version, plus aucune fonctionnalité n'est ajoutée.
 Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
@@ -355,6 +392,11 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 | TASK-027 | 0.19 | Erreurs API & accès Billetweb | US-012 AC-14/15/16 |
 | TASK-028 | 1.0 | Refus article au dépôt | US-013, REQ-F-022 |
 | TASK-029 | 1.0 | Suivi déclarations déposants | US-014, REQ-F-023 |
+| TASK-030 | 0.20 | Modèle édition formation + flag testeur | US-015 AC-1/AC-5, REQ-F-024 |
+| TASK-031 | 0.20 | Forçage transitions d'étapes | US-015 AC-2 |
+| TASK-032 | 0.20 | Visibilité et accès formation | US-015 AC-4/AC-7 |
+| TASK-033 | 0.20 | Frontend création et gestion formation | US-015 AC-1/AC-2/AC-5 |
+| TASK-034 | 0.20 | Bandeau visuel "Bourse de formation" | US-015 AC-3 |
 
 ---
 
@@ -364,8 +406,8 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 |----------|--------|-------------|
 | Rapport d'analyse | [docs/analysis-report-2026-02-09.md](docs/analysis-report-2026-02-09.md) | Écarts détaillés + prompts prêts à l'emploi par TASK |
 | Suivi d'avancement | [DEVELOPMENT.md](DEVELOPMENT.md) | Checkboxes détaillées par version livrée |
-| User Stories | [docs/user-stories.md](docs/user-stories.md) | US-001 à US-014, critères d'acceptation |
-| Exigences | [docs/exigences.md](docs/exigences.md) | REQ-F-001 à F-023, REQ-NF-001 à NF-012 |
+| User Stories | [docs/user-stories.md](docs/user-stories.md) | US-001 à US-015, critères d'acceptation |
+| Exigences | [docs/exigences.md](docs/exigences.md) | REQ-F-001 à F-024, REQ-NF-001 à NF-012 |
 | Architecture | [docs/architecture.md](docs/architecture.md) | C4, ADR, stack technique |
 | Sécurité | [docs/securite.md](docs/securite.md) | Matrice RBAC, RGPD, audit, anti-fraude |
 | Opérations | [docs/operations.md](docs/operations.md) | SLOs, runbooks, checklists |
