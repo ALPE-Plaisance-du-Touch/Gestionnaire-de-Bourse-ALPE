@@ -10,6 +10,19 @@ export interface LabelGenerationRequest {
   depositorIds?: string[];
 }
 
+export interface LabelDepositor {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+}
+
+export interface LabelSlot {
+  id: string;
+  startDatetime: string;
+  endDatetime: string;
+}
+
 export interface LabelStats {
   totalDepositors: number;
   totalLists: number;

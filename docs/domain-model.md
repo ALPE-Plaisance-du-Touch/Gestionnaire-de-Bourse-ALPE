@@ -240,7 +240,8 @@ stateDiagram-v2
 - Un lot compte comme 1 article dans la limite des 24
 - Articles de la liste noire bloqués automatiquement (sièges-autos, CD/DVD, casques, etc.)
 - Certification de conformité obligatoire (case à cocher par le déposant)
-- États possibles : brouillon, déposé, en_vente, vendu, invendu, récupéré
+- États possibles : brouillon, déposé, refusé, en_vente, vendu, invendu, récupéré
+- Un article peut être **refusé** lors du dépôt physique par un bénévole/gestionnaire/administrateur si l'article est taché, abîmé, incomplet ou non conforme. Le motif de refus est optionnel. L'article refusé reste en mémoire mais est exclu des compteurs de la liste (articles en vente, valeur totale, etc.)
 - Une fois vendu, un article ne peut plus changer d'état
 
 ## Ventes
@@ -682,6 +683,7 @@ stateDiagram-v2
     Brouillon --> Déposé : Validation liste
 
     Déposé --> En_vente : Début période vente
+    Déposé --> Refusé : Refus lors du dépôt physique
     Déposé --> Déposé : Attente vente
 
     En_vente --> Vendu : Scan + vente caisse
@@ -692,6 +694,7 @@ stateDiagram-v2
     Invendu --> Récupéré : Retrait par déposant
     Invendu --> Stock_ALPE : Non récupéré (don)
 
+    Refusé --> [*] : État final
     Récupéré --> [*] : État final
     Stock_ALPE --> [*] : État final
     Supprimé --> [*] : État final
@@ -699,6 +702,11 @@ stateDiagram-v2
     note right of Brouillon
         Modifiable tant que
         date_limite non atteinte
+    end note
+
+    note right of Refusé
+        Exclu des compteurs
+        Motif optionnel
     end note
 
     note right of Vendu
@@ -720,6 +728,7 @@ stateDiagram-v2
 | Brouillon | Modification | Brouillon | Date limite non atteinte | MAJ champs |
 | Brouillon | Suppression | Supprimé | Date limite non atteinte | Soft delete |
 | Brouillon | Validation liste | Déposé | Liste validée | Génère code étiquette |
+| Déposé | Refus au dépôt | Refusé | Rôle bénévole/gestionnaire/admin | Enregistre motif (opt.), exclut des compteurs |
 | Déposé | Début vente | En_vente | Édition en cours | — |
 | En_vente | Vente | Vendu | Article non vendu | Crée Vente, horodate |
 | En_vente | Fin vente | Invendu | Période vente terminée | — |

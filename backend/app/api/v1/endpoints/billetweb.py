@@ -12,6 +12,7 @@ from app.repositories.deposit_slot import DepositSlotRepository
 from app.repositories.user import UserRepository
 from app.schemas.billetweb import (
     BilletwebImportLogResponse,
+    DepositorUpdateRequest,
     EditionDepositorWithUserResponse,
     EditionDepositorsListResponse,
     ManualDepositorCreateRequest,
@@ -185,6 +186,153 @@ async def create_manual_depositor(
         slot_start_datetime=slot.start_datetime,
         slot_end_datetime=slot.end_datetime,
     )
+
+
+@router.put(
+    "/depositors/{depositor_id}",
+    response_model=EditionDepositorWithUserResponse,
+    summary="Update a depositor",
+    description="Update a depositor's slot, list type, or location info.",
+)
+async def update_depositor(
+    edition_id: str,
+    depositor_id: str,
+    request: DepositorUpdateRequest,
+    db: DBSession,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Update a depositor registration."""
+    edition = await get_edition_or_404(db, edition_id)
+
+    if edition.is_closed:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Impossible de modifier une édition clôturée",
+        )
+
+    depositor_repo = EditionDepositorRepository(db)
+    dep = await depositor_repo.get_by_id(depositor_id)
+    if not dep or dep.edition_id != edition_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Déposant introuvable",
+        )
+
+    # Update user info if provided
+    user_update = {}
+    if request.first_name is not None:
+        user_update["first_name"] = request.first_name
+    if request.last_name is not None:
+        user_update["last_name"] = request.last_name
+    if request.phone is not None:
+        user_update["phone"] = request.phone
+
+    if user_update:
+        user_repo = UserRepository(db)
+        await user_repo.update(dep.user, **user_update)
+
+    update_data = {}
+
+    # Validate new slot if changing
+    if request.deposit_slot_id is not None and request.deposit_slot_id != dep.deposit_slot_id:
+        slot_repo = DepositSlotRepository(db)
+        new_slot = await slot_repo.get_by_id(request.deposit_slot_id)
+        if not new_slot or new_slot.edition_id != edition_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Créneau de dépôt introuvable",
+            )
+        slot_count = await depositor_repo.count_by_slot(new_slot.id)
+        if slot_count >= new_slot.max_capacity:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Ce créneau est complet",
+            )
+        update_data["deposit_slot_id"] = request.deposit_slot_id
+
+    if request.list_type is not None:
+        update_data["list_type"] = request.list_type
+    if request.postal_code is not None:
+        update_data["postal_code"] = request.postal_code
+    if request.city is not None:
+        update_data["city"] = request.city
+
+    if update_data:
+        dep = await depositor_repo.update(dep, **update_data)
+
+    # Reload relationships
+    dep = await depositor_repo.get_by_id(dep.id)
+
+    return EditionDepositorWithUserResponse(
+        id=dep.id,
+        edition_id=dep.edition_id,
+        user_id=dep.user_id,
+        deposit_slot_id=dep.deposit_slot_id,
+        list_type=dep.list_type,
+        billetweb_order_ref=dep.billetweb_order_ref,
+        billetweb_session=dep.billetweb_session,
+        billetweb_tarif=dep.billetweb_tarif,
+        imported_at=dep.imported_at,
+        postal_code=dep.postal_code,
+        city=dep.city,
+        created_at=dep.created_at,
+        user_email=dep.user.email,
+        user_first_name=dep.user.first_name,
+        user_last_name=dep.user.last_name,
+        user_phone=dep.user.phone,
+        slot_start_datetime=dep.deposit_slot.start_datetime if dep.deposit_slot else None,
+        slot_end_datetime=dep.deposit_slot.end_datetime if dep.deposit_slot else None,
+    )
+
+
+@router.delete(
+    "/depositors/{depositor_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a depositor",
+    description="Remove a depositor from an edition.",
+)
+async def delete_depositor(
+    edition_id: str,
+    depositor_id: str,
+    db: DBSession,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Delete a depositor registration."""
+    edition = await get_edition_or_404(db, edition_id)
+
+    if edition.is_closed:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Impossible de modifier une édition clôturée",
+        )
+
+    depositor_repo = EditionDepositorRepository(db)
+    dep = await depositor_repo.get_by_id(depositor_id)
+    if not dep or dep.edition_id != edition_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Déposant introuvable",
+        )
+
+    # Check if depositor has item lists in this edition
+    from app.models.item_list import ItemList
+    from sqlalchemy import select, func
+    result = await db.execute(
+        select(func.count())
+        .select_from(ItemList)
+        .where(
+            ItemList.edition_id == edition_id,
+            ItemList.depositor_id == dep.user_id,
+        )
+    )
+    list_count = result.scalar_one()
+    if list_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Impossible de supprimer : ce déposant a {list_count} liste(s) dans cette édition",
+        )
+
+    await depositor_repo.delete(dep)
 
 
 @router.get(

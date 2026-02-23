@@ -221,7 +221,7 @@ export function ListDetailPage() {
   const clothingCount = articlesResponse?.clothingCount ?? 0;
   const canAddMoreClothing = clothingCount < (constraints?.maxClothingPerList ?? 12);
   const totalValue = articles.reduce((sum, a) => sum + a.price, 0);
-  const canValidate = isDraft && articles.length > 0 && articles.every((a) => a.conformityCertified);
+  const canValidate = isDraft && articles.length > 0;
 
   if (isLoading) {
     return (
@@ -309,28 +309,12 @@ export function ListDetailPage() {
           <p className="text-sm text-gray-500">Valeur totale</p>
           <p className="text-2xl font-bold text-green-600">{formatPrice(totalValue)}</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Certifiés</p>
-          <p className="text-2xl font-bold text-blue-600">
-            {articles.filter((a) => a.conformityCertified).length} / {articles.length}
-          </p>
-        </div>
       </div>
 
       {/* Warnings */}
       {!canAddMoreClothing && isDraft && (
         <div className="mb-4 bg-orange-50 border border-orange-200 text-orange-700 px-4 py-3 rounded-lg">
           Vous avez atteint le maximum de vêtements ({constraints?.maxClothingPerList ?? 12}).
-        </div>
-      )}
-
-      {!canValidate && isDraft && articles.length > 0 && (
-        <div className="mb-4 bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg">
-          Tous les articles doivent être{' '}
-          <Link to="/aide#certification" className="underline font-medium hover:text-yellow-900">
-            certifiés conformes
-          </Link>{' '}
-          avant de pouvoir valider la liste.
         </div>
       )}
 
@@ -398,7 +382,6 @@ export function ListDetailPage() {
           <ul className="text-sm text-blue-800 space-y-1">
             <li>- Maximum 24 articles par liste, dont 12 vêtements</li>
             <li>- Prix minimum : 1€ (150€ max pour les poussettes)</li>
-            <li>- Certifiez chaque article propre et en bon état</li>
             <li>- Une fois validée, la liste ne peut plus être modifiée</li>
           </ul>
         </div>

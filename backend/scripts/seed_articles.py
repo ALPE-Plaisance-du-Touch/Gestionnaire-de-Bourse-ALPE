@@ -88,7 +88,6 @@ async def promote_list_101(session: AsyncSession, item_list: ItemList) -> None:
 
     for article in articles:
         article.status = "on_sale"
-        article.conformity_certified = True
         article.barcode = make_barcode(item_list.number, article.line_number)
         print(f"  + Article {article.line_number}: {article.description} -> ON_SALE (barcode={article.barcode})")
 
@@ -145,7 +144,6 @@ async def create_list_with_articles(
             item_list_id=item_list.id,
             line_number=i,
             status="on_sale",
-            conformity_certified=True,
             barcode=barcode,
             **article_data,
         )

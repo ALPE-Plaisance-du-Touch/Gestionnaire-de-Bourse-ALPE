@@ -287,7 +287,9 @@ class BilletwebSyncService:
             list_type=BilletwebImportService._map_tarif_to_list_type(tarif),
         )
 
-    async def sync_attendees_preview(self, edition: Edition) -> BilletwebPreviewResponse:
+    async def sync_attendees_preview(
+        self, edition: Edition, force_full: bool = False,
+    ) -> BilletwebPreviewResponse:
         """Preview attendees from Billetweb for the given edition.
 
         Fetches attendees (incremental if last_billetweb_sync set),
@@ -298,9 +300,9 @@ class BilletwebSyncService:
 
         client = await self._get_client()
 
-        # Incremental: use last sync timestamp
+        # Incremental: use last sync timestamp (unless force_full)
         last_update = None
-        if edition.last_billetweb_sync:
+        if not force_full and edition.last_billetweb_sync:
             last_update = int(edition.last_billetweb_sync.replace(tzinfo=timezone.utc).timestamp())
 
         raw_attendees = await client.get_attendees(
@@ -380,6 +382,7 @@ class BilletwebSyncService:
         edition: Edition,
         imported_by: User,
         send_emails: bool = False,
+        force_full: bool = False,
         background_tasks: "BackgroundTasks | None" = None,
     ) -> dict:
         """Import attendees from Billetweb API.
@@ -392,9 +395,9 @@ class BilletwebSyncService:
 
         client = await self._get_client()
 
-        # Incremental: use last sync timestamp
+        # Incremental: use last sync timestamp (unless force_full)
         last_update = None
-        if edition.last_billetweb_sync:
+        if not force_full and edition.last_billetweb_sync:
             last_update = int(edition.last_billetweb_sync.replace(tzinfo=timezone.utc).timestamp())
 
         raw_attendees = await client.get_attendees(

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { depositorListsApi } from '@/api';
 import { Button, ConfirmModal } from '@/components/ui';
@@ -188,9 +188,15 @@ export function MyListsPage() {
       {edition?.declarationDeadline && <DeadlineBanner deadline={edition.declarationDeadline} />}
 
       {/* Info messages */}
-      {!canCreateMore && lists.length > 0 && (
+      {!canCreateMore && lists.length >= maxLists && (
         <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg">
           Vous avez atteint le nombre maximum de listes ({maxLists}).
+        </div>
+      )}
+
+      {!canCreateMore && lists.length < maxLists && (
+        <div className="mb-4 bg-orange-50 border border-orange-200 text-orange-700 px-4 py-3 rounded-lg">
+          La date limite de déclaration est dépassée. Vous ne pouvez plus créer de nouvelles listes.
         </div>
       )}
 
@@ -231,7 +237,7 @@ export function MyListsPage() {
               </svg>
             </div>
             <p className="text-gray-500 mb-4">Vous n'avez pas encore créé de liste.</p>
-            <Button onClick={handleCreateList} disabled={createMutation.isPending}>
+            <Button onClick={handleCreateList} disabled={!canCreateMore || createMutation.isPending}>
               Créer ma première liste
             </Button>
           </div>
@@ -321,9 +327,16 @@ export function MyListsPage() {
         <ul className="text-sm text-blue-800 space-y-1">
           <li>1. Créez une liste et ajoutez vos articles (max 24 articles, dont 12 vêtements)</li>
           <li>2. Validez votre liste une fois tous les articles saisis</li>
-          <li>3. Imprimez vos étiquettes et fixez-les sur chaque article</li>
-          <li>4. Déposez vos articles lors des créneaux de dépôt</li>
+          <li>3. Déposez vos articles lors des créneaux de dépôt</li>
+          <li>4. Les bénévoles s'occupent de la vente de vos articles</li>
+          <li>5. Récupérez vos invendus puis recevez le paiement de vos ventes</li>
         </ul>
+        <p className="mt-3 text-xs text-blue-700">
+          Votre liste passe par plusieurs étapes : Brouillon, Validée, Déposée, Récupérée, puis Paiement.{' '}
+          <Link to="/aide#cycle-de-vie" className="underline font-medium hover:text-blue-900">
+            Voir le détail du cycle de vie
+          </Link>
+        </p>
       </div>
 
       {/* Delete confirmation modal */}

@@ -2727,3 +2727,291 @@ test_scenarios:
   - T-US011-10 : Lien politique de confidentialité accessible (OK)
 ```
 
+## US-013 — Refuser un article non conforme lors du dépôt
+
+```yaml
+id: US-013
+title: Refuser un article non conforme lors du dépôt
+actor: benevole
+benefit: "...pour garantir la qualité des articles mis en vente et respecter le règlement"
+as_a: "En tant que bénévole, gestionnaire ou administrateur présent lors du dépôt physique"
+i_want: "Je veux pouvoir refuser un article taché, abîmé, incomplet ou non conforme"
+so_that: "Afin que seuls les articles conformes soient mis en vente, tout en conservant la trace des articles refusés"
+
+# Contexte métier
+notes: |
+  - Le règlement stipule que "l'association se réserve le droit de refuser tout article taché, abîmé, incomplet, cassé ou non conforme"
+  - Le refus intervient lors du dépôt physique, quand le bénévole vérifie les articles du déposant
+  - L'article refusé n'est pas supprimé : il reste en mémoire pour traçabilité mais est exclu des compteurs
+  - Le déposant peut consulter ses articles refusés et le motif éventuel depuis son espace
+  - Le motif de refus est optionnel (le bénévole peut refuser sans justifier)
+
+acceptance_criteria:
+  # AC-1 : Refus d'un article au dépôt
+  - GIVEN je suis un bénévole, gestionnaire ou administrateur
+    AND je consulte les articles d'une liste au statut "Validée" ou "Déposée"
+    AND un article est au statut "Déposé" (validé)
+    WHEN je clique sur "Refuser" pour cet article
+    THEN le système affiche une modale de confirmation avec :
+      • Le résumé de l'article (description, catégorie, prix)
+      • Un champ texte optionnel "Motif du refus" (max 200 caractères)
+      • Un bouton "Confirmer le refus"
+      • Un bouton "Annuler"
+
+  # AC-2 : Confirmation du refus
+  - GIVEN la modale de refus est ouverte
+    WHEN je confirme le refus (avec ou sans motif)
+    THEN le système :
+      • Passe le statut de l'article à "Refusé"
+      • Enregistre le motif de refus (si renseigné)
+      • Enregistre l'horodatage du refus et l'identifiant de l'utilisateur
+      • Exclut l'article des compteurs de la liste (articles en vente, valeur totale)
+      • Affiche un message de confirmation : "Article refusé"
+
+  # AC-3 : Affichage des articles refusés dans la liste
+  - GIVEN une liste contient des articles refusés
+    WHEN je consulte le détail de la liste (bénévole, gestionnaire ou déposant)
+    THEN les articles refusés sont affichés dans une zone distincte "Articles refusés" :
+      • Séparés visuellement des articles actifs (en dessous, avec un titre de section)
+      • Chaque article refusé affiche : description, prix, motif de refus (si renseigné)
+      • Les articles refusés ne sont pas comptés dans le total d'articles ni dans la valeur totale
+
+  # AC-4 : Irréversibilité du refus
+  - GIVEN un article a été refusé
+    WHEN je consulte cet article
+    THEN le bouton "Refuser" n'est plus visible
+    AND aucune action ne permet de remettre l'article en vente
+
+  # AC-5 : Restrictions d'accès
+  - GIVEN je suis un déposant
+    WHEN je consulte ma liste
+    THEN je ne vois pas de bouton "Refuser" sur mes articles
+    AND je peux consulter mes articles refusés et leur motif en lecture seule
+
+dependencies:
+  - US-002  # Déclaration des articles
+  - US-003  # Génération des étiquettes (articles déposés)
+
+links:
+  - rel: requirement
+    id: REQ-F-022  # Refus d'article au dépôt
+  - rel: requirement
+    id: REQ-F-012  # Rappels réglementaires dépôt
+
+business_rules:
+  - Seuls les bénévoles, gestionnaires et administrateurs peuvent refuser un article
+  - Un article ne peut être refusé que s'il est au statut "Déposé" (validé)
+  - Le motif de refus est optionnel (champ texte libre, max 200 caractères)
+  - Le refus est irréversible
+  - L'article refusé reste en base de données mais est exclu de tous les compteurs (articles en vente, valeur totale, reversements)
+  - Le refus est horodaté et tracé (utilisateur ayant refusé)
+
+test_scenarios:
+  - T-US013-01 : Refus d'un article par un bénévole avec motif (OK, statut "Refusé", exclu des compteurs)
+  - T-US013-02 : Refus d'un article sans motif (OK)
+  - T-US013-03 : Consultation des articles refusés par le déposant (OK, zone "Refusés" visible, motif affiché)
+  - T-US013-04 : Tentative de refus par un déposant (KO, bouton non visible)
+  - T-US013-05 : Tentative de remettre en vente un article refusé (KO, irréversible)
+  - T-US013-06 : Refus d'un article — vérification que les compteurs sont mis à jour (OK)
+  - T-US013-07 : Traçabilité du refus — horodatage et identifiant de l'utilisateur (OK)
+```
+
+## US-014 — Suivre l'avancement des déclarations des déposants
+
+```yaml
+id: US-014
+title: Suivre l'avancement des déclarations des déposants
+actor: gestionnaire
+benefit: "...pour anticiper la logistique du dépôt et relancer les déposants en retard"
+as_a: "En tant que gestionnaire ou administrateur"
+i_want: "Je veux consulter un tableau de bord montrant l'état d'avancement des déclarations d'articles par les déposants"
+so_that: "Afin de savoir combien de déposants ont rempli et validé leurs listes avant la date limite, et d'identifier ceux qui n'ont pas encore commencé"
+
+# Contexte métier
+notes: |
+  - Avant le dépôt, les gestionnaires doivent préparer la logistique (impression étiquettes, organisation des créneaux)
+  - Il est crucial de savoir combien de déposants ont validé leurs listes pour dimensionner l'impression
+  - Les déposants qui n'ont pas commencé ou qui sont en brouillon peuvent être relancés
+  - La date limite de déclaration (3 semaines avant le dépôt) rend ce suivi particulièrement important
+  - Ce tableau de bord complète la page des déposants existante qui ne montre que les informations d'inscription
+
+acceptance_criteria:
+  # AC-1 : Accès au tableau de bord des déclarations
+  - GIVEN je suis gestionnaire ou administrateur
+    AND je consulte la page de détail d'une édition
+    WHEN je clique sur "Suivi des déclarations" (ou accède à `/editions/:id/declarations`)
+    THEN je vois un tableau de bord avec les statistiques globales :
+      • Nombre total de déposants inscrits
+      • Nombre de déposants n'ayant aucune liste créée
+      • Nombre de déposants avec au moins une liste en brouillon
+      • Nombre de déposants avec toutes les listes validées
+      • Nombre total de listes (par statut : brouillon, validées)
+      • Nombre total d'articles déclarés
+      • Valeur totale estimée des articles
+
+  # AC-2 : Barre de progression visuelle
+  - GIVEN le tableau de bord est affiché
+    WHEN je consulte la section progression
+    THEN je vois une barre de progression indiquant le pourcentage de déposants ayant validé au moins une liste
+    AND je vois un rappel de la date limite de déclaration avec le nombre de jours restants
+
+  # AC-3 : Liste détaillée des déposants avec état des listes
+  - GIVEN le tableau de bord est affiché
+    WHEN je consulte la section détaillée
+    THEN je vois un tableau avec une ligne par déposant :
+      • Nom, prénom
+      • Créneau de dépôt
+      • Type de liste (standard, 1000, 2000)
+      • Nombre de listes créées / max autorisé
+      • Statut global : "Aucune liste", "Brouillon", "Validée"
+      • Nombre d'articles déclarés (total sur toutes les listes)
+      • Date de dernière modification
+    AND le tableau est triable par chaque colonne
+    AND le tableau est filtrable par statut global et par créneau de dépôt
+
+  # AC-4 : Filtres par statut
+  - GIVEN le tableau détaillé est affiché
+    WHEN je filtre par statut "Aucune liste"
+    THEN seuls les déposants n'ayant créé aucune liste sont affichés
+    AND le compteur indique le nombre de résultats
+
+  # AC-5 : Restrictions d'accès
+  - GIVEN je suis bénévole ou déposant
+    WHEN je tente d'accéder à `/editions/:id/declarations`
+    THEN je suis redirigé ou le système affiche une erreur d'accès insuffisant
+
+dependencies:
+  - US-002  # Déclaration des articles
+  - US-008  # Import Billetweb (inscriptions déposants)
+
+links:
+  - rel: requirement
+    id: REQ-F-023  # Tableau de bord suivi des déclarations
+  - rel: requirement
+    id: REQ-F-011  # Date limite de déclaration
+
+business_rules:
+  - Seuls les gestionnaires et administrateurs ont accès à ce tableau de bord
+  - Les statistiques sont calculées en temps réel (pas de cache)
+  - Un déposant "validé" est un déposant dont toutes les listes sont au statut "Validée"
+  - Un déposant "brouillon" a au moins une liste mais aucune validée
+  - Un déposant "aucune liste" n'a créé aucune liste
+  - Les articles refusés (US-013) ne sont pas comptés dans les totaux
+  - Le tableau de bord n'est disponible que pour les éditions aux statuts inscriptions_ouvertes ou en_cours
+
+test_scenarios:
+  - T-US014-01 : Accès au tableau de bord par un gestionnaire (OK, statistiques affichées)
+  - T-US014-02 : Statistiques globales cohérentes (OK, totaux déposants/listes/articles corrects)
+  - T-US014-03 : Barre de progression correcte (OK, pourcentage = déposants validés / total déposants)
+  - T-US014-04 : Tableau détaillé avec tri par colonne (OK)
+  - T-US014-05 : Filtre par statut "Aucune liste" (OK, seuls les déposants sans liste affichés)
+  - T-US014-06 : Filtre par créneau de dépôt (OK)
+  - T-US014-07 : Accès refusé pour un bénévole (KO, erreur accès insuffisant)
+  - T-US014-08 : Accès refusé pour un déposant (KO, erreur accès insuffisant)
+  - T-US014-09 : Date limite affichée avec jours restants (OK)
+  - T-US014-10 : Édition en brouillon — tableau de bord non accessible (KO, pas encore d'inscriptions)
+```
+
+## US-015 — Créer et utiliser une bourse en mode Formation
+
+```yaml
+id: US-015
+title: Créer et utiliser une bourse en mode Formation
+actor: administrateur
+benefit: "...pour former les bénévoles et gestionnaires avant les vraies bourses"
+as_a: "En tant qu'administrateur"
+i_want: "Je veux créer une édition de bourse en mode Formation, forcer manuellement les transitions d'étapes et restreindre sa visibilité aux utilisateurs testeurs"
+so_that: "Afin de permettre aux bénévoles et gestionnaires de s'entraîner sur le cycle complet d'une bourse sans impacter les données réelles ni les déposants"
+
+# Contexte métier
+notes: |
+  - Les bénévoles et gestionnaires doivent être formés sur l'application avant chaque saison de bourse
+  - Il est nécessaire de pouvoir simuler tout le cycle de vie d'une édition (inscription, déclaration, dépôt, vente, clôture, reversement)
+  - Les dates réelles ne doivent pas bloquer les transitions d'étapes en mode formation
+  - Les déposants normaux ne doivent pas voir cette édition pour éviter toute confusion
+  - Des utilisateurs marqués "testeurs" peuvent jouer le rôle de déposant pour tester le parcours complet
+  - Un bandeau visuel permanent permet de distinguer clairement la bourse de formation d'une vraie bourse
+
+acceptance_criteria:
+  # AC-1 : Création d'une édition en mode formation
+  - GIVEN je suis administrateur
+    WHEN je crée une nouvelle édition
+    THEN je peux cocher une option "Mode formation" (flag is_training)
+    AND si une autre édition formation est déjà active (non clôturée), la création est refusée avec un message explicite
+    AND cette contrainte est indépendante de la limitation sur les éditions réelles (REQ-F-019)
+
+  # AC-2 : Forçage manuel des transitions d'étapes
+  - GIVEN une édition formation existe
+    AND je suis administrateur ou gestionnaire
+    WHEN je consulte la page de détail de cette édition
+    THEN je vois un sélecteur permettant de forcer la transition vers n'importe quelle étape suivante du cycle de vie :
+      Brouillon → Configurée → Inscriptions ouvertes → En cours → Clôturée
+    AND la transition s'effectue sans vérification des dates, des prérequis de configuration ni des contraintes habituelles
+    AND un message de confirmation indique la nouvelle étape
+
+  # AC-3 : Bandeau visuel "Bourse de formation"
+  - GIVEN une édition est en mode formation
+    WHEN n'importe quel utilisateur (admin, gestionnaire, bénévole, déposant testeur) consulte un écran lié à cette édition
+    THEN un bandeau bien visible "Bourse de formation" est affiché en permanence sur tous les écrans de cette édition
+    AND le bandeau est visuellement distinct (couleur différente des alertes existantes, par exemple violet ou jaune)
+
+  # AC-4 : Invisibilité pour les déposants normaux
+  - GIVEN une édition formation existe
+    AND je suis un déposant sans le flag testeur
+    WHEN je consulte la liste de mes éditions disponibles
+    THEN l'édition formation n'apparaît pas dans la liste
+    AND si je tente d'accéder directement à l'URL de l'édition formation, je reçois une erreur d'accès
+
+  # AC-5 : Activation du mode testeur sur un utilisateur
+  - GIVEN je suis administrateur
+    WHEN je consulte la gestion des utilisateurs
+    THEN je peux activer ou désactiver le flag "testeur" (is_tester) sur n'importe quel compte
+    AND un utilisateur testeur avec le rôle déposant peut voir et participer aux éditions formation
+    AND les gestionnaires, bénévoles et administrateurs n'ont pas besoin du flag testeur (ils ont déjà accès via leur rôle)
+
+  # AC-6 : Parcours complet de la bourse de formation
+  - GIVEN une édition formation est active
+    AND des déposants testeurs sont inscrits
+    WHEN je parcours le cycle complet (déclaration d'articles, dépôt, vente, clôture, reversements)
+    THEN toutes les fonctionnalités se comportent normalement
+    AND les données de l'édition formation sont isolées des éditions réelles
+
+  # AC-7 : Restrictions d'accès - déposant non testeur
+  - GIVEN je suis un déposant sans le flag testeur
+    WHEN je tente d'accéder à une édition formation (via URL directe ou API)
+    THEN le système retourne une erreur 403 (accès insuffisant)
+    AND aucune donnée de l'édition formation n'est exposée
+
+dependencies:
+  - US-006  # Création d'édition
+  - US-007  # Configuration des dates
+  - US-009  # Clôture d'édition
+
+links:
+  - rel: requirement
+    id: REQ-F-024  # Mode formation
+
+business_rules:
+  - Seul un administrateur peut créer une édition en mode formation
+  - Maximum 1 édition formation non clôturée à la fois
+  - La contrainte d'édition active unique (REQ-F-019) ne s'applique pas aux éditions formation
+  - Les transitions d'étapes en mode formation ne vérifient ni les dates ni les prérequis
+  - Les déposants doivent avoir le flag is_tester pour accéder à une édition formation
+  - Les bénévoles, gestionnaires et administrateurs accèdent à l'édition formation sans flag testeur
+  - Le bandeau "Bourse de formation" est affiché sur tous les écrans liés à l'édition
+  - Les données d'une édition formation (listes, articles, ventes) sont stockées normalement mais isolées par l'édition
+
+test_scenarios:
+  - T-US015-01 : Création d'une édition formation par un administrateur (OK)
+  - T-US015-02 : Création refusée si une édition formation non clôturée existe déjà (KO, message explicite)
+  - T-US015-03 : Création refusée pour un gestionnaire (KO, accès insuffisant)
+  - T-US015-04 : Forçage de transition Brouillon → En cours sans configuration de dates (OK)
+  - T-US015-05 : Bandeau "Bourse de formation" visible sur la page de détail (OK)
+  - T-US015-06 : Bandeau visible sur les pages déposant testeur (listes, articles) (OK)
+  - T-US015-07 : Édition formation invisible pour un déposant normal (OK, n'apparaît pas dans la liste)
+  - T-US015-08 : Accès direct par URL refusé pour un déposant non testeur (KO, erreur 403)
+  - T-US015-09 : Activation du flag testeur sur un utilisateur (OK)
+  - T-US015-10 : Déposant testeur voit l'édition formation dans sa liste (OK)
+  - T-US015-11 : Parcours complet : déclaration, dépôt, vente, clôture (OK)
+  - T-US015-12 : Coexistence d'une édition formation et d'une édition réelle active (OK, pas de conflit)
+```

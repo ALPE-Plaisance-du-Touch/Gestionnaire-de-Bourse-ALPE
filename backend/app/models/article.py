@@ -89,9 +89,6 @@ class Article(Base, UUIDMixin, TimestampMixin):
         nullable=False,
     )
 
-    # Conformity certification by depositor
-    conformity_certified: Mapped[bool] = mapped_column(Boolean, default=False)
-
     # Notes (internal, for volunteers)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 

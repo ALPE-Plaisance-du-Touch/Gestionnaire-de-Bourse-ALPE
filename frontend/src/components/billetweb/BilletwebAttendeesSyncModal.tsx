@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { billetwebApiSettings } from '@/api/billetweb-api';
 import { Button } from '@/components/ui/Button';
@@ -17,19 +18,22 @@ export function BilletwebAttendeesSyncModal({
   lastSync,
 }: BilletwebAttendeesSyncModalProps) {
   const queryClient = useQueryClient();
+  const [forceFull, setForceFull] = useState(false);
 
   const { data: preview, isLoading, error } = useQuery({
-    queryKey: ['billetweb-attendees-preview', editionId],
-    queryFn: () => billetwebApiSettings.previewAttendeesSync(editionId),
+    queryKey: ['billetweb-attendees-preview', editionId, forceFull],
+    queryFn: () => billetwebApiSettings.previewAttendeesSync(editionId, forceFull),
     enabled: isOpen,
   });
 
   const syncMutation = useMutation({
-    mutationFn: () => billetwebApiSettings.syncAttendees(editionId, false),
+    mutationFn: () => billetwebApiSettings.syncAttendees(editionId, false, forceFull),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['billetweb-stats', editionId] });
       queryClient.invalidateQueries({ queryKey: ['billetweb-attendees-preview', editionId] });
       queryClient.invalidateQueries({ queryKey: ['edition', editionId] });
+      queryClient.invalidateQueries({ queryKey: ['edition-depositors', editionId] });
+      queryClient.invalidateQueries({ queryKey: ['deposit-slots', editionId] });
     },
   });
 
@@ -71,13 +75,20 @@ export function BilletwebAttendeesSyncModal({
       ) : (
         <>
           {/* Last sync info */}
-          {lastSync && (
+          {lastSync && !forceFull && (
             <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
               Derniere synchronisation : {new Date(lastSync).toLocaleString('fr-FR')}
               <br />
               <span className="text-xs text-blue-600">
                 Seules les inscriptions modifiees depuis seront recuperees.
               </span>
+            </div>
+          )}
+
+          {/* Force full sync info */}
+          {forceFull && (
+            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+              Synchronisation complete activee : toutes les inscriptions Billetweb seront recuperees.
             </div>
           )}
 
@@ -146,25 +157,47 @@ export function BilletwebAttendeesSyncModal({
             </div>
           )}
 
-          {/* No data */}
+          {/* No data + force full sync link */}
           {stats && stats.rowsToProcess === 0 && (
             <div className="p-4 bg-gray-50 text-gray-500 text-center rounded-lg">
-              Aucune nouvelle inscription a importer.
+              <p>Aucune nouvelle inscription a importer.</p>
+              {lastSync && !forceFull && (
+                <button
+                  type="button"
+                  className="mt-2 text-sm text-blue-600 hover:text-blue-800 underline"
+                  onClick={() => setForceFull(true)}
+                >
+                  Relancer une synchronisation complete
+                </button>
+              )}
             </div>
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button variant="outline" onClick={onClose}>
-              Annuler
-            </Button>
-            <Button
-              onClick={() => syncMutation.mutate()}
-              isLoading={syncMutation.isPending}
-              disabled={!stats || stats.rowsToProcess === 0}
-            >
-              Importer {stats ? stats.rowsToProcess : 0} inscription(s)
-            </Button>
+          <div className="flex items-center justify-between pt-4 border-t">
+            <div>
+              {lastSync && stats && stats.rowsToProcess > 0 && !forceFull && (
+                <button
+                  type="button"
+                  className="text-xs text-gray-500 hover:text-gray-700 underline"
+                  onClick={() => setForceFull(true)}
+                >
+                  Sync complete
+                </button>
+              )}
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={onClose}>
+                Annuler
+              </Button>
+              <Button
+                onClick={() => syncMutation.mutate()}
+                isLoading={syncMutation.isPending}
+                disabled={!stats || stats.rowsToProcess === 0}
+              >
+                Importer {stats ? stats.rowsToProcess : 0} inscription(s)
+              </Button>
+            </div>
           </div>
         </>
       )}

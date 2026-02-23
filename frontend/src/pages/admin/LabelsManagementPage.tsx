@@ -2,12 +2,10 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { editionsApi } from '@/api/editions';
-import { depositSlotsApi } from '@/api/deposit-slots';
-import { billetwebApi } from '@/api/billetweb';
 import { labelsApi } from '@/api/labels';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
-import type { LabelGenerationMode, LabelStats, EditionDepositorWithUser } from '@/types';
+import type { LabelGenerationMode, LabelStats, LabelDepositor } from '@/types';
 
 function formatSlotLabel(startDatetime: string, endDatetime: string): string {
   const start = new Date(startDatetime);
@@ -54,17 +52,17 @@ export function LabelsManagementPage() {
     enabled: !!editionId,
   });
 
-  // Fetch deposit slots
+  // Fetch deposit slots with validated lists (for slot mode)
   const { data: slotsData } = useQuery({
-    queryKey: ['deposit-slots', editionId],
-    queryFn: () => depositSlotsApi.getSlots(editionId!),
-    enabled: !!editionId,
+    queryKey: ['label-slots', editionId],
+    queryFn: () => labelsApi.getSlots(editionId!),
+    enabled: !!editionId && mode === 'slot',
   });
 
-  // Fetch depositors (for selection mode)
+  // Fetch depositors with validated lists (for selection mode)
   const { data: depositorsData } = useQuery({
-    queryKey: ['depositors', editionId],
-    queryFn: () => billetwebApi.listDepositors(editionId!, { limit: 500 }),
+    queryKey: ['label-depositors', editionId],
+    queryFn: () => labelsApi.getDepositors(editionId!),
     enabled: !!editionId && mode === 'selection',
   });
 
@@ -116,16 +114,16 @@ export function LabelsManagementPage() {
   };
 
   const toggleAllDepositors = () => {
-    if (!depositorsData?.items) return;
-    if (selectedDepositorIds.size === depositorsData.items.length) {
+    if (!depositorsData) return;
+    if (selectedDepositorIds.size === depositorsData.length) {
       setSelectedDepositorIds(new Set());
     } else {
-      setSelectedDepositorIds(new Set(depositorsData.items.map((d: EditionDepositorWithUser) => d.userId)));
+      setSelectedDepositorIds(new Set(depositorsData.map((d: LabelDepositor) => d.id)));
     }
   };
 
-  const slots = slotsData?.items || [];
-  const depositors = depositorsData?.items || [];
+  const slots = slotsData || [];
+  const depositors = depositorsData || [];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -224,24 +222,24 @@ export function LabelsManagementPage() {
               </button>
             </div>
             {depositors.length === 0 ? (
-              <p className="text-sm text-gray-500">Aucun déposant inscrit pour cette édition.</p>
+              <p className="text-sm text-gray-500">Aucun déposant avec des listes validées pour cette édition.</p>
             ) : (
               <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg divide-y divide-gray-100">
-                {depositors.map((dep: EditionDepositorWithUser) => (
+                {depositors.map((dep: LabelDepositor) => (
                   <label
                     key={dep.id}
                     className="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer"
                   >
                     <input
                       type="checkbox"
-                      checked={selectedDepositorIds.has(dep.userId)}
-                      onChange={() => toggleDepositor(dep.userId)}
+                      checked={selectedDepositorIds.has(dep.id)}
+                      onChange={() => toggleDepositor(dep.id)}
                       className="h-4 w-4 text-blue-600 rounded border-gray-300"
                     />
                     <span className="ml-3 text-sm text-gray-900">
-                      {dep.userFirstName} {dep.userLastName}
+                      {dep.firstName} {dep.lastName}
                     </span>
-                    <span className="ml-2 text-xs text-gray-500">({dep.userEmail})</span>
+                    <span className="ml-2 text-xs text-gray-500">({dep.email})</span>
                   </label>
                 ))}
               </div>

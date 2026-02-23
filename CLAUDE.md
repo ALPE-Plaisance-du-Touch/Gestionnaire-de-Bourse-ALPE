@@ -142,7 +142,7 @@ All specs are in `docs/` (v1.0.0 validated):
 |----------|---------|
 | [README.md](docs/README.md) | Vision, objectives, navigation |
 | [glossaire.md](docs/glossaire.md) | French domain terminology |
-| [user-stories.md](docs/user-stories.md) | US-001 to US-012 with acceptance criteria |
+| [user-stories.md](docs/user-stories.md) | US-001 to US-014 with acceptance criteria |
 | [exigences.md](docs/exigences.md) | Functional/non-functional requirements |
 | [domain-model.md](docs/domain-model.md) | Entity model, lifecycles, business rules |
 | [architecture.md](docs/architecture.md) | Technical architecture |

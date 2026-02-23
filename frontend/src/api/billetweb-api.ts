@@ -56,17 +56,19 @@ export const billetwebApiSettings = {
     return response.data;
   },
 
-  previewAttendeesSync: async (editionId: string): Promise<BilletwebAttendeesPreviewResponse> => {
+  previewAttendeesSync: async (editionId: string, forceFull: boolean = false): Promise<BilletwebAttendeesPreviewResponse> => {
+    const params = forceFull ? { force_full: true } : {};
     const response = await apiClient.get<BilletwebAttendeesPreviewResponse>(
-      `/v1/editions/${editionId}/billetweb-api/attendees/preview`
+      `/v1/editions/${editionId}/billetweb-api/attendees/preview`,
+      { params }
     );
     return response.data;
   },
 
-  syncAttendees: async (editionId: string, sendEmails: boolean = true): Promise<BilletwebAttendeesSyncResult> => {
+  syncAttendees: async (editionId: string, sendEmails: boolean = true, forceFull: boolean = false): Promise<BilletwebAttendeesSyncResult> => {
     const response = await apiClient.post<BilletwebAttendeesSyncResult>(
       `/v1/editions/${editionId}/billetweb-api/attendees/import`,
-      { send_emails: sendEmails }
+      { send_emails: sendEmails, force_full: forceFull }
     );
     return response.data;
   },

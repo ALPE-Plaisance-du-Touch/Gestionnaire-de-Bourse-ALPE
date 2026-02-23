@@ -439,7 +439,7 @@ class TestValidateList:
             category="clothing",
             description="Test article",
             price=5.00,
-            conformity_certified=True,
+
             item_list_id=existing_list.id,
         )
         db_session.add(article)
@@ -472,7 +472,7 @@ class TestValidateList:
             category="clothing",
             description="Test article",
             price=5.00,
-            conformity_certified=True,
+
             item_list_id=existing_list.id,
         )
         db_session.add(article)

@@ -200,9 +200,6 @@ class TestValidateList:
     async def test_validate_list_success(self, mock_db, mock_depositor, mock_item_list):
         """Successfully validate a list."""
         mock_item_list.article_count = 5
-        mock_item_list.articles = [
-            MagicMock(conformity_certified=True) for _ in range(5)
-        ]
 
         service = ItemListService(mock_db)
         service.get_list = AsyncMock(return_value=mock_item_list)

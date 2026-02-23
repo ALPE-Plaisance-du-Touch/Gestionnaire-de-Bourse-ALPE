@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { LabelGenerationRequest, LabelStats } from '@/types';
+import type { LabelDepositor, LabelGenerationRequest, LabelSlot, LabelStats } from '@/types';
 
 export const labelsApi = {
   generateLabels: async (
@@ -18,6 +18,20 @@ export const labelsApi = {
       { responseType: 'blob', timeout: 120000 },
     );
     return response.data as Blob;
+  },
+
+  getDepositors: async (editionId: string): Promise<LabelDepositor[]> => {
+    const response = await apiClient.get(
+      `/v1/editions/${editionId}/labels/depositors`,
+    );
+    return response.data as LabelDepositor[];
+  },
+
+  getSlots: async (editionId: string): Promise<LabelSlot[]> => {
+    const response = await apiClient.get(
+      `/v1/editions/${editionId}/labels/slots`,
+    );
+    return response.data as LabelSlot[];
   },
 
   getStats: async (editionId: string): Promise<LabelStats> => {

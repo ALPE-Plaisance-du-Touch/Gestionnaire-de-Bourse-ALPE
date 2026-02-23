@@ -395,6 +395,64 @@ links:
   - **Priorité :** Must have
   - **Responsable validation :** Bénévole (vérification physique lors du dépôt)
 
+- REQ-F-022 — Le système DOIT permettre à un bénévole, gestionnaire ou administrateur de refuser un article lors du dépôt physique.
+  - **Critères d'acceptation :**
+    - Un article au statut "Déposé" (liste validée) peut être marqué comme "Refusé" par un bénévole, gestionnaire ou administrateur
+    - Le motif de refus est optionnel (champ texte libre, max 200 caractères)
+    - L'article refusé reste enregistré en base de données (pas de suppression)
+    - L'article refusé est exclu des compteurs de la liste (nombre d'articles en vente, valeur totale estimée)
+    - L'article refusé est affiché dans une zone distincte "Articles refusés" dans le détail de la liste
+    - Le déposant peut consulter ses articles refusés et le motif éventuel
+    - Le refus est irréversible (un article refusé ne peut pas être remis en vente)
+    - Traçabilité : horodatage du refus et identifiant de l'utilisateur ayant refusé
+  - **Priorité :** Should have
+  - **Responsable validation :** Bénévole + Gestionnaire
+
+- REQ-F-023 — Le système DOIT fournir un tableau de bord de suivi de l'avancement des déclarations d'articles par les déposants. (US-014)
+  - **Critères d'acceptation :**
+    - **Statistiques globales :**
+      - Nombre total de déposants inscrits à l'édition
+      - Répartition par état : aucune liste créée / au moins une liste en brouillon / toutes listes validées
+      - Nombre total de listes par statut (brouillon, validées)
+      - Nombre total d'articles déclarés et valeur totale estimée
+      - Barre de progression : pourcentage de déposants ayant validé au moins une liste
+      - Rappel de la date limite de déclaration avec nombre de jours restants
+    - **Tableau détaillé par déposant :**
+      - Colonnes : nom, prénom, créneau de dépôt, type de liste, listes créées/max, statut global, nombre d'articles, dernière modification
+      - Tri par chaque colonne
+      - Filtres : par statut global (aucune liste, brouillon, validée), par créneau de dépôt
+    - **Accès :**
+      - Réservé aux gestionnaires et administrateurs
+      - Disponible uniquement pour les éditions aux statuts inscriptions_ouvertes ou en_cours
+    - **Cohérence des données :**
+      - Les articles refusés (REQ-F-022) ne sont pas comptés dans les totaux
+      - Les statistiques sont calculées en temps réel
+  - **Priorité :** Should have
+  - **Responsable validation :** Gestionnaire
+
+- REQ-F-024 — Le système DOIT permettre de créer et d'utiliser une édition en mode Formation pour entraîner les bénévoles et gestionnaires. (US-015)
+  - **Critères d'acceptation :**
+    - **Création d'une édition formation :**
+      - Un administrateur peut créer une édition avec le flag `is_training`
+      - Maximum 1 édition formation non clôturée à la fois
+      - Cette contrainte est indépendante de la limitation sur les éditions réelles (REQ-F-019)
+    - **Forçage des transitions d'étapes :**
+      - Un administrateur ou gestionnaire peut forcer la transition vers n'importe quelle étape suivante du cycle de vie
+      - Aucune vérification de dates, de configuration ou de prérequis n'est effectuée en mode formation
+    - **Bandeau visuel :**
+      - Un bandeau "Bourse de formation" est affiché en permanence sur tous les écrans liés à l'édition formation
+      - Le bandeau est visuellement distinct des alertes existantes
+    - **Visibilité restreinte :**
+      - L'édition formation n'apparaît pas pour les déposants normaux (sans flag `is_tester`)
+      - Un administrateur peut activer/désactiver le flag `is_tester` sur n'importe quel compte utilisateur
+      - Les bénévoles, gestionnaires et administrateurs accèdent à l'édition formation sans flag testeur
+      - Un déposant non testeur qui tente d'accéder à l'édition formation reçoit une erreur 403
+    - **Parcours complet :**
+      - Toutes les fonctionnalités (déclaration, dépôt, vente, clôture, reversements) fonctionnent normalement
+      - Les données sont isolées par l'édition (pas d'impact sur les éditions réelles)
+  - **Priorité :** Should have
+  - **Responsable validation :** Administrateur
+
 - REQ-F-003 — Le système DOIT permettre la génération et l'impression en masse des étiquettes par les gestionnaires (règlement intérieur : impression à la charge d'ALPE). (US-003)
   - **Critères d'acceptation :**
     - **Interface de gestion des étiquettes :**

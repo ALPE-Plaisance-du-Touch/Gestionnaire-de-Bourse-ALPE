@@ -75,6 +75,7 @@ class BilletwebAttendeesSyncRequest(BaseModel):
 
     send_emails: bool = Field(default=False, description="Send invitation/notification emails")
     ignore_errors: bool = Field(default=False, description="Skip rows with errors")
+    force_full: bool = Field(default=False, description="Force full sync ignoring last sync timestamp")
 
 
 class BilletwebAttendeesSyncResult(BaseModel):

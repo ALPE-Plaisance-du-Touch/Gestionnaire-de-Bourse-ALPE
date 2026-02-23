@@ -111,7 +111,6 @@ class ArticleService:
             gender=data.gender.value if data.gender else None,
             is_lot=data.is_lot,
             lot_quantity=data.lot_quantity,
-            conformity_certified=data.conformity_certified,
             line_number=line_number,
         )
 

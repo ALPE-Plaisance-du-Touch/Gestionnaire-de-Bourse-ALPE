@@ -147,7 +147,7 @@ async def existing_article(
         description="T-shirt bleu",
         price=Decimal("5.00"),
         size="8 ans",
-        conformity_certified=True,
+
         item_list_id=draft_list.id,
     )
     db_session.add(article)
@@ -262,7 +262,7 @@ class TestAddArticle:
                 "description": "Pantalon jean",
                 "price": "8.00",
                 "size": "10 ans",
-                "conformity_certified": True,
+
             },
             headers={"Authorization": f"Bearer {token}"},
         )
@@ -292,7 +292,7 @@ class TestAddArticle:
                 "size": "18 mois",
                 "is_lot": True,
                 "lot_quantity": 3,
-                "conformity_certified": True,
+
             },
             headers={"Authorization": f"Bearer {token}"},
         )
@@ -317,7 +317,7 @@ class TestAddArticle:
                 "category": "clothing",
                 "description": "Article pas cher",
                 "price": "0.50",
-                "conformity_certified": True,
+
             },
             headers={"Authorization": f"Bearer {token}"},
         )
@@ -340,7 +340,7 @@ class TestAddArticle:
                 "subcategory": "stroller",
                 "description": "Poussette luxe",
                 "price": "200.00",
-                "conformity_certified": True,
+
             },
             headers={"Authorization": f"Bearer {token}"},
         )
@@ -363,7 +363,7 @@ class TestAddArticle:
                 "subcategory": "car_seat",  # Blacklisted
                 "description": "Siège auto",
                 "price": "50.00",
-                "conformity_certified": True,
+
             },
             headers={"Authorization": f"Bearer {token}"},
         )
@@ -386,7 +386,7 @@ class TestAddArticle:
                 "category": "clothing",
                 "description": "Test article",
                 "price": "5.00",
-                "conformity_certified": True,
+
             },
             headers={"Authorization": f"Bearer {token}"},
         )
@@ -412,7 +412,7 @@ class TestAddArticle:
                 "size": "18 mois",
                 "is_lot": True,
                 "lot_quantity": 3,
-                "conformity_certified": True,
+
             },
             headers={"Authorization": f"Bearer {token}"},
         )
@@ -584,7 +584,7 @@ class TestArticleConstraints:
                 category="toys",
                 description=f"Article {i+1}",
                 price=Decimal("2.00"),
-                conformity_certified=True,
+        
                 item_list_id=draft_list.id,
             )
             db_session.add(article)
@@ -598,7 +598,7 @@ class TestArticleConstraints:
                 "category": "toys",
                 "description": "Article 25",
                 "price": "2.00",
-                "conformity_certified": True,
+
             },
             headers={"Authorization": f"Bearer {token}"},
         )
@@ -621,7 +621,7 @@ class TestArticleConstraints:
                 category="clothing",
                 description=f"Vêtement {i+1}",
                 price=Decimal("5.00"),
-                conformity_certified=True,
+        
                 item_list_id=draft_list.id,
             )
             db_session.add(article)
@@ -635,7 +635,7 @@ class TestArticleConstraints:
                 "category": "clothing",
                 "description": "Vêtement 13",
                 "price": "5.00",
-                "conformity_certified": True,
+
             },
             headers={"Authorization": f"Bearer {token}"},
         )
@@ -658,7 +658,7 @@ class TestArticleConstraints:
             subcategory="coat",
             description="Manteau 1",
             price=Decimal("15.00"),
-            conformity_certified=True,
+    
             item_list_id=draft_list.id,
         )
         db_session.add(article)
@@ -674,7 +674,7 @@ class TestArticleConstraints:
                 "subcategory": "coat",
                 "description": "Manteau 2",
                 "price": "20.00",
-                "conformity_certified": True,
+
             },
             headers={"Authorization": f"Bearer {token}"},
         )

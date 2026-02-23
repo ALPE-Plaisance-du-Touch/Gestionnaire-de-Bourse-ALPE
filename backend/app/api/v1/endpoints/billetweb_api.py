@@ -243,6 +243,7 @@ async def preview_attendees_sync(
     edition_id: str,
     db: DBSession,
     current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+    force_full: bool = False,
 ):
     """Preview attendees from Billetweb before importing as depositors."""
     edition = await _get_edition_or_404(db, edition_id)
@@ -255,7 +256,7 @@ async def preview_attendees_sync(
 
     sync_service = BilletwebSyncService(db)
     try:
-        return await sync_service.sync_attendees_preview(edition)
+        return await sync_service.sync_attendees_preview(edition, force_full=force_full)
     except BilletwebAPIError as e:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -284,6 +285,7 @@ async def import_attendees_sync(
         )
 
     send_emails = options.send_emails if options else False
+    force_full = options.force_full if options else False
 
     sync_service = BilletwebSyncService(db)
     try:
@@ -291,6 +293,7 @@ async def import_attendees_sync(
             edition=edition,
             imported_by=current_user,
             send_emails=send_emails,
+            force_full=force_full,
         )
         return BilletwebAttendeesSyncResult(**result)
     except BilletwebAPIError as e:
