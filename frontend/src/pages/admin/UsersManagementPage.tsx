@@ -54,6 +54,7 @@ export function UsersManagementPage() {
   const [formRole, setFormRole] = useState<UserRole>('depositor');
   const [formIsActive, setFormIsActive] = useState(true);
   const [formIsLocalResident, setFormIsLocalResident] = useState(false);
+  const [formIsTester, setFormIsTester] = useState(false);
 
   // Debounce search
   useEffect(() => {
@@ -104,6 +105,7 @@ export function UsersManagementPage() {
     setFormRole(user.role);
     setFormIsActive(user.isActive);
     setFormIsLocalResident(user.isLocalResident);
+    setFormIsTester(user.isTester);
     setErrorMessage('');
   };
 
@@ -118,6 +120,7 @@ export function UsersManagementPage() {
     if (formRole !== editingUser.role) updates.role = formRole;
     if (formIsActive !== editingUser.isActive) updates.isActive = formIsActive;
     if (formIsLocalResident !== editingUser.isLocalResident) updates.isLocalResident = formIsLocalResident;
+    if (formIsTester !== editingUser.isTester) updates.isTester = formIsTester;
 
     if (Object.keys(updates).length === 0) {
       setEditingUser(null);
@@ -376,6 +379,15 @@ export function UsersManagementPage() {
                 className="h-4 w-4 text-blue-600 rounded border-gray-300"
               />
               <span className="text-sm text-gray-700">Résident local</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formIsTester}
+                onChange={(e) => setFormIsTester(e.target.checked)}
+                className="h-4 w-4 text-amber-600 rounded border-gray-300"
+              />
+              <span className="text-sm text-gray-700">Testeur (formation)</span>
             </label>
           </div>
 

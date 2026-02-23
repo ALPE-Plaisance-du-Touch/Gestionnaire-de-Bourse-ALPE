@@ -16,7 +16,7 @@ def _make_edition(**kwargs):
     edition = MagicMock(spec=Edition)
     edition.id = kwargs.get("id", "edition-1")
     edition.name = kwargs.get("name", "Bourse Test")
-    edition.status = kwargs.get("status", EditionStatus.IN_PROGRESS.value)
+    edition.status = kwargs.get("status", EditionStatus.SETTLEMENT.value)
     edition.retrieval_end_datetime = kwargs.get(
         "retrieval_end_datetime", datetime.now() - timedelta(days=1)
     )
@@ -146,11 +146,11 @@ class TestCheckClosurePrerequisites:
 
     @pytest.mark.asyncio
     async def test_wrong_status(self):
-        """Edition not in_progress -> can_close=False."""
+        """Edition not in settlement -> can_close=False."""
         db = AsyncMock()
         service = EditionService(db)
         service.repository = AsyncMock()
-        edition = _make_edition(status=EditionStatus.CONFIGURED.value)
+        edition = _make_edition(status=EditionStatus.SALE.value)
         service.repository.get_by_id = AsyncMock(return_value=edition)
 
         with patch(
@@ -163,7 +163,7 @@ class TestCheckClosurePrerequisites:
 
         assert result.can_close is False
         labels = {c.label: c.passed for c in result.checks}
-        assert labels["Edition en cours"] is False
+        assert labels["Bilan en cours"] is False
 
 
 class TestCloseEdition:
@@ -257,7 +257,7 @@ class TestArchiveEdition:
         db = AsyncMock()
         service = EditionService(db)
         service.repository = AsyncMock()
-        edition = _make_edition(status=EditionStatus.IN_PROGRESS.value)
+        edition = _make_edition(status=EditionStatus.SETTLEMENT.value)
         service.repository.get_by_id = AsyncMock(return_value=edition)
 
         with pytest.raises(ValidationError, match="cloturees"):

@@ -21,6 +21,7 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [billetwebEventId, setBilletwebEventId] = useState<string | null>(null);
+  const [isTraining, setIsTraining] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdEditionId, setCreatedEditionId] = useState<string | null>(null);
   const [showEventSelect, setShowEventSelect] = useState(false);
@@ -64,6 +65,7 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
     setLocation('');
     setDescription('');
     setBilletwebEventId(null);
+    setIsTraining(false);
     setError(null);
     setCreatedEditionId(null);
   };
@@ -116,6 +118,7 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
       location: location.trim() || undefined,
       description: description.trim() || undefined,
       billetwebEventId: billetwebEventId || undefined,
+      isTraining: isTraining || undefined,
     });
   };
 
@@ -217,6 +220,17 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
               />
             </div>
+
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isTraining}
+                onChange={(e) => setIsTraining(e.target.checked)}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-gray-700">Bourse de formation</span>
+              <span className="text-xs text-gray-500">(pour former bénévoles et gestionnaires)</span>
+            </label>
 
             <p className="text-sm text-gray-500">
               L'édition sera créée en statut "Brouillon". Vous pourrez ensuite la configurer

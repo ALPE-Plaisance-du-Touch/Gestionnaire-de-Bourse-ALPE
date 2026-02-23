@@ -6,14 +6,16 @@ import { Button, ConfirmModal, Input, Modal, Select } from '@/components/ui';
 import { DepositSlotsEditor } from '@/components/editions';
 import { BilletwebSessionsSyncModal } from '@/components/billetweb/BilletwebSessionsSyncModal';
 import { BilletwebAttendeesSyncModal } from '@/components/billetweb/BilletwebAttendeesSyncModal';
+import { TrainingBanner } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import type { EditionStatus, User } from '@/types';
 
 const STATUS_LABELS: Record<EditionStatus, { label: string; className: string }> = {
   draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-800' },
-  configured: { label: 'Configuré', className: 'bg-blue-100 text-blue-800' },
   registrations_open: { label: 'Inscriptions ouvertes', className: 'bg-purple-100 text-purple-800' },
-  in_progress: { label: 'En cours', className: 'bg-green-100 text-green-800' },
+  deposit: { label: 'Dépôt', className: 'bg-blue-100 text-blue-800' },
+  sale: { label: 'Vente', className: 'bg-green-100 text-green-800' },
+  settlement: { label: 'Bilan', className: 'bg-yellow-100 text-yellow-800' },
   closed: { label: 'Clôturé', className: 'bg-orange-100 text-orange-800' },
   archived: { label: 'Archivé', className: 'bg-gray-100 text-gray-500' },
 };
@@ -29,6 +31,8 @@ function formatDatetimeLocal(datetimeString: string | null): string {
   // Remove timezone suffix if present and take first 16 chars (YYYY-MM-DDTHH:mm)
   return datetimeString.replace('Z', '').substring(0, 16);
 }
+
+type TabId = 'config' | 'deposants' | 'operations' | 'actions';
 
 type FieldError = { field: string; message: string };
 
@@ -104,6 +108,7 @@ export function EditionDetailPage() {
 
   // UI state
   const errorRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<TabId>('config');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -113,7 +118,7 @@ export function EditionDetailPage() {
   const [showAttendeesSyncModal, setShowAttendeesSyncModal] = useState(false);
   const [showInvitationsConfirm, setShowInvitationsConfirm] = useState(false);
   const [showOpenRegistrationsConfirm, setShowOpenRegistrationsConfirm] = useState(false);
-  const [showRevertToConfiguredConfirm, setShowRevertToConfiguredConfirm] = useState(false);
+  const [showRevertToDraftConfirm, setShowRevertToDraftConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showManualDepositorModal, setShowManualDepositorModal] = useState(false);
 
@@ -129,8 +134,11 @@ export function EditionDetailPage() {
   useEffect(() => {
     const firstErrorField = Object.keys(fieldErrors)[0];
     if (firstErrorField) {
-      const el = document.querySelector(`[data-field="${firstErrorField}"]`);
-      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setActiveTab('config');
+      setTimeout(() => {
+        const el = document.querySelector(`[data-field="${firstErrorField}"]`);
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 0);
     } else if (error) {
       errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
@@ -143,11 +151,11 @@ export function EditionDetailPage() {
     enabled: !!id,
   });
 
-  // Fetch import stats for configured editions
+  // Fetch import stats for non-draft editions
   const { data: importStats, refetch: refetchImportStats } = useQuery({
     queryKey: ['billetweb-stats', id],
     queryFn: () => billetwebApi.getImportStats(id!),
-    enabled: !!id && (edition?.status === 'configured' || edition?.status === 'registrations_open'),
+    enabled: !!id && edition?.status !== 'draft',
   });
 
   // Sync form state when edition data changes (initial load or after save)
@@ -193,8 +201,8 @@ export function EditionDetailPage() {
   });
 
   const statusMutation = useMutation({
-    mutationFn: (status: 'configured') =>
-      editionsApi.updateEditionStatus(id!, status),
+    mutationFn: (newStatus: EditionStatus) =>
+      editionsApi.updateEditionStatus(id!, newStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['editions'] });
       queryClient.invalidateQueries({ queryKey: ['edition', id] });
@@ -290,10 +298,10 @@ export function EditionDetailPage() {
     },
   });
 
-  const revertToConfiguredMutation = useMutation({
-    mutationFn: () => editionsApi.updateEditionStatus(id!, 'configured'),
+  const revertToDraftMutation = useMutation({
+    mutationFn: () => editionsApi.updateEditionStatus(id!, 'draft'),
     onSuccess: () => {
-      setShowRevertToConfiguredConfirm(false);
+      setShowRevertToDraftConfirm(false);
       setSuccess(true);
       setError(null);
       queryClient.invalidateQueries({ queryKey: ['editions'] });
@@ -301,11 +309,46 @@ export function EditionDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['active-edition'] });
     },
     onError: (err) => {
-      setShowRevertToConfiguredConfirm(false);
+      setShowRevertToDraftConfirm(false);
       if (err instanceof ApiException) {
         setError(err.message);
       } else {
-        setError("Une erreur est survenue lors du retour en configuration.");
+        setError("Une erreur est survenue lors du retour en brouillon.");
+      }
+    },
+  });
+
+  const trainingToggleMutation = useMutation({
+    mutationFn: (isTraining: boolean) => editionsApi.updateEdition(id!, { is_training: isTraining }),
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ['editions'] });
+      await queryClient.refetchQueries({ queryKey: ['edition', id] });
+      setSuccess(true);
+      setError(null);
+    },
+    onError: (err) => {
+      if (err instanceof ApiException) {
+        setError(err.message);
+      } else {
+        setError('Une erreur est survenue lors du changement de mode formation.');
+      }
+    },
+  });
+
+  const forceStatusMutation = useMutation({
+    mutationFn: (status: EditionStatus) => editionsApi.forceTrainingStatus(id!, status),
+    onSuccess: () => {
+      setSuccess(true);
+      setError(null);
+      queryClient.invalidateQueries({ queryKey: ['editions'] });
+      queryClient.invalidateQueries({ queryKey: ['edition', id] });
+      queryClient.invalidateQueries({ queryKey: ['active-edition'] });
+    },
+    onError: (err) => {
+      if (err instanceof ApiException) {
+        setError(err.message);
+      } else {
+        setError("Une erreur est survenue lors du forçage d'étape.");
       }
     },
   });
@@ -477,18 +520,6 @@ export function EditionDetailPage() {
 
     try {
       await updateMutation.mutateAsync(updateData);
-
-      if (hasAllConfigDates && edition.status === 'draft') {
-        try {
-          await statusMutation.mutateAsync('configured');
-        } catch (err) {
-          if (err instanceof ApiException) {
-            setError(err.message);
-          } else {
-            setError('Les modifications ont été enregistrées, mais le passage en statut "Configurée" a échoué.');
-          }
-        }
-      }
     } catch {
       // Error handled by mutation
     }
@@ -523,6 +554,21 @@ export function EditionDetailPage() {
   const isEditable = !['closed', 'archived'].includes(edition.status);
   const isPending = updateMutation.isPending || statusMutation.isPending;
 
+  // Tab visibility based on edition status
+  const visibleTabs: { id: TabId; label: string }[] = [
+    { id: 'config', label: 'Configuration' },
+  ];
+  if (['registrations_open', 'deposit', 'sale', 'settlement', 'closed', 'archived'].includes(edition.status)) {
+    visibleTabs.push({ id: 'deposants', label: 'Déposants' });
+  }
+  if (['deposit', 'sale', 'settlement', 'closed', 'archived'].includes(edition.status)) {
+    visibleTabs.push({ id: 'operations', label: 'Opérations' });
+  }
+  if (edition.status !== 'archived') {
+    visibleTabs.push({ id: 'actions', label: 'Actions' });
+  }
+  const currentTab = visibleTabs.some(t => t.id === activeTab) ? activeTab : 'config';
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
       {/* Header */}
@@ -549,6 +595,8 @@ export function EditionDetailPage() {
         </div>
       </div>
 
+      <TrainingBanner editionId={id!} />
+
       {/* Success message */}
       {success && (
         <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
@@ -568,14 +616,33 @@ export function EditionDetailPage() {
         </div>
       )}
 
-      {/* Not editable warning */}
-      {!isEditable && (
-        <div className="mb-6 bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg">
-          Cette édition est clôturée et ne peut plus être modifiée.
-        </div>
-      )}
+      {/* Tab navigation */}
+      <div className="flex border-b border-gray-200 mb-6">
+        {visibleTabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
+              currentTab === tab.id
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
+      {/* ===== Tab 1: Configuration ===== */}
+      {currentTab === 'config' && (
       <form onSubmit={handleSubmit} className="space-y-8">
+        {/* Not editable warning */}
+        {!isEditable && (
+          <div className="mb-6 bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg">
+            Cette édition est clôturée et ne peut plus être modifiée.
+          </div>
+        )}
         {/* Basic Information Section */}
         <section className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-4">
@@ -660,7 +727,7 @@ export function EditionDetailPage() {
           </h2>
           <p className="text-sm text-gray-500 mb-4">
             Définissez les dates clés et le taux de commission.
-            {edition.status === 'draft' && " Une fois toutes les dates renseignées, l'édition passera en statut \"Configurée\"."}
+            {edition.status === 'draft' && " Une fois les dates configurées, vous pourrez ouvrir les inscriptions."}
           </p>
 
           <fieldset disabled={!isEditable} className="space-y-6">
@@ -761,8 +828,29 @@ export function EditionDetailPage() {
           />
         </section>
 
-        {/* Billetweb Import Section - For configured and registrations_open editions */}
-        {(edition.status === 'configured' || edition.status === 'registrations_open') && (
+        {/* Form actions */}
+        <div className="flex justify-between items-center pt-4 border-t">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate('/editions')}
+          >
+            Annuler
+          </Button>
+          <Button
+            type="submit"
+            disabled={isPending || !isEditable}
+            isLoading={isPending}
+          >
+            Enregistrer les modifications
+          </Button>
+        </div>
+      </form>
+      )}
+
+      {/* ===== Tab 2: Déposants ===== */}
+      {currentTab === 'deposants' && (
+        <div className="space-y-8">
           <section className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-2">
               Inscriptions Billetweb
@@ -771,28 +859,30 @@ export function EditionDetailPage() {
               Importez les inscriptions depuis Billetweb pour associer les déposants à cette édition.
             </p>
 
-            <div className="flex items-center gap-3 flex-wrap">
-              {edition.billetwebEventId && (
+            {(edition.status === 'draft' || edition.status === 'registrations_open') && (
+              <div className="flex items-center gap-3 flex-wrap">
+                {edition.billetwebEventId && (
+                  <Button
+                    size="sm"
+                    onClick={() => setShowAttendeesSyncModal(true)}
+                  >
+                    Synchroniser via API
+                  </Button>
+                )}
                 <Button
                   size="sm"
-                  onClick={() => setShowAttendeesSyncModal(true)}
+                  variant="outline"
+                  onClick={() => setShowManualDepositorModal(true)}
+                  leftIcon={
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  }
                 >
-                  Synchroniser via API
+                  Ajouter un déposant
                 </Button>
-              )}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setShowManualDepositorModal(true)}
-                leftIcon={
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                }
-              >
-                Ajouter un déposant
-              </Button>
-            </div>
+              </div>
+            )}
             {edition.billetwebEventId && edition.lastBilletwebSync && (
               <p className="text-xs text-gray-500 mt-2">
                 Derniere sync API : {new Date(edition.lastBilletwebSync).toLocaleString('fr-FR')}
@@ -813,7 +903,7 @@ export function EditionDetailPage() {
                     Voir les déposants
                   </Link>
                 </div>
-                <div className="grid grid-cols-4 gap-4 text-sm">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                   <div>
                     <p className="text-gray-500">Déposants inscrits</p>
                     <p className="text-xl font-semibold text-gray-900">{importStats.totalDepositors}</p>
@@ -835,9 +925,8 @@ export function EditionDetailPage() {
             )}
 
             {/* Workflow actions: send invitations + open registrations */}
-            {importStats && importStats.totalDepositors > 0 && (
+            {(edition.status === 'draft' || edition.status === 'registrations_open') && importStats && importStats.totalDepositors > 0 && (
               <div className="mt-4 flex items-center gap-3 flex-wrap">
-                {/* Send invitations button: admin only when configured, manager+ when registrations_open */}
                 {(edition.status === 'registrations_open' || isAdmin) && (
                   <Button
                     type="button"
@@ -847,14 +936,13 @@ export function EditionDetailPage() {
                     disabled={sendInvitationsMutation.isPending || (importStats.pendingInvitations ?? 0) === 0}
                     isLoading={sendInvitationsMutation.isPending}
                   >
-                    {edition.status === 'configured'
+                    {edition.status === 'draft'
                       ? `Envoyer les invitations et ouvrir (${importStats.pendingInvitations ?? 0})`
                       : `Envoyer les invitations (${importStats.pendingInvitations ?? 0})`
                     }
                   </Button>
                 )}
-                {/* Silent open registrations: admin only, configured status only */}
-                {isAdmin && edition.status === 'configured' && (
+                {isAdmin && edition.status === 'draft' && (
                   <Button
                     type="button"
                     size="sm"
@@ -869,308 +957,397 @@ export function EditionDetailPage() {
               </div>
             )}
           </section>
-        )}
-
-        {/* Status Info */}
-        <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
-          <strong>Statut actuel :</strong>{' '}
-          {edition.status === 'draft'
-            ? 'Brouillon - Configurez les dates pour passer en statut "Configurée"'
-            : edition.status === 'configured'
-            ? 'Configurée - Prête pour l\'import des inscriptions'
-            : edition.status === 'registrations_open'
-            ? 'Inscriptions ouvertes'
-            : edition.status === 'in_progress'
-            ? 'En cours'
-            : edition.status === 'closed'
-            ? 'Clôturée'
-            : 'Archivée'}
         </div>
+      )}
 
-        {/* Label generation link */}
-        {(edition.status === 'registrations_open' || edition.status === 'in_progress') && (
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900">Étiquettes</h3>
-                <p className="text-sm text-gray-500">Générez les étiquettes PDF pour les listes validées.</p>
-              </div>
-              <Link
-                to={`/editions/${edition.id}/labels`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                </svg>
-                Gestion des étiquettes
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* Revert to configured */}
-        {edition.status === 'registrations_open' && isAdmin && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-yellow-900">Revenir en configuration</h3>
-                <p className="text-sm text-yellow-700">
-                  Annuler l'ouverture des inscriptions et repasser l'édition en statut "Configurée".
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={revertToConfiguredMutation.isPending}
-                isLoading={revertToConfiguredMutation.isPending}
-                onClick={() => setShowRevertToConfiguredConfirm(true)}
-              >
-                Revenir en configuration
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Sales & Stats links */}
-        {edition.status === 'in_progress' && (
-          <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900">Ventes</h3>
-                <p className="text-sm text-gray-500">Accédez à la caisse, la gestion des ventes et aux statistiques en direct.</p>
-              </div>
-              <div className="flex gap-2 flex-wrap">
+      {/* ===== Tab 3: Opérations ===== */}
+      {currentTab === 'operations' && (
+        <div className="space-y-6">
+          {/* Labels */}
+          {['registrations_open', 'deposit', 'sale'].includes(edition.status) && (
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900">Étiquettes</h3>
+                  <p className="text-sm text-gray-500">Générez les étiquettes PDF pour les listes validées.</p>
+                </div>
                 <Link
-                  to={`/editions/${edition.id}/sales`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
-                  </svg>
-                  Caisse
-                </Link>
-                <Link
-                  to={`/editions/${edition.id}/sales/manage`}
+                  to={`/editions/${edition.id}/labels`}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                   </svg>
-                  Gestion des ventes
+                  Gestion des étiquettes
                 </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Sales & Stats */}
+          {edition.status === 'sale' && (
+            <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900">Ventes</h3>
+                  <p className="text-sm text-gray-500">Accédez à la caisse, la gestion des ventes et aux statistiques en direct.</p>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  <Link
+                    to={`/editions/${edition.id}/sales`}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+                    </svg>
+                    Caisse
+                  </Link>
+                  <Link
+                    to={`/editions/${edition.id}/sales/manage`}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    Gestion des ventes
+                  </Link>
+                  <Link
+                    to={`/editions/${edition.id}/stats`}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    Stats en direct
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Payouts */}
+          {['sale', 'settlement', 'closed'].includes(edition.status) && (
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900">Reversements</h3>
+                  <p className="text-sm text-gray-500">Calculez et gérez les reversements aux déposants.</p>
+                </div>
                 <Link
-                  to={`/editions/${edition.id}/stats`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+                  to={`/editions/${edition.id}/payouts`}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  Stats en direct
+                  Gestion des reversements
                 </Link>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Payouts link */}
-        {(edition.status === 'in_progress' || edition.status === 'closed') && (
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900">Reversements</h3>
-                <p className="text-sm text-gray-500">Calculez et gérez les reversements aux déposants.</p>
+          {/* Closure report */}
+          {edition.status === 'closed' && (
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900">Rapport de clôture</h3>
+                  <p className="text-sm text-gray-500">Télécharger le rapport PDF récapitulatif de l'édition.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const blob = await payoutsApi.downloadClosureReport(edition.id);
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `Rapport_cloture_${edition.name.replace(/\s+/g, '_')}.pdf`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      window.URL.revokeObjectURL(url);
+                    } catch {
+                      setError('Erreur lors du téléchargement du rapport de clôture.');
+                    }
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Rapport de clôture (PDF)
+                </button>
               </div>
-              <Link
-                to={`/editions/${edition.id}/payouts`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                Gestion des reversements
-              </Link>
             </div>
+          )}
+        </div>
+      )}
+
+      {/* ===== Tab 4: Actions ===== */}
+      {currentTab === 'actions' && (
+        <div className="space-y-6">
+          {/* Status Info */}
+          <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
+            <strong>Statut actuel :</strong>{' '}
+            {edition.status === 'draft'
+              ? 'Brouillon - Configurez les dates et ouvrez les inscriptions'
+              : edition.status === 'registrations_open'
+              ? 'Inscriptions ouvertes - Les déposants peuvent s\'inscrire et déclarer leurs listes'
+              : edition.status === 'deposit'
+              ? 'Dépôt - Les déposants déposent leurs articles'
+              : edition.status === 'sale'
+              ? 'Vente - La bourse est ouverte au public'
+              : edition.status === 'settlement'
+              ? 'Bilan - Inventaire des invendus et calcul des reversements'
+              : edition.status === 'closed'
+              ? 'Clôturée'
+              : 'Archivée'}
           </div>
-        )}
 
-        {/* Closure section */}
-        {edition.status === 'in_progress' && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-red-900">Clôture de l'édition</h3>
-                <p className="text-sm text-red-700">
-                  La clôture est définitive et irréversible. Vérifiez les prérequis avant de confirmer.
-                </p>
+          {/* Training mode toggle */}
+          {isAdmin && (
+            <div className="bg-amber-50 border border-amber-300 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-amber-900">Mode formation</h3>
+                  <p className="text-sm text-amber-700">
+                    {edition.isTraining
+                      ? 'Cette édition est en mode formation. Les données sont destinées à l\'entraînement uniquement.'
+                      : 'Activer le mode formation pour pouvoir forcer les changements d\'étape et utiliser cette édition pour l\'entraînement.'}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant={edition.isTraining ? 'outline' : 'secondary'}
+                  disabled={trainingToggleMutation.isPending}
+                  isLoading={trainingToggleMutation.isPending}
+                  onClick={() => trainingToggleMutation.mutate(!edition.isTraining)}
+                >
+                  {edition.isTraining ? 'Désactiver' : 'Activer'}
+                </Button>
               </div>
-              <Button
-                type="button"
-                variant="danger"
-                onClick={() => setClosureModalOpen(true)}
-              >
-                Clôturer l'édition
-              </Button>
             </div>
+          )}
+
+          {/* Training mode: Force status transition (US-015) */}
+          {edition.isTraining && (
+            <div className="bg-amber-50 border border-amber-300 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-amber-900 mb-2">Forcer le changement d'étape (formation)</h3>
+              <p className="text-sm text-amber-700 mb-3">
+                En mode formation, vous pouvez changer librement l'étape du cycle de vie sans vérification des prérequis.
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                {edition.status !== 'draft' && (
+                  <Button type="button" size="sm" variant="outline"
+                    onClick={() => forceStatusMutation.mutate('draft')}
+                    disabled={forceStatusMutation.isPending}
+                    isLoading={forceStatusMutation.isPending}>
+                    ← Brouillon
+                  </Button>
+                )}
+                {edition.status !== 'registrations_open' && (
+                  <Button type="button" size="sm" variant={['sale', 'deposit', 'settlement', 'closed'].includes(edition.status) ? 'outline' : 'secondary'}
+                    onClick={() => forceStatusMutation.mutate('registrations_open')}
+                    disabled={forceStatusMutation.isPending}
+                    isLoading={forceStatusMutation.isPending}>
+                    {['sale', 'deposit', 'settlement', 'closed'].includes(edition.status) ? '←' : '→'} Inscriptions ouvertes
+                  </Button>
+                )}
+                {edition.status !== 'deposit' && (
+                  <Button type="button" size="sm" variant={['sale', 'settlement', 'closed'].includes(edition.status) ? 'outline' : 'secondary'}
+                    onClick={() => forceStatusMutation.mutate('deposit')}
+                    disabled={forceStatusMutation.isPending}
+                    isLoading={forceStatusMutation.isPending}>
+                    {['sale', 'settlement', 'closed'].includes(edition.status) ? '←' : '→'} Dépôt
+                  </Button>
+                )}
+                {edition.status !== 'sale' && (
+                  <Button type="button" size="sm" variant={['settlement', 'closed'].includes(edition.status) ? 'outline' : 'secondary'}
+                    onClick={() => forceStatusMutation.mutate('sale')}
+                    disabled={forceStatusMutation.isPending}
+                    isLoading={forceStatusMutation.isPending}>
+                    {['settlement', 'closed'].includes(edition.status) ? '←' : '→'} Vente
+                  </Button>
+                )}
+                {edition.status !== 'settlement' && (
+                  <Button type="button" size="sm" variant={edition.status === 'closed' ? 'outline' : 'secondary'}
+                    onClick={() => forceStatusMutation.mutate('settlement')}
+                    disabled={forceStatusMutation.isPending}
+                    isLoading={forceStatusMutation.isPending}>
+                    {edition.status === 'closed' ? '←' : '→'} Bilan
+                  </Button>
+                )}
+                {edition.status !== 'closed' && (
+                  <Button type="button" size="sm" variant="danger"
+                    onClick={() => forceStatusMutation.mutate('closed')}
+                    disabled={forceStatusMutation.isPending}
+                    isLoading={forceStatusMutation.isPending}>
+                    → Clôturée
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Revert to draft */}
+          {edition.status === 'registrations_open' && isAdmin && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-yellow-900">Revenir en brouillon</h3>
+                  <p className="text-sm text-yellow-700">
+                    Annuler l'ouverture des inscriptions et repasser l'édition en brouillon.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={revertToDraftMutation.isPending}
+                  isLoading={revertToDraftMutation.isPending}
+                  onClick={() => setShowRevertToDraftConfirm(true)}
+                >
+                  Revenir en brouillon
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Closure */}
+          {edition.status === 'settlement' && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-red-900">Clôture de l'édition</h3>
+                  <p className="text-sm text-red-700">
+                    La clôture est définitive et irréversible. Vérifiez les prérequis avant de confirmer.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="danger"
+                  onClick={() => setClosureModalOpen(true)}
+                >
+                  Clôturer l'édition
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Archive */}
+          {edition.status === 'closed' && (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900">Archivage</h3>
+                  <p className="text-sm text-gray-500">
+                    Archiver cette édition pour la retirer de la liste active.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={archiveMutation.isPending}
+                  isLoading={archiveMutation.isPending}
+                  onClick={() => setShowArchiveConfirm(true)}
+                >
+                  Archiver l'édition
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Delete */}
+          {isAdmin && edition.status === 'draft' && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-red-900">Supprimer l'édition</h3>
+                  <p className="text-sm text-red-700">
+                    Supprimer définitivement cette édition et toutes ses données.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="danger"
+                  disabled={deleteMutation.isPending}
+                  isLoading={deleteMutation.isPending}
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  Supprimer l'édition
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Closure modal */}
+      <Modal
+        isOpen={closureModalOpen}
+        onClose={() => setClosureModalOpen(false)}
+        title="Clôture de l'édition"
+        size="lg"
+      >
+        <div className="space-y-4">
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+            La clôture est définitive et irréversible. L'édition passera en lecture seule.
           </div>
-        )}
 
-        {/* Closure modal */}
-        <Modal
-          isOpen={closureModalOpen}
-          onClose={() => setClosureModalOpen(false)}
-          title="Clôture de l'édition"
-          size="lg"
-        >
-          <div className="space-y-4">
-            <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
-              La clôture est définitive et irréversible. L'édition passera en lecture seule.
+          <h3 className="text-sm font-semibold text-gray-900">Prérequis</h3>
+
+          {isClosureCheckLoading ? (
+            <div className="animate-pulse space-y-2">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-8 bg-gray-200 rounded" />
+              ))}
             </div>
-
-            <h3 className="text-sm font-semibold text-gray-900">Prérequis</h3>
-
-            {isClosureCheckLoading ? (
-              <div className="animate-pulse space-y-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-8 bg-gray-200 rounded" />
-                ))}
-              </div>
-            ) : closureCheck ? (
-              <ul className="space-y-2">
-                {closureCheck.checks.map((check, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    {check.passed ? (
-                      <svg className="w-5 h-5 text-green-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    ) : (
-                      <svg className="w-5 h-5 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
+          ) : closureCheck ? (
+            <ul className="space-y-2">
+              {closureCheck.checks.map((check, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  {check.passed ? (
+                    <svg className="w-5 h-5 text-green-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  )}
+                  <div>
+                    <span className={`text-sm font-medium ${check.passed ? 'text-green-800' : 'text-red-800'}`}>
+                      {check.label}
+                    </span>
+                    {check.detail && (
+                      <p className="text-xs text-gray-500">{check.detail}</p>
                     )}
-                    <div>
-                      <span className={`text-sm font-medium ${check.passed ? 'text-green-800' : 'text-red-800'}`}>
-                        {check.label}
-                      </span>
-                      {check.detail && (
-                        <p className="text-xs text-gray-500">{check.detail}</p>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : null}
 
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setClosureModalOpen(false)}
-              >
-                Annuler
-              </Button>
-              <Button
-                type="button"
-                variant="danger"
-                disabled={!closureCheck?.canClose || closureMutation.isPending}
-                isLoading={closureMutation.isPending}
-                onClick={() => closureMutation.mutate()}
-              >
-                Confirmer la clôture
-              </Button>
-            </div>
-          </div>
-        </Modal>
-
-        {/* Closure report */}
-        {edition.status === 'closed' && (
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900">Rapport de clôture</h3>
-                <p className="text-sm text-gray-500">Télécharger le rapport PDF récapitulatif de l'édition.</p>
-              </div>
-              <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    const blob = await payoutsApi.downloadClosureReport(edition.id);
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `Rapport_cloture_${edition.name.replace(/\s+/g, '_')}.pdf`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                  } catch {
-                    setError('Erreur lors du téléchargement du rapport de clôture.');
-                  }
-                }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Rapport de clôture (PDF)
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Archive section */}
-        {edition.status === 'closed' && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900">Archivage</h3>
-                <p className="text-sm text-gray-500">
-                  Archiver cette édition pour la retirer de la liste active.
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="secondary"
-                disabled={archiveMutation.isPending}
-                isLoading={archiveMutation.isPending}
-                onClick={() => setShowArchiveConfirm(true)}
-              >
-                Archiver l'édition
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex justify-between items-center pt-4 border-t">
-          <div className="flex items-center gap-3">
+          <div className="flex justify-end gap-3 pt-4 border-t">
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate('/editions')}
+              onClick={() => setClosureModalOpen(false)}
             >
               Annuler
             </Button>
-            {isAdmin && (edition.status === 'draft' || edition.status === 'configured') && (
-              <Button
-                type="button"
-                variant="danger"
-                disabled={deleteMutation.isPending}
-                isLoading={deleteMutation.isPending}
-                onClick={() => setShowDeleteConfirm(true)}
-              >
-                Supprimer l'édition
-              </Button>
-            )}
+            <Button
+              type="button"
+              variant="danger"
+              disabled={!closureCheck?.canClose || closureMutation.isPending}
+              isLoading={closureMutation.isPending}
+              onClick={() => closureMutation.mutate()}
+            >
+              Confirmer la clôture
+            </Button>
           </div>
-          <Button
-            type="submit"
-            disabled={isPending || !isEditable}
-            isLoading={isPending}
-          >
-            Enregistrer les modifications
-          </Button>
         </div>
-      </form>
+      </Modal>
 
       {/* Archive confirmation modal */}
       <ConfirmModal
@@ -1417,11 +1594,11 @@ export function EditionDetailPage() {
       <Modal
         isOpen={showInvitationsConfirm}
         onClose={() => setShowInvitationsConfirm(false)}
-        title={edition.status === 'configured' ? "Envoyer les invitations et ouvrir les inscriptions" : "Envoyer les invitations"}
+        title={edition.status === 'draft' ? "Envoyer les invitations et ouvrir les inscriptions" : "Envoyer les invitations"}
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-700">
-            {edition.status === 'configured' ? (
+            {edition.status === 'draft' ? (
               <>L'édition passera en statut <strong>Inscriptions ouvertes</strong> et les emails d'invitation seront envoyés aux déposants qui ne les ont pas encore reçus.</>
             ) : (
               <>Les emails d'invitation seront envoyés aux déposants qui ne les ont pas encore reçus.</>
@@ -1435,7 +1612,7 @@ export function EditionDetailPage() {
               </p>
             </div>
           )}
-          {edition.status === 'configured' && (
+          {edition.status === 'draft' && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
               Cette action n'est possible que si aucune autre édition n'est déjà active.
             </div>
@@ -1454,7 +1631,7 @@ export function EditionDetailPage() {
               isLoading={sendInvitationsMutation.isPending}
               onClick={() => sendInvitationsMutation.mutate()}
             >
-              {edition.status === 'configured' ? "Confirmer et ouvrir" : "Envoyer les invitations"}
+              {edition.status === 'draft' ? "Confirmer et ouvrir" : "Envoyer les invitations"}
             </Button>
           </div>
         </div>
@@ -1494,16 +1671,16 @@ export function EditionDetailPage() {
         </div>
       </Modal>
 
-      {/* Revert to configured confirmation modal */}
+      {/* Revert to draft confirmation modal */}
       <ConfirmModal
-        isOpen={showRevertToConfiguredConfirm}
-        onClose={() => setShowRevertToConfiguredConfirm(false)}
+        isOpen={showRevertToDraftConfirm}
+        onClose={() => setShowRevertToDraftConfirm(false)}
         onConfirm={() => {
-          setShowRevertToConfiguredConfirm(false);
-          revertToConfiguredMutation.mutate();
+          setShowRevertToDraftConfirm(false);
+          revertToDraftMutation.mutate();
         }}
-        title="Revenir en configuration"
-        message="L'édition repassera en statut « Configurée ». Les déposants ne pourront plus déclarer leurs articles tant que les inscriptions ne seront pas ré-ouvertes."
+        title="Revenir en brouillon"
+        message="L'édition repassera en statut « Brouillon ». Les déposants ne pourront plus déclarer leurs articles tant que les inscriptions ne seront pas ré-ouvertes."
         variant="warning"
         confirmLabel="Confirmer"
       />

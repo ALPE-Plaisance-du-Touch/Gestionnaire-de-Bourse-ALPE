@@ -154,29 +154,40 @@ classDiagram
 ```mermaid
 stateDiagram-v2
   [*] --> Brouillon : Création (US-006)
-  Brouillon --> Configurée : Configuration dates (US-007)
-  Configurée --> Inscriptions_ouvertes : Import Billetweb (US-008)
-  Inscriptions_ouvertes --> En_cours : Début période dépôt
-  En_cours --> En_cours : Ventes actives
-  En_cours --> Clôturée : Clôture admin (US-009)
+  Brouillon --> Inscriptions_ouvertes : Import Billetweb (US-008)
+  Inscriptions_ouvertes --> Dépôt : Début période de dépôt
+  Dépôt --> Vente : Début des ventes
+  Vente --> Bilan : Fin des ventes
+  Bilan --> Clôturée : Validation du bilan (US-009)
   Clôturée --> Archivée : Archivage (> 1 an)
   Archivée --> [*]
 ```
+
+### Description des statuts
+
+| Statut | Technique | Description |
+|--------|-----------|-------------|
+| **Brouillon** | `draft` | Préparation de l'édition : nom, dates, lieu, commission, créneaux de dépôt. L'ancien statut "Configurée" est supprimé — la configuration se fait dans le brouillon. |
+| **Inscriptions ouvertes** | `registrations_open` | Les déposants s'inscrivent via Billetweb et peuvent déclarer leurs listes d'articles dans l'application. |
+| **Dépôt** | `deposit` | Les déposants viennent physiquement déposer leurs articles. Les bénévoles vérifient et acceptent ou refusent les articles. |
+| **Vente** | `sale` | La bourse est ouverte au public. Les articles sont en vente. |
+| **Bilan** | `settlement` | Fin des ventes. Les bénévoles font l'inventaire des invendus et préparent le bilan des reversements pour la trésorière. |
+| **Clôturée** | `closed` | L'édition est terminée. Passage en lecture seule. L'édition reste visible dans la liste des éditions. |
+| **Archivée** | `archived` | L'édition est en lecture seule et disparaît de la liste principale. Elle reste accessible dans la liste des archives. |
 
 # Règles métier
 
 ## Édition
 - Une édition a un nom unique dans tout le système (porte généralement saison et année, ex: "Bourse Printemps 2025")
 - Le statut évolue selon le cycle de vie (voir diagramme)
-- **Lors de la création (US-006)** : seuls nom, datetime_debut, datetime_fin sont obligatoires
-- **Lors de la configuration (US-007)** : dates_depot, dates_vente, date_retour_invendus, taux_commission sont ajoutés
+- **Lors de la création (US-006)** : seuls nom, datetime_debut, datetime_fin sont obligatoires. La configuration (dates opérationnelles, commission, créneaux de dépôt) se fait dans le même statut brouillon.
 - La date/heure de fin doit être strictement postérieure à la date/heure de début
 - Les dates de dépôt doivent être comprises dans la période temporelle de l'édition
 - Les dates de vente doivent être comprises dans la période temporelle de l'édition
 - La date de retour des invendus doit être postérieure à la date/heure de fin
 - Le taux de commission est un pourcentage entre 0 et 100
 - Le lieu et la description sont optionnels
-- Une édition clôturée est en lecture seule définitive
+- Une édition clôturée ou archivée est en lecture seule définitive
 
 ## Utilisateurs et rôles
 - **Déposant** : peut gérer ses articles pour les éditions auxquelles il est inscrit

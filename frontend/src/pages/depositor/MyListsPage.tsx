@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { depositorListsApi } from '@/api';
-import { Button, ConfirmModal } from '@/components/ui';
+import { Button, ConfirmModal, TrainingBanner } from '@/components/ui';
 import type { ItemListSummary, ListType } from '@/types';
 
 const LIST_TYPE_LABELS: Record<ListType, string> = {
@@ -145,6 +145,8 @@ export function MyListsPage() {
           Gérez vos listes d'articles à déposer pour cette édition.
         </p>
       </div>
+
+      <TrainingBanner editionId={editionId!} />
 
       {/* Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

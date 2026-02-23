@@ -77,18 +77,18 @@ function RoleLinks({ role, editionId, editionStatus }: { role: UserRole; edition
     {
       title: 'Participer',
       links: [
-        { label: 'Mes listes', to: `/depositor/editions/${editionId}/lists`, roles: ['depositor', 'volunteer', 'manager', 'administrator'], needsEdition: true, statuses: ['registrations_open', 'in_progress'] },
+        { label: 'Mes listes', to: `/depositor/editions/${editionId}/lists`, roles: ['depositor', 'volunteer', 'manager', 'administrator'], needsEdition: true, statuses: ['registrations_open', 'deposit', 'sale'] },
       ],
     },
     {
       title: "Gérer l'édition en cours",
       links: [
         { label: 'Détails', to: `/editions/${editionId}`, roles: ['manager', 'administrator'], needsEdition: true },
-        { label: 'Caisse', to: `/editions/${editionId}/sales`, roles: ['volunteer', 'manager', 'administrator'], needsEdition: true, statuses: ['in_progress'] },
-        { label: 'Étiquettes', to: `/editions/${editionId}/labels`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['registrations_open', 'in_progress'] },
-        { label: 'Gestion des ventes', to: `/editions/${editionId}/sales/manage`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['in_progress'] },
-        { label: 'Reversements', to: `/editions/${editionId}/payouts`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['in_progress', 'closed'] },
-        { label: 'Statistiques', to: `/editions/${editionId}/stats`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['in_progress'] },
+        { label: 'Caisse', to: `/editions/${editionId}/sales`, roles: ['volunteer', 'manager', 'administrator'], needsEdition: true, statuses: ['sale'] },
+        { label: 'Étiquettes', to: `/editions/${editionId}/labels`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['registrations_open', 'deposit'] },
+        { label: 'Gestion des ventes', to: `/editions/${editionId}/sales/manage`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['sale'] },
+        { label: 'Reversements', to: `/editions/${editionId}/payouts`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['settlement', 'closed'] },
+        { label: 'Statistiques', to: `/editions/${editionId}/stats`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['sale', 'settlement'] },
       ],
     },
     {

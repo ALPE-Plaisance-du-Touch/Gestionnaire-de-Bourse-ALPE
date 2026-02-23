@@ -147,6 +147,13 @@ async def update_edition(
 
     Closed editions cannot be updated.
     """
+    # Only administrators can toggle training mode
+    if request.is_training is not None and not current_user.is_administrator:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Seuls les administrateurs peuvent modifier le mode formation",
+        )
+
     try:
         edition = await edition_service.update_edition(edition_id, request)
         return EditionResponse.model_validate(edition)
@@ -184,14 +191,43 @@ async def update_edition_status(
     """Update edition status.
 
     Valid transitions:
-    - draft → configured
-    - configured → draft, registrations_open
-    - registrations_open → configured, in_progress
-    - in_progress → closed
+    - draft → registrations_open
+    - registrations_open → draft, deposit
+    - deposit → registrations_open, sale
+    - sale → deposit, settlement
+    - settlement → sale, closed
     - closed → archived
     """
     try:
         edition = await edition_service.update_status(edition_id, request.status)
+        return EditionResponse.model_validate(edition)
+    except EditionNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} not found",
+        )
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=e.message,
+        )
+
+
+@router.post(
+    "/{edition_id}/force-status",
+    response_model=EditionResponse,
+    summary="Force edition status (training only)",
+    description="Force status transition for training editions, bypassing date and prerequisite checks. Manager/admin only.",
+)
+async def force_edition_status(
+    edition_id: str,
+    request: EditionStatusUpdate,
+    edition_service: EditionServiceDep,
+    current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
+):
+    """Force status transition for training editions (US-015)."""
+    try:
+        edition = await edition_service.force_training_status(edition_id, request.status)
         return EditionResponse.model_validate(edition)
     except EditionNotFoundError:
         raise HTTPException(
@@ -368,7 +404,7 @@ async def delete_edition(
     summary="Send invitation emails to depositors",
     description=(
         "Send activation/notification emails to depositors who haven't received them yet. "
-        "If the edition is in 'configured' status, transitions it to 'registrations_open' first (admin only). "
+        "If the edition is in 'draft' status, transitions it to 'registrations_open' first (admin only). "
         "If already 'registrations_open', sends pending invitations only (manager+)."
     ),
 )
@@ -379,7 +415,7 @@ async def send_invitations(
 ):
     """Send invitation/notification emails to depositors.
 
-    Also transitions edition to registrations_open if currently configured.
+    Also transitions edition to registrations_open if currently draft.
     """
     try:
         edition = await edition_service.get_edition(edition_id)
@@ -391,7 +427,7 @@ async def send_invitations(
 
     status_changed = False
 
-    if edition.status == EditionStatus.CONFIGURED.value:
+    if edition.status == EditionStatus.DRAFT.value:
         # Transitioning status requires admin role
         if current_user.role.name != "administrator":
             raise HTTPException(
@@ -411,7 +447,7 @@ async def send_invitations(
     elif edition.status != EditionStatus.REGISTRATIONS_OPEN.value:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="L'édition doit être en statut 'configurée' ou 'inscriptions ouvertes'.",
+            detail="L'édition doit être en statut 'brouillon' ou 'inscriptions ouvertes'.",
         )
 
     try:

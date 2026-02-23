@@ -90,8 +90,8 @@ async def register_sale(
     if not edition:
         raise EditionNotFoundError(edition_id)
 
-    if edition.status != "in_progress":
-        raise ValidationError("Sales can only be registered for editions in progress")
+    if edition.status != "sale":
+        raise ValidationError("Sales can only be registered for editions in sale status")
 
     article_repo = ArticleRepository(db)
     article = await article_repo.get_by_id(article_id)

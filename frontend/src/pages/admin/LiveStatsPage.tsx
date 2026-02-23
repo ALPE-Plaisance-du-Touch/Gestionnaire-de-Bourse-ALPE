@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { salesApi } from '@/api';
+import { TrainingBanner } from '@/components/ui/TrainingBanner';
 
 export function LiveStatsPage() {
   const { id: editionId } = useParams<{ id: string }>();
@@ -27,6 +28,8 @@ export function LiveStatsPage() {
           Actualisation automatique toutes les 10 secondes
         </p>
       </div>
+
+      <TrainingBanner editionId={editionId!} />
 
       {isLoading ? (
         <div className="text-center py-12 text-gray-500">Chargement des statistiques...</div>

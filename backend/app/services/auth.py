@@ -166,6 +166,8 @@ class AuthService:
             role=user.role.name,
             is_active=user.is_active,
             is_verified=user.is_verified,
+            is_local_resident=user.is_local_resident,
+            is_tester=user.is_tester,
             created_at=user.created_at,
             last_login_at=user.last_login_at,
         )

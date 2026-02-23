@@ -4,9 +4,10 @@
 
 export type EditionStatus =
   | 'draft'
-  | 'configured'
   | 'registrations_open'
-  | 'in_progress'
+  | 'deposit'
+  | 'sale'
+  | 'settlement'
   | 'closed'
   | 'archived';
 
@@ -38,6 +39,7 @@ export interface Edition {
   closedAt: string | null;
   closedBy: EditionCreator | null;
   archivedAt: string | null;
+  isTraining: boolean;
 }
 
 export interface CreateEditionRequest {
@@ -47,6 +49,7 @@ export interface CreateEditionRequest {
   location?: string;
   description?: string;
   billetwebEventId?: string;
+  isTraining?: boolean;
 }
 
 export interface UpdateEditionRequest {
@@ -61,6 +64,7 @@ export interface UpdateEditionRequest {
   retrievalStartDatetime?: string;
   retrievalEndDatetime?: string;
   commissionRate?: number;
+  is_training?: boolean;
 }
 
 export interface ClosureCheckItem {

@@ -68,6 +68,9 @@ class User(Base, UUIDMixin, TimestampMixin):
     # Flag to hide invitation from list (soft delete for invitation display)
     invitation_hidden: Mapped[bool] = mapped_column(Boolean, default=False)
 
+    # Training mode (US-015)
+    is_tester: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
     # Last login tracking
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 

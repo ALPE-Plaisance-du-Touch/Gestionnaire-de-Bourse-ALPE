@@ -32,6 +32,7 @@ class UserUpdate(BaseModel):
     role: str | None = Field(None, pattern="^(depositor|volunteer|manager|administrator)$")
     is_active: bool | None = None
     is_local_resident: bool | None = None
+    is_tester: bool | None = None
 
 
 class UserSelfUpdate(BaseModel):
@@ -58,6 +59,7 @@ class UserResponse(BaseModel):
     is_active: bool
     is_verified: bool
     is_local_resident: bool
+    is_tester: bool = False
     created_at: datetime
     last_login_at: datetime | None = None
 

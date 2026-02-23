@@ -49,6 +49,7 @@ class EditionRepository:
         location: str | None = None,
         description: str | None = None,
         billetweb_event_id: str | None = None,
+        is_training: bool = False,
     ) -> Edition:
         """Create a new edition."""
         edition = Edition(
@@ -60,6 +61,7 @@ class EditionRepository:
             status=EditionStatus.DRAFT.value,
             created_by_id=created_by.id,
             billetweb_event_id=billetweb_event_id,
+            is_training=is_training,
         )
 
         self.db.add(edition)
@@ -144,11 +146,11 @@ class EditionRepository:
         return editions, total
 
     async def get_active_edition(self) -> Edition | None:
-        """Get the currently active edition (in_progress status)."""
+        """Get the currently active edition (sale status)."""
         result = await self.db.execute(
             select(Edition)
             .options(joinedload(Edition.created_by))
-            .where(Edition.status == EditionStatus.IN_PROGRESS.value)
+            .where(Edition.status == EditionStatus.SALE.value)
             .limit(1)
         )
         return result.scalar_one_or_none()
@@ -156,18 +158,22 @@ class EditionRepository:
     async def get_any_active_edition(
         self, *, exclude_id: str | None = None
     ) -> Edition | None:
-        """Get any edition in an active status (registrations_open or in_progress).
+        """Get any edition in an active status.
 
-        Returns the highest-priority active edition (in_progress > registrations_open).
+        Returns the highest-priority active edition:
+        sale > deposit > settlement > registrations_open.
         """
         active_statuses = [
-            EditionStatus.IN_PROGRESS.value,
+            EditionStatus.SALE.value,
+            EditionStatus.DEPOSIT.value,
+            EditionStatus.SETTLEMENT.value,
             EditionStatus.REGISTRATIONS_OPEN.value,
         ]
         query = (
             select(Edition)
             .options(joinedload(Edition.created_by), joinedload(Edition.closed_by))
             .where(Edition.status.in_(active_statuses))
+            .where(Edition.is_training == False)  # noqa: E712 - REQ-F-019 excludes training editions
         )
         if exclude_id:
             query = query.where(Edition.id != exclude_id)
@@ -177,6 +183,20 @@ class EditionRepository:
         if not editions:
             return None
 
-        # Return highest-priority: in_progress > registrations_open
+        # Return highest-priority: sale > deposit > settlement > registrations_open
         priority = {s: i for i, s in enumerate(active_statuses)}
         return min(editions, key=lambda e: priority.get(e.status, 99))
+
+    async def has_active_training_edition(self, *, exclude_id: str | None = None) -> bool:
+        """Check if a non-closed training edition already exists."""
+        closed_statuses = [EditionStatus.CLOSED.value, EditionStatus.ARCHIVED.value]
+        query = (
+            select(func.count())
+            .select_from(Edition)
+            .where(Edition.is_training == True)  # noqa: E712
+            .where(Edition.status.not_in(closed_statuses))
+        )
+        if exclude_id:
+            query = query.where(Edition.id != exclude_id)
+        result = await self.db.execute(query)
+        return result.scalar_one() > 0

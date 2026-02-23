@@ -187,7 +187,7 @@ class TestRegisterSale:
         with patch("app.services.sale.EditionRepository") as MockEditionRepo, \
              patch("app.services.sale.ArticleRepository") as MockArticleRepo:
             edition = MagicMock()
-            edition.status = "in_progress"
+            edition.status = "sale"
             MockEditionRepo.return_value.get_by_id = AsyncMock(return_value=edition)
             MockArticleRepo.return_value.get_by_id = AsyncMock(return_value=article)
 
@@ -195,16 +195,16 @@ class TestRegisterSale:
                 await register_sale("edition-123", "article-abc", "cash", 1, seller, db)
 
     @pytest.mark.asyncio
-    async def test_edition_not_in_progress(self):
+    async def test_edition_not_in_sale(self):
         db = AsyncMock()
         seller = _make_user()
 
         with patch("app.services.sale.EditionRepository") as MockEditionRepo:
             edition = MagicMock()
-            edition.status = "configured"
+            edition.status = "draft"
             MockEditionRepo.return_value.get_by_id = AsyncMock(return_value=edition)
 
-            with pytest.raises(ValidationError, match="in progress"):
+            with pytest.raises(ValidationError, match="sale status"):
                 await register_sale("edition-123", "article-abc", "cash", 1, seller, db)
 
 

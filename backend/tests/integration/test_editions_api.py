@@ -86,14 +86,14 @@ async def draft_edition(db_session: AsyncSession, admin_user: User) -> Edition:
 
 
 @pytest.fixture
-async def configured_edition(db_session: AsyncSession, admin_user: User) -> Edition:
-    """Create a configured edition."""
+async def registrations_open_edition(db_session: AsyncSession, admin_user: User) -> Edition:
+    """Create a registrations_open edition."""
     edition = Edition(
         name="Bourse Automne 2025",
         start_datetime=datetime(2025, 9, 20, 9, 0, tzinfo=timezone.utc),
         end_datetime=datetime(2025, 9, 21, 18, 0, tzinfo=timezone.utc),
         location="Salle des fêtes",
-        status=EditionStatus.CONFIGURED.value,
+        status=EditionStatus.REGISTRATIONS_OPEN.value,
         created_by_id=admin_user.id,
     )
     db_session.add(edition)
@@ -291,7 +291,7 @@ class TestListEditions:
         client: AsyncClient,
         admin_user: User,
         draft_edition: Edition,
-        configured_edition: Edition,
+        registrations_open_edition: Edition,
     ):
         """Pagination works correctly."""
         token = await get_admin_token(client, admin_user)
@@ -421,17 +421,17 @@ class TestDeleteEdition:
         )
         assert result.scalar_one_or_none() is None
 
-    async def test_delete_configured_edition_fails(
+    async def test_delete_registrations_open_edition_fails(
         self,
         client: AsyncClient,
         admin_user: User,
-        configured_edition: Edition,
+        registrations_open_edition: Edition,
     ):
         """Cannot delete non-draft edition."""
         token = await get_admin_token(client, admin_user)
 
         response = await client.delete(
-            f"/api/v1/editions/{configured_edition.id}",
+            f"/api/v1/editions/{registrations_open_edition.id}",
             headers={"Authorization": f"Bearer {token}"},
         )
 
@@ -459,23 +459,23 @@ class TestDeleteEdition:
 class TestUpdateEditionStatus:
     """Tests for PATCH /api/v1/editions/{id}/status."""
 
-    async def test_transition_draft_to_configured(
+    async def test_transition_draft_to_registrations_open(
         self,
         client: AsyncClient,
         admin_user: User,
         draft_edition: Edition,
     ):
-        """Admin can transition from draft to configured."""
+        """Admin can transition from draft to registrations_open."""
         token = await get_admin_token(client, admin_user)
 
         response = await client.patch(
             f"/api/v1/editions/{draft_edition.id}/status",
-            json={"status": "configured"},
+            json={"status": "registrations_open"},
             headers={"Authorization": f"Bearer {token}"},
         )
 
         assert response.status_code == 200
-        assert response.json()["status"] == "configured"
+        assert response.json()["status"] == "registrations_open"
 
     async def test_invalid_transition(
         self,
@@ -486,10 +486,10 @@ class TestUpdateEditionStatus:
         """Invalid status transition returns error."""
         token = await get_admin_token(client, admin_user)
 
-        # Draft cannot go directly to in_progress
+        # Draft cannot go directly to sale
         response = await client.patch(
             f"/api/v1/editions/{draft_edition.id}/status",
-            json={"status": "in_progress"},
+            json={"status": "sale"},
             headers={"Authorization": f"Bearer {token}"},
         )
 
@@ -507,7 +507,7 @@ class TestUpdateEditionStatus:
 
         response = await client.patch(
             f"/api/v1/editions/{draft_edition.id}/status",
-            json={"status": "configured"},
+            json={"status": "registrations_open"},
             headers={"Authorization": f"Bearer {token}"},
         )
 

@@ -49,10 +49,10 @@ async def generate_labels(
         raise HTTPException(status_code=404, detail="Édition non trouvée")
 
     # Check edition status
-    if edition.status not in ("registrations_open", "in_progress"):
+    if edition.status not in ("registrations_open", "deposit", "sale"):
         raise HTTPException(
             status_code=400,
-            detail="Les étiquettes ne peuvent être générées que pour les éditions au statut « Inscriptions ouvertes » ou « En cours ».",
+            detail="Les étiquettes ne peuvent être générées que pour les éditions au statut « Inscriptions ouvertes », « Dépôt » ou « Vente ».",
         )
 
     # Get lists based on generation mode

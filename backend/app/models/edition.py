@@ -5,7 +5,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDMixin
@@ -23,9 +23,10 @@ class EditionStatus(str, Enum):
     """Edition lifecycle status."""
 
     DRAFT = "draft"
-    CONFIGURED = "configured"
     REGISTRATIONS_OPEN = "registrations_open"
-    IN_PROGRESS = "in_progress"
+    DEPOSIT = "deposit"
+    SALE = "sale"
+    SETTLEMENT = "settlement"
     CLOSED = "closed"
     ARCHIVED = "archived"
 
@@ -83,6 +84,9 @@ class Edition(Base, UUIDMixin, TimestampMixin):
     billetweb_event_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     last_billetweb_sync: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
+    # Training mode (US-015)
+    is_training: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
     # Creator
     created_by_id: Mapped[str | None] = mapped_column(
         ForeignKey("users.id"),
@@ -123,8 +127,13 @@ class Edition(Base, UUIDMixin, TimestampMixin):
 
     @property
     def is_active(self) -> bool:
-        """Check if edition is currently active (in progress)."""
-        return self.status == EditionStatus.IN_PROGRESS.value
+        """Check if edition is currently active (not draft, closed or archived)."""
+        return self.status in (
+            EditionStatus.REGISTRATIONS_OPEN.value,
+            EditionStatus.DEPOSIT.value,
+            EditionStatus.SALE.value,
+            EditionStatus.SETTLEMENT.value,
+        )
 
     @property
     def is_closed(self) -> bool:
@@ -138,7 +147,7 @@ class Edition(Base, UUIDMixin, TimestampMixin):
     def can_accept_declarations(self) -> bool:
         """Check if edition can accept article declarations."""
         if self.status not in (
-            EditionStatus.CONFIGURED.value,
+            EditionStatus.DRAFT.value,
             EditionStatus.REGISTRATIONS_OPEN.value,
         ):
             return False

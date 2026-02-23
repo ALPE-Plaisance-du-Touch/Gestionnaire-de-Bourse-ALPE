@@ -11,9 +11,10 @@ class EditionStatus(str, Enum):
     """Edition lifecycle status."""
 
     DRAFT = "draft"
-    CONFIGURED = "configured"
     REGISTRATIONS_OPEN = "registrations_open"
-    IN_PROGRESS = "in_progress"
+    DEPOSIT = "deposit"
+    SALE = "sale"
+    SETTLEMENT = "settlement"
     CLOSED = "closed"
     ARCHIVED = "archived"
 
@@ -40,6 +41,7 @@ class EditionCreate(EditionBase):
     """Schema for creating a new edition."""
 
     billetweb_event_id: str | None = None
+    is_training: bool = False
 
 
 class EditionUpdate(BaseModel):
@@ -58,6 +60,9 @@ class EditionUpdate(BaseModel):
     retrieval_start_datetime: datetime | None = None
     retrieval_end_datetime: datetime | None = None
     commission_rate: Decimal | None = Field(None, ge=0, le=1)
+
+    # Training mode toggle
+    is_training: bool | None = None
 
 
 class EditionStatusUpdate(BaseModel):
@@ -105,6 +110,9 @@ class EditionResponse(BaseModel):
     # Billetweb API integration
     billetweb_event_id: str | None = None
     last_billetweb_sync: datetime | None = None
+
+    # Training mode (US-015)
+    is_training: bool = False
 
     # Closure tracking
     closed_at: datetime | None = None

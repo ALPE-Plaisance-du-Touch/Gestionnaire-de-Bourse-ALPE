@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { salesApi } from '@/api';
-import { Button, Select } from '@/components/ui';
+import { Button, Select, TrainingBanner } from '@/components/ui';
 import type { SaleResponse } from '@/types';
 
 const PAYMENT_OPTIONS = [
@@ -90,6 +90,8 @@ export function SalesManagementPage() {
           Consultez et gérez les ventes de l'édition. Les managers peuvent annuler les ventes sans limite de temps.
         </p>
       </div>
+
+      <TrainingBanner editionId={editionId!} />
 
       {/* Filters */}
       <div className="mb-4 flex gap-4 items-end">

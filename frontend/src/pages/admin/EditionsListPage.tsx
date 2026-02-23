@@ -10,18 +10,20 @@ type FilterOption = 'all' | EditionStatus;
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Tous les statuts' },
   { value: 'draft', label: 'Brouillon' },
-  { value: 'configured', label: 'Configuré' },
   { value: 'registrations_open', label: 'Inscriptions ouvertes' },
-  { value: 'in_progress', label: 'En cours' },
+  { value: 'deposit', label: 'Dépôt' },
+  { value: 'sale', label: 'Vente' },
+  { value: 'settlement', label: 'Bilan' },
   { value: 'closed', label: 'Clôturé' },
   { value: 'archived', label: 'Archivé' },
 ];
 
 const STATUS_LABELS: Record<EditionStatus, { label: string; className: string }> = {
   draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-800' },
-  configured: { label: 'Configuré', className: 'bg-blue-100 text-blue-800' },
   registrations_open: { label: 'Inscriptions ouvertes', className: 'bg-purple-100 text-purple-800' },
-  in_progress: { label: 'En cours', className: 'bg-green-100 text-green-800' },
+  deposit: { label: 'Dépôt', className: 'bg-blue-100 text-blue-800' },
+  sale: { label: 'Vente', className: 'bg-green-100 text-green-800' },
+  settlement: { label: 'Bilan', className: 'bg-yellow-100 text-yellow-800' },
   closed: { label: 'Clôturé', className: 'bg-orange-100 text-orange-800' },
   archived: { label: 'Archivé', className: 'bg-gray-100 text-gray-500' },
 };
@@ -172,13 +174,13 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
         <div className="bg-white rounded-lg shadow p-4">
           <p className="text-sm text-gray-500">Brouillons</p>
           <p className="text-2xl font-bold text-gray-600">
-            {editions.filter((e) => e.status === 'draft' || e.status === 'configured').length}
+            {editions.filter((e) => e.status === 'draft').length}
           </p>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">En cours</p>
+          <p className="text-sm text-gray-500">Actives</p>
           <p className="text-2xl font-bold text-green-600">
-            {editions.filter((e) => e.status === 'registrations_open' || e.status === 'in_progress').length}
+            {editions.filter((e) => ['registrations_open', 'deposit', 'sale', 'settlement'].includes(e.status)).length}
           </p>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
@@ -251,11 +253,16 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
           <div className="md:hidden divide-y divide-gray-200">
             {editions.map((edition) => {
               const statusInfo = STATUS_LABELS[edition.status];
-              const canDelete = isAdmin && (edition.status === 'draft' || edition.status === 'configured');
+              const canDelete = isAdmin && edition.status === 'draft';
               return (
                 <div key={edition.id} className="p-4 space-y-2">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="font-medium text-gray-900 min-w-0">{edition.name}</div>
+                    <div className="font-medium text-gray-900 min-w-0">
+                      {edition.name}
+                      {edition.isTraining && (
+                        <span className="ml-2 inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-amber-100 text-amber-800">Formation</span>
+                      )}
+                    </div>
                     <span className={`inline-flex shrink-0 px-2 py-1 text-xs font-semibold rounded-full ${statusInfo.className}`}>
                       {statusInfo.label}
                     </span>
@@ -343,13 +350,16 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
               <tbody className="bg-white divide-y divide-gray-200">
                 {editions.map((edition) => {
                   const statusInfo = STATUS_LABELS[edition.status];
-                  const canDelete = isAdmin && (edition.status === 'draft' || edition.status === 'configured');
+                  const canDelete = isAdmin && edition.status === 'draft';
 
                   return (
                     <tr key={edition.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
                           {edition.name}
+                          {edition.isTraining && (
+                            <span className="ml-2 inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-amber-100 text-amber-800">Formation</span>
+                          )}
                         </div>
                         {edition.description && (
                           <div className="text-sm text-gray-500 truncate max-w-xs">

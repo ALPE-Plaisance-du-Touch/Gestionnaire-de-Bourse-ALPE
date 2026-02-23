@@ -43,6 +43,7 @@ interface EditionApiResponse {
     email: string;
   } | null;
   archivedAt: string | null;
+  isTraining: boolean;
 }
 
 interface EditionListApiResponse {
@@ -80,6 +81,7 @@ function transformEdition(data: EditionApiResponse): Edition {
     closedAt: data.closedAt,
     closedBy: data.closedBy,
     archivedAt: data.archivedAt,
+    isTraining: data.isTraining,
   };
 }
 
@@ -135,6 +137,9 @@ export const editionsApi = {
     if (data.billetwebEventId) {
       payload.billetweb_event_id = data.billetwebEventId;
     }
+    if (data.isTraining) {
+      payload.is_training = true;
+    }
     const response = await apiClient.post<EditionApiResponse>('/v1/editions', payload);
     return transformEdition(response.data);
   },
@@ -156,6 +161,7 @@ export const editionsApi = {
     if (data.retrievalStartDatetime !== undefined) payload.retrieval_start_datetime = data.retrievalStartDatetime;
     if (data.retrievalEndDatetime !== undefined) payload.retrieval_end_datetime = data.retrievalEndDatetime;
     if (data.commissionRate !== undefined) payload.commission_rate = data.commissionRate;
+    if (data.is_training !== undefined) payload.is_training = data.is_training;
 
     const response = await apiClient.put<EditionApiResponse>(`/v1/editions/${editionId}`, payload);
     return transformEdition(response.data);
@@ -202,6 +208,13 @@ export const editionsApi = {
   }> => {
     const response = await apiClient.post(`/v1/editions/${editionId}/send-invitations`);
     return response.data;
+  },
+
+  forceTrainingStatus: async (editionId: string, status: EditionStatus): Promise<Edition> => {
+    const response = await apiClient.post<EditionApiResponse>(`/v1/editions/${editionId}/force-status`, {
+      status,
+    });
+    return transformEdition(response.data);
   },
 
   openRegistrations: async (editionId: string): Promise<Edition> => {

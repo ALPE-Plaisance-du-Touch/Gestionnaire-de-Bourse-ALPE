@@ -72,17 +72,17 @@ class TestCanModifyLists:
         service = ItemListService(AsyncMock())
         assert service._can_modify_lists(mock_edition) is True
 
-    def test_can_modify_when_configured(self, mock_edition):
-        """Can modify lists when edition is configured."""
-        mock_edition.status = EditionStatus.CONFIGURED.value
+    def test_can_modify_when_draft(self, mock_edition):
+        """Can modify lists when edition is draft."""
+        mock_edition.status = EditionStatus.DRAFT.value
         mock_edition.declaration_deadline = datetime.utcnow() + timedelta(days=7)
 
         service = ItemListService(AsyncMock())
         assert service._can_modify_lists(mock_edition) is True
 
-    def test_cannot_modify_when_draft(self, mock_edition):
-        """Cannot modify lists when edition is draft."""
-        mock_edition.status = EditionStatus.DRAFT.value
+    def test_cannot_modify_when_deposit(self, mock_edition):
+        """Cannot modify lists when edition is in deposit phase."""
+        mock_edition.status = EditionStatus.DEPOSIT.value
 
         service = ItemListService(AsyncMock())
         assert service._can_modify_lists(mock_edition) is False

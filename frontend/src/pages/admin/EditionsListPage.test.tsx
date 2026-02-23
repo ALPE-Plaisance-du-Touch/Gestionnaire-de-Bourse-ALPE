@@ -80,7 +80,7 @@ const mockEditions: Edition[] = [
     name: 'Bourse Été 2024',
     description: null,
     location: null,
-    status: 'in_progress' as EditionStatus,
+    status: 'sale' as EditionStatus,
     startDatetime: '2024-06-15T09:00:00Z',
     endDatetime: '2024-06-16T18:00:00Z',
     declarationDeadline: null,
@@ -143,7 +143,7 @@ describe('EditionsListPage', () => {
 
     // Check for stat labels - use getAllByText as some labels appear multiple times
     expect(screen.getByText('Brouillons')).toBeInTheDocument();
-    expect(screen.getAllByText('En cours').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Actives').length).toBeGreaterThan(0);
     expect(screen.getByText('Clôturées')).toBeInTheDocument();
   });
 

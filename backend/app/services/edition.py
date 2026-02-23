@@ -28,10 +28,11 @@ class EditionService:
 
     # Valid status transitions
     VALID_TRANSITIONS = {
-        EditionStatus.DRAFT: [EditionStatus.CONFIGURED],
-        EditionStatus.CONFIGURED: [EditionStatus.DRAFT, EditionStatus.REGISTRATIONS_OPEN],
-        EditionStatus.REGISTRATIONS_OPEN: [EditionStatus.CONFIGURED, EditionStatus.IN_PROGRESS],
-        EditionStatus.IN_PROGRESS: [EditionStatus.CLOSED],
+        EditionStatus.DRAFT: [EditionStatus.REGISTRATIONS_OPEN],
+        EditionStatus.REGISTRATIONS_OPEN: [EditionStatus.DRAFT, EditionStatus.DEPOSIT],
+        EditionStatus.DEPOSIT: [EditionStatus.REGISTRATIONS_OPEN, EditionStatus.SALE],
+        EditionStatus.SALE: [EditionStatus.DEPOSIT, EditionStatus.SETTLEMENT],
+        EditionStatus.SETTLEMENT: [EditionStatus.SALE, EditionStatus.CLOSED],
         EditionStatus.CLOSED: [EditionStatus.ARCHIVED],
         EditionStatus.ARCHIVED: [],  # Terminal state
     }
@@ -66,6 +67,15 @@ class EditionService:
                 field="name",
             )
 
+        # Max 1 training edition at a time (US-015)
+        if getattr(data, "is_training", False):
+            if await self.repository.has_active_training_edition():
+                raise ValidationError(
+                    "Une édition de formation est déjà active. "
+                    "Clôturez-la avant d'en créer une nouvelle.",
+                    field="is_training",
+                )
+
         # Validate dates (already done in schema, but double-check)
         if data.end_datetime <= data.start_datetime:
             raise ValidationError(
@@ -81,6 +91,7 @@ class EditionService:
             description=data.description,
             created_by=created_by,
             billetweb_event_id=getattr(data, "billetweb_event_id", None),
+            is_training=getattr(data, "is_training", False),
         )
 
     async def get_edition(self, edition_id: str) -> Edition:
@@ -150,8 +161,18 @@ class EditionService:
         """
         edition = await self.get_edition(edition_id)
 
-        # Check if edition is closed
-        if edition.is_closed:
+        # Validate is_training toggle (allowed on non-archived editions)
+        if data.is_training is not None and data.is_training != edition.is_training:
+            if edition.status == EditionStatus.ARCHIVED.value:
+                raise ValidationError(
+                    "Impossible de modifier le mode formation d'une édition archivée",
+                    field="is_training",
+                )
+
+        # Check if edition is closed (allow is_training-only updates on closed editions)
+        update_fields = data.model_dump(exclude_unset=True)
+        is_training_only = set(update_fields.keys()) == {"is_training"}
+        if edition.is_closed and not is_training_only:
             raise EditionClosedError(edition_id)
 
         # Check for duplicate name if name is being changed
@@ -208,13 +229,14 @@ class EditionService:
             )
 
         # REQ-F-019: Enforce single active edition constraint
-        # Only registrations_open and in_progress count as "active"
-        # Multiple editions can be in configured status simultaneously
+        # Training editions are excluded from this constraint (US-015)
         truly_active_statuses = [
             EditionStatus.REGISTRATIONS_OPEN,
-            EditionStatus.IN_PROGRESS,
+            EditionStatus.DEPOSIT,
+            EditionStatus.SALE,
+            EditionStatus.SETTLEMENT,
         ]
-        if new_status in truly_active_statuses:
+        if new_status in truly_active_statuses and not edition.is_training:
             other = await self.repository.get_any_active_edition(
                 exclude_id=edition.id
             )
@@ -224,6 +246,49 @@ class EditionService:
                     "Clôturez-la avant d'en activer une autre.",
                     field="status",
                 )
+
+        return await self.repository.update_status(edition, new_status)
+
+    async def force_training_status(
+        self,
+        edition_id: str,
+        new_status: EditionStatus,
+    ) -> Edition:
+        """Force status transition for training editions (US-015).
+
+        Bypasses date checks and prerequisite validations.
+        Only validates that the edition is a training edition and the
+        target status is different from the current one.
+        Allows both forward and backward transitions.
+        """
+        edition = await self.get_edition(edition_id)
+
+        if not edition.is_training:
+            raise ValidationError(
+                "Le forçage d'étape n'est autorisé que pour les éditions de formation",
+                field="status",
+            )
+
+        # Validate target status is in the allowed lifecycle
+        allowed_statuses = [
+            EditionStatus.DRAFT,
+            EditionStatus.REGISTRATIONS_OPEN,
+            EditionStatus.DEPOSIT,
+            EditionStatus.SALE,
+            EditionStatus.SETTLEMENT,
+            EditionStatus.CLOSED,
+        ]
+        if new_status not in allowed_statuses:
+            raise ValidationError(
+                f"Le statut '{new_status.value}' n'est pas un statut valide pour le forçage",
+                field="status",
+            )
+
+        if new_status.value == edition.status:
+            raise ValidationError(
+                f"L'édition est déjà au statut '{edition.status}'",
+                field="status",
+            )
 
         return await self.repository.update_status(edition, new_status)
 
@@ -242,9 +307,9 @@ class EditionService:
         """
         edition = await self.get_edition(edition_id)
 
-        if edition.status not in (EditionStatus.DRAFT.value, EditionStatus.CONFIGURED.value):
+        if edition.status != EditionStatus.DRAFT.value:
             raise ValidationError(
-                "Seules les éditions en brouillon ou configurées peuvent être supprimées",
+                "Seules les éditions en brouillon peuvent être supprimées",
                 field="status",
             )
 
@@ -257,11 +322,11 @@ class EditionService:
         edition = await self.get_edition(edition_id)
         checks: list[ClosureCheckItem] = []
 
-        # Check 1: Edition must be in_progress
+        # Check 1: Edition must be in settlement status
         checks.append(ClosureCheckItem(
-            label="Edition en cours",
-            passed=edition.status == EditionStatus.IN_PROGRESS.value,
-            detail="L'edition doit etre en statut 'En cours'" if edition.status != EditionStatus.IN_PROGRESS.value else None,
+            label="Bilan en cours",
+            passed=edition.status == EditionStatus.SETTLEMENT.value,
+            detail="L'edition doit etre en statut 'Bilan'" if edition.status != EditionStatus.SETTLEMENT.value else None,
         ))
 
         # Check 2: Retrieval end date must be passed
@@ -329,10 +394,10 @@ class EditionService:
 
     async def get_active_edition(self) -> Edition | None:
         """
-        Get the currently active edition (registrations_open or in_progress).
+        Get the currently active edition.
 
         Returns the highest-priority active edition:
-        in_progress > registrations_open.
+        sale > deposit > registrations_open.
         """
         return await self.repository.get_any_active_edition()
 

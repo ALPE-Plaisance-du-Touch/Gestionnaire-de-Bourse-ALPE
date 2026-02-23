@@ -14,6 +14,7 @@ from app.exceptions import (
     EditionNotFoundError,
     ValidationError,
 )
+from app.models import User
 from app.repositories import EditionDepositorRepository, EditionRepository
 from app.schemas import (
     DepositorListsResponse,
@@ -32,6 +33,18 @@ from app.services.item_list import (
 )
 
 router = APIRouter()
+
+
+async def check_training_access(edition_id: str, user: User, db) -> None:
+    """Raise 403 if user is a non-tester depositor accessing a training edition."""
+    if user.is_depositor and not user.is_tester:
+        edition_repo = EditionRepository(db)
+        edition = await edition_repo.get_by_id(edition_id)
+        if edition and edition.is_training:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Accès refusé : cette édition est réservée aux testeurs",
+            )
 
 
 class MyEditionSummary(BaseModel):
@@ -82,6 +95,9 @@ async def get_my_editions(
         # Get edition details
         edition = await edition_repo.get_by_id(reg.edition_id)
         if edition:
+            # Hide training editions from non-tester depositors (US-015)
+            if edition.is_training and not current_user.is_tester:
+                continue
             editions.append(
                 MyEditionSummary(
                     id=edition.id,
@@ -105,10 +121,12 @@ async def get_my_editions(
 )
 async def get_my_lists(
     edition_id: str,
+    db: DBSession,
     list_service: ItemListServiceDep,
     current_user: CurrentActiveUser,
 ):
     """Get all lists for the current depositor in an edition."""
+    await check_training_access(edition_id, current_user, db)
     try:
         summary = await list_service.get_depositor_lists_summary(
             current_user.id, edition_id
@@ -151,10 +169,12 @@ async def get_my_lists(
 async def create_list(
     edition_id: str,
     request: ItemListCreate,
+    db: DBSession,
     list_service: ItemListServiceDep,
     current_user: CurrentActiveUser,
 ):
     """Create a new item list."""
+    await check_training_access(edition_id, current_user, db)
     try:
         item_list = await list_service.create_list(
             depositor=current_user,

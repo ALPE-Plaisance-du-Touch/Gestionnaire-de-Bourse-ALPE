@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { editionsApi, billetwebApi, depositSlotsApi } from '@/api';
-import { Button, Modal, ConfirmModal, Select, Input } from '@/components/ui';
+import { Button, Modal, ConfirmModal, Select, Input, TrainingBanner } from '@/components/ui';
 import type { ListType, EditionDepositorWithUser, DepositorUpdateRequest } from '@/types';
 
 const LIST_TYPE_LABELS: Record<ListType, { label: string; className: string }> = {
@@ -190,6 +190,8 @@ export function EditionDepositorsPage() {
           {total} déposant{total !== 1 ? 's' : ''} inscrit{total !== 1 ? 's' : ''} à cette édition.
         </p>
       </div>
+
+      <TrainingBanner editionId={id!} />
 
       {/* Filters */}
       <div className="mb-6 bg-white rounded-lg shadow p-4">

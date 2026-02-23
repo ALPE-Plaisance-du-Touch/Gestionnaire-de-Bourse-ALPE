@@ -30,7 +30,7 @@ links:
   - **Responsable validation :** Administrateur ALPE
 
 - REQ-F-007 — Le système DOIT permettre à un gestionnaire de configurer les dates clés d'une édition (dépôt, vente, récupération) et le taux de commission. (US-007)
-  - **Critères d'acceptation :** Validation cohérence chronologique des dates, taux commission 0-100%, passage statut "Configurée"
+  - **Critères d'acceptation :** Validation cohérence chronologique des dates, taux commission 0-100%. La configuration se fait dans le statut "Brouillon" (pas de statut "Configurée" séparé).
   - **Priorité :** Must have
   - **Responsable validation :** Gestionnaire
 
@@ -88,8 +88,8 @@ links:
       - Message « Aucune bourse n'est en cours actuellement. »
       - Si administrateur : lien « Créer une nouvelle édition »
     - **Contrainte d'unicité d'édition active :**
-      - Une seule édition peut avoir un statut actif (inscriptions_ouvertes ou en_cours) à un instant donné
-      - Plusieurs éditions peuvent être en statut brouillon ou configurée simultanément (préparation en parallèle)
+      - Une seule édition peut avoir un statut actif (inscriptions_ouvertes, deposit, sale ou settlement) à un instant donné
+      - Plusieurs éditions peuvent être en statut brouillon simultanément (préparation en parallèle)
       - Le système DOIT bloquer toute tentative d'ouvrir les inscriptions ou de démarrer une deuxième édition tant qu'une autre est active
       - Message d'erreur explicite en cas de violation : « Une bourse est déjà en cours ([nom de l'édition]). Clôturez-la avant d'en activer une autre. »
     - Page responsive et conforme WCAG 2.1 AA
@@ -297,7 +297,7 @@ links:
 - REQ-F-002 — Le système DOIT permettre l'enregistrement d'articles organisés en listes avec contraintes réglementaires. (US-002)
   - **Critères d'acceptation :**
     - **Accès et création de listes :**
-      - Déposant connecté à une édition active (statut "Inscriptions ouvertes" ou "En cours")
+      - Déposant connecté à une édition active (statut "Inscriptions ouvertes", "Dépôt" ou "Vente")
       - Date limite de déclaration non dépassée (sinon lecture seule)
       - Maximum 2 listes par déposant par édition
       - Affichage du créneau de dépôt réservé (via Billetweb)
@@ -577,7 +577,7 @@ links:
       - Article déjà vendu : message d'alerte avec détails de la vente précédente (date, heure, bénévole, montant)
       - Article non trouvé : message d'erreur avec suggestion de vérifier l'étiquette ou contacter un gestionnaire
       - QR code illisible : possibilité de saisie manuelle du code unique (EDI-xxx-Lxxx-Axx)
-      - Blocage des ventes si l'édition n'est pas en statut "En cours"
+      - Blocage des ventes si l'édition n'est pas en statut "Vente"
     - **Mode offline (fallback) :**
       - Fonctionnement online par défaut
       - Bascule automatique en mode offline si perte de connexion réseau
