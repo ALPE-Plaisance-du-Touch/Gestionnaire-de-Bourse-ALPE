@@ -11,6 +11,7 @@ const STATUS_LABELS: Record<string, { label: string; className: string }> = {
   draft: { label: 'Brouillon', className: 'bg-yellow-100 text-yellow-800' },
   validated: { label: 'Validée', className: 'bg-green-100 text-green-800' },
   checked_in: { label: 'Déposée', className: 'bg-blue-100 text-blue-800' },
+  reviewed: { label: 'Vérifiée', className: 'bg-teal-100 text-teal-800' },
   retrieved: { label: 'Récupérée', className: 'bg-gray-100 text-gray-800' },
 };
 
@@ -373,6 +374,43 @@ export function ListDetailPage() {
             canAddMore={canAddMore}
           />
         </>
+      )}
+
+      {/* Rejected articles section - visible to depositor after review */}
+      {!showArticleForm && articles.some((a) => a.status === 'rejected') && (
+        <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <h4 className="font-medium text-red-900 mb-3">
+            Articles refuses ({articles.filter((a) => a.status === 'rejected').length})
+          </h4>
+          <div className="space-y-2">
+            {articles
+              .filter((a) => a.status === 'rejected')
+              .map((article) => (
+                <div
+                  key={article.id}
+                  className="bg-white border border-red-100 rounded-lg p-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{article.description}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {formatPrice(article.price)}
+                        {article.size ? ` - Taille ${article.size}` : ''}
+                      </p>
+                    </div>
+                    <span className="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                      Refuse
+                    </span>
+                  </div>
+                  {article.rejectionReason && (
+                    <p className="mt-2 text-xs text-red-700">
+                      Motif : {article.rejectionReason}
+                    </p>
+                  )}
+                </div>
+              ))}
+          </div>
+        </div>
       )}
 
       {/* Help text for draft lists */}

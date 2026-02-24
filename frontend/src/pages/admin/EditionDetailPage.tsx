@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { editionsApi, billetwebApi, depositSlotsApi, payoutsApi, usersApi, ApiException } from '@/api';
+import { editionsApi, billetwebApi, depositSlotsApi, payoutsApi, usersApi, reviewApi, ApiException } from '@/api';
 import { Button, ConfirmModal, Input, Modal, Select } from '@/components/ui';
 import { DepositSlotsEditor } from '@/components/editions';
 import { BilletwebSessionsSyncModal } from '@/components/billetweb/BilletwebSessionsSyncModal';
@@ -963,6 +963,11 @@ export function EditionDetailPage() {
       {/* ===== Tab 3: Opérations ===== */}
       {currentTab === 'operations' && (
         <div className="space-y-6">
+          {/* Deposit Review */}
+          {['deposit', 'sale'].includes(edition.status) && (
+            <ReviewProgressBlock editionId={edition.id} />
+          )}
+
           {/* Labels */}
           {['registrations_open', 'deposit', 'sale'].includes(edition.status) && (
             <div className="bg-white border border-gray-200 rounded-lg p-4">
@@ -1698,6 +1703,55 @@ export function EditionDetailPage() {
         variant="danger"
         confirmLabel="Supprimer"
       />
+    </div>
+  );
+}
+
+function ReviewProgressBlock({ editionId }: { editionId: string }) {
+  const { data: summary } = useQuery({
+    queryKey: ['review-summary', editionId],
+    queryFn: () => reviewApi.getReviewSummary(editionId),
+    enabled: !!editionId,
+    refetchInterval: 15000,
+  });
+
+  const treated = summary ? summary.acceptedArticles + summary.rejectedArticles : 0;
+  const total = summary?.totalArticles ?? 0;
+  const pct = total > 0 ? Math.round((treated / total) * 100) : 0;
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg p-4">
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900">Revue des articles au depot</h3>
+          <p className="text-sm text-gray-500">
+            {summary
+              ? `${summary.reviewedLists}/${summary.totalLists} listes traitees, ${treated}/${total} articles (${pct}%)`
+              : 'Chargement...'}
+          </p>
+        </div>
+        <Link
+          to={`/editions/${editionId}/review`}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+          Revue des listes
+        </Link>
+      </div>
+      {summary && total > 0 && (
+        <div className="w-full bg-gray-200 rounded-full h-2 flex overflow-hidden">
+          <div
+            className="bg-green-500 h-2"
+            style={{ width: `${(summary.acceptedArticles / total) * 100}%` }}
+          />
+          <div
+            className="bg-red-500 h-2"
+            style={{ width: `${(summary.rejectedArticles / total) * 100}%` }}
+          />
+        </div>
+      )}
     </div>
   );
 }
