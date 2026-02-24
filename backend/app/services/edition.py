@@ -247,7 +247,32 @@ class EditionService:
                     field="status",
                 )
 
-        return await self.repository.update_status(edition, new_status)
+        result = await self.repository.update_status(edition, new_status)
+
+        # US-013: When transitioning deposit → sale, move accepted articles to on_sale
+        if (
+            current_status == EditionStatus.DEPOSIT
+            and new_status == EditionStatus.SALE
+        ):
+            await self._transition_accepted_to_on_sale(edition_id)
+
+        return result
+
+    async def _transition_accepted_to_on_sale(self, edition_id: str) -> None:
+        """Move all accepted articles to on_sale for an edition."""
+        from app.models.article import ArticleStatus
+        from app.repositories import ArticleRepository, ItemListRepository
+
+        list_repo = ItemListRepository(self.db)
+        article_repo = ArticleRepository(self.db)
+
+        item_lists = await list_repo.list_by_edition_with_articles(edition_id)
+        for item_list in item_lists:
+            await article_repo.bulk_update_status(
+                item_list.id,
+                ArticleStatus.ACCEPTED,
+                ArticleStatus.ON_SALE,
+            )
 
     async def force_training_status(
         self,
