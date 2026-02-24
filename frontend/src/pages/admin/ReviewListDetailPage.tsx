@@ -172,8 +172,11 @@ export function ReviewListDetailPage() {
   const isReviewed = !!listDetail?.reviewedAt;
   const canFinalize = pendingCount === 0 && articles.length > 0 && !isReviewed;
 
-  const clothingCount = articles.filter(
-    (a) => ['clothing', 'shoes', 'accessories'].includes(a.category) && a.status !== 'rejected'
+  const saleArticles = articles.filter((a) => a.status !== 'rejected');
+  const rejectedArticles = articles.filter((a) => a.status === 'rejected');
+
+  const clothingCount = saleArticles.filter(
+    (a) => ['clothing', 'shoes', 'accessories'].includes(a.category)
   ).length;
 
   return (
@@ -235,94 +238,138 @@ export function ReviewListDetailPage() {
       )}
 
       {/* Articles list */}
-      <div className="space-y-3">
-        {isLoading ? (
-          <div className="p-8 text-center text-gray-500">Chargement...</div>
-        ) : articles.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">Aucun article dans cette liste.</div>
-        ) : (
-          articles.map((article) => {
-            const statusInfo = STATUS_STYLES[article.status] ?? STATUS_STYLES.validated;
-            const isPending = article.status === 'validated';
-            return (
-              <div
-                key={article.id}
-                className={`bg-white rounded-lg shadow p-4 border-l-4 ${
-                  article.status === 'accepted'
-                    ? 'border-l-green-500'
-                    : article.status === 'rejected'
-                    ? 'border-l-red-500'
-                    : 'border-l-amber-400'
-                }`}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  {/* Article info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium text-gray-500">
-                        #{article.lineNumber}
-                      </span>
-                      <span
-                        className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${statusInfo.className}`}
-                      >
-                        {statusInfo.label}
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        {CATEGORY_LABELS[article.category] ?? article.category}
-                      </span>
+      {isLoading ? (
+        <div className="p-8 text-center text-gray-500">Chargement...</div>
+      ) : articles.length === 0 ? (
+        <div className="p-8 text-center text-gray-500">Aucun article dans cette liste.</div>
+      ) : (
+        <>
+          {/* Articles mis en vente */}
+          {saleArticles.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-gray-900 mb-3">
+                Articles mis en vente ({saleArticles.length})
+              </h2>
+              <div className="space-y-3">
+                {saleArticles.map((article) => {
+                  const statusInfo = STATUS_STYLES[article.status] ?? STATUS_STYLES.validated;
+                  const isPending = article.status === 'validated';
+                  return (
+                    <div
+                      key={article.id}
+                      className={`bg-white rounded-lg shadow p-4 border-l-4 ${
+                        article.status === 'accepted'
+                          ? 'border-l-green-500'
+                          : 'border-l-amber-400'
+                      }`}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-medium text-gray-500">
+                              #{article.lineNumber}
+                            </span>
+                            <span
+                              className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${statusInfo.className}`}
+                            >
+                              {statusInfo.label}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              {CATEGORY_LABELS[article.category] ?? article.category}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-900 font-medium mt-1">{article.description}</p>
+                          <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 flex-wrap">
+                            <span className="font-semibold text-gray-700">{article.price.toFixed(2)} &euro;</span>
+                            {article.size && <span>Taille : {article.size}</span>}
+                            {article.brand && <span>Marque : {article.brand}</span>}
+                            {article.isLot && <span>Lot de {article.lotQuantity}</span>}
+                          </div>
+                        </div>
+                        {isPending && !isReviewed && (
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Button
+                              size="sm"
+                              variant="primary"
+                              className="!bg-green-600 hover:!bg-green-700"
+                              onClick={() => acceptMutation.mutate(article.id)}
+                              disabled={acceptMutation.isPending}
+                            >
+                              Accepter
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="danger"
+                              onClick={() => {
+                                setRejectingArticle(article);
+                                setRejectionReason('');
+                              }}
+                              disabled={rejectMutation.isPending}
+                            >
+                              Refuser
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEditingArticle(article)}
+                            >
+                              Editer
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-900 font-medium mt-1">{article.description}</p>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 flex-wrap">
-                      <span className="font-semibold text-gray-700">{article.price.toFixed(2)} &euro;</span>
-                      {article.size && <span>Taille : {article.size}</span>}
-                      {article.brand && <span>Marque : {article.brand}</span>}
-                      {article.isLot && <span>Lot de {article.lotQuantity}</span>}
-                    </div>
-                    {article.status === 'rejected' && article.rejectionReason && (
-                      <p className="mt-2 text-xs text-red-600 bg-red-50 rounded px-2 py-1 inline-block">
-                        Motif : {article.rejectionReason}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  {isPending && !isReviewed && (
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        className="!bg-green-600 hover:!bg-green-700"
-                        onClick={() => acceptMutation.mutate(article.id)}
-                        disabled={acceptMutation.isPending}
-                      >
-                        Accepter
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        onClick={() => {
-                          setRejectingArticle(article);
-                          setRejectionReason('');
-                        }}
-                        disabled={rejectMutation.isPending}
-                      >
-                        Refuser
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setEditingArticle(article)}
-                      >
-                        Editer
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                  );
+                })}
               </div>
-            );
-          })
-        )}
-      </div>
+            </div>
+          )}
+
+          {/* Articles refuses */}
+          {rejectedArticles.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-red-800 mb-3">
+                Articles refuses ({rejectedArticles.length})
+              </h2>
+              <div className="space-y-3">
+                {rejectedArticles.map((article) => (
+                  <div
+                    key={article.id}
+                    className="bg-red-50 rounded-lg shadow p-4 border-l-4 border-l-red-500"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-gray-500">
+                          #{article.lineNumber}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {CATEGORY_LABELS[article.category] ?? article.category}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-900 font-medium mt-1">{article.description}</p>
+                      <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 flex-wrap">
+                        <span className="font-semibold text-gray-700">{article.price.toFixed(2)} &euro;</span>
+                        {article.size && <span>Taille : {article.size}</span>}
+                        {article.brand && <span>Marque : {article.brand}</span>}
+                        {article.isLot && <span>Lot de {article.lotQuantity}</span>}
+                      </div>
+                      {article.rejectionReason && (
+                        <p className="mt-2 text-xs text-red-700 bg-red-100 rounded px-2 py-1 inline-block">
+                          Motif : {article.rejectionReason}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 bg-red-600 text-white rounded-lg px-4 py-2 text-sm font-medium flex items-center justify-between">
+                <span>{rejectedArticles.length} article(s) refuse(s)</span>
+                <span>{rejectedArticles.reduce((sum, a) => sum + a.price, 0).toFixed(2)} &euro;</span>
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       {/* Finalize button */}
       {!isReviewed && articles.length > 0 && (
