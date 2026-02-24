@@ -121,6 +121,7 @@ class ReviewService:
             "list_type": item_list.list_type,
             "status": item_list.status,
             "depositor_name": depositor_name,
+            "article_count": len(articles),
             "articles": articles,
             "review_stats": stats,
             "reviewed_at": item_list.reviewed_at,
