@@ -304,12 +304,12 @@ def _build_article_list_html(item_list: "ItemList") -> str:
             </thead>
             <tbody>
                 {rejected_rows}
-                <tr class="rejected-total-row">
-                    <td colspan="4"><strong>{len(rejected_articles)} article(s) refuse(s)</strong></td>
-                    <td style="text-align:right"><strong>{format_price(rejected_value)}</strong></td>
-                </tr>
             </tbody>
         </table>
+        <div class="rejected-footer">
+            <span>{len(rejected_articles)} article(s) refuse(s)</span>
+            <span>{format_price(rejected_value)}</span>
+        </div>
         """
 
     depositor = item_list.depositor
@@ -627,16 +627,16 @@ def generate_labels_pdf(
             .rejected-table td {{
                 color: #555;
             }}
-            .rejected-total-row {{
-                background: #dc2626 !important;
-            }}
-            .rejected-total-row td {{
-                color: white !important;
-                border-top: 2px solid #991b1b;
-                padding-top: 8px;
-            }}
-            .rejected-total-row strong {{
+            .rejected-footer {{
+                background: #b91c1c;
                 color: white;
+                font-weight: bold;
+                font-size: 9pt;
+                padding: 6px 8px;
+                display: flex;
+                justify-content: space-between;
+                margin-top: 0;
+                border-radius: 0 0 4px 4px;
             }}
             .article-list-note {{
                 margin-top: 8mm;
