@@ -43,10 +43,11 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.17 | Améliorations gestion | ✅ Done |
 | 0.18 | Page d'accueil | ✅ Done |
 | 0.19 | Intégration API Billetweb | ✅ Done |
-| 0.20 | Mode Formation | 🔄 In Progress |
+| 0.20 | Mode Formation | ✅ Done |
+| 0.21 | Revue des listes au dépôt | 🔄 In Progress |
 
 **Conformité specs : ~89%** (59/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
-**Specs : 15 US, 24 REQ-F, 115+ AC, 151+ tests** — couverture traçabilité 88%
+**Specs : 15 US, 24 REQ-F, 120+ AC, 158+ tests** — couverture traçabilité 88%
 
 ---
 
@@ -63,6 +64,7 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.18 | Page d'accueil | Homepage publique, contrainte unicité édition active | Moyenne |
 | 0.19 | Intégration API Billetweb | Config API admin, sync événements/séances/participants | Haute |
 | 0.20 | Mode Formation | Édition formation, forçage étapes, flag testeur, bandeau visuel | Haute |
+| 0.21 | Revue des listes au dépôt | Revue articles par bénévole (accepter/refuser/éditer), suivi avancement | Haute |
 | 1.0.0 | Feature Freeze & Production | Bug fixes, tests intégration, perf, audit, release | - |
 
 ---
@@ -331,9 +333,49 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 
 ---
 
+## v0.21 - Revue des listes au dépôt (US-013)
+
+**Branche :** `feature/us-013-deposit-review`
+**Exigences :** US-013, REQ-F-022
+
+### Backend : modèle et migration (TASK-035)
+- [ ] **0.21.1** Ajout statut `ACCEPTED` et `REJECTED` dans ArticleStatus + champs `rejection_reason`, `rejected_at`, `rejected_by_user_id`, `reviewed_at`, `reviewed_by_user_id` sur Article
+- [ ] **0.21.2** Ajout statut `REVIEWED` dans ListStatus sur ItemList
+- [ ] **0.21.3** Migration Alembic pour les nouveaux champs et statuts
+
+### Backend : endpoints de revue (TASK-036)
+- [ ] **0.21.4** Endpoint `GET /editions/{id}/review` — liste des listes avec statut de revue (à traiter / en cours / terminée)
+- [ ] **0.21.5** Endpoint `POST /articles/{id}/accept` — accepter un article (validated → accepted)
+- [ ] **0.21.6** Endpoint `POST /articles/{id}/reject` — refuser un article avec motif optionnel (validated → rejected)
+- [ ] **0.21.7** Endpoint `PUT /articles/{id}/review-edit` — éditer un article lors de la revue (mêmes validations que déclaration)
+- [ ] **0.21.8** Endpoint `POST /lists/{id}/finalize-review` — finaliser la revue (checked_in → reviewed, tous articles traités)
+
+### Backend : logique métier (TASK-037)
+- [ ] **0.21.9** Service de revue : validations (édition en statut dépôt, rôle bénévole+, article en statut validated)
+- [ ] **0.21.10** Exclusion des articles refusés des compteurs (article_count, total_value, reversements)
+- [ ] **0.21.11** Transition automatique : articles acceptés → on_sale quand édition passe en statut vente
+
+### Frontend : page de revue (TASK-038)
+- [ ] **0.21.12** Page ReviewListsPage (`/editions/:id/review`) — liste des listes triable/filtrable par statut de revue
+- [ ] **0.21.13** Page ReviewListDetailPage — détail d'une liste avec 3 boutons par article (Accepter, Refuser, Éditer)
+- [ ] **0.21.14** Modale de refus (résumé article, champ motif optionnel, confirmation)
+- [ ] **0.21.15** Formulaire d'édition inline (mêmes validations que ArticleForm)
+- [ ] **0.21.16** Bouton "Finaliser la revue" + récapitulatif (acceptés / refusés)
+
+### Frontend : vue déposant et suivi (TASK-039)
+- [ ] **0.21.17** Zone "Articles refusés" dans ListDetailPage pour le déposant (lecture seule, motif affiché)
+- [ ] **0.21.18** Bloc "Avancement de la revue" sur EditionDetailPage (listes traitées, barre de progression)
+
+### Tests & docs
+- [ ] **0.21.19** Tests unitaires backend (acceptation, refus, édition revue, finalisation, validations, compteurs)
+- [ ] **0.21.20** Tests unitaires frontend (ReviewListsPage, ReviewListDetailPage, modale refus)
+- [ ] **0.21.21** Mise à jour DEVELOPMENT.md et PLAN.md
+
+---
+
 ## v1.0.0 - Feature Freeze & Production
 
-**Prérequis :** Toutes les versions 0.1 à 0.20 terminées et testées.
+**Prérequis :** Toutes les versions 0.1 à 0.21 terminées et testées.
 
 À partir de cette version, plus aucune fonctionnalité n'est ajoutée.
 Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
@@ -349,8 +391,7 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 - [ ] **1.0.6** Compléter traçabilité : tests manquants pour REQ-F-012, F-013, F-015, F-016
 - [x] **1.0.7** ~~Créer REQ-F-018 pour US-010~~ — **FAIT** (déjà créée)
 - [ ] **1.0.8** Revue documentation (README utilisateur, guides déploiement)
-- [ ] **1.0.9bis** Implémenter US-013 / REQ-F-022 : refus d'article au dépôt (spec prête, dev à faire)
-- [ ] **1.0.9ter** Implémenter US-014 / REQ-F-023 : tableau de bord suivi déclarations (spec prête, dev à faire)
+- [ ] **1.0.9bis** Implémenter US-014 / REQ-F-023 : tableau de bord suivi déclarations (spec prête, dev à faire)
 
 ### Stabilisation
 - [ ] **1.0.9** Optimisation performance (lazy loading, bundle size, requêtes N+1)
@@ -390,13 +431,18 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 | TASK-025 | 0.19 | Sync créneaux depuis Billetweb | US-012 AC-7/8/9 |
 | TASK-026 | 0.19 | Sync participants depuis Billetweb | REQ-F-021, US-012 AC-10/11/12/13 |
 | TASK-027 | 0.19 | Erreurs API & accès Billetweb | US-012 AC-14/15/16 |
-| TASK-028 | 1.0 | Refus article au dépôt | US-013, REQ-F-022 |
+| TASK-028 | — | ~~Refus article au dépôt~~ (remplacé par TASK-035 à 039) | ~~US-013~~ |
 | TASK-029 | 1.0 | Suivi déclarations déposants | US-014, REQ-F-023 |
 | TASK-030 | 0.20 | Modèle édition formation + flag testeur | US-015 AC-1/AC-5, REQ-F-024 |
 | TASK-031 | 0.20 | Forçage transitions d'étapes | US-015 AC-2 |
 | TASK-032 | 0.20 | Visibilité et accès formation | US-015 AC-4/AC-7 |
 | TASK-033 | 0.20 | Frontend création et gestion formation | US-015 AC-1/AC-2/AC-5 |
 | TASK-034 | 0.20 | Bandeau visuel "Bourse de formation" | US-015 AC-3 |
+| TASK-035 | 0.21 | Modèle revue (statuts article/liste) + migration | US-013 AC-3/AC-4/AC-6, REQ-F-022 |
+| TASK-036 | 0.21 | Endpoints de revue (accept/reject/edit/finalize) | US-013 AC-2/AC-3/AC-4/AC-5/AC-6 |
+| TASK-037 | 0.21 | Logique métier revue (validations, compteurs, transition vente) | US-013 AC-7/AC-10 |
+| TASK-038 | 0.21 | Frontend page de revue + actions articles | US-013 AC-1/AC-2/AC-3/AC-4/AC-5/AC-6 |
+| TASK-039 | 0.21 | Frontend vue déposant refusés + suivi avancement | US-013 AC-8/AC-9/AC-10 |
 
 ---
 

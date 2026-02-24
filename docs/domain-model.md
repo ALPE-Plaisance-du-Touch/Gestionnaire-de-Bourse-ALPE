@@ -693,9 +693,11 @@ stateDiagram-v2
     Brouillon --> Supprimé : Suppression par déposant
     Brouillon --> Déposé : Validation liste
 
-    Déposé --> En_vente : Début période vente
-    Déposé --> Refusé : Refus lors du dépôt physique
-    Déposé --> Déposé : Attente vente
+    Déposé --> Déposé : Édition par bénévole (revue)
+    Déposé --> Accepté : Acceptation lors de la revue
+    Déposé --> Refusé : Refus lors de la revue
+
+    Accepté --> En_vente : Début période vente
 
     En_vente --> Vendu : Scan + vente caisse
     En_vente --> Invendu : Fin période vente (non vendu)
@@ -715,9 +717,20 @@ stateDiagram-v2
         date_limite non atteinte
     end note
 
+    note right of Déposé
+        Bénévole peut éditer
+        les infos de l'article
+    end note
+
+    note right of Accepté
+        Article conforme
+        Prêt pour la vente
+    end note
+
     note right of Refusé
         Exclu des compteurs
         Motif optionnel
+        Irréversible
     end note
 
     note right of Vendu
@@ -739,8 +752,10 @@ stateDiagram-v2
 | Brouillon | Modification | Brouillon | Date limite non atteinte | MAJ champs |
 | Brouillon | Suppression | Supprimé | Date limite non atteinte | Soft delete |
 | Brouillon | Validation liste | Déposé | Liste validée | Génère code étiquette |
-| Déposé | Refus au dépôt | Refusé | Rôle bénévole/gestionnaire/admin | Enregistre motif (opt.), exclut des compteurs |
-| Déposé | Début vente | En_vente | Édition en cours | — |
+| Déposé | Édition (revue) | Déposé | Rôle bénévole/gestionnaire/admin, édition en statut Dépôt | MAJ champs article, trace utilisateur |
+| Déposé | Acceptation (revue) | Accepté | Rôle bénévole/gestionnaire/admin, édition en statut Dépôt | Horodate, trace utilisateur |
+| Déposé | Refus (revue) | Refusé | Rôle bénévole/gestionnaire/admin, édition en statut Dépôt | Enregistre motif (opt.), exclut des compteurs |
+| Accepté | Début vente | En_vente | Édition passe au statut Vente | — |
 | En_vente | Vente | Vendu | Article non vendu | Crée Vente, horodate |
 | En_vente | Fin vente | Invendu | Période vente terminée | — |
 | Invendu | Récupération | Récupéré | Déposant présent | Trace récupération |
@@ -759,7 +774,9 @@ stateDiagram-v2
     Validée --> Validée : Lecture seule
     Validée --> Déposée : Check-in dépôt physique
 
-    Déposée --> Clôturée : Fin édition
+    Déposée --> Revue_terminée : Finalisation revue (tous articles traités)
+
+    Revue_terminée --> Clôturée : Fin édition
 
     Clôturée --> [*] : État final
     Supprimée --> [*] : État final
@@ -772,6 +789,12 @@ stateDiagram-v2
     note right of Déposée
         Articles physiquement
         déposés et étiquetés
+        Revue en cours
+    end note
+
+    note right of Revue_terminée
+        Tous les articles
+        acceptés ou refusés
     end note
 ```
 
@@ -807,28 +830,34 @@ stateDiagram-v2
 
 ## Article : Actions autorisées par état
 
-| Action | Brouillon | Déposé | En_vente | Vendu | Invendu | Récupéré |
-|--------|-----------|--------|----------|-------|---------|----------|
-| Modifier | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Supprimer | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Valider (via liste) | ✅ | — | — | — | — | — |
-| Vendre | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
-| Annuler vente | ❌ | ❌ | ❌ | ✅* | ❌ | ❌ |
-| Récupérer | ❌ | ❌ | ❌ | ❌ | ✅ | — |
+| Action | Brouillon | Déposé | Accepté | En_vente | Vendu | Invendu | Récupéré | Refusé |
+|--------|-----------|--------|---------|----------|-------|---------|----------|--------|
+| Modifier (déposant) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Supprimer (déposant) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Valider (via liste) | ✅ | — | — | — | — | — | — | — |
+| Éditer (revue bénévole) | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Accepter (revue) | ❌ | ✅ | — | — | — | — | — | — |
+| Refuser (revue) | ❌ | ✅ | — | — | — | — | — | — |
+| Vendre | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Annuler vente | ❌ | ❌ | ❌ | ❌ | ✅* | ❌ | ❌ | ❌ |
+| Récupérer | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | — | ❌ |
 
 *Annulation vente : uniquement par Gestionnaire/Admin
 
 ## Liste : Actions autorisées par état
 
-| Action | Brouillon | Validée | Déposée | Clôturée |
-|--------|-----------|---------|---------|----------|
-| Ajouter article | ✅ | ❌ | ❌ | ❌ |
-| Modifier article | ✅ | ❌ | ❌ | ❌ |
-| Supprimer article | ✅ | ❌ | ❌ | ❌ |
-| Valider | ✅ | — | — | — |
-| Invalider | ❌ | ✅* | ❌ | ❌ |
-| Check-in dépôt | ❌ | ✅ | — | — |
-| Consulter | ✅ | ✅ | ✅ | ✅ |
+| Action | Brouillon | Validée | Déposée | Revue terminée | Clôturée |
+|--------|-----------|---------|---------|----------------|----------|
+| Ajouter article | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Modifier article (déposant) | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Supprimer article | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Valider | ✅ | — | — | — | — |
+| Revue articles (bénévole) | ❌ | ❌ | ✅ | ❌ | ❌ |
+| Finaliser revue | ❌ | ❌ | ✅* | — | — |
+| Invalider | ❌ | ✅** | ❌ | ❌ | ❌ |
+| Check-in dépôt | ❌ | ✅ | — | — | — |
+| Consulter | ✅ | ✅ | ✅ | ✅ | ✅ |
 
-*Invalidation : uniquement par Gestionnaire (cas exceptionnel)
+*Finaliser revue : uniquement quand tous les articles sont traités (acceptés ou refusés)
+**Invalidation : uniquement par Gestionnaire (cas exceptionnel)
 

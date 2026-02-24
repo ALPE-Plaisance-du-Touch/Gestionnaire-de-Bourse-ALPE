@@ -43,9 +43,9 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 | US-008 | Importer Billetweb | REQ-F-008, REQ-F-013, REQ-F-014 | 13 | 15 | ✅ 100% |
 | US-009 | Clôturer édition | REQ-F-009 | 8 | 9 | ✅ 100% |
 | US-010 | Émettre invitations | REQ-F-018 | 15 | 20 | ✅ 100% |
-| US-013 | Refuser article au dépôt | REQ-F-022, REQ-F-012 | 5 | 7 | ✅ 100% |
+| US-013 | Revue des listes au dépôt | REQ-F-022, REQ-F-012 | 10 | 14 | ✅ 100% |
 | US-014 | Suivi déclarations déposants | REQ-F-023, REQ-F-011 | 5 | 10 | ✅ 100% |
-| **TOTAL** | **12 US** | **20 REQ-F + 4 REQ-NF** | **115** | **151+** | **100%** |
+| **TOTAL** | **12 US** | **20 REQ-F + 4 REQ-NF** | **120** | **158+** | **100%** |
 
 **Légende** :
 - ✅ 100% : US complète avec REQ et tests
@@ -400,25 +400,35 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 
 ---
 
-## US-013 — Refuser un article non conforme lors du dépôt
+## US-013 — Revue des listes lors du dépôt physique
 
 **Actor** : benevole (+ gestionnaire, administrateur)
 **Exigences couvertes** :
-- **REQ-F-022** : Refus d'article au dépôt physique
-  - Bénévole/gestionnaire/admin peut refuser un article "Déposé"
-  - Motif optionnel (texte libre, max 200 caractères)
-  - Article exclu des compteurs, affiché dans zone "Refusés"
-  - Refus irréversible, horodaté et tracé
+- **REQ-F-022** : Revue des listes au dépôt physique
+  - Bénévole/gestionnaire/admin prend en charge une liste et vérifie chaque article
+  - 3 actions par article : Accepter (→ accepted), Refuser (→ rejected), Éditer (modifie infos)
+  - Motif de refus optionnel (texte libre, max 200 caractères)
+  - Finalisation de la revue quand tous les articles sont traités (liste → reviewed)
+  - Article refusé exclu des compteurs, affiché dans zone "Refusés"
+  - Refus et acceptation irréversibles, horodatés et tracés
+  - Suivi avancement de la revue sur la page de détail de l'édition
 - **REQ-F-012** : Rappels réglementaires jour dépôt (lien contextuel)
 
-**Tests associés** : T-US013-01 à T-US013-07 (7 tests)
-- T-US013-01 : Refus d'un article par un bénévole avec motif (OK, statut "Refusé", exclu des compteurs)
-- T-US013-02 : Refus d'un article sans motif (OK)
-- T-US013-03 : Consultation des articles refusés par le déposant (OK, zone "Refusés" visible)
-- T-US013-04 : Tentative de refus par un déposant (KO, bouton non visible)
-- T-US013-05 : Tentative de remettre en vente un article refusé (KO, irréversible)
-- T-US013-06 : Refus d'un article — compteurs mis à jour (OK)
-- T-US013-07 : Traçabilité du refus — horodatage et utilisateur (OK)
+**Tests associés** : T-US013-01 à T-US013-14 (14 tests)
+- T-US013-01 : Accès à la page de revue par un bénévole (OK, liste des listes affichée)
+- T-US013-02 : Acceptation d'un article (OK, statut "Accepté", marqué vert)
+- T-US013-03 : Refus d'un article avec motif (OK, statut "Refusé", exclu des compteurs)
+- T-US013-04 : Refus d'un article sans motif (OK)
+- T-US013-05 : Édition d'un article par le bénévole — prix modifié (OK, article reste "Déposé")
+- T-US013-06 : Édition d'un article — validation prix min/max respectée (OK)
+- T-US013-07 : Finalisation de la revue — tous articles traités (OK, liste "Revue terminée")
+- T-US013-08 : Tentative de finalisation avec articles non traités (KO, bouton désactivé)
+- T-US013-09 : Consultation des articles refusés par le déposant (OK, zone "Refusés" visible)
+- T-US013-10 : Tentative d'accès à la revue par un déposant (KO, accès refusé)
+- T-US013-11 : Tentative de remettre en vente un article refusé (KO, irréversible)
+- T-US013-12 : Suivi avancement revue sur la page édition (OK, progression affichée)
+- T-US013-13 : Traçabilité — horodatage et identifiant pour chaque action (OK)
+- T-US013-14 : Articles acceptés passent en "En vente" au changement de statut édition (OK)
 
 **Couverture** : ✅ Complète
 
@@ -630,10 +640,10 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 
 ---
 
-## REQ-F-022 — Refus d'article au dépôt physique
+## REQ-F-022 — Revue des listes au dépôt physique
 
 **User Stories couvertes** : US-013
-**Tests associés** : T-US013-01 à T-US013-07
+**Tests associés** : T-US013-01 à T-US013-14
 **Priorité** : Should have
 **Statut** : ✅ Spécifiée et testée
 
@@ -731,8 +741,8 @@ Ce document établit la **traçabilité bidirectionnelle** entre :
 | Indicateur | Valeur |
 |------------|--------|
 | **User Stories spécifiées** | 12/12 (100%) |
-| **Critères d'acceptation** | 115 |
-| **Scénarios de test** | 151+ |
+| **Critères d'acceptation** | 120 |
+| **Scénarios de test** | 158+ |
 | **Exigences fonctionnelles** | 20 |
 | **Exigences non-fonctionnelles** | 4 |
 | **Taux de couverture US → REQ** | 100% (12/12) |
@@ -756,7 +766,7 @@ graph TD
         US008[US-008: Import Billetweb]
         US009[US-009: Clôturer édition]
         US010[US-010: Invitations masse]
-        US013[US-013: Refuser article dépôt]
+        US013[US-013: Revue listes dépôt]
         US014[US-014: Suivi déclarations]
     end
 
@@ -779,7 +789,7 @@ graph TD
         REQ016[REQ-F-016: Restitution]
         REQ017[REQ-F-017: Vente privée]
         REQ018[REQ-F-018: Invitations]
-        REQ022[REQ-F-022: Refus article]
+        REQ022[REQ-F-022: Revue listes]
         REQ023[REQ-F-023: Suivi déclarations]
     end
 
@@ -912,7 +922,7 @@ graph TD
 - **151+ scénarios de test** couvrant les parcours nominaux et alternatifs
 - **✅ Couverture fonctionnelle complète** : 100% des US ont leurs REQ (20 REQ-F)
 - **REQ-F-018 créée** : Émission invitations manuelles (2025-11-25)
-- **US-013 + REQ-F-022 créées** : Refus d'article au dépôt (2026-02-22)
+- **US-013 + REQ-F-022 révisées** : Revue des listes au dépôt (2026-02-24)
 - **US-014 + REQ-F-023 créées** : Suivi déclarations déposants (2026-02-22)
 - **Tests offline-first** bien spécifiés (US-004)
 - **Format Billetweb** détaillé avec colonnes exactes (US-008)
