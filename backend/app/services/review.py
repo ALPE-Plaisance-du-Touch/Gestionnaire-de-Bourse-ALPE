@@ -120,6 +120,7 @@ class ReviewService:
             "number": item_list.number,
             "list_type": item_list.list_type,
             "status": item_list.status,
+            "depositor_id": item_list.depositor_id,
             "depositor_name": depositor_name,
             "article_count": len(articles),
             "articles": articles,

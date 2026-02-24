@@ -27,6 +27,7 @@ export interface ReviewListDetail {
   number: number;
   listType: string;
   status: string;
+  depositorId: string;
   depositorName: string;
   articles: Article[];
   reviewStats: ReviewStats;

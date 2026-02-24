@@ -51,6 +51,7 @@ interface ReviewListDetailApiResponse {
   number: number;
   listType: string;
   status: string;
+  depositorId: string;
   depositorName: string;
   articles: ArticleApiResponse[];
   reviewStats: { pending: number; accepted: number; rejected: number };
@@ -84,6 +85,7 @@ function transformReviewListDetail(data: ReviewListDetailApiResponse): ReviewLis
     number: data.number,
     listType: data.listType,
     status: data.status,
+    depositorId: data.depositorId,
     depositorName: data.depositorName,
     articles: data.articles.map(transformArticle),
     reviewStats: data.reviewStats,

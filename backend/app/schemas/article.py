@@ -306,6 +306,7 @@ class ReviewListDetailResponse(BaseModel):
     number: int
     list_type: str
     status: str
+    depositor_id: str
     depositor_name: str
     articles: list[ArticleResponse]
     review_stats: ReviewStats

@@ -101,6 +101,7 @@ async def get_review_list_detail(
             number=detail["number"],
             list_type=detail["list_type"],
             status=detail["status"],
+            depositor_id=detail["depositor_id"],
             depositor_name=detail["depositor_name"],
             articles=[
                 ArticleResponse.model_validate(a) for a in detail["articles"]
