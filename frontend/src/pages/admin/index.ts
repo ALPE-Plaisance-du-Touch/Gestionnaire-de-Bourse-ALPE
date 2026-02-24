@@ -14,3 +14,5 @@ export { SalesManagementPage } from './SalesManagementPage';
 export { AdminDashboardPage } from './AdminDashboardPage';
 export { UsersManagementPage } from './UsersManagementPage';
 export { BilletwebSettingsPage } from './BilletwebSettingsPage';
+export { ReviewListsPage } from './ReviewListsPage';
+export { ReviewListDetailPage } from './ReviewListDetailPage';

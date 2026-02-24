@@ -3,7 +3,7 @@ import { MainLayout } from '@/components/layout';
 import { ProtectedRoute } from '@/components/auth';
 import { AuthProvider } from '@/contexts';
 import { LoginPage, ActivatePage, ForgotPasswordPage, ResetPasswordPage } from '@/pages/auth';
-import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, EditionDepositorsPage, LabelsManagementPage, LiveStatsPage, PayoutsManagementPage, PayoutDashboardPage, InvitationStatsPage, AuditLogPage, SalesManagementPage, AdminDashboardPage, UsersManagementPage, BilletwebSettingsPage } from '@/pages/admin';
+import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, EditionDepositorsPage, LabelsManagementPage, LiveStatsPage, PayoutsManagementPage, PayoutDashboardPage, InvitationStatsPage, AuditLogPage, SalesManagementPage, AdminDashboardPage, UsersManagementPage, BilletwebSettingsPage, ReviewListsPage, ReviewListDetailPage } from '@/pages/admin';
 import { MyEditionsPage, MyListsPage, ListDetailPage } from '@/pages/depositor';
 import { SalesPage } from '@/pages/volunteer/SalesPage';
 import { ProfilePage, PrivacyPolicyPage } from '@/pages/account';
@@ -140,6 +140,26 @@ export const router = createBrowserRouter([
           <ProtectedRoute allowedRoles={['manager', 'administrator']}>
             <MainLayout>
               <SalesManagementPage />
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/editions/:id/review',
+        element: (
+          <ProtectedRoute allowedRoles={['volunteer', 'manager', 'administrator']}>
+            <MainLayout>
+              <ReviewListsPage />
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/editions/:id/review/:listId',
+        element: (
+          <ProtectedRoute allowedRoles={['volunteer', 'manager', 'administrator']}>
+            <MainLayout>
+              <ReviewListDetailPage />
             </MainLayout>
           </ProtectedRoute>
         ),
