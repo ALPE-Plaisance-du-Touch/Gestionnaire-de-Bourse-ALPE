@@ -127,6 +127,11 @@ def _format_slot_label(slot) -> str:
     return f"{day_name} {start.strftime('%Hh%M')}-{end.strftime('%Hh%M')}"
 
 
+def _printable_articles(item_list: "ItemList") -> list:
+    """Return articles eligible for label printing (exclude rejected)."""
+    return [a for a in item_list.articles if a.status != "rejected"]
+
+
 def _build_cover_page_html(
     edition: "Edition",
     lists: list["ItemList"],
@@ -145,9 +150,9 @@ def _build_cover_page_html(
                 "total_articles": 0,
             }
         depositors[dep_key]["lists"].append(item_list.number)
-        depositors[dep_key]["total_articles"] += len(item_list.articles)
+        depositors[dep_key]["total_articles"] += len(_printable_articles(item_list))
 
-    total_labels = sum(len(il.articles) for il in lists)
+    total_labels = sum(len(_printable_articles(il)) for il in lists)
 
     depositor_rows = ""
     for i, (_, dep_info) in enumerate(sorted(depositors.items(), key=lambda x: x[1]["name"]), 1):
@@ -208,9 +213,9 @@ def _build_separator_page_html(
     slot_label: str | None,
 ) -> str:
     """Build a separator page for a depositor."""
-    total_articles = sum(len(il.articles) for il in lists)
+    total_articles = sum(len(_printable_articles(il)) for il in lists)
     total_clothing = sum(
-        sum(1 for a in il.articles if a.is_clothing) for il in lists
+        sum(1 for a in _printable_articles(il) if a.is_clothing) for il in lists
     )
     list_numbers = ", ".join(f"Liste {il.number}" for il in lists)
 
@@ -241,8 +246,8 @@ def _build_separator_page_html(
 
 
 def _build_article_list_html(item_list: "ItemList") -> str:
-    """Build printable article list for a list."""
-    articles = sorted(item_list.articles, key=lambda a: a.line_number)
+    """Build printable article list for a list (excludes rejected)."""
+    articles = sorted(_printable_articles(item_list), key=lambda a: a.line_number)
     total_value = sum(a.price for a in articles)
 
     rows = ""
@@ -291,8 +296,8 @@ def _build_article_list_html(item_list: "ItemList") -> str:
 
 
 def _build_labels_html(item_list: "ItemList", edition_id: str) -> str:
-    """Build label pages for a list (12 labels per page, 3x4 grid)."""
-    articles = sorted(item_list.articles, key=lambda a: a.line_number)
+    """Build label pages for a list (12 labels per page, 3x4 grid, excludes rejected)."""
+    articles = sorted(_printable_articles(item_list), key=lambda a: a.line_number)
     total_articles = len(articles)
     bg_color = get_label_color_hex(item_list.label_color)
 
