@@ -10,6 +10,7 @@ export type ListStatus =
   | 'draft'
   | 'validated'
   | 'checked_in'
+  | 'reviewed'
   | 'retrieved'
   | 'payout_pending'
   | 'payout_completed';

@@ -69,6 +69,8 @@ class ArticleStatus(str, Enum):
 
     DRAFT = "draft"
     VALIDATED = "validated"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
     ON_SALE = "on_sale"
     SOLD = "sold"
     UNSOLD = "unsold"
@@ -194,6 +196,11 @@ class ArticleResponse(BaseModel):
     barcode: str | None = None
     notes: str | None = None
 
+    # Review fields (US-013)
+    rejection_reason: str | None = None
+    rejected_at: datetime | None = None
+    reviewed_at: datetime | None = None
+
     item_list_id: str
     created_at: datetime
 
@@ -260,3 +267,58 @@ class ArticleListResponse(BaseModel):
     total: int
     clothing_count: int
     category_counts: dict[str, int]
+
+
+class ArticleRejectRequest(BaseModel):
+    """Request schema for rejecting an article during review."""
+
+    rejection_reason: str | None = Field(None, max_length=200)
+
+
+class ReviewStats(BaseModel):
+    """Review statistics for a list."""
+
+    pending: int
+    accepted: int
+    rejected: int
+
+
+class ReviewListResponse(BaseModel):
+    """Response schema for a list in the review context."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    number: int
+    list_type: str
+    status: str
+    depositor_name: str
+    article_count: int
+    review_stats: ReviewStats
+    reviewed_at: datetime | None = None
+    reviewed_by_name: str | None = None
+
+
+class ReviewListDetailResponse(BaseModel):
+    """Response schema for a list detail in review context."""
+
+    id: str
+    number: int
+    list_type: str
+    status: str
+    depositor_name: str
+    articles: list[ArticleResponse]
+    review_stats: ReviewStats
+    reviewed_at: datetime | None = None
+
+
+class ReviewSummaryResponse(BaseModel):
+    """Response schema for review progress of an edition."""
+
+    total_lists: int
+    reviewed_lists: int
+    pending_lists: int
+    total_articles: int
+    accepted_articles: int
+    rejected_articles: int
+    pending_articles: int

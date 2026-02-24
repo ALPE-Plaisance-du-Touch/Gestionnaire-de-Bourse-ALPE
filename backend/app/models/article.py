@@ -1,10 +1,11 @@
 """Article model for items in a list."""
 
+from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDMixin
@@ -12,6 +13,7 @@ from app.models.base import Base, TimestampMixin, UUIDMixin
 if TYPE_CHECKING:
     from app.models.item_list import ItemList
     from app.models.sale import Sale
+    from app.models.user import User
 
 
 class ArticleCategory(str, Enum):
@@ -34,6 +36,8 @@ class ArticleStatus(str, Enum):
 
     DRAFT = "draft"
     VALIDATED = "validated"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
     ON_SALE = "on_sale"
     SOLD = "sold"
     UNSOLD = "unsold"
@@ -95,6 +99,17 @@ class Article(Base, UUIDMixin, TimestampMixin):
     # Barcode (generated from list number + line number)
     barcode: Mapped[str | None] = mapped_column(String(50), nullable=True, index=True)
 
+    # Review fields (US-013)
+    rejection_reason: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    rejected_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    rejected_by_user_id: Mapped[str | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    reviewed_by_user_id: Mapped[str | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+
     # Foreign key
     item_list_id: Mapped[str] = mapped_column(
         ForeignKey("item_lists.id", ondelete="CASCADE"),
@@ -104,6 +119,8 @@ class Article(Base, UUIDMixin, TimestampMixin):
     # Relationships
     item_list: Mapped["ItemList"] = relationship("ItemList", back_populates="articles")
     sale: Mapped["Sale | None"] = relationship("Sale", back_populates="article", uselist=False)
+    rejected_by: Mapped["User | None"] = relationship("User", foreign_keys=[rejected_by_user_id])
+    reviewed_by: Mapped["User | None"] = relationship("User", foreign_keys=[reviewed_by_user_id])
 
     @property
     def is_clothing(self) -> bool:
