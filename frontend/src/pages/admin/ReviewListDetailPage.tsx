@@ -432,11 +432,13 @@ export function ReviewListDetailPage() {
                     </tbody>
                   </table>
                 </div>
-                <div className="px-4 py-3 bg-red-50 border-t-2 border-red-500">
-                  <div className="flex items-center justify-between text-sm font-medium">
-                    <span className="text-gray-700">Articles refus&eacute;s ({rejectedArticles.length})</span>
-                    <span className="text-gray-700">{formatPrice(rejectedArticles.reduce((sum, a) => sum + a.price, 0))}</span>
-                  </div>
+                <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
+                  <p className="text-sm text-gray-500">
+                    {rejectedArticles.length} article{rejectedArticles.length > 1 ? 's' : ''} refus&eacute;{rejectedArticles.length > 1 ? 's' : ''} - Total:{' '}
+                    <span className="font-medium text-gray-900">
+                      {formatPrice(rejectedArticles.reduce((sum, a) => sum + a.price, 0))}
+                    </span>
+                  </p>
                 </div>
               </div>
             </div>
