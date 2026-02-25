@@ -363,7 +363,7 @@ export function ReviewListDetailPage() {
                 ))}
               </div>
               <div className="mt-3 bg-red-50 border-t-2 border-red-500 rounded-lg px-4 py-2 text-sm font-medium flex items-center justify-between">
-                <span className="text-gray-700">{rejectedArticles.length} article(s) refus&eacute;(s)</span>
+                <span className="text-gray-700">Articles refus&eacute;s ({rejectedArticles.length})</span>
                 <span className="text-gray-700">{rejectedArticles.reduce((sum, a) => sum + a.price, 0).toFixed(2)} &euro;</span>
               </div>
             </div>

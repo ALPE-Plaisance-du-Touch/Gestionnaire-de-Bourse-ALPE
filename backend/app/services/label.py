@@ -307,7 +307,7 @@ def _build_article_list_html(item_list: "ItemList") -> str:
             </tbody>
         </table>
         <div class="rejected-footer">
-            <span>{len(rejected_articles)} article(s) refus&eacute;(s)</span>
+            <span>Articles refus&eacute;s ({len(rejected_articles)})</span>
             <span>{format_price(rejected_value)}</span>
         </div>
         """
