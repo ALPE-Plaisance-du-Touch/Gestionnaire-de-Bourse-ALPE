@@ -224,10 +224,13 @@ export const editionsApi = {
 
   /**
    * Get the currently active edition (public, no auth required).
+   * Also returns the training edition if one is active.
    */
-  getActiveEdition: async (): Promise<Edition | null> => {
-    const response = await apiClient.get<{ activeEdition: EditionApiResponse | null }>('/v1/config/active-edition');
-    if (!response.data.activeEdition) return null;
-    return transformEdition(response.data.activeEdition);
+  getActiveEdition: async (): Promise<{ edition: Edition | null; trainingEdition: Edition | null }> => {
+    const response = await apiClient.get<{ activeEdition: EditionApiResponse | null; trainingEdition: EditionApiResponse | null }>('/v1/config/active-edition');
+    return {
+      edition: response.data.activeEdition ? transformEdition(response.data.activeEdition) : null,
+      trainingEdition: response.data.trainingEdition ? transformEdition(response.data.trainingEdition) : null,
+    };
   },
 };

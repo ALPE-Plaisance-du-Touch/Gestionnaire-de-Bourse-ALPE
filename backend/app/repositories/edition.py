@@ -200,3 +200,19 @@ class EditionRepository:
             query = query.where(Edition.id != exclude_id)
         result = await self.db.execute(query)
         return result.scalar_one() > 0
+
+    async def get_active_training_edition(self) -> Edition | None:
+        """Get the active training edition (non-draft, non-closed, non-archived)."""
+        excluded_statuses = [
+            EditionStatus.DRAFT.value,
+            EditionStatus.CLOSED.value,
+            EditionStatus.ARCHIVED.value,
+        ]
+        query = (
+            select(Edition)
+            .options(joinedload(Edition.created_by), joinedload(Edition.closed_by))
+            .where(Edition.is_training == True)  # noqa: E712
+            .where(Edition.status.not_in(excluded_statuses))
+        )
+        result = await self.db.execute(query)
+        return result.scalars().first()

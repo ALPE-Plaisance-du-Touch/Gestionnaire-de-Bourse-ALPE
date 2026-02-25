@@ -43,11 +43,12 @@ function StatCard({
 }
 
 export function AdminDashboardPage() {
-  const { data: edition, isLoading: editionLoading } = useQuery({
+  const { data: activeData, isLoading: editionLoading } = useQuery({
     queryKey: ['active-edition'],
     queryFn: () => editionsApi.getActiveEdition(),
   });
 
+  const edition = activeData?.edition ?? activeData?.trainingEdition ?? null;
   const editionId = edition?.id;
 
   const { data: billetwebStats, isLoading: billetwebLoading } = useQuery({
