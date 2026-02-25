@@ -372,8 +372,8 @@ function DeadlineBanner({ deadline }: { deadline: string }) {
   if (diffDays < 0) {
     return (
       <div className="mb-4 bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-lg">
-        La date limite de declaration est depassee ({formatDate(deadline)}).
-        Vous ne pouvez plus modifier vos listes.
+        La date limite de déclaration est dépassée ({formatDate(deadline)}).
+        Vos listes sont consultables en lecture seule.
       </div>
     );
   }

@@ -288,7 +288,7 @@ export function ListDetailPage() {
       )}
 
       {/* Deadline banner */}
-      {edition?.declarationDeadline && isDraft && (
+      {edition?.declarationDeadline && (
         <DeadlineBanner deadline={edition.declarationDeadline} />
       )}
 
@@ -492,7 +492,7 @@ function DeadlineBanner({ deadline }: { deadline: string }) {
   if (diffDays < 0) {
     return (
       <div className="mb-4 bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-lg">
-        La date limite de declaration est depassee. Vous ne pouvez plus modifier vos listes.
+        La date limite de déclaration est dépassée. Cette liste est en lecture seule.
       </div>
     );
   }
