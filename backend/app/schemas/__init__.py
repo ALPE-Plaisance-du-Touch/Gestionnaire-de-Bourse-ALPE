@@ -90,7 +90,11 @@ from app.schemas.invitation_stats import (
     InvitationStatsResponse,
 )
 from app.schemas.item_list import (
+    DeclarationReminderRequest,
+    DeclarationReminderResponse,
     DeclarationsSummaryResponse,
+    DepositorDeclarationInfo,
+    DepositorDeclarationsListResponse,
     DepositorInfo,
     DepositorListsResponse,
     ItemListCreate,
@@ -200,7 +204,11 @@ __all__ = [
     "InvitationDailyStats",
     "InvitationStatsResponse",
     # ItemList
+    "DeclarationReminderRequest",
+    "DeclarationReminderResponse",
     "DeclarationsSummaryResponse",
+    "DepositorDeclarationInfo",
+    "DepositorDeclarationsListResponse",
     "DepositorInfo",
     "DepositorListsResponse",
     "ItemListCreate",

@@ -148,3 +148,52 @@ class DeclarationsSummaryResponse(BaseModel):
     validated_lists: int
     total_articles: int
     total_value: float
+    # Per-depositor status counts
+    depositors_none: int = 0
+    depositors_started: int = 0
+    depositors_partial: int = 0
+    depositors_complete: int = 0
+
+
+class DepositorDeclarationInfo(BaseModel):
+    """A depositor with their declaration progress."""
+
+    id: str
+    user_id: str
+    email: str
+    first_name: str
+    last_name: str
+    list_type: str
+    lists_count: int
+    draft_count: int
+    validated_count: int
+    total_articles: int
+    total_value: float
+    declaration_status: str
+
+
+class DepositorDeclarationsListResponse(BaseModel):
+    """Paginated list of depositors with declaration info."""
+
+    items: list[DepositorDeclarationInfo]
+    total: int
+    page: int
+    limit: int
+    pages: int
+    count_none: int
+    count_started: int
+    count_partial: int
+    count_complete: int
+
+
+class DeclarationReminderRequest(BaseModel):
+    """Request body for sending declaration reminders."""
+
+    depositor_ids: list[str] = Field(default_factory=list)
+
+
+class DeclarationReminderResponse(BaseModel):
+    """Response for the reminder endpoint."""
+
+    emails_queued: int
+    message: str

@@ -965,7 +965,7 @@ export function EditionDetailPage() {
         <div className="space-y-6">
           {/* Declaration Progress */}
           {['registrations_open', 'deposit', 'sale'].includes(edition.status) && (
-            <DeclarationProgressBlock editionId={edition.id} />
+            <DeclarationProgressBlock editionId={edition.id} hasDeadline={!!edition.declarationDeadline} />
           )}
 
           {/* Deposit Review */}
@@ -1761,7 +1761,10 @@ function ReviewProgressBlock({ editionId }: { editionId: string }) {
   );
 }
 
-function DeclarationProgressBlock({ editionId }: { editionId: string }) {
+function DeclarationProgressBlock({ editionId, hasDeadline }: { editionId: string; hasDeadline: boolean }) {
+  const [showReminderConfirm, setShowReminderConfirm] = useState(false);
+  const [reminderSuccess, setReminderSuccess] = useState('');
+
   const { data: summary } = useQuery({
     queryKey: ['declarations-summary', editionId],
     queryFn: () => editionListsApi.getSummary(editionId),
@@ -1769,8 +1772,24 @@ function DeclarationProgressBlock({ editionId }: { editionId: string }) {
     refetchInterval: 30000,
   });
 
+  const reminderMutation = useMutation({
+    mutationFn: () => editionListsApi.sendReminders(editionId),
+    onSuccess: (data) => {
+      setShowReminderConfirm(false);
+      setReminderSuccess(data.message);
+      setTimeout(() => setReminderSuccess(''), 5000);
+    },
+    onError: () => {
+      setShowReminderConfirm(false);
+    },
+  });
+
   const pct = summary && summary.totalLists > 0
     ? Math.round((summary.validatedLists / summary.totalLists) * 100)
+    : 0;
+
+  const incompleteCount = summary
+    ? summary.depositorsNone + summary.depositorsStarted + summary.depositorsPartial
     : 0;
 
   return (
@@ -1784,16 +1803,48 @@ function DeclarationProgressBlock({ editionId }: { editionId: string }) {
               : 'Chargement...'}
           </p>
         </div>
-        <Link
-          to={`/editions/${editionId}/declarations`}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
-          Voir les déclarations
-        </Link>
+        <div className="flex items-center gap-2">
+          {hasDeadline && incompleteCount > 0 && (
+            <button
+              onClick={() => setShowReminderConfirm(true)}
+              className="inline-flex items-center gap-2 px-3 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Relancer ({incompleteCount})
+            </button>
+          )}
+          <Link
+            to={`/editions/${editionId}/declarations`}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            Voir les déclarations
+          </Link>
+        </div>
       </div>
+
+      {/* Depositor status badges */}
+      {summary && (
+        <div className="flex flex-wrap gap-2 mb-3">
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+            Sans liste : {summary.depositorsNone}
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+            En cours : {summary.depositorsStarted}
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800">
+            Partiels : {summary.depositorsPartial}
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+            Complets : {summary.depositorsComplete}
+          </span>
+        </div>
+      )}
+
       {summary && summary.totalLists > 0 && (
         <div className="w-full bg-gray-200 rounded-full h-2 flex overflow-hidden">
           <div
@@ -1802,6 +1853,32 @@ function DeclarationProgressBlock({ editionId }: { editionId: string }) {
           />
         </div>
       )}
+
+      {reminderSuccess && (
+        <div className="mt-3 text-sm text-green-700 bg-green-50 border border-green-200 px-3 py-2 rounded-lg">
+          {reminderSuccess}
+        </div>
+      )}
+
+      {reminderMutation.isError && (
+        <div className="mt-3 text-sm text-red-700 bg-red-50 border border-red-200 px-3 py-2 rounded-lg">
+          Erreur lors de l'envoi des rappels.
+        </div>
+      )}
+
+      <ConfirmModal
+        isOpen={showReminderConfirm}
+        onClose={() => setShowReminderConfirm(false)}
+        onConfirm={() => reminderMutation.mutate()}
+        title="Relancer les déposants"
+        confirmLabel="Envoyer"
+        isLoading={reminderMutation.isPending}
+      >
+        <p className="text-gray-600">
+          Envoyer un rappel de déclaration à <span className="font-medium">{incompleteCount} déposant{incompleteCount > 1 ? 's' : ''}</span> qui
+          n'ont pas encore finalisé toutes leurs listes ?
+        </p>
+      </ConfirmModal>
     </div>
   );
 }
