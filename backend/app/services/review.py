@@ -51,8 +51,8 @@ class ReviewService:
 
         result = []
         for item_list in lists:
-            # Only include validated/checked_in/reviewed lists (not draft)
-            if item_list.status in (ListStatus.DRAFT.value,):
+            # Only include validated/checked_in/reviewed lists (not draft or not_finalized)
+            if item_list.status in (ListStatus.DRAFT.value, ListStatus.NOT_FINALIZED.value):
                 continue
 
             stats = self._compute_review_stats(item_list.articles)

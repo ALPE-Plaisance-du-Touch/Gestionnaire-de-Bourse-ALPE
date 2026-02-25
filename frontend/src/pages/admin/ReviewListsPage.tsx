@@ -186,7 +186,7 @@ export function ReviewListsPage() {
                       <td className="px-4 py-3 text-sm text-right">
                         <Link to={`/editions/${editionId}/review/${item.id}`}>
                           <Button variant="outline" size="sm">
-                            {reviewStatus === 'reviewed' ? 'Voir' : 'Revoir'}
+                            {reviewStatus === 'reviewed' ? 'Voir' : 'Vérifier'}
                           </Button>
                         </Link>
                       </td>
