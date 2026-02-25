@@ -627,6 +627,9 @@ def generate_labels_pdf(
             .rejected-table td {{
                 color: #555;
             }}
+            .rejected-table tr:last-child td {{
+                border-bottom: none;
+            }}
             .rejected-footer {{
                 background: #fef2f2;
                 border-top: 2px solid #dc2626;
