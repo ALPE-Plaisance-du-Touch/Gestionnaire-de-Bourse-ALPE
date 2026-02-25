@@ -380,23 +380,28 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 À partir de cette version, plus aucune fonctionnalité n'est ajoutée.
 Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 
+### Relecture & qualité (pré-release)
+- [ ] **PRE-001** Relecture orthographe et grammaire de toute l'application (textes UI, messages d'erreur, emails, labels)
+- [ ] **PRE-002** Audit sécurité par agent dédié (OWASP Top 10, injection, XSS, CSRF, auth bypass, headers, RBAC)
+- [ ] **PRE-003** Audit dette technique par agent dédié (code mort, dépendances obsolètes, patterns incohérents, TODO/FIXME, couverture tests)
+
 ### Tests & validation
-- [ ] **1.0.1** Tests d'intégration end-to-end (scénario complet déposant + bénévole + gestionnaire)
-- [ ] **1.0.2** Tests de charge (5 caisses simultanées, 50 transactions/min) — REQ-NF-001, REQ-NF-005
-- [ ] **1.0.3** Audit sécurité (OWASP ZAP, vérification headers, injection)
-- [ ] **1.0.4** Audit accessibilité externe (WCAG 2.1 AA)
-- [ ] **1.0.5** Tests RGPD exhaustifs (export, rectification, effacement, portabilité)
+- [ ] **PRE-004** Tests d'intégration end-to-end (scénario complet déposant + bénévole + gestionnaire)
+- [ ] **PRE-005** Tests de charge (5 caisses simultanées, 50 transactions/min) — REQ-NF-001, REQ-NF-005
+- [ ] **PRE-006** Audit sécurité externe (OWASP ZAP, vérification headers, injection)
+- [ ] **PRE-007** Audit accessibilité externe (WCAG 2.1 AA)
+- [ ] **PRE-008** Tests RGPD exhaustifs (export, rectification, effacement, portabilité)
 
 ### Specs & docs restantes
-- [ ] **1.0.6** Compléter traçabilité : tests manquants pour REQ-F-012, F-013, F-015, F-016
-- [x] **1.0.7** ~~Créer REQ-F-018 pour US-010~~ — **FAIT** (déjà créée)
-- [ ] **1.0.8** Revue documentation (README utilisateur, guides déploiement)
-- [ ] **1.0.9bis** Implémenter US-014 / REQ-F-023 : tableau de bord suivi déclarations (spec prête, dev à faire)
+- [ ] **PRE-009** Compléter traçabilité : tests manquants pour REQ-F-012, F-013, F-015, F-016
+- [x] **PRE-010** ~~Créer REQ-F-018 pour US-010~~ — **FAIT** (déjà créée)
+- [ ] **PRE-011** Revue documentation (README utilisateur, guides déploiement)
+- [ ] **PRE-012** Implémenter US-014 / REQ-F-023 : tableau de bord suivi déclarations (spec prête, dev à faire)
 
 ### Stabilisation
-- [ ] **1.0.9** Optimisation performance (lazy loading, bundle size, requêtes N+1)
-- [ ] **1.0.10** Bug fixes identifiés durant les tests
-- [ ] **1.0.11** Tag release + déploiement production
+- [ ] **PRE-013** Optimisation performance (lazy loading, bundle size, requêtes N+1)
+- [ ] **PRE-014** Bug fixes identifiés durant les tests
+- [ ] **PRE-015** Tag release + déploiement production
 
 ---
 
