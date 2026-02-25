@@ -87,6 +87,17 @@ async def generate_labels(
             detail="Aucune liste validée trouvée pour les critères sélectionnés.",
         )
 
+    # Assign barcodes (label_code) to articles that don't have one yet
+    from app.services.label import generate_label_code
+
+    for item_list in lists:
+        for article in item_list.articles:
+            if article.status != "rejected" and not article.barcode:
+                article.barcode = generate_label_code(
+                    edition_id, item_list.number, article.line_number
+                )
+    await db.commit()
+
     # Generate PDF
     pdf_bytes = generate_labels_pdf(lists, edition, slot_label)
 
