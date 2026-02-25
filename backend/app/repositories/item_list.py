@@ -173,6 +173,7 @@ class ItemListRepository:
         status: str | None = None,
         page: int = 1,
         limit: int = 20,
+        load_articles: bool = False,
     ) -> tuple[list[ItemList], int]:
         """List all item lists for an edition with pagination."""
         query = (
@@ -180,6 +181,9 @@ class ItemListRepository:
             .options(joinedload(ItemList.depositor))
             .where(ItemList.edition_id == edition_id)
         )
+
+        if load_articles:
+            query = query.options(joinedload(ItemList.articles))
 
         if list_type:
             query = query.where(ItemList.list_type == list_type)

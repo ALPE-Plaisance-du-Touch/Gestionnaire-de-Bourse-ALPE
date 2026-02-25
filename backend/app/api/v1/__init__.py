@@ -11,6 +11,7 @@ from app.api.v1.endpoints import (
     deposit_slots,
     depositor_articles,
     depositor_lists,
+    edition_lists,
     editions,
     invitations,
     labels,
@@ -54,6 +55,11 @@ api_router.include_router(
     review.router,
     prefix="/editions/{edition_id}/review",
     tags=["Deposit Review"],
+)
+api_router.include_router(
+    edition_lists.router,
+    prefix="/editions/{edition_id}/declarations",
+    tags=["Declarations"],
 )
 
 # Depositor endpoints (article declaration)

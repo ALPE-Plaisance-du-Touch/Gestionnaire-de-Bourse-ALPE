@@ -91,6 +91,7 @@ class ItemListWithDepositorResponse(ItemListResponse):
     """Item list response with depositor information."""
 
     depositor: DepositorInfo | None = None
+    total_value: float = 0.0
 
 
 class ItemListDetailResponse(ItemListResponse):
@@ -135,3 +136,15 @@ class ItemListListResponse(BaseModel):
     page: int
     limit: int
     pages: int
+
+
+class DeclarationsSummaryResponse(BaseModel):
+    """Summary of declaration progress for an edition."""
+
+    total_depositors: int
+    depositors_with_lists: int
+    total_lists: int
+    draft_lists: int
+    validated_lists: int
+    total_articles: int
+    total_value: float

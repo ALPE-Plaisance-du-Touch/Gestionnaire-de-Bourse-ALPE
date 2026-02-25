@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { editionsApi, billetwebApi, depositSlotsApi, payoutsApi, usersApi, reviewApi, ApiException } from '@/api';
+import { editionsApi, billetwebApi, depositSlotsApi, payoutsApi, usersApi, reviewApi, editionListsApi, ApiException } from '@/api';
 import { Button, ConfirmModal, Input, Modal, Select } from '@/components/ui';
 import { DepositSlotsEditor } from '@/components/editions';
 import { BilletwebSessionsSyncModal } from '@/components/billetweb/BilletwebSessionsSyncModal';
@@ -561,7 +561,7 @@ export function EditionDetailPage() {
   if (['registrations_open', 'deposit', 'sale', 'settlement', 'closed', 'archived'].includes(edition.status)) {
     visibleTabs.push({ id: 'deposants', label: 'Déposants' });
   }
-  if (['deposit', 'sale', 'settlement', 'closed', 'archived'].includes(edition.status)) {
+  if (['registrations_open', 'deposit', 'sale', 'settlement', 'closed', 'archived'].includes(edition.status)) {
     visibleTabs.push({ id: 'operations', label: 'Opérations' });
   }
   if (edition.status !== 'archived') {
@@ -963,6 +963,11 @@ export function EditionDetailPage() {
       {/* ===== Tab 3: Opérations ===== */}
       {currentTab === 'operations' && (
         <div className="space-y-6">
+          {/* Declaration Progress */}
+          {['registrations_open', 'deposit', 'sale'].includes(edition.status) && (
+            <DeclarationProgressBlock editionId={edition.id} />
+          )}
+
           {/* Deposit Review */}
           {['deposit', 'sale'].includes(edition.status) && (
             <ReviewProgressBlock editionId={edition.id} />
@@ -1749,6 +1754,51 @@ function ReviewProgressBlock({ editionId }: { editionId: string }) {
           <div
             className="bg-red-500 h-2"
             style={{ width: `${(summary.rejectedArticles / total) * 100}%` }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DeclarationProgressBlock({ editionId }: { editionId: string }) {
+  const { data: summary } = useQuery({
+    queryKey: ['declarations-summary', editionId],
+    queryFn: () => editionListsApi.getSummary(editionId),
+    enabled: !!editionId,
+    refetchInterval: 30000,
+  });
+
+  const pct = summary && summary.totalLists > 0
+    ? Math.round((summary.validatedLists / summary.totalLists) * 100)
+    : 0;
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg p-4">
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900">Suivi des déclarations</h3>
+          <p className="text-sm text-gray-500">
+            {summary
+              ? `${summary.depositorsWithLists}/${summary.totalDepositors} déposants, ${summary.validatedLists}/${summary.totalLists} listes validées (${pct}%), ${summary.totalArticles} articles`
+              : 'Chargement...'}
+          </p>
+        </div>
+        <Link
+          to={`/editions/${editionId}/declarations`}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          Voir les déclarations
+        </Link>
+      </div>
+      {summary && summary.totalLists > 0 && (
+        <div className="w-full bg-gray-200 rounded-full h-2 flex overflow-hidden">
+          <div
+            className="bg-green-500 h-2"
+            style={{ width: `${pct}%` }}
           />
         </div>
       )}
