@@ -325,11 +325,11 @@ export function ReviewListDetailPage() {
             </div>
           )}
 
-          {/* Articles refuses */}
+          {/* Articles refusés */}
           {rejectedArticles.length > 0 && (
             <div className="mb-8">
               <h2 className="text-lg font-semibold text-red-800 mb-3">
-                Articles refuses ({rejectedArticles.length})
+                Articles refus&eacute;s ({rejectedArticles.length})
               </h2>
               <div className="space-y-3">
                 {rejectedArticles.map((article) => (
@@ -362,9 +362,9 @@ export function ReviewListDetailPage() {
                   </div>
                 ))}
               </div>
-              <div className="mt-3 bg-red-600 text-white rounded-lg px-4 py-2 text-sm font-medium flex items-center justify-between">
-                <span>{rejectedArticles.length} article(s) refuse(s)</span>
-                <span>{rejectedArticles.reduce((sum, a) => sum + a.price, 0).toFixed(2)} &euro;</span>
+              <div className="mt-3 bg-red-50 border-t-2 border-red-500 rounded-lg px-4 py-2 text-sm font-medium flex items-center justify-between">
+                <span className="text-gray-700">{rejectedArticles.length} article(s) refus&eacute;(s)</span>
+                <span className="text-gray-700">{rejectedArticles.reduce((sum, a) => sum + a.price, 0).toFixed(2)} &euro;</span>
               </div>
             </div>
           )}

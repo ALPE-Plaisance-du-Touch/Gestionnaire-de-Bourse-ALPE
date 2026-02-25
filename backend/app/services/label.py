@@ -291,7 +291,7 @@ def _build_article_list_html(item_list: "ItemList") -> str:
             """
 
         rejected_html = f"""
-        <h3 class="rejected-section-title">Articles refuses ({len(rejected_articles)})</h3>
+        <h3 class="rejected-section-title">Articles refus&eacute;s ({len(rejected_articles)})</h3>
         <table class="article-table rejected-table">
             <thead>
                 <tr>
@@ -307,7 +307,7 @@ def _build_article_list_html(item_list: "ItemList") -> str:
             </tbody>
         </table>
         <div class="rejected-footer">
-            <span>{len(rejected_articles)} article(s) refuse(s)</span>
+            <span>{len(rejected_articles)} article(s) refus&eacute;(s)</span>
             <span>{format_price(rejected_value)}</span>
         </div>
         """
@@ -628,15 +628,15 @@ def generate_labels_pdf(
                 color: #555;
             }}
             .rejected-footer {{
-                background: #b91c1c;
-                color: white;
+                background: #fef2f2;
+                border-top: 2px solid #dc2626;
+                color: #333;
                 font-weight: bold;
                 font-size: 9pt;
                 padding: 6px 8px;
                 display: flex;
                 justify-content: space-between;
                 margin-top: 0;
-                border-radius: 0 0 4px 4px;
             }}
             .article-list-note {{
                 margin-top: 8mm;
