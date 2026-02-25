@@ -19,11 +19,28 @@ const CATEGORY_LABELS: Record<string, string> = {
   other: 'Autres',
 };
 
+const CATEGORY_COLORS: Record<string, string> = {
+  clothing: 'bg-purple-100 text-purple-800',
+  shoes: 'bg-blue-100 text-blue-800',
+  nursery: 'bg-pink-100 text-pink-800',
+  toys: 'bg-yellow-100 text-yellow-800',
+  books: 'bg-green-100 text-green-800',
+  accessories: 'bg-orange-100 text-orange-800',
+  other: 'bg-gray-100 text-gray-800',
+};
+
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
   validated: { label: 'En attente', className: 'bg-amber-100 text-amber-800' },
   accepted: { label: 'Accepte', className: 'bg-green-100 text-green-800' },
   rejected: { label: 'Refuse', className: 'bg-red-100 text-red-800' },
 };
+
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(price);
+}
 
 export function ReviewListDetailPage() {
   const { id: editionId, listId } = useParams<{ id: string; listId: string }>();
@@ -250,77 +267,111 @@ export function ReviewListDetailPage() {
               <h2 className="text-lg font-semibold text-gray-900 mb-3">
                 Articles mis en vente ({saleArticles.length})
               </h2>
-              <div className="space-y-3">
-                {saleArticles.map((article) => {
-                  const statusInfo = STATUS_STYLES[article.status] ?? STATUS_STYLES.validated;
-                  const isPending = article.status === 'validated';
-                  return (
-                    <div
-                      key={article.id}
-                      className={`bg-white rounded-lg shadow p-4 border-l-4 ${
-                        article.status === 'accepted'
-                          ? 'border-l-green-500'
-                          : 'border-l-amber-400'
-                      }`}
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-medium text-gray-500">
-                              #{article.lineNumber}
-                            </span>
-                            <span
-                              className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${statusInfo.className}`}
-                            >
-                              {statusInfo.label}
-                            </span>
-                            <span className="text-xs text-gray-400">
-                              {CATEGORY_LABELS[article.category] ?? article.category}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-900 font-medium mt-1">{article.description}</p>
-                          <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 flex-wrap">
-                            <span className="font-semibold text-gray-700">{article.price.toFixed(2)} &euro;</span>
-                            {article.size && <span>Taille : {article.size}</span>}
-                            {article.brand && <span>Marque : {article.brand}</span>}
-                            {article.isLot && <span>Lot de {article.lotQuantity}</span>}
-                          </div>
-                        </div>
-                        {isPending && !isReviewed && (
-                          <div className="flex items-center gap-2 shrink-0">
-                            <Button
-                              size="sm"
-                              variant="primary"
-                              className="!bg-green-600 hover:!bg-green-700"
-                              onClick={() => acceptMutation.mutate(article.id)}
-                              disabled={acceptMutation.isPending}
-                            >
-                              Accepter
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="danger"
-                              onClick={() => {
-                                setRejectingArticle(article);
-                                setRejectionReason('');
-                              }}
-                              disabled={rejectMutation.isPending}
-                            >
-                              Refuser
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setEditingArticle(article)}
-                            >
-                              Editer
-                            </Button>
-                          </div>
+              <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Article</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cat&eacute;gorie</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">D&eacute;tails</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Prix</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                        {!isReviewed && (
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         )}
-                      </div>
-                    </div>
-                  );
-                })}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {saleArticles.map((article) => {
+                        const statusInfo = STATUS_STYLES[article.status] ?? STATUS_STYLES.validated;
+                        const isPending = article.status === 'validated';
+                        return (
+                          <tr
+                            key={article.id}
+                            className={`hover:bg-gray-50 ${article.status === 'accepted' ? 'bg-green-50/50' : ''}`}
+                          >
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                              {article.lineNumber}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="text-sm font-medium text-gray-900">{article.description}</div>
+                              {article.isLot && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                                  Lot de {article.lotQuantity}
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${CATEGORY_COLORS[article.category] ?? 'bg-gray-100 text-gray-800'}`}>
+                                {CATEGORY_LABELS[article.category] ?? article.category}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-500">
+                              <div className="space-y-0.5">
+                                {article.size && <div>Taille: {article.size}</div>}
+                                {article.brand && <div>Marque: {article.brand}</div>}
+                                {article.color && <div>Couleur: {article.color}</div>}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                              {formatPrice(article.price)}
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap text-center">
+                              <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${statusInfo.className}`}>
+                                {statusInfo.label}
+                              </span>
+                            </td>
+                            {!isReviewed && (
+                              <td className="px-4 py-3 whitespace-nowrap text-right text-sm space-x-1">
+                                {isPending && (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      variant="primary"
+                                      className="!bg-green-600 hover:!bg-green-700"
+                                      onClick={() => acceptMutation.mutate(article.id)}
+                                      disabled={acceptMutation.isPending}
+                                    >
+                                      Accepter
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="danger"
+                                      onClick={() => {
+                                        setRejectingArticle(article);
+                                        setRejectionReason('');
+                                      }}
+                                      disabled={rejectMutation.isPending}
+                                    >
+                                      Refuser
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => setEditingArticle(article)}
+                                    >
+                                      Editer
+                                    </Button>
+                                  </>
+                                )}
+                              </td>
+                            )}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
+                  <p className="text-sm text-gray-500">
+                    {saleArticles.length} article{saleArticles.length > 1 ? 's' : ''} - Total:{' '}
+                    <span className="font-medium text-gray-900">
+                      {formatPrice(saleArticles.reduce((sum, a) => sum + a.price, 0))}
+                    </span>
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -331,40 +382,62 @@ export function ReviewListDetailPage() {
               <h2 className="text-lg font-semibold text-red-800 mb-3">
                 Articles refus&eacute;s ({rejectedArticles.length})
               </h2>
-              <div className="space-y-3">
-                {rejectedArticles.map((article) => (
-                  <div
-                    key={article.id}
-                    className="bg-red-50 rounded-lg shadow p-4 border-l-4 border-l-red-500"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium text-gray-500">
-                          #{article.lineNumber}
-                        </span>
-                        <span className="text-xs text-gray-400">
-                          {CATEGORY_LABELS[article.category] ?? article.category}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-900 font-medium mt-1">{article.description}</p>
-                      <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 flex-wrap">
-                        <span className="font-semibold text-gray-700">{article.price.toFixed(2)} &euro;</span>
-                        {article.size && <span>Taille : {article.size}</span>}
-                        {article.brand && <span>Marque : {article.brand}</span>}
-                        {article.isLot && <span>Lot de {article.lotQuantity}</span>}
-                      </div>
-                      {article.rejectionReason && (
-                        <p className="mt-2 text-xs text-red-700 bg-red-100 rounded px-2 py-1 inline-block">
-                          Motif : {article.rejectionReason}
-                        </p>
-                      )}
-                    </div>
+              <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Article</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cat&eacute;gorie</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">D&eacute;tails</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Prix</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motif</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {rejectedArticles.map((article) => (
+                        <tr key={article.id} className="bg-red-50/50">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                            {article.lineNumber}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="text-sm font-medium text-gray-900">{article.description}</div>
+                            {article.isLot && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                                Lot de {article.lotQuantity}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${CATEGORY_COLORS[article.category] ?? 'bg-gray-100 text-gray-800'}`}>
+                              {CATEGORY_LABELS[article.category] ?? article.category}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-500">
+                            <div className="space-y-0.5">
+                              {article.size && <div>Taille: {article.size}</div>}
+                              {article.brand && <div>Marque: {article.brand}</div>}
+                              {article.color && <div>Couleur: {article.color}</div>}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                            {formatPrice(article.price)}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-red-700">
+                            {article.rejectionReason || '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="px-4 py-3 bg-red-50 border-t-2 border-red-500">
+                  <div className="flex items-center justify-between text-sm font-medium">
+                    <span className="text-gray-700">Articles refus&eacute;s ({rejectedArticles.length})</span>
+                    <span className="text-gray-700">{formatPrice(rejectedArticles.reduce((sum, a) => sum + a.price, 0))}</span>
                   </div>
-                ))}
-              </div>
-              <div className="mt-3 bg-red-50 border-t-2 border-red-500 rounded-lg px-4 py-2 text-sm font-medium flex items-center justify-between">
-                <span className="text-gray-700">Articles refus&eacute;s ({rejectedArticles.length})</span>
-                <span className="text-gray-700">{rejectedArticles.reduce((sum, a) => sum + a.price, 0).toFixed(2)} &euro;</span>
+                </div>
               </div>
             </div>
           )}
