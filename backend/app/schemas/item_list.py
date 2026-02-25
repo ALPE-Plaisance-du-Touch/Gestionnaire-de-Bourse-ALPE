@@ -18,6 +18,7 @@ class ListStatus(str, Enum):
     """List lifecycle status."""
 
     DRAFT = "draft"
+    NOT_FINALIZED = "not_finalized"
     VALIDATED = "validated"
     CHECKED_IN = "checked_in"
     RETRIEVED = "retrieved"

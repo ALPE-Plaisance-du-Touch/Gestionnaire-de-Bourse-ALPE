@@ -39,7 +39,7 @@ def _compute_depositor_status(dep_lists: list, max_lists: int) -> str:
     """Compute declaration status for a depositor given their lists."""
     if not dep_lists:
         return "none"
-    validated_count = sum(1 for lst in dep_lists if lst.status != "draft")
+    validated_count = sum(1 for lst in dep_lists if lst.status not in ("draft", "not_finalized"))
     if validated_count >= max_lists:
         return "complete"
     if validated_count > 0:
@@ -139,8 +139,8 @@ async def get_edition_lists_summary(
     )
     dep_list_types = {dep.user_id: dep.list_type for dep in all_depositors}
 
-    draft_count = sum(1 for lst in all_lists if lst.status == "draft")
-    validated_count = sum(1 for lst in all_lists if lst.status != "draft")
+    draft_count = sum(1 for lst in all_lists if lst.status in ("draft", "not_finalized"))
+    validated_count = sum(1 for lst in all_lists if lst.status not in ("draft", "not_finalized"))
     total_articles = sum(lst.article_count for lst in all_lists)
     total_value = sum(lst.total_value for lst in all_lists)
 
@@ -216,8 +216,8 @@ async def get_edition_depositors_declarations(
         dep_lists = lists_by_dep.get(dep.user_id, [])
         max_lists = _get_max_lists(dep.list_type)
         lists_count = len(dep_lists)
-        draft_count = sum(1 for lst in dep_lists if lst.status == "draft")
-        validated_count = sum(1 for lst in dep_lists if lst.status != "draft")
+        draft_count = sum(1 for lst in dep_lists if lst.status in ("draft", "not_finalized"))
+        validated_count = sum(1 for lst in dep_lists if lst.status not in ("draft", "not_finalized"))
         total_articles = sum(lst.article_count for lst in dep_lists)
         total_value = sum(lst.total_value for lst in dep_lists)
         dec_status = _compute_depositor_status(dep_lists, max_lists)
