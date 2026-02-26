@@ -1,6 +1,6 @@
 """PDF generation service for item lists."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from io import BytesIO
 from typing import TYPE_CHECKING
@@ -83,7 +83,7 @@ def generate_list_pdf(item_list: "ItemList", depositor_name: str) -> bytes:
     # Format dates
     created_date = item_list.created_at.strftime("%d/%m/%Y") if item_list.created_at else "-"
     validated_date = item_list.validated_at.strftime("%d/%m/%Y à %H:%M") if item_list.validated_at else "-"
-    generated_date = datetime.now().strftime("%d/%m/%Y à %H:%M")
+    generated_date = datetime.now(timezone.utc).strftime("%d/%m/%Y à %H:%M")
 
     # Build HTML
     html_content = f"""

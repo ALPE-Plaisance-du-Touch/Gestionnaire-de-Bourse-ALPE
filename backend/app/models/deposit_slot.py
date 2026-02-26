@@ -1,6 +1,6 @@
 """Deposit slot model for deposit time slots."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -59,7 +59,7 @@ class DepositSlot(Base, UUIDMixin, TimestampMixin):
     @property
     def is_past(self) -> bool:
         """Check if slot has already passed."""
-        return datetime.utcnow() > self.end_datetime
+        return datetime.now(timezone.utc) > self.end_datetime
 
     def __repr__(self) -> str:
         return f"<DepositSlot {self.start_datetime.strftime('%Y-%m-%d %H:%M')} - {self.max_capacity} places>"

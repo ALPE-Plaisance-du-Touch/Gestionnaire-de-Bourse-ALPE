@@ -1,6 +1,6 @@
 """ItemList repository for database operations."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -154,7 +154,7 @@ class ItemListRepository:
         from app.models.article import ArticleStatus
 
         item_list.is_validated = True
-        item_list.validated_at = datetime.utcnow()
+        item_list.validated_at = datetime.now(timezone.utc)
         item_list.status = ListStatus.VALIDATED.value
 
         # Promote draft articles to validated
@@ -355,7 +355,7 @@ class ItemListRepository:
     async def mark_labels_printed(self, item_list: ItemList) -> ItemList:
         """Mark labels as printed for a list."""
         item_list.labels_printed = True
-        item_list.labels_printed_at = datetime.utcnow()
+        item_list.labels_printed_at = datetime.now(timezone.utc)
 
         await self.db.commit()
         await self.db.refresh(item_list)

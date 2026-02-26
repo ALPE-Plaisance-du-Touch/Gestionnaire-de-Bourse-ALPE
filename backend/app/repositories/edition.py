@@ -1,6 +1,6 @@
 """Edition repository for database operations."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -93,7 +93,7 @@ class EditionRepository:
     async def close_edition(self, edition: Edition, user_id: str) -> Edition:
         """Close an edition and record closure metadata."""
         edition.status = EditionStatus.CLOSED.value
-        edition.closed_at = datetime.now()
+        edition.closed_at = datetime.now(timezone.utc)
         edition.closed_by_id = user_id
         await self.db.commit()
         await self.db.refresh(edition)
@@ -102,7 +102,7 @@ class EditionRepository:
     async def archive_edition(self, edition: Edition) -> Edition:
         """Archive a closed edition."""
         edition.status = EditionStatus.ARCHIVED.value
-        edition.archived_at = datetime.now()
+        edition.archived_at = datetime.now(timezone.utc)
         await self.db.commit()
         await self.db.refresh(edition)
         return await self.get_by_id(edition.id)

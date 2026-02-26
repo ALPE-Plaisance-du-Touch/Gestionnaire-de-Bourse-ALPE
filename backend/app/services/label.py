@@ -1,7 +1,7 @@
 """Label generation service for item lists with QR codes."""
 
 import base64
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from io import BytesIO
 from itertools import groupby
@@ -202,7 +202,7 @@ def _build_cover_page_html(
             </tbody>
         </table>
         <p class="cover-footer">
-            Document genere le {datetime.now().strftime('%d/%m/%Y a %H:%M')}
+            Document genere le {datetime.now(timezone.utc).strftime('%d/%m/%Y a %H:%M')}
         </p>
     </div>
     """

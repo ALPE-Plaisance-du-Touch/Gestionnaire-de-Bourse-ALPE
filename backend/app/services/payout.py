@@ -1,6 +1,6 @@
 """Payout service for calculating and managing depositor payouts."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -239,7 +239,7 @@ async def record_payment(
 
     payout.status = PayoutStatus.PAID.value
     payout.payment_method = payment_method
-    payout.paid_at = datetime.now()
+    payout.paid_at = datetime.now(timezone.utc)
     payout.payment_reference = payment_reference
     payout.processed_by_id = user.id
     if notes:
