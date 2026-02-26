@@ -138,7 +138,7 @@ async def register_sale(
     # Reload sale with relations
     sale = await sale_repo.get_by_id(sale.id)
 
-    return _sale_to_response(sale, seller)
+    return sale_to_response(sale, seller)
 
 
 async def register_batch_sales(
@@ -212,7 +212,7 @@ async def register_batch_sales(
     sale_responses = []
     for sale in sales:
         loaded_sale = await sale_repo.get_by_id(sale.id)
-        sale_responses.append(_sale_to_response(loaded_sale, seller))
+        sale_responses.append(sale_to_response(loaded_sale, seller))
 
     total = sum(s.price for s in sale_responses)
 
@@ -452,7 +452,7 @@ async def sync_offline_sales(
     )
 
 
-def _sale_to_response(sale: Sale, current_user: User) -> SaleResponse:
+def sale_to_response(sale: Sale, current_user: User) -> SaleResponse:
     elapsed = datetime.now(timezone.utc) - sale.sold_at
     can_cancel = elapsed <= CANCEL_TIME_LIMIT or current_user.is_manager or current_user.is_administrator
 

@@ -34,7 +34,7 @@ from app.services.sale import (
     register_sale,
     scan_article,
     sync_offline_sales,
-    _sale_to_response,
+    sale_to_response,
 )
 from app.repositories import SaleRepository
 
@@ -169,7 +169,7 @@ async def list_sales_endpoint(
         register_number=register_number,
     )
 
-    items = [_sale_to_response(s, current_user) for s in sales]
+    items = [sale_to_response(s, current_user) for s in sales]
 
     return {
         "items": [item.model_dump() for item in items],
