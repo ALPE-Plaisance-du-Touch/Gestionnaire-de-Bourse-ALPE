@@ -48,7 +48,7 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.22 | Ticket de caisse (panier) | ✅ Done |
 
 **Conformité specs : ~95%** (63/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
-**Specs : 15 US, 24 REQ-F, 120+ AC, 158+ tests** — couverture traçabilité 93%
+**Specs : 16 US, 25 REQ-F, 120+ AC, 158+ tests** — couverture traçabilité 93%
 
 ---
 
@@ -67,6 +67,7 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.20 | Mode Formation | Édition formation, forçage étapes, flag testeur, bandeau visuel | Haute |
 | 0.21 | Revue des listes au dépôt | Revue articles par bénévole (accepter/refuser/éditer), suivi avancement | ✅ Done |
 | 0.22 | Ticket de caisse (panier) | Panier multi-articles, paiement batch, ticket_id | ✅ Done |
+| 0.23 | Messagerie interne | Messagerie déposants ↔ bénévoles par édition | Moyenne |
 | 1.0.0 | Feature Freeze & Production | Bug fixes, tests intégration, perf, audit, release | - |
 
 ---
@@ -396,9 +397,21 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 
 ---
 
+## v0.23 - Messagerie interne (US-016)
+
+**Branche :** `feature/us-016-messaging`
+**Exigences :** US-016, REQ-F-025 (à créer)
+
+Messagerie dans l'application entre déposants et bénévoles/gestionnaires, contextualisée par édition.
+Permet de résoudre les questions sur les articles, le dépôt ou la récupération sans sortir de la plateforme.
+
+**Détails d'implémentation à définir.**
+
+---
+
 ## v1.0.0 - Feature Freeze & Production
 
-**Prérequis :** Toutes les versions 0.1 à 0.22 terminées et testées.
+**Prérequis :** Toutes les versions 0.1 à 0.23 terminées et testées.
 
 À partir de cette version, plus aucune fonctionnalité n'est ajoutée.
 Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
@@ -473,6 +486,7 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 | TASK-039 | 0.21 | Frontend vue déposant refusés + suivi avancement | US-013 AC-8/AC-9/AC-10 |
 | TASK-040 | 0.22 | Ticket de caisse (panier multi-articles) | US-004 (amélioration) |
 | TASK-041 | 0.21 | Suivi déclarations déposants (US-014) | US-014, REQ-F-023 |
+| TASK-042 | 0.23 | Messagerie interne déposants ↔ bénévoles | US-016, REQ-F-025 |
 
 ---
 

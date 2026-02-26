@@ -3075,3 +3075,32 @@ test_scenarios:
   - T-US015-11 : Parcours complet : déclaration, dépôt, vente, clôture (OK)
   - T-US015-12 : Coexistence d'une édition formation et d'une édition réelle active (OK, pas de conflit)
 ```
+
+## US-016 — Messagerie entre déposants et bénévoles
+
+```yaml
+id: US-016
+title: Messagerie entre déposants et bénévoles
+actor: deposant, benevole
+benefit: "...pour communiquer facilement sans recourir aux emails ou appels téléphoniques"
+as_a: "En tant que déposant ou bénévole"
+i_want: "Je veux envoyer et recevoir des messages dans l'application pour échanger des informations liées à une édition de bourse"
+so_that: "Afin de résoudre rapidement les questions sur les articles, le dépôt ou la récupération sans sortir de la plateforme"
+
+# Contexte métier
+notes: |
+  - Les échanges portent typiquement sur : questions sur un article (état, prix, catégorie),
+    coordination pour le dépôt ou la récupération, notification d'un problème sur une liste
+  - La messagerie est liée à une édition : les conversations sont contextualisées
+  - Les bénévoles et gestionnaires peuvent initier un échange avec n'importe quel déposant de l'édition
+  - Les déposants peuvent répondre aux messages reçus et contacter l'équipe organisatrice
+  - Détails d'implémentation (critères d'acceptation, modèle de données, endpoints) à définir ultérieurement
+
+dependencies:
+  - US-001  # Comptes utilisateurs
+  - US-006  # Éditions
+
+links:
+  - rel: requirement
+    id: REQ-F-025  # Messagerie interne (à créer)
+```
