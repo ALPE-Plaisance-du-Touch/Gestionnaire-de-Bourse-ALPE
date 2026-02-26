@@ -37,9 +37,9 @@ export function SalesPage() {
     refreshPendingCount,
   } = useOfflineSales({ editionId });
 
-  const [scannedArticle, setScannedArticle] = useState<ScanArticleResponse | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
   const [cart, setCart] = useState<ScanArticleResponse[]>([]);
+  const [isPaymentMode, setIsPaymentMode] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [offlineSalesList, setOfflineSalesList] = useState<PendingSale[]>([]);
@@ -64,7 +64,7 @@ export function SalesPage() {
     refetchInterval: isOnline ? 5000 : false,
   });
 
-  // Scan mutation
+  // Scan mutation - adds directly to cart
   const scanMutation = useMutation({
     mutationFn: (barcode: string) => offlineScan(barcode),
     onSuccess: (data) => {
@@ -73,7 +73,6 @@ export function SalesPage() {
 
       if (!data.isAvailable) {
         playErrorBeep();
-        setScannedArticle(null);
         setScanError(
           data.status === 'sold'
             ? 'Cet article a deja ete vendu !'
@@ -85,15 +84,15 @@ export function SalesPage() {
       // Check if already in cart
       if (cart.some(a => a.articleId === data.articleId)) {
         playErrorBeep();
-        setScannedArticle(null);
-        setScanError('Cet article est deja dans le ticket en cours');
+        setScanError('Cet article est deja dans le panier');
         return;
       }
 
-      setScannedArticle(data);
+      // Add directly to cart
+      setCart(prev => [...prev, data]);
+      playSuccessBeep();
     },
     onError: (error: Error) => {
-      setScannedArticle(null);
       setScanError(error.message || 'Article non trouve');
       playErrorBeep();
     },
@@ -107,11 +106,11 @@ export function SalesPage() {
       playSuccessBeep();
       const suffix = data.isOffline ? ' (hors-ligne)' : '';
       setSuccessMessage(
-        `Ticket enregistre${suffix} ! ${data.articleCount} article${data.articleCount > 1 ? 's' : ''} - ${data.total.toFixed(2)} EUR`
+        `Paye${suffix} ! ${data.articleCount} article${data.articleCount > 1 ? 's' : ''} - ${data.total.toFixed(2)} EUR`
       );
       setCart([]);
       setSelectedPayment(null);
-      setScannedArticle(null);
+      setIsPaymentMode(false);
       if (!data.isOffline) {
         queryClient.invalidateQueries({ queryKey: ['sales', editionId] });
       }
@@ -137,24 +136,35 @@ export function SalesPage() {
     scanMutation.mutate(barcode);
   }, [scanMutation]);
 
-  const handleAddToCart = () => {
-    if (!scannedArticle) return;
-    setCart(prev => [...prev, scannedArticle]);
-    setScannedArticle(null);
-    playSuccessBeep();
-  };
-
   const handleRemoveFromCart = (articleId: string) => {
-    setCart(prev => prev.filter(a => a.articleId !== articleId));
+    setCart(prev => {
+      const next = prev.filter(a => a.articleId !== articleId);
+      if (next.length === 0) {
+        setIsPaymentMode(false);
+        setSelectedPayment(null);
+      }
+      return next;
+    });
   };
 
   const handleClearCart = () => {
     setCart([]);
     setSelectedPayment(null);
-    setScannedArticle(null);
+    setIsPaymentMode(false);
   };
 
-  const handleCheckout = () => {
+  const handleGoToPayment = () => {
+    setIsPaymentMode(true);
+    setScanError(null);
+    setSuccessMessage(null);
+  };
+
+  const handleBackToScan = () => {
+    setIsPaymentMode(false);
+    setSelectedPayment(null);
+  };
+
+  const handlePay = () => {
     if (cart.length === 0 || !selectedPayment) return;
     checkoutMutation.mutate({ articles: cart, paymentMethod: selectedPayment });
   };
@@ -208,13 +218,16 @@ export function SalesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left column - Scanner + Cart */}
         <div className="space-y-4">
-          <div className="bg-white rounded-lg shadow p-4">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Scanner un article</h2>
-            <QrScanner
-              onScan={handleScan}
-              disabled={scanMutation.isPending || checkoutMutation.isPending}
-            />
-          </div>
+          {/* Scanner (hidden during payment) */}
+          {!isPaymentMode && (
+            <div className="bg-white rounded-lg shadow p-4">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Scanner un article</h2>
+              <QrScanner
+                onScan={handleScan}
+                disabled={scanMutation.isPending || checkoutMutation.isPending}
+              />
+            </div>
+          )}
 
           {/* Success message */}
           {successMessage && (
@@ -230,68 +243,11 @@ export function SalesPage() {
             </div>
           )}
 
-          {/* Scanned article preview */}
-          {scannedArticle && scannedArticle.isAvailable && (
-            <div
-              className="rounded-lg shadow p-4 border-2"
-              style={{
-                borderColor: scannedArticle.labelColor ? getLabelColorHex(scannedArticle.labelColor) : '#e5e7eb',
-                backgroundColor: scannedArticle.labelColor ? getLabelColorHex(scannedArticle.labelColor) + '15' : '#ffffff',
-              }}
-            >
-              <h3 className="font-semibold text-gray-900 mb-3">Article scanne</h3>
-              <div className="grid grid-cols-2 gap-2 text-sm mb-4">
-                <div>
-                  <span className="text-gray-500">Description</span>
-                  <p className="font-medium">{scannedArticle.description}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">Prix</span>
-                  <p className="text-xl font-bold text-gray-900">{Number(scannedArticle.price).toFixed(2)} EUR</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">Categorie</span>
-                  <p>{scannedArticle.category}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">Taille</span>
-                  <p>{scannedArticle.size || '-'}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">Deposant</span>
-                  <p>{scannedArticle.depositorName}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">Liste</span>
-                  <p>N{'\u00B0'}{scannedArticle.listNumber}</p>
-                </div>
-              </div>
-
-              {/* Add to cart / Cancel buttons */}
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={handleAddToCart}
-                  className="flex-1 py-3 px-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors text-lg"
-                >
-                  Ajouter au ticket
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setScannedArticle(null)}
-                  className="py-3 px-4 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors"
-                >
-                  Annuler
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Cart / Current ticket */}
+          {/* Cart / Panier */}
           {cart.length > 0 && (
             <div className="bg-white rounded-lg shadow border-2 border-blue-200">
               <div className="flex items-center justify-between p-4 border-b border-blue-100 bg-blue-50 rounded-t-lg">
-                <h3 className="font-semibold text-blue-900">Ticket en cours</h3>
+                <h3 className="font-semibold text-blue-900">Panier</h3>
                 <span className="text-sm text-blue-700 font-medium">
                   {cart.length} article{cart.length > 1 ? 's' : ''}
                 </span>
@@ -308,16 +264,18 @@ export function SalesPage() {
                     </div>
                     <div className="flex items-center gap-3 ml-3">
                       <span className="font-semibold text-gray-900">{Number(article.price).toFixed(2)} EUR</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveFromCart(article.articleId)}
-                        className="text-red-500 hover:text-red-700 p-1"
-                        aria-label={`Retirer ${article.description}`}
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
+                      {!isPaymentMode && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFromCart(article.articleId)}
+                          className="text-red-500 hover:text-red-700 p-1"
+                          aria-label={`Retirer ${article.description}`}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -329,43 +287,64 @@ export function SalesPage() {
                 <span className="text-xl font-bold text-gray-900">{cartTotal.toFixed(2)} EUR</span>
               </div>
 
-              {/* Payment + checkout */}
+              {/* Actions */}
               <div className="p-4 border-t border-gray-200">
-                <p className="text-sm font-medium text-gray-700 mb-2">Moyen de paiement</p>
-                <div className="flex gap-2 mb-4">
-                  {(['cash', 'card', 'check'] as PaymentMethod[]).map((method) => (
+                {!isPaymentMode ? (
+                  <>
                     <button
-                      key={method}
                       type="button"
-                      onClick={() => setSelectedPayment(method)}
-                      className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium border-2 transition-colors ${
-                        selectedPayment === method
-                          ? 'border-blue-600 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                      }`}
+                      onClick={handleGoToPayment}
+                      className="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-lg mb-2"
                     >
-                      {PAYMENT_LABELS[method]}
+                      Passer au paiement
                     </button>
-                  ))}
-                </div>
+                    <button
+                      type="button"
+                      onClick={handleClearCart}
+                      className="w-full py-2 px-4 text-gray-600 font-medium rounded-lg hover:bg-gray-100 transition-colors text-sm"
+                    >
+                      Vider le panier
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium text-gray-700 mb-3">Mode de paiement</p>
+                    <div className="flex gap-2 mb-4">
+                      {(['cash', 'card', 'check'] as PaymentMethod[]).map((method) => (
+                        <button
+                          key={method}
+                          type="button"
+                          onClick={() => setSelectedPayment(method)}
+                          className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium border-2 transition-colors ${
+                            selectedPayment === method
+                              ? 'border-blue-600 bg-blue-50 text-blue-700'
+                              : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          {PAYMENT_LABELS[method]}
+                        </button>
+                      ))}
+                    </div>
 
-                <button
-                  type="button"
-                  onClick={handleCheckout}
-                  disabled={!selectedPayment || checkoutMutation.isPending}
-                  className="w-full py-3 px-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-lg mb-2"
-                >
-                  {checkoutMutation.isPending ? 'Enregistrement...' : 'Valider le paiement'}
-                </button>
+                    <button
+                      type="button"
+                      onClick={handlePay}
+                      disabled={!selectedPayment || checkoutMutation.isPending}
+                      className="w-full py-3 px-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-lg mb-2"
+                    >
+                      {checkoutMutation.isPending ? 'Enregistrement...' : 'Paye'}
+                    </button>
 
-                <button
-                  type="button"
-                  onClick={handleClearCart}
-                  disabled={checkoutMutation.isPending}
-                  className="w-full py-2 px-4 text-gray-600 font-medium rounded-lg hover:bg-gray-100 transition-colors text-sm"
-                >
-                  Vider le ticket
-                </button>
+                    <button
+                      type="button"
+                      onClick={handleBackToScan}
+                      disabled={checkoutMutation.isPending}
+                      className="w-full py-2 px-4 text-gray-600 font-medium rounded-lg hover:bg-gray-100 transition-colors text-sm"
+                    >
+                      Retour au scan
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -493,16 +472,3 @@ function PrivateSaleBanner() {
   );
 }
 
-function getLabelColorHex(color: string): string {
-  const colors: Record<string, string> = {
-    sky_blue: '#87CEEB',
-    yellow: '#FFD700',
-    fuchsia: '#FF69B4',
-    lilac: '#C8A2C8',
-    mint_green: '#98FF98',
-    orange: '#FF8C00',
-    white: '#FFFFFF',
-    pink: '#FFB6C1',
-  };
-  return colors[color] || '#E5E7EB';
-}
