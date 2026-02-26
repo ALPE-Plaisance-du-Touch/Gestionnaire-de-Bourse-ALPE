@@ -395,16 +395,33 @@ links:
   - **Priorité :** Must have
   - **Responsable validation :** Bénévole (vérification physique lors du dépôt)
 
-- REQ-F-022 — Le système DOIT permettre à un bénévole, gestionnaire ou administrateur de refuser un article lors du dépôt physique.
+- REQ-F-022 — Le système DOIT permettre la revue des listes d'articles lors du dépôt physique par un bénévole, gestionnaire ou administrateur. (US-013)
   - **Critères d'acceptation :**
-    - Un article au statut "Déposé" (liste validée) peut être marqué comme "Refusé" par un bénévole, gestionnaire ou administrateur
-    - Le motif de refus est optionnel (champ texte libre, max 200 caractères)
-    - L'article refusé reste enregistré en base de données (pas de suppression)
-    - L'article refusé est exclu des compteurs de la liste (nombre d'articles en vente, valeur totale estimée)
-    - L'article refusé est affiché dans une zone distincte "Articles refusés" dans le détail de la liste
-    - Le déposant peut consulter ses articles refusés et le motif éventuel
-    - Le refus est irréversible (un article refusé ne peut pas être remis en vente)
-    - Traçabilité : horodatage du refus et identifiant de l'utilisateur ayant refusé
+    - **Workflow de revue :**
+      - Un bénévole, gestionnaire ou administrateur peut prendre en charge une liste au statut "Validée" ou "Déposée"
+      - Pour chaque article au statut "Déposé" (validated), 3 actions sont disponibles : Accepter, Refuser, Éditer
+      - Accepter : passe l'article au statut "Accepté" (accepted), prêt pour la vente
+      - Refuser : passe l'article au statut "Refusé" (rejected), exclu de la vente
+      - Éditer : modifie les informations de l'article (description, catégorie, prix, etc.) sans changer le statut
+      - L'édition applique les mêmes règles de validation que la déclaration (prix min/max, catégories)
+    - **Motif de refus :**
+      - Le motif de refus est optionnel (champ texte libre, max 200 caractères)
+    - **Finalisation :**
+      - Quand tous les articles sont traités (acceptés ou refusés), la liste peut être finalisée
+      - La finalisation passe la liste au statut "Revue terminée" (reviewed)
+    - **Irréversibilité :**
+      - Le refus est irréversible (un article refusé ne peut pas être remis en vente)
+      - L'acceptation est irréversible (un article accepté ne peut pas être refusé a posteriori)
+    - **Compteurs et affichage :**
+      - L'article refusé reste enregistré en base de données (pas de suppression)
+      - L'article refusé est exclu des compteurs de la liste (nombre d'articles en vente, valeur totale estimée)
+      - Le déposant peut consulter ses articles refusés et le motif éventuel dans une zone distincte
+    - **Traçabilité :**
+      - Chaque action (acceptation, refus, édition) est horodatée avec l'identifiant de l'utilisateur
+    - **Suivi avancement :**
+      - La page de détail de l'édition affiche l'avancement de la revue (listes traitées / total, barre de progression)
+    - **Transition vers la vente :**
+      - Les articles acceptés passent automatiquement en "En vente" (on_sale) quand l'édition passe au statut "Vente"
   - **Priorité :** Should have
   - **Responsable validation :** Bénévole + Gestionnaire
 

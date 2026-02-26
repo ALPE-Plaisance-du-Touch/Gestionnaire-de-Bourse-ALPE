@@ -150,10 +150,17 @@ class ItemListRepository:
         return await self.get_by_id(item_list.id)
 
     async def validate_list(self, item_list: ItemList) -> ItemList:
-        """Mark a list as validated."""
+        """Mark a list as validated and promote its articles to validated."""
+        from app.models.article import ArticleStatus
+
         item_list.is_validated = True
         item_list.validated_at = datetime.utcnow()
         item_list.status = ListStatus.VALIDATED.value
+
+        # Promote draft articles to validated
+        for article in item_list.articles:
+            if article.status == ArticleStatus.DRAFT.value:
+                article.status = ArticleStatus.VALIDATED.value
 
         await self.db.commit()
         await self.db.refresh(item_list)
@@ -173,6 +180,7 @@ class ItemListRepository:
         status: str | None = None,
         page: int = 1,
         limit: int = 20,
+        load_articles: bool = False,
     ) -> tuple[list[ItemList], int]:
         """List all item lists for an edition with pagination."""
         query = (
@@ -180,6 +188,9 @@ class ItemListRepository:
             .options(joinedload(ItemList.depositor))
             .where(ItemList.edition_id == edition_id)
         )
+
+        if load_articles:
+            query = query.options(joinedload(ItemList.articles))
 
         if list_type:
             query = query.where(ItemList.list_type == list_type)

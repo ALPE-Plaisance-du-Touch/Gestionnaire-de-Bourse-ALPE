@@ -27,6 +27,7 @@ export interface PendingSale {
   editionId: string;
   status: 'pending' | 'synced' | 'conflict';
   syncError?: string;
+  ticketId?: string;
 }
 
 interface BourseDB extends DBSchema {

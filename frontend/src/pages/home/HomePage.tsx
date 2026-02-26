@@ -84,6 +84,7 @@ function RoleLinks({ role, editionId, editionStatus }: { role: UserRole; edition
       title: "Gérer l'édition en cours",
       links: [
         { label: 'Détails', to: `/editions/${editionId}`, roles: ['manager', 'administrator'], needsEdition: true },
+        { label: 'Enregistrer les listes', to: `/editions/${editionId}/review`, roles: ['volunteer', 'manager', 'administrator'], needsEdition: true, statuses: ['deposit'] },
         { label: 'Caisse', to: `/editions/${editionId}/sales`, roles: ['volunteer', 'manager', 'administrator'], needsEdition: true, statuses: ['sale'] },
         { label: 'Étiquettes', to: `/editions/${editionId}/labels`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['registrations_open', 'deposit'] },
         { label: 'Gestion des ventes', to: `/editions/${editionId}/sales/manage`, roles: ['manager', 'administrator'], needsEdition: true, statuses: ['sale'] },
@@ -192,6 +193,11 @@ function AuthenticatedHomePage({
 
       {edition ? (
         <div className="mb-8">
+          {edition.isTraining && (
+            <div className="mb-3 bg-amber-50 border border-amber-300 text-amber-800 px-4 py-2 rounded-lg text-sm">
+              Bourse de formation — Les accès rapides ci-dessous pointent vers l'édition d'entraînement.
+            </div>
+          )}
           <EditionCard edition={edition} />
         </div>
       ) : (
@@ -210,11 +216,16 @@ function AuthenticatedHomePage({
   );
 }
 
+function canAccessTrainingEdition(role: UserRole, isTester: boolean): boolean {
+  if (role === 'administrator' || role === 'manager' || role === 'volunteer') return true;
+  return role === 'depositor' && isTester;
+}
+
 export function HomePage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
   const {
-    data: edition,
+    data: activeData,
     isLoading: editionLoading,
   } = useQuery({
     queryKey: ['active-edition'],
@@ -222,6 +233,12 @@ export function HomePage() {
   });
 
   const isLoading = authLoading || editionLoading;
+
+  // Determine which edition to show: real edition first, training edition as fallback
+  const realEdition = activeData?.edition ?? null;
+  const trainingEdition = activeData?.trainingEdition ?? null;
+  const showTraining = !realEdition && !!trainingEdition && !!user && canAccessTrainingEdition(user.role, user.isTester);
+  const edition = realEdition ?? (showTraining ? trainingEdition : null);
 
   return (
     <MainLayout>
@@ -232,12 +249,12 @@ export function HomePage() {
         </div>
       ) : isAuthenticated && user ? (
         <AuthenticatedHomePage
-          edition={edition ?? null}
+          edition={edition}
           firstName={user.firstName}
           role={user.role}
         />
       ) : (
-        <VisitorHomePage edition={edition ?? null} />
+        <VisitorHomePage edition={realEdition} />
       )}
     </MainLayout>
   );

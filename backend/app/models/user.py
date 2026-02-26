@@ -80,7 +80,7 @@ class User(Base, UUIDMixin, TimestampMixin):
 
     # Relationships
     item_lists: Mapped[list["ItemList"]] = relationship(
-        "ItemList", back_populates="depositor"
+        "ItemList", back_populates="depositor", foreign_keys="[ItemList.depositor_id]"
     )
     edition_registrations: Mapped[list["EditionDepositor"]] = relationship(
         "EditionDepositor", back_populates="user"

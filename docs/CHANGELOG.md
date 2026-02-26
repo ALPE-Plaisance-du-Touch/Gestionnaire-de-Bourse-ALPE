@@ -16,19 +16,27 @@ links:
 
 # Historique des versions
 
+## [1.2.0] - 2026-02-24
+- **Révision majeure : US-013 élargie en workflow de revue de listes au dépôt**
+  - **US-013** : Revue des listes lors du dépôt physique (acteur : bénévole)
+    - 10 critères d'acceptation (anciennement 5)
+    - 14 scénarios de test (T-US013-01 à T-US013-14, anciennement 7)
+    - Nouveau workflow : bénévole prend en charge une liste, 3 actions par article (Accepter, Refuser, Éditer)
+    - Édition inline des articles par le bénévole (description, prix, catégorie, etc.)
+    - Finalisation de la revue quand tous les articles sont traités
+    - Suivi avancement de la revue sur la page de détail de l'édition
+  - **REQ-F-022** : Revue des listes au dépôt (anciennement : Refus d'article au dépôt)
+    - Accepter → article statut "Accepté" (accepted), prêt pour la vente
+    - Refuser → article statut "Refusé" (rejected), exclu de la vente
+    - Éditer → modification des informations sans changer le statut
+    - Finalisation → liste statut "Revue terminée" (reviewed)
+  - **Modèle de domaine** :
+    - Ajout statut article "Accepté" (accepted) entre "Déposé" et "En_vente"
+    - Ajout statut liste "Revue terminée" (reviewed) entre "Déposée" et "Clôturée"
+    - Mise à jour des matrices de transitions d'état
+  - **Traçabilité** : matrice mise à jour (12 US, 20 REQ-F, 120 AC, 158+ tests)
+
 ## [1.1.0] - 2026-02-22
-- **Nouvelle fonctionnalité : Refus d'article au dépôt physique**
-  - **US-013** : Refuser un article non conforme lors du dépôt (acteur : bénévole)
-    - 5 critères d'acceptation
-    - 7 scénarios de test (T-US013-01 à T-US013-07)
-    - 7 règles métier (motif optionnel, irréversible, exclu des compteurs, zone "Refusés")
-  - **REQ-F-022** : Refus d'article au dépôt physique (priorité : Should have)
-    - Rôles autorisés : bénévole, gestionnaire, administrateur
-    - Motif optionnel (max 200 caractères)
-    - Article exclu des compteurs, affiché dans zone dédiée
-    - Refus irréversible, horodaté et tracé
-  - **Modèle de domaine** : ajout statut "Refusé" dans le cycle de vie Article
-    - Transition : Déposé → Refusé (via bénévole/gestionnaire/admin)
 - **Nouvelle fonctionnalité : Suivi des déclarations des déposants**
   - **US-014** : Tableau de bord de suivi des déclarations (acteur : gestionnaire)
     - 5 critères d'acceptation
@@ -38,12 +46,11 @@ links:
     - Répartition déposants par état (aucune liste, brouillon, validée)
     - Tri et filtres par statut et créneau de dépôt
     - Rappel date limite avec jours restants
-- **Traçabilité** : matrice mise à jour (12 US, 20 REQ-F, 115 AC, 151+ tests)
 
 ### Métriques mises à jour
 - **User Stories** : 12 (US-001 à US-010, US-013, US-014)
-- **Critères d'acceptation** : 115
-- **Scénarios de test** : 151+
+- **Critères d'acceptation** : 120
+- **Scénarios de test** : 158+
 - **Exigences fonctionnelles** : 20
 - **Exigences non-fonctionnelles** : 4
 - **Couverture traçabilité** : 88%

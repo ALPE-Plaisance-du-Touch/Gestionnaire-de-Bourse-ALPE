@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { ScanArticleResponse, RegisterSaleRequest, SaleResponse, SaleStats } from '@/types';
+import type { ScanArticleResponse, RegisterSaleRequest, SaleResponse, SaleStats, RegisterBatchSalesRequest, BatchSalesResponse } from '@/types';
 import type { CachedArticle } from '@/services/db';
 
 interface PaginatedSalesResponse {
@@ -32,6 +32,14 @@ export const salesApi = {
       request,
     );
     return response.data as SaleResponse;
+  },
+
+  registerBatchSales: async (editionId: string, request: RegisterBatchSalesRequest): Promise<BatchSalesResponse> => {
+    const response = await apiClient.post(
+      `/v1/editions/${editionId}/sales/batch`,
+      request,
+    );
+    return response.data as BatchSalesResponse;
   },
 
   listSales: async (editionId: string, params: ListSalesParams = {}): Promise<PaginatedSalesResponse> => {
@@ -78,6 +86,7 @@ export interface SyncSalePayload {
   paymentMethod: string;
   registerNumber: number;
   soldAt: string;
+  ticketId?: string;
 }
 
 export interface SyncSaleResultItem {

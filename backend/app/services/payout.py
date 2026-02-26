@@ -108,7 +108,12 @@ async def calculate_payouts(
 
     for item_list in item_lists:
         articles = item_list.articles
-        total_articles = len(articles)
+        # Exclude rejected articles from all counts (US-013)
+        active_articles = [
+            a for a in articles
+            if a.status != ArticleStatus.REJECTED.value
+        ]
+        total_articles = len(active_articles)
         if total_articles == 0:
             continue
 
@@ -121,7 +126,7 @@ async def calculate_payouts(
         # Calculate sold articles and gross amount
         sold_articles = 0
         gross_amount = Decimal("0.00")
-        for article in articles:
+        for article in active_articles:
             if article.status == ArticleStatus.SOLD.value:
                 sold_articles += 1
                 gross_amount += article.price
@@ -292,13 +297,17 @@ async def recalculate_payout(
 
     commission_rate = edition.commission_rate or Decimal("0.20")
 
-    # Recalculate from articles
+    # Recalculate from articles (exclude rejected, US-013)
     articles = payout.item_list.articles
-    total_articles = len(articles)
+    active_articles = [
+        a for a in articles
+        if a.status != ArticleStatus.REJECTED.value
+    ]
+    total_articles = len(active_articles)
     sold_articles = 0
     gross_amount = Decimal("0.00")
 
-    for article in articles:
+    for article in active_articles:
         if article.status == ArticleStatus.SOLD.value:
             sold_articles += 1
             gross_amount += article.price

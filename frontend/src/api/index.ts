@@ -11,3 +11,5 @@ export { salesApi } from './sales';
 export { payoutsApi } from './payouts';
 export { usersApi } from './users';
 export { billetwebApiSettings } from './billetweb-api';
+export { reviewApi } from './review';
+export { editionListsApi } from './edition-lists';

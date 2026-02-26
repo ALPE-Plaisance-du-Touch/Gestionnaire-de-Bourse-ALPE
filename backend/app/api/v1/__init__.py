@@ -11,10 +11,12 @@ from app.api.v1.endpoints import (
     deposit_slots,
     depositor_articles,
     depositor_lists,
+    edition_lists,
     editions,
     invitations,
     labels,
     payouts,
+    review,
     sales,
     users,
 )
@@ -49,6 +51,16 @@ api_router.include_router(labels.router, tags=["Labels"])
 api_router.include_router(sales.router, tags=["Sales"])
 api_router.include_router(payouts.router, tags=["Payouts"])
 api_router.include_router(audit.router, prefix="/audit-logs", tags=["Audit Logs"])
+api_router.include_router(
+    review.router,
+    prefix="/editions/{edition_id}/review",
+    tags=["Deposit Review"],
+)
+api_router.include_router(
+    edition_lists.router,
+    prefix="/editions/{edition_id}/declarations",
+    tags=["Declarations"],
+)
 
 # Depositor endpoints (article declaration)
 api_router.include_router(

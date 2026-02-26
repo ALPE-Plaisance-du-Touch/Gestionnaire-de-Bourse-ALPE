@@ -247,7 +247,70 @@ class EditionService:
                     field="status",
                 )
 
-        return await self.repository.update_status(edition, new_status)
+        result = await self.repository.update_status(edition, new_status)
+
+        # When transitioning registrations_open → deposit, lock draft lists
+        if (
+            current_status == EditionStatus.REGISTRATIONS_OPEN
+            and new_status == EditionStatus.DEPOSIT
+        ):
+            await self._lock_draft_lists(edition_id)
+
+        # When transitioning deposit → registrations_open, unlock not_finalized lists
+        if (
+            current_status == EditionStatus.DEPOSIT
+            and new_status == EditionStatus.REGISTRATIONS_OPEN
+        ):
+            await self._unlock_not_finalized_lists(edition_id)
+
+        # US-013: When transitioning deposit → sale, move accepted articles to on_sale
+        if (
+            current_status == EditionStatus.DEPOSIT
+            and new_status == EditionStatus.SALE
+        ):
+            await self._transition_accepted_to_on_sale(edition_id)
+
+        return result
+
+    async def _lock_draft_lists(self, edition_id: str) -> None:
+        """Move all draft lists to not_finalized when entering deposit phase."""
+        from app.models.item_list import ListStatus as ModelListStatus
+        from app.repositories import ItemListRepository
+
+        list_repo = ItemListRepository(self.db)
+        all_lists = await list_repo.list_by_edition_with_articles(edition_id)
+        for item_list in all_lists:
+            if item_list.status == ModelListStatus.DRAFT.value:
+                item_list.status = ModelListStatus.NOT_FINALIZED.value
+        await self.db.commit()
+
+    async def _unlock_not_finalized_lists(self, edition_id: str) -> None:
+        """Revert not_finalized lists back to draft when leaving deposit phase."""
+        from app.models.item_list import ListStatus as ModelListStatus
+        from app.repositories import ItemListRepository
+
+        list_repo = ItemListRepository(self.db)
+        all_lists = await list_repo.list_by_edition_with_articles(edition_id)
+        for item_list in all_lists:
+            if item_list.status == ModelListStatus.NOT_FINALIZED.value:
+                item_list.status = ModelListStatus.DRAFT.value
+        await self.db.commit()
+
+    async def _transition_accepted_to_on_sale(self, edition_id: str) -> None:
+        """Move all accepted articles to on_sale for an edition."""
+        from app.models.article import ArticleStatus
+        from app.repositories import ArticleRepository, ItemListRepository
+
+        list_repo = ItemListRepository(self.db)
+        article_repo = ArticleRepository(self.db)
+
+        item_lists = await list_repo.list_by_edition_with_articles(edition_id)
+        for item_list in item_lists:
+            await article_repo.bulk_update_status(
+                item_list.id,
+                ArticleStatus.ACCEPTED,
+                ArticleStatus.ON_SALE,
+            )
 
     async def force_training_status(
         self,
@@ -290,7 +353,29 @@ class EditionService:
                 field="status",
             )
 
-        return await self.repository.update_status(edition, new_status)
+        current_status = EditionStatus(edition.status)
+        result = await self.repository.update_status(edition, new_status)
+
+        # Apply same side-effects as normal transitions
+        if (
+            current_status == EditionStatus.REGISTRATIONS_OPEN
+            and new_status == EditionStatus.DEPOSIT
+        ):
+            await self._lock_draft_lists(edition_id)
+
+        if (
+            current_status == EditionStatus.DEPOSIT
+            and new_status == EditionStatus.REGISTRATIONS_OPEN
+        ):
+            await self._unlock_not_finalized_lists(edition_id)
+
+        if (
+            current_status == EditionStatus.DEPOSIT
+            and new_status == EditionStatus.SALE
+        ):
+            await self._transition_accepted_to_on_sale(edition_id)
+
+        return result
 
     async def delete_edition(self, edition_id: str) -> None:
         """

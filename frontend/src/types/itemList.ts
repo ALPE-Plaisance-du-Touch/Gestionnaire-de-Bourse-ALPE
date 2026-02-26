@@ -8,8 +8,10 @@ export type ListType = 'standard' | 'list_1000' | 'list_2000';
 
 export type ListStatus =
   | 'draft'
+  | 'not_finalized'
   | 'validated'
   | 'checked_in'
+  | 'reviewed'
   | 'retrieved'
   | 'payout_pending'
   | 'payout_completed';

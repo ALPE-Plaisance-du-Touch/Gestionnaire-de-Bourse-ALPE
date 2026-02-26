@@ -86,8 +86,8 @@ async def get_active_edition(
     """Get the active edition for homepage display."""
     repo = EditionRepository(db)
     edition = await repo.get_any_active_edition()
-    if not edition:
-        return ActiveEditionResponse(active_edition=None)
+    training = await repo.get_active_training_edition()
     return ActiveEditionResponse(
-        active_edition=EditionResponse.model_validate(edition)
+        active_edition=EditionResponse.model_validate(edition) if edition else None,
+        training_edition=EditionResponse.model_validate(training) if training else None,
     )

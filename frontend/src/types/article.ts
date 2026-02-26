@@ -22,6 +22,8 @@ export type ArticleGender =
 export type ArticleStatus =
   | 'draft'
   | 'validated'
+  | 'accepted'
+  | 'rejected'
   | 'on_sale'
   | 'sold'
   | 'unsold'
@@ -44,6 +46,9 @@ export interface Article {
   status: ArticleStatus;
   barcode: string | null;
   notes: string | null;
+  rejectionReason: string | null;
+  rejectedAt: string | null;
+  reviewedAt: string | null;
   itemListId: string;
   createdAt: string;
 }

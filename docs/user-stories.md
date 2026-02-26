@@ -2727,66 +2727,114 @@ test_scenarios:
   - T-US011-10 : Lien politique de confidentialité accessible (OK)
 ```
 
-## US-013 — Refuser un article non conforme lors du dépôt
+## US-013 — Revue des listes lors du dépôt physique
 
 ```yaml
 id: US-013
-title: Refuser un article non conforme lors du dépôt
+title: Revue des listes lors du dépôt physique
 actor: benevole
 benefit: "...pour garantir la qualité des articles mis en vente et respecter le règlement"
 as_a: "En tant que bénévole, gestionnaire ou administrateur présent lors du dépôt physique"
-i_want: "Je veux pouvoir refuser un article taché, abîmé, incomplet ou non conforme"
-so_that: "Afin que seuls les articles conformes soient mis en vente, tout en conservant la trace des articles refusés"
+i_want: "Je veux prendre en charge la liste d'un déposant, vérifier chaque article et l'accepter, le refuser ou le corriger"
+so_that: "Afin que seuls les articles conformes et correctement décrits soient mis en vente, tout en conservant la trace des articles refusés"
 
 # Contexte métier
 notes: |
+  - Lors du dépôt physique, les déposants apportent leurs articles sur le lieu de la bourse
+  - Un bénévole prend en charge une liste et vérifie physiquement chaque article
+  - Pour chaque article, le bénévole peut :
+    • Accepter : l'article correspond à sa description → prêt pour la vente
+    • Refuser : l'article est taché, abîmé, incomplet ou non conforme → exclu de la vente
+    • Éditer : la description, la catégorie ou le prix ne correspondent pas → le bénévole corrige puis accepte ou refuse
   - Le règlement stipule que "l'association se réserve le droit de refuser tout article taché, abîmé, incomplet, cassé ou non conforme"
-  - Le refus intervient lors du dépôt physique, quand le bénévole vérifie les articles du déposant
   - L'article refusé n'est pas supprimé : il reste en mémoire pour traçabilité mais est exclu des compteurs
-  - Le déposant peut consulter ses articles refusés et le motif éventuel depuis son espace
   - Le motif de refus est optionnel (le bénévole peut refuser sans justifier)
+  - Quand tous les articles d'une liste sont traités (acceptés ou refusés), le bénévole finalise la revue
+  - La page de détail de l'édition affiche une vue synthétique de l'avancement de la revue
 
 acceptance_criteria:
-  # AC-1 : Refus d'un article au dépôt
-  - GIVEN je suis un bénévole, gestionnaire ou administrateur
-    AND je consulte les articles d'une liste au statut "Validée" ou "Déposée"
-    AND un article est au statut "Déposé" (validé)
-    WHEN je clique sur "Refuser" pour cet article
-    THEN le système affiche une modale de confirmation avec :
+  # AC-1 : Liste des listes à traiter
+  - GIVEN je suis bénévole, gestionnaire ou administrateur
+    AND l'édition est au statut "Dépôt"
+    WHEN j'accède à la page de revue des listes (`/editions/:id/review`)
+    THEN je vois une liste de toutes les listes de l'édition avec pour chacune :
+      • Numéro de liste, nom du déposant, créneau de dépôt
+      • Statut de revue : "À traiter", "En cours", "Terminée"
+      • Nombre d'articles (total / acceptés / refusés)
+    AND les listes sont triables et filtrables par statut de revue et par créneau
+    AND les listes "À traiter" sont mises en avant
+
+  # AC-2 : Prise en charge d'une liste
+  - GIVEN je consulte la liste des listes à traiter
+    WHEN je clique sur une liste au statut "Validée" ou "Déposée"
+    THEN j'accède à l'écran de revue de cette liste
+    AND je vois tous les articles avec leurs informations (description, catégorie, taille, prix, code-barres)
+    AND chaque article non encore traité affiche 3 boutons d'action : "Accepter", "Refuser", "Éditer"
+
+  # AC-3 : Accepter un article
+  - GIVEN je suis sur l'écran de revue d'une liste
+    AND un article est au statut "Déposé" (validated)
+    WHEN je clique sur "Accepter"
+    THEN le statut de l'article passe à "Accepté" (accepted)
+    AND l'article est visuellement marqué comme traité (vert)
+    AND l'action est enregistrée avec horodatage et identifiant utilisateur
+
+  # AC-4 : Refuser un article
+  - GIVEN je suis sur l'écran de revue d'une liste
+    AND un article est au statut "Déposé" (validated)
+    WHEN je clique sur "Refuser"
+    THEN une modale s'affiche avec :
       • Le résumé de l'article (description, catégorie, prix)
       • Un champ texte optionnel "Motif du refus" (max 200 caractères)
-      • Un bouton "Confirmer le refus"
-      • Un bouton "Annuler"
+      • Un bouton "Confirmer le refus" et un bouton "Annuler"
+    AND quand je confirme, le statut passe à "Refusé" (rejected)
+    AND l'article est visuellement marqué comme refusé (rouge, barré)
+    AND l'article est exclu des compteurs de la liste (articles en vente, valeur totale)
 
-  # AC-2 : Confirmation du refus
-  - GIVEN la modale de refus est ouverte
-    WHEN je confirme le refus (avec ou sans motif)
-    THEN le système :
-      • Passe le statut de l'article à "Refusé"
-      • Enregistre le motif de refus (si renseigné)
-      • Enregistre l'horodatage du refus et l'identifiant de l'utilisateur
-      • Exclut l'article des compteurs de la liste (articles en vente, valeur totale)
-      • Affiche un message de confirmation : "Article refusé"
+  # AC-5 : Éditer un article avant de statuer
+  - GIVEN je suis sur l'écran de revue d'une liste
+    AND un article est au statut "Déposé" (validated)
+    WHEN je clique sur "Éditer"
+    THEN un formulaire d'édition s'affiche avec tous les champs modifiables :
+      description, catégorie, sous-catégorie, taille, marque, couleur, genre, prix
+    AND les mêmes règles de validation s'appliquent (prix min/max, catégories, etc.)
+    AND quand je sauvegarde, les modifications sont enregistrées
+    AND l'article reste au statut "Déposé" : je dois ensuite l'accepter ou le refuser
 
-  # AC-3 : Affichage des articles refusés dans la liste
-  - GIVEN une liste contient des articles refusés
-    WHEN je consulte le détail de la liste (bénévole, gestionnaire ou déposant)
-    THEN les articles refusés sont affichés dans une zone distincte "Articles refusés" :
-      • Séparés visuellement des articles actifs (en dessous, avec un titre de section)
-      • Chaque article refusé affiche : description, prix, motif de refus (si renseigné)
-      • Les articles refusés ne sont pas comptés dans le total d'articles ni dans la valeur totale
+  # AC-6 : Finalisation de la revue d'une liste
+  - GIVEN tous les articles de la liste ont été traités (acceptés ou refusés)
+    WHEN je clique sur "Finaliser la revue"
+    THEN le statut de la liste passe à "Revue terminée" (reviewed)
+    AND la liste est marquée comme terminée dans la liste des listes
+    AND un récapitulatif s'affiche : nombre d'articles acceptés, nombre refusés
 
-  # AC-4 : Irréversibilité du refus
-  - GIVEN un article a été refusé
+  # AC-7 : Irréversibilité du refus
+  - GIVEN un article a été refusé lors de la revue
     WHEN je consulte cet article
-    THEN le bouton "Refuser" n'est plus visible
-    AND aucune action ne permet de remettre l'article en vente
+    THEN aucune action ne permet de le remettre en statut accepté ou en vente
+    AND le motif de refus est affiché en lecture seule
 
-  # AC-5 : Restrictions d'accès
-  - GIVEN je suis un déposant
+  # AC-8 : Vue déposant des articles refusés
+  - GIVEN je suis déposant
+    AND ma liste a été revue
     WHEN je consulte ma liste
-    THEN je ne vois pas de bouton "Refuser" sur mes articles
-    AND je peux consulter mes articles refusés et leur motif en lecture seule
+    THEN les articles refusés sont affichés dans une zone distincte "Articles refusés"
+    AND chaque article refusé affiche le motif de refus (si renseigné)
+    AND je ne vois aucun bouton d'action (accepter, refuser, éditer)
+    AND les articles refusés ne sont pas comptés dans le total ni la valeur
+
+  # AC-9 : Restrictions d'accès
+  - GIVEN je suis déposant
+    WHEN je tente d'accéder à la page de revue (`/editions/:id/review`)
+    THEN le système affiche une erreur d'accès insuffisant ou me redirige
+
+  # AC-10 : Suivi de l'avancement dans les détails de l'édition
+  - GIVEN je suis gestionnaire ou administrateur
+    WHEN je consulte la page de détail d'une édition au statut "Dépôt"
+    THEN je vois un bloc "Avancement de la revue" avec :
+      • Nombre de listes total / à traiter / en cours / terminées
+      • Barre de progression (% de listes terminées)
+      • Nombre total d'articles acceptés et refusés
 
 dependencies:
   - US-002  # Déclaration des articles
@@ -2794,26 +2842,38 @@ dependencies:
 
 links:
   - rel: requirement
-    id: REQ-F-022  # Refus d'article au dépôt
+    id: REQ-F-022  # Revue des listes au dépôt
   - rel: requirement
     id: REQ-F-012  # Rappels réglementaires dépôt
 
 business_rules:
-  - Seuls les bénévoles, gestionnaires et administrateurs peuvent refuser un article
-  - Un article ne peut être refusé que s'il est au statut "Déposé" (validé)
+  - Seuls les bénévoles, gestionnaires et administrateurs peuvent effectuer la revue
+  - La revue n'est possible que pour les éditions au statut "Dépôt" (deposit)
+  - Un article ne peut être accepté ou refusé que s'il est au statut "Déposé" (validated)
+  - L'édition d'un article par le bénévole ne change pas son statut : il doit ensuite être accepté ou refusé
   - Le motif de refus est optionnel (champ texte libre, max 200 caractères)
-  - Le refus est irréversible
+  - Le refus est irréversible (un article refusé ne peut pas être remis en vente)
+  - L'acceptation est irréversible (un article accepté ne peut pas être refusé a posteriori)
   - L'article refusé reste en base de données mais est exclu de tous les compteurs (articles en vente, valeur totale, reversements)
-  - Le refus est horodaté et tracé (utilisateur ayant refusé)
+  - Chaque action (acceptation, refus, édition) est horodatée et tracée (utilisateur)
+  - La liste ne peut passer en "Revue terminée" que si tous ses articles sont traités
+  - Les articles acceptés passent automatiquement en "En vente" quand l'édition passe au statut "Vente"
 
 test_scenarios:
-  - T-US013-01 : Refus d'un article par un bénévole avec motif (OK, statut "Refusé", exclu des compteurs)
-  - T-US013-02 : Refus d'un article sans motif (OK)
-  - T-US013-03 : Consultation des articles refusés par le déposant (OK, zone "Refusés" visible, motif affiché)
-  - T-US013-04 : Tentative de refus par un déposant (KO, bouton non visible)
-  - T-US013-05 : Tentative de remettre en vente un article refusé (KO, irréversible)
-  - T-US013-06 : Refus d'un article — vérification que les compteurs sont mis à jour (OK)
-  - T-US013-07 : Traçabilité du refus — horodatage et identifiant de l'utilisateur (OK)
+  - T-US013-01 : Accès à la page de revue par un bénévole (OK, liste des listes affichée)
+  - T-US013-02 : Acceptation d'un article (OK, statut "Accepté", marqué vert)
+  - T-US013-03 : Refus d'un article avec motif (OK, statut "Refusé", exclu des compteurs)
+  - T-US013-04 : Refus d'un article sans motif (OK)
+  - T-US013-05 : Édition d'un article par le bénévole — prix modifié (OK, article reste "Déposé")
+  - T-US013-06 : Édition d'un article — validation prix min/max respectée (OK)
+  - T-US013-07 : Finalisation de la revue — tous articles traités (OK, liste "Revue terminée")
+  - T-US013-08 : Tentative de finalisation avec articles non traités (KO, bouton désactivé)
+  - T-US013-09 : Consultation des articles refusés par le déposant (OK, zone "Refusés" visible)
+  - T-US013-10 : Tentative d'accès à la revue par un déposant (KO, accès refusé)
+  - T-US013-11 : Tentative de remettre en vente un article refusé (KO, irréversible)
+  - T-US013-12 : Suivi avancement revue sur la page édition (OK, progression affichée)
+  - T-US013-13 : Traçabilité — horodatage et identifiant pour chaque action (OK)
+  - T-US013-14 : Articles acceptés passent en "En vente" au changement de statut édition (OK)
 ```
 
 ## US-014 — Suivre l'avancement des déclarations des déposants
@@ -2896,7 +2956,7 @@ business_rules:
   - Un déposant "validé" est un déposant dont toutes les listes sont au statut "Validée"
   - Un déposant "brouillon" a au moins une liste mais aucune validée
   - Un déposant "aucune liste" n'a créé aucune liste
-  - Les articles refusés (US-013) ne sont pas comptés dans les totaux
+  - Les articles refusés lors de la revue (US-013) ne sont pas comptés dans les totaux
   - Le tableau de bord n'est disponible que pour les éditions aux statuts inscriptions_ouvertes ou en_cours
 
 test_scenarios:

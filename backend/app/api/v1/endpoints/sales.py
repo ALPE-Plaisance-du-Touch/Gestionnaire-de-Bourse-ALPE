@@ -14,8 +14,10 @@ from app.exceptions import (
 )
 from app.models import User
 from app.schemas.sale import (
+    BatchSalesResponse,
     CancelSaleRequest,
     CatalogArticleResponse,
+    RegisterBatchSalesRequest,
     RegisterSaleRequest,
     SaleResponse,
     SaleStatsResponse,
@@ -28,6 +30,7 @@ from app.services.sale import (
     cancel_sale,
     get_article_catalog,
     get_live_stats,
+    register_batch_sales,
     register_sale,
     scan_article,
     sync_offline_sales,
@@ -96,6 +99,38 @@ async def register_sale_endpoint(
         return await register_sale(
             edition_id,
             request.article_id,
+            request.payment_method,
+            request.register_number,
+            current_user,
+            db,
+            ticket_id=request.ticket_id,
+        )
+    except ArticleAlreadySoldError as e:
+        raise HTTPException(status_code=409, detail=e.message)
+    except ArticleNotFoundError:
+        raise HTTPException(status_code=404, detail="Article not found")
+    except EditionNotFoundError:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    except ValidationError as e:
+        raise HTTPException(status_code=400, detail=e.message)
+
+
+@router.post(
+    "/editions/{edition_id}/sales/batch",
+    response_model=BatchSalesResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Register multiple sales as a ticket",
+)
+async def register_batch_sales_endpoint(
+    edition_id: str,
+    request: RegisterBatchSalesRequest,
+    db: DBSession,
+    current_user: Annotated[User, Depends(require_role(["volunteer", "manager", "administrator"]))],
+):
+    try:
+        return await register_batch_sales(
+            edition_id,
+            [item.article_id for item in request.articles],
             request.payment_method,
             request.register_number,
             current_user,

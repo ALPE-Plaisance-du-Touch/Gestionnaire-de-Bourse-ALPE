@@ -38,6 +38,11 @@ function isDeclarationOpen(edition: MyEditionSummary): boolean {
   return true;
 }
 
+function canAccessEdition(edition: MyEditionSummary): boolean {
+  const allowedStatuses = ['registrations_open', 'deposit', 'sale', 'settlement', 'closed'];
+  return allowedStatuses.includes(edition.status);
+}
+
 export function MyEditionsPage() {
   const navigate = useNavigate();
 
@@ -52,10 +57,10 @@ export function MyEditionsPage() {
 
   const editions = response?.editions ?? [];
 
-  // If only one active edition, redirect directly
-  const activeEditions = editions.filter(isDeclarationOpen);
-  if (activeEditions.length === 1 && !isLoading) {
-    navigate(`/depositor/editions/${activeEditions[0].id}/lists`, { replace: true });
+  // If only one accessible edition, redirect directly
+  const accessibleEditions = editions.filter(canAccessEdition);
+  if (accessibleEditions.length === 1 && !isLoading) {
+    navigate(`/depositor/editions/${accessibleEditions[0].id}/lists`, { replace: true });
     return null;
   }
 
@@ -115,18 +120,19 @@ export function MyEditionsPage() {
               className: 'bg-gray-100 text-gray-800',
             };
             const canDeclare = isDeclarationOpen(edition);
+            const canAccess = canAccessEdition(edition);
             const deadlinePassed = edition.declarationDeadline && new Date(edition.declarationDeadline) < new Date();
 
             return (
               <div
                 key={edition.id}
                 className={`bg-white rounded-lg shadow overflow-hidden ${
-                  canDeclare ? 'hover:shadow-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg' : 'opacity-75'
+                  canAccess ? 'hover:shadow-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg' : 'opacity-75'
                 }`}
-                onClick={() => canDeclare && navigate(`/depositor/editions/${edition.id}/lists`)}
-                role={canDeclare ? 'link' : undefined}
-                tabIndex={canDeclare ? 0 : undefined}
-                onKeyDown={canDeclare ? (e) => {
+                onClick={() => canAccess && navigate(`/depositor/editions/${edition.id}/lists`)}
+                role={canAccess ? 'link' : undefined}
+                tabIndex={canAccess ? 0 : undefined}
+                onKeyDown={canAccess ? (e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     navigate(`/depositor/editions/${edition.id}/lists`);
@@ -162,7 +168,7 @@ export function MyEditionsPage() {
                         </p>
                       )}
                     </div>
-                    {canDeclare && (
+                    {canAccess && (
                       <div className="ml-4">
                         <svg
                           className="w-6 h-6 text-gray-400"
@@ -181,10 +187,10 @@ export function MyEditionsPage() {
                     )}
                   </div>
                 </div>
-                {canDeclare && (
-                  <div className="bg-blue-50 px-5 py-3 border-t border-blue-100">
-                    <p className="text-sm text-blue-700">
-                      Cliquez pour gérer vos listes d'articles
+                {canAccess && (
+                  <div className={`px-5 py-3 border-t ${canDeclare ? 'bg-blue-50 border-blue-100' : 'bg-gray-50 border-gray-200'}`}>
+                    <p className={`text-sm ${canDeclare ? 'text-blue-700' : 'text-gray-600'}`}>
+                      {canDeclare ? 'Cliquez pour gérer vos listes d\'articles' : 'Cliquez pour consulter vos listes (lecture seule)'}
                     </p>
                   </div>
                 )}

@@ -27,8 +27,10 @@ class ListStatus(str, Enum):
     """List lifecycle status."""
 
     DRAFT = "draft"
+    NOT_FINALIZED = "not_finalized"
     VALIDATED = "validated"
     CHECKED_IN = "checked_in"  # Depositor brought items
+    REVIEWED = "reviewed"  # All articles reviewed by volunteer
     RETRIEVED = "retrieved"  # Depositor picked up unsold items
     PAYOUT_PENDING = "payout_pending"
     PAYOUT_COMPLETED = "payout_completed"
@@ -80,6 +82,12 @@ class ItemList(Base, UUIDMixin, TimestampMixin):
     labels_printed: Mapped[bool] = mapped_column(Boolean, default=False)
     labels_printed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
+    # Review fields (US-013)
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    reviewed_by_user_id: Mapped[str | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+
     # Foreign keys
     edition_id: Mapped[str] = mapped_column(
         ForeignKey("editions.id", ondelete="CASCADE"),
@@ -92,7 +100,8 @@ class ItemList(Base, UUIDMixin, TimestampMixin):
 
     # Relationships
     edition: Mapped["Edition"] = relationship("Edition", back_populates="item_lists")
-    depositor: Mapped["User"] = relationship("User", back_populates="item_lists")
+    depositor: Mapped["User"] = relationship("User", back_populates="item_lists", foreign_keys=[depositor_id])
+    reviewed_by: Mapped["User | None"] = relationship("User", foreign_keys=[reviewed_by_user_id])
     articles: Mapped[list["Article"]] = relationship(
         "Article", back_populates="item_list", cascade="all, delete-orphan"
     )

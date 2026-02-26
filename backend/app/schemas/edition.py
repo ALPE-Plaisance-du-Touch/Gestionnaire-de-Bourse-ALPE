@@ -149,3 +149,4 @@ class ActiveEditionResponse(BaseModel):
     """Response for the public active edition endpoint."""
 
     active_edition: EditionResponse | None = None
+    training_edition: EditionResponse | None = None

@@ -31,6 +31,7 @@ class RegisterSaleRequest(BaseModel):
     article_id: str
     payment_method: str  # cash, card, check
     register_number: int = 1
+    ticket_id: str | None = None
 
 
 class SaleResponse(BaseModel):
@@ -47,6 +48,7 @@ class SaleResponse(BaseModel):
     list_number: int
     can_cancel: bool
     is_private_sale: bool = False
+    ticket_id: str | None = None
 
 
 class CatalogArticleResponse(BaseModel):
@@ -70,6 +72,7 @@ class OfflineSaleItem(BaseModel):
     payment_method: str
     register_number: int = 1
     sold_at: datetime
+    ticket_id: str | None = None
 
 
 class SyncSalesRequest(BaseModel):
@@ -109,3 +112,20 @@ class SaleStatsResponse(BaseModel):
     articles_on_sale: int
     sell_through_rate: float
     top_depositors: list[TopDepositorStats]
+
+
+class BatchSaleItem(BaseModel):
+    article_id: str
+
+
+class RegisterBatchSalesRequest(BaseModel):
+    articles: list[BatchSaleItem]
+    payment_method: str
+    register_number: int = 1
+
+
+class BatchSalesResponse(BaseModel):
+    ticket_id: str
+    sales: list[SaleResponse]
+    total: Decimal
+    article_count: int

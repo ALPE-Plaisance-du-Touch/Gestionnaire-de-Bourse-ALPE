@@ -4,7 +4,7 @@ import { useNetworkStatus } from './useNetworkStatus';
 import { prefetchCatalog, lookupByBarcode } from '@/services/catalogCache';
 import { storeOfflineSale, getPendingSales, getPendingCount } from '@/services/offlineSales';
 import { syncPendingSales } from '@/services/syncService';
-import type { ScanArticleResponse } from '@/types';
+import type { ScanArticleResponse, BatchSalesResponse } from '@/types';
 import type { CachedArticle } from '@/services/db';
 
 type PaymentMethod = 'cash' | 'card' | 'check';
@@ -125,6 +125,56 @@ export function useOfflineSales({ editionId }: UseOfflineSalesOptions) {
     };
   }, [isOnline, editionId, refreshPendingCount]);
 
+  // Register batch sales (ticket): online -> API, offline -> IndexedDB
+  const registerBatchSales = useCallback(async (
+    articles: ScanArticleResponse[],
+    paymentMethod: PaymentMethod,
+  ): Promise<{ ticketId: string; total: number; articleCount: number; isOffline: boolean }> => {
+    if (isOnline && editionId) {
+      const result: BatchSalesResponse = await salesApi.registerBatchSales(editionId, {
+        articles: articles.map(a => ({ articleId: a.articleId })),
+        paymentMethod,
+        registerNumber: 1,
+      });
+      return {
+        ticketId: result.ticketId,
+        total: Number(result.total),
+        articleCount: result.articleCount,
+        isOffline: false,
+      };
+    }
+
+    // Offline: store each article with shared ticketId
+    if (!editionId) throw new Error('Edition non disponible');
+
+    const ticketId = crypto.randomUUID();
+    const soldAt = new Date().toISOString();
+
+    for (const article of articles) {
+      await storeOfflineSale({
+        articleId: article.articleId,
+        barcode: article.barcode,
+        articleDescription: article.description,
+        price: Number(article.price),
+        paymentMethod,
+        registerNumber: 1,
+        soldAt,
+        editionId,
+        ticketId,
+      });
+    }
+
+    await refreshPendingCount();
+
+    const total = articles.reduce((sum, a) => sum + Number(a.price), 0);
+    return {
+      ticketId,
+      total,
+      articleCount: articles.length,
+      isOffline: true,
+    };
+  }, [isOnline, editionId, refreshPendingCount]);
+
   // Get offline pending sales for display
   const getOfflineSales = useCallback(async () => {
     if (!editionId) return [];
@@ -140,6 +190,7 @@ export function useOfflineSales({ editionId }: UseOfflineSalesOptions) {
     syncing,
     scanArticle,
     registerSale,
+    registerBatchSales,
     getOfflineSales,
     refreshPendingCount,
   };

@@ -44,6 +44,9 @@ class Sale(Base, UUIDMixin, TimestampMixin):
     # Private sale flag (auto-detected: Friday 17h-18h = school/ALAE sale)
     is_private_sale: Mapped[bool] = mapped_column(default=False)
 
+    # Ticket grouping (sales in the same checkout share a ticket_id)
+    ticket_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
+
     # Foreign keys
     edition_id: Mapped[str] = mapped_column(
         ForeignKey("editions.id", ondelete="CASCADE"),

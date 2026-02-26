@@ -699,11 +699,26 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 **Prerequisites:** All versions 0.1 through 0.20 completed and tested.
 
-- [ ] **1.0.1** Final integration testing
-- [ ] **1.0.2** Performance optimization
-- [ ] **1.0.3** Security audit
-- [ ] **1.0.4** Documentation review
-- [ ] **1.0.5** Production deployment configuration
+### Relecture & qualité (pré-release)
+- [ ] **PRE-001** Relecture orthographe et grammaire de toute l'application (textes UI, messages d'erreur, emails, labels)
+- [ ] **PRE-002** Audit sécurité par agent dédié (OWASP Top 10, injection, XSS, CSRF, auth bypass, headers, RBAC)
+- [ ] **PRE-003** Audit dette technique par agent dédié (code mort, dépendances obsolètes, patterns incohérents, TODO/FIXME, couverture tests)
+
+### Tests & validation
+- [ ] **PRE-004** Tests d'intégration end-to-end (scénario complet déposant + bénévole + gestionnaire)
+- [ ] **PRE-005** Tests de charge (5 caisses simultanées, 50 transactions/min)
+- [ ] **PRE-006** Audit sécurité externe (OWASP ZAP, vérification headers, injection)
+- [ ] **PRE-007** Audit accessibilité externe (WCAG 2.1 AA)
+- [ ] **PRE-008** Tests RGPD exhaustifs (export, rectification, effacement, portabilité)
+
+### Specs & docs restantes
+- [ ] **PRE-009** Compléter traçabilité : tests manquants
+- [ ] **PRE-010** Revue documentation (README utilisateur, guides déploiement)
+
+### Stabilisation
+- [ ] **PRE-011** Optimisation performance (lazy loading, bundle size, requêtes N+1)
+- [ ] **PRE-012** Bug fixes identifiés durant les tests
+- [ ] **PRE-013** Tag release + déploiement production
 
 ---
 

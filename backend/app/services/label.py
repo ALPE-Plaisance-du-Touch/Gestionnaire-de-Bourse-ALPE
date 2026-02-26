@@ -127,6 +127,11 @@ def _format_slot_label(slot) -> str:
     return f"{day_name} {start.strftime('%Hh%M')}-{end.strftime('%Hh%M')}"
 
 
+def _printable_articles(item_list: "ItemList") -> list:
+    """Return articles eligible for label printing (exclude rejected)."""
+    return [a for a in item_list.articles if a.status != "rejected"]
+
+
 def _build_cover_page_html(
     edition: "Edition",
     lists: list["ItemList"],
@@ -145,9 +150,9 @@ def _build_cover_page_html(
                 "total_articles": 0,
             }
         depositors[dep_key]["lists"].append(item_list.number)
-        depositors[dep_key]["total_articles"] += len(item_list.articles)
+        depositors[dep_key]["total_articles"] += len(_printable_articles(item_list))
 
-    total_labels = sum(len(il.articles) for il in lists)
+    total_labels = sum(len(_printable_articles(il)) for il in lists)
 
     depositor_rows = ""
     for i, (_, dep_info) in enumerate(sorted(depositors.items(), key=lambda x: x[1]["name"]), 1):
@@ -208,9 +213,9 @@ def _build_separator_page_html(
     slot_label: str | None,
 ) -> str:
     """Build a separator page for a depositor."""
-    total_articles = sum(len(il.articles) for il in lists)
+    total_articles = sum(len(_printable_articles(il)) for il in lists)
     total_clothing = sum(
-        sum(1 for a in il.articles if a.is_clothing) for il in lists
+        sum(1 for a in _printable_articles(il) if a.is_clothing) for il in lists
     )
     list_numbers = ", ".join(f"Liste {il.number}" for il in lists)
 
@@ -241,17 +246,21 @@ def _build_separator_page_html(
 
 
 def _build_article_list_html(item_list: "ItemList") -> str:
-    """Build printable article list for a list."""
-    articles = sorted(item_list.articles, key=lambda a: a.line_number)
-    total_value = sum(a.price for a in articles)
+    """Build printable article list for a list, split into sale and rejected sections."""
+    sale_articles = sorted(_printable_articles(item_list), key=lambda a: a.line_number)
+    rejected_articles = sorted(
+        [a for a in item_list.articles if a.status == "rejected"],
+        key=lambda a: a.line_number,
+    )
+    sale_value = sum(a.price for a in sale_articles)
 
-    rows = ""
-    for article in articles:
+    sale_rows = ""
+    for article in sale_articles:
         cat_label = CATEGORY_LABELS.get(article.category, article.category)
         size_info = article.size or ""
         lot_info = f" (lot de {article.lot_quantity})" if article.is_lot else ""
 
-        rows += f"""
+        sale_rows += f"""
         <tr>
             <td style="text-align:center">{article.line_number}</td>
             <td>{cat_label}</td>
@@ -261,12 +270,55 @@ def _build_article_list_html(item_list: "ItemList") -> str:
         </tr>
         """
 
+    rejected_html = ""
+    if rejected_articles:
+        rejected_value = sum(a.price for a in rejected_articles)
+        rejected_rows = ""
+        for article in rejected_articles:
+            cat_label = CATEGORY_LABELS.get(article.category, article.category)
+            size_info = article.size or ""
+            lot_info = f" (lot de {article.lot_quantity})" if article.is_lot else ""
+            reason = f' <em style="color:#991b1b">({article.rejection_reason})</em>' if article.rejection_reason else ""
+
+            rejected_rows += f"""
+            <tr>
+                <td style="text-align:center">{article.line_number}</td>
+                <td>{cat_label}</td>
+                <td>{article.description}{lot_info}{reason}</td>
+                <td>{size_info}</td>
+                <td style="text-align:right">{format_price(article.price)}</td>
+            </tr>
+            """
+
+        rejected_html = f"""
+        <h3 class="rejected-section-title">Articles refus&eacute;s ({len(rejected_articles)})</h3>
+        <table class="article-table rejected-table">
+            <thead>
+                <tr>
+                    <th style="width:40px">N</th>
+                    <th style="width:100px">Categorie</th>
+                    <th>Description</th>
+                    <th style="width:60px">Taille</th>
+                    <th style="width:70px;text-align:right">Prix</th>
+                </tr>
+            </thead>
+            <tbody>
+                {rejected_rows}
+            </tbody>
+        </table>
+        <div class="rejected-footer">
+            <span>Articles refus&eacute;s ({len(rejected_articles)})</span>
+            <span>{format_price(rejected_value)}</span>
+        </div>
+        """
+
     depositor = item_list.depositor
     depositor_name = f"{depositor.first_name} {depositor.last_name}"
 
     return f"""
     <div class="article-list-page">
         <h2>Liste des articles - {depositor_name} - Liste {item_list.number}</h2>
+        <h3 class="sale-section-title">Articles mis en vente ({len(sale_articles)})</h3>
         <table class="article-table">
             <thead>
                 <tr>
@@ -278,21 +330,22 @@ def _build_article_list_html(item_list: "ItemList") -> str:
                 </tr>
             </thead>
             <tbody>
-                {rows}
+                {sale_rows}
                 <tr class="total-row">
-                    <td colspan="4" style="text-align:right"><strong>Total : {len(articles)} articles</strong></td>
-                    <td style="text-align:right"><strong>{format_price(total_value)}</strong></td>
+                    <td colspan="4" style="text-align:right"><strong>Total : {len(sale_articles)} articles</strong></td>
+                    <td style="text-align:right"><strong>{format_price(sale_value)}</strong></td>
                 </tr>
             </tbody>
         </table>
+        {rejected_html}
         <p class="article-list-note">A remettre au deposant dans la pochette transparente</p>
     </div>
     """
 
 
 def _build_labels_html(item_list: "ItemList", edition_id: str) -> str:
-    """Build label pages for a list (12 labels per page, 3x4 grid)."""
-    articles = sorted(item_list.articles, key=lambda a: a.line_number)
+    """Build label pages for a list (12 labels per page, 3x4 grid, excludes rejected)."""
+    articles = sorted(_printable_articles(item_list), key=lambda a: a.line_number)
     total_articles = len(articles)
     bg_color = get_label_color_hex(item_list.label_color)
 
@@ -551,12 +604,42 @@ def generate_labels_pdf(
             .article-table tr:nth-child(even) {{
                 background: #f8fafc;
             }}
+            .sale-section-title {{
+                font-size: 11pt;
+                color: #166534;
+                margin: 5mm 0 3mm 0;
+            }}
             .total-row {{
                 background: #f0fdf4 !important;
             }}
             .total-row td {{
                 border-top: 2px solid #22c55e;
                 padding-top: 8px;
+            }}
+            .rejected-section-title {{
+                font-size: 11pt;
+                color: #991b1b;
+                margin: 8mm 0 3mm 0;
+            }}
+            .rejected-table tr:nth-child(even) {{
+                background: #fef2f2 !important;
+            }}
+            .rejected-table td {{
+                color: #555;
+            }}
+            .rejected-table tr:last-child td {{
+                border-bottom: none;
+            }}
+            .rejected-footer {{
+                background: #fef2f2;
+                border-top: 2px solid #dc2626;
+                color: #333;
+                font-weight: bold;
+                font-size: 9pt;
+                padding: 6px 8px;
+                display: flex;
+                justify-content: space-between;
+                margin-top: 0;
             }}
             .article-list-note {{
                 margin-top: 8mm;

@@ -1,6 +1,8 @@
 """Sale service for checkout operations."""
 
+import uuid
 from datetime import datetime, timedelta
+from decimal import Decimal
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,6 +17,7 @@ from app.models.article import ArticleStatus
 from app.models.sale import PaymentMethod
 from app.repositories import ArticleRepository, EditionRepository, SaleRepository
 from app.schemas.sale import (
+    BatchSalesResponse,
     CatalogArticleResponse,
     OfflineSaleItem,
     SaleResponse,
@@ -79,6 +82,7 @@ async def register_sale(
     register_number: int,
     seller: User,
     db: AsyncSession,
+    ticket_id: str | None = None,
 ) -> SaleResponse:
     # Validate payment method
     valid_methods = {m.value for m in PaymentMethod}
@@ -123,6 +127,7 @@ async def register_sale(
         article_id=article_id,
         seller_id=seller.id,
         is_private_sale=_is_private_sale_time(sold_at),
+        ticket_id=ticket_id,
     )
     await sale_repo.create(sale)
 
@@ -134,6 +139,89 @@ async def register_sale(
     sale = await sale_repo.get_by_id(sale.id)
 
     return _sale_to_response(sale, seller)
+
+
+async def register_batch_sales(
+    edition_id: str,
+    article_ids: list[str],
+    payment_method: str,
+    register_number: int,
+    seller: User,
+    db: AsyncSession,
+) -> BatchSalesResponse:
+    """Register multiple sales as a single ticket (checkout transaction)."""
+    if not article_ids:
+        raise ValidationError("At least one article is required")
+
+    valid_methods = {m.value for m in PaymentMethod}
+    if payment_method not in valid_methods:
+        raise ValidationError(f"Invalid payment method: {payment_method}")
+
+    edition_repo = EditionRepository(db)
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise EditionNotFoundError(edition_id)
+
+    if edition.status != "sale":
+        raise ValidationError("Sales can only be registered for editions in sale status")
+
+    ticket_id = str(uuid.uuid4())
+    sale_repo = SaleRepository(db)
+    article_repo = ArticleRepository(db)
+    sold_at = datetime.now()
+    is_private = _is_private_sale_time(sold_at)
+    sales: list[Sale] = []
+
+    for article_id in article_ids:
+        article = await article_repo.get_by_id(article_id)
+        if not article:
+            raise ArticleNotFoundError(article_id)
+
+        if article.item_list.edition_id != edition_id:
+            raise ArticleNotFoundError(article_id)
+
+        if not article.is_available:
+            if article.is_sold:
+                raise ArticleAlreadySoldError(article_id)
+            raise ValidationError(
+                f"Article is not available for sale (status: {article.status})"
+            )
+
+        existing = await sale_repo.get_by_article_id(article_id)
+        if existing:
+            raise ArticleAlreadySoldError(article_id)
+
+        sale = Sale(
+            sold_at=sold_at,
+            price=article.price,
+            payment_method=payment_method,
+            register_number=register_number,
+            edition_id=edition_id,
+            article_id=article_id,
+            seller_id=seller.id,
+            is_private_sale=is_private,
+            ticket_id=ticket_id,
+        )
+        db.add(sale)
+        article.status = ArticleStatus.SOLD.value
+        sales.append(sale)
+
+    await db.commit()
+
+    # Reload sales with relations
+    sale_responses = []
+    for sale in sales:
+        loaded_sale = await sale_repo.get_by_id(sale.id)
+        sale_responses.append(_sale_to_response(loaded_sale, seller))
+
+    total = sum(s.price for s in sale_responses)
+
+    return BatchSalesResponse(
+        ticket_id=ticket_id,
+        sales=sale_responses,
+        total=total,
+        article_count=len(sale_responses),
+    )
 
 
 async def cancel_sale(
@@ -289,6 +377,7 @@ async def sync_offline_sales(
             is_offline_sale=True,
             synced_at=datetime.now(),
             is_private_sale=_is_private_sale_time(item.sold_at),
+            ticket_id=item.ticket_id,
         )
         await sale_repo.create(sale)
 
@@ -362,4 +451,5 @@ def _sale_to_response(sale: Sale, current_user: User) -> SaleResponse:
         list_number=sale.article.item_list.number,
         can_cancel=can_cancel,
         is_private_sale=sale.is_private_sale,
+        ticket_id=sale.ticket_id,
     )

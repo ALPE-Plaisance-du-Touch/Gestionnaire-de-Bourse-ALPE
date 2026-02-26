@@ -31,6 +31,9 @@ interface ArticleApiResponse {
   status: string;
   barcode: string | null;
   notes: string | null;
+  rejectionReason: string | null;
+  rejectedAt: string | null;
+  reviewedAt: string | null;
   itemListId: string;
   createdAt: string;
 }
@@ -94,6 +97,9 @@ function transformArticle(data: ArticleApiResponse): Article {
     status: data.status as ArticleStatus,
     barcode: data.barcode,
     notes: data.notes,
+    rejectionReason: data.rejectionReason,
+    rejectedAt: data.rejectedAt,
+    reviewedAt: data.reviewedAt,
     itemListId: data.itemListId,
     createdAt: data.createdAt,
   };

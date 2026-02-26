@@ -32,13 +32,14 @@ export function SalesPage() {
     lastSyncCount,
     conflicts,
     scanArticle: offlineScan,
-    registerSale: offlineRegister,
+    registerBatchSales: offlineBatchRegister,
     getOfflineSales,
     refreshPendingCount,
   } = useOfflineSales({ editionId });
 
-  const [scannedArticle, setScannedArticle] = useState<ScanArticleResponse | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
+  const [cart, setCart] = useState<ScanArticleResponse[]>([]);
+  const [isPaymentMode, setIsPaymentMode] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [offlineSalesList, setOfflineSalesList] = useState<PendingSale[]>([]);
@@ -63,14 +64,13 @@ export function SalesPage() {
     refetchInterval: isOnline ? 5000 : false,
   });
 
-  // Scan mutation (works online and offline via hook)
+  // Scan mutation - adds directly to cart
   const scanMutation = useMutation({
     mutationFn: (barcode: string) => offlineScan(barcode),
     onSuccess: (data) => {
-      setScannedArticle(data);
       setScanError(null);
-      setSelectedPayment(null);
       setSuccessMessage(null);
+
       if (!data.isAvailable) {
         playErrorBeep();
         setScanError(
@@ -78,25 +78,39 @@ export function SalesPage() {
             ? 'Cet article a deja ete vendu !'
             : `Article non disponible (statut: ${data.status})`
         );
+        return;
       }
+
+      // Check if already in cart
+      if (cart.some(a => a.articleId === data.articleId)) {
+        playErrorBeep();
+        setScanError('Cet article est deja dans le panier');
+        return;
+      }
+
+      // Add directly to cart
+      setCart(prev => [...prev, data]);
+      playSuccessBeep();
     },
     onError: (error: Error) => {
-      setScannedArticle(null);
-      setScanError(error.message || 'Article non trouvé');
+      setScanError(error.message || 'Article non trouve');
       playErrorBeep();
     },
   });
 
-  // Register sale mutation (works online and offline via hook)
-  const registerMutation = useMutation({
-    mutationFn: (params: { article: ScanArticleResponse; paymentMethod: PaymentMethod }) =>
-      offlineRegister(params.article, params.paymentMethod),
+  // Checkout mutation (batch)
+  const checkoutMutation = useMutation({
+    mutationFn: (params: { articles: ScanArticleResponse[]; paymentMethod: PaymentMethod }) =>
+      offlineBatchRegister(params.articles, params.paymentMethod),
     onSuccess: (data) => {
       playSuccessBeep();
       const suffix = data.isOffline ? ' (hors-ligne)' : '';
-      setSuccessMessage(`Vente enregistrée${suffix} ! ${data.description} - ${data.price.toFixed(2)} EUR`);
-      setScannedArticle(null);
+      setSuccessMessage(
+        `Paye${suffix} ! ${data.articleCount} article${data.articleCount > 1 ? 's' : ''} - ${data.total.toFixed(2)} EUR`
+      );
+      setCart([]);
       setSelectedPayment(null);
+      setIsPaymentMode(false);
       if (!data.isOffline) {
         queryClient.invalidateQueries({ queryKey: ['sales', editionId] });
       }
@@ -104,7 +118,7 @@ export function SalesPage() {
     },
     onError: (error: Error) => {
       playErrorBeep();
-      setScanError(error.message || 'Erreur lors de l\'enregistrement de la vente');
+      setScanError(error.message || "Erreur lors de l'enregistrement");
     },
   });
 
@@ -122,14 +136,40 @@ export function SalesPage() {
     scanMutation.mutate(barcode);
   }, [scanMutation]);
 
-  const handleRegister = () => {
-    if (scannedArticle && selectedPayment) {
-      registerMutation.mutate({
-        article: scannedArticle,
-        paymentMethod: selectedPayment,
-      });
-    }
+  const handleRemoveFromCart = (articleId: string) => {
+    setCart(prev => {
+      const next = prev.filter(a => a.articleId !== articleId);
+      if (next.length === 0) {
+        setIsPaymentMode(false);
+        setSelectedPayment(null);
+      }
+      return next;
+    });
   };
+
+  const handleClearCart = () => {
+    setCart([]);
+    setSelectedPayment(null);
+    setIsPaymentMode(false);
+  };
+
+  const handleGoToPayment = () => {
+    setIsPaymentMode(true);
+    setScanError(null);
+    setSuccessMessage(null);
+  };
+
+  const handleBackToScan = () => {
+    setIsPaymentMode(false);
+    setSelectedPayment(null);
+  };
+
+  const handlePay = () => {
+    if (cart.length === 0 || !selectedPayment) return;
+    checkoutMutation.mutate({ articles: cart, paymentMethod: selectedPayment });
+  };
+
+  const cartTotal = cart.reduce((sum, a) => sum + Number(a.price), 0);
 
   // Merge server sales with offline pending sales for display
   const serverSales = recentSales?.items || [];
@@ -160,7 +200,7 @@ export function SalesPage() {
             to={backLink}
             className="text-sm text-blue-600 hover:text-blue-700 mb-1 inline-block"
           >
-            &larr; {canViewEdition ? "Retour à l'édition" : "Retour à l'accueil"}
+            &larr; {canViewEdition ? "Retour a l'edition" : "Retour a l'accueil"}
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Caisse</h1>
         </div>
@@ -176,15 +216,18 @@ export function SalesPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left column - Scanner */}
+        {/* Left column - Scanner + Cart */}
         <div className="space-y-4">
-          <div className="bg-white rounded-lg shadow p-4">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Scanner un article</h2>
-            <QrScanner
-              onScan={handleScan}
-              disabled={scanMutation.isPending || registerMutation.isPending}
-            />
-          </div>
+          {/* Scanner (hidden during payment) */}
+          {!isPaymentMode && (
+            <div className="bg-white rounded-lg shadow p-4">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Scanner un article</h2>
+              <QrScanner
+                onScan={handleScan}
+                disabled={scanMutation.isPending || checkoutMutation.isPending}
+              />
+            </div>
+          )}
 
           {/* Success message */}
           {successMessage && (
@@ -200,71 +243,108 @@ export function SalesPage() {
             </div>
           )}
 
-          {/* Article info */}
-          {scannedArticle && scannedArticle.isAvailable && (
-            <div
-              className="rounded-lg shadow p-4 border-2"
-              style={{
-                borderColor: scannedArticle.labelColor ? getLabelColorHex(scannedArticle.labelColor) : '#e5e7eb',
-                backgroundColor: scannedArticle.labelColor ? getLabelColorHex(scannedArticle.labelColor) + '15' : '#ffffff',
-              }}
-            >
-              <h3 className="font-semibold text-gray-900 mb-3">Article scanné</h3>
-              <div className="grid grid-cols-2 gap-2 text-sm mb-4">
-                <div>
-                  <span className="text-gray-500">Description</span>
-                  <p className="font-medium">{scannedArticle.description}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">Prix</span>
-                  <p className="text-xl font-bold text-gray-900">{Number(scannedArticle.price).toFixed(2)} EUR</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">Catégorie</span>
-                  <p>{scannedArticle.category}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">Taille</span>
-                  <p>{scannedArticle.size || '-'}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">Déposant</span>
-                  <p>{scannedArticle.depositorName}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">Liste</span>
-                  <p>N{'\u00B0'}{scannedArticle.listNumber}</p>
-                </div>
+          {/* Cart / Panier */}
+          {cart.length > 0 && (
+            <div className="bg-white rounded-lg shadow border-2 border-blue-200">
+              <div className="flex items-center justify-between p-4 border-b border-blue-100 bg-blue-50 rounded-t-lg">
+                <h3 className="font-semibold text-blue-900">Panier</h3>
+                <span className="text-sm text-blue-700 font-medium">
+                  {cart.length} article{cart.length > 1 ? 's' : ''}
+                </span>
               </div>
 
-              {/* Payment selection */}
-              <div className="border-t pt-4">
-                <p className="text-sm font-medium text-gray-700 mb-2">Moyen de paiement</p>
-                <div className="flex gap-2 mb-4">
-                  {(['cash', 'card', 'check'] as PaymentMethod[]).map((method) => (
-                    <button
-                      key={method}
-                      type="button"
-                      onClick={() => setSelectedPayment(method)}
-                      className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium border-2 transition-colors ${
-                        selectedPayment === method
-                          ? 'border-blue-600 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                      }`}
-                    >
-                      {PAYMENT_LABELS[method]}
-                    </button>
-                  ))}
-                </div>
+              <div className="divide-y divide-gray-100">
+                {cart.map((article) => (
+                  <div key={article.articleId} className="flex items-center justify-between p-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{article.description}</p>
+                      <p className="text-xs text-gray-500">
+                        L{article.listNumber} &middot; {article.depositorName}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 ml-3">
+                      <span className="font-semibold text-gray-900">{Number(article.price).toFixed(2)} EUR</span>
+                      {!isPaymentMode && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFromCart(article.articleId)}
+                          className="text-red-500 hover:text-red-700 p-1"
+                          aria-label={`Retirer ${article.description}`}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-                <button
-                  type="button"
-                  onClick={handleRegister}
-                  disabled={!selectedPayment || registerMutation.isPending}
-                  className="w-full py-3 px-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-lg"
-                >
-                  {registerMutation.isPending ? 'Enregistrement...' : 'Enregistrer la vente'}
-                </button>
+              {/* Total */}
+              <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50">
+                <span className="font-semibold text-gray-900">TOTAL</span>
+                <span className="text-xl font-bold text-gray-900">{cartTotal.toFixed(2)} EUR</span>
+              </div>
+
+              {/* Actions */}
+              <div className="p-4 border-t border-gray-200">
+                {!isPaymentMode ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleGoToPayment}
+                      className="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-lg mb-2"
+                    >
+                      Passer au paiement
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleClearCart}
+                      className="w-full py-2 px-4 text-gray-600 font-medium rounded-lg hover:bg-gray-100 transition-colors text-sm"
+                    >
+                      Vider le panier
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium text-gray-700 mb-3">Mode de paiement</p>
+                    <div className="flex gap-2 mb-4">
+                      {(['cash', 'card', 'check'] as PaymentMethod[]).map((method) => (
+                        <button
+                          key={method}
+                          type="button"
+                          onClick={() => setSelectedPayment(method)}
+                          className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium border-2 transition-colors ${
+                            selectedPayment === method
+                              ? 'border-blue-600 bg-blue-50 text-blue-700'
+                              : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          {PAYMENT_LABELS[method]}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handlePay}
+                      disabled={!selectedPayment || checkoutMutation.isPending}
+                      className="w-full py-3 px-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-lg mb-2"
+                    >
+                      {checkoutMutation.isPending ? 'Enregistrement...' : 'Paye'}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleBackToScan}
+                      disabled={checkoutMutation.isPending}
+                      className="w-full py-2 px-4 text-gray-600 font-medium rounded-lg hover:bg-gray-100 transition-colors text-sm"
+                    >
+                      Retour au scan
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -280,7 +360,7 @@ export function SalesPage() {
           </div>
 
           {allSales.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">Aucune vente enregistrée</p>
+            <p className="text-gray-500 text-center py-8">Aucune vente enregistree</p>
           ) : (
             <div className="space-y-2 max-h-[600px] overflow-y-auto">
               {allSales.map((sale) => (
@@ -340,6 +420,7 @@ function SaleItem({
   cancelling: boolean;
   cancelDisabled: boolean;
 }) {
+  const [confirming, setConfirming] = useState(false);
   const soldAt = new Date(sale.soldAt);
   const time = soldAt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
@@ -362,14 +443,35 @@ function SaleItem({
       <div className="flex items-center gap-3 ml-3">
         <span className="font-semibold text-gray-900">{Number(sale.price).toFixed(2)} EUR</span>
         {sale.canCancel && !cancelDisabled && (
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={cancelling}
-            className="text-xs text-red-600 hover:text-red-700 disabled:opacity-50"
-          >
-            Annuler
-          </button>
+          confirming ? (
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => { onCancel(); setConfirming(false); }}
+                disabled={cancelling}
+                className="text-xs font-medium text-white bg-red-600 hover:bg-red-700 px-2 py-1 rounded disabled:opacity-50"
+              >
+                Confirmer
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirming(false)}
+                disabled={cancelling}
+                className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
+              >
+                Non
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirming(true)}
+              disabled={cancelling}
+              className="text-xs text-red-600 hover:text-red-700 disabled:opacity-50"
+            >
+              Annuler
+            </button>
+          )
         )}
       </div>
     </div>
@@ -392,17 +494,3 @@ function PrivateSaleBanner() {
   );
 }
 
-// Map label colors to hex values (same as backend)
-function getLabelColorHex(color: string): string {
-  const colors: Record<string, string> = {
-    sky_blue: '#87CEEB',
-    yellow: '#FFD700',
-    fuchsia: '#FF69B4',
-    lilac: '#C8A2C8',
-    mint_green: '#98FF98',
-    orange: '#FF8C00',
-    white: '#FFFFFF',
-    pink: '#FFB6C1',
-  };
-  return colors[color] || '#E5E7EB';
-}
