@@ -10,31 +10,34 @@ from app.config import settings
 from app.middleware import LoginRateLimitMiddleware, RateLimitMiddleware
 
 
+WEAK_JWT_SECRETS = {"your-secret-key-change-in-production", "dev-secret-key-change-in-production", ""}
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan handler for startup and shutdown events."""
-    # Startup
-    # TODO: Initialize database connection pool
-    # TODO: Run pending migrations in production
+    if settings.is_production:
+        if settings.jwt_secret_key in WEAK_JWT_SECRETS:
+            raise RuntimeError("JWT_SECRET_KEY must be set to a strong secret in production")
+        if len(settings.jwt_secret_key) < 32:
+            raise RuntimeError("JWT_SECRET_KEY must be at least 32 characters in production")
     yield
-    # Shutdown
-    # TODO: Close database connections
 
 
 app = FastAPI(
     title="Bourse ALPE API",
     description="API for managing second-hand goods sales events",
     version="0.1.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json",
+    docs_url="/api/docs" if settings.is_development else None,
+    redoc_url="/api/redoc" if settings.is_development else None,
+    openapi_url="/api/openapi.json" if settings.is_development else None,
     lifespan=lifespan,
 )
 
-# Rate limiting middleware (disabled in development for easier testing)
-# TODO: Re-enable in production
-# app.add_middleware(LoginRateLimitMiddleware, max_attempts=5, lockout_seconds=900)
-# app.add_middleware(RateLimitMiddleware)
+# Rate limiting middleware (skip in development for easier testing)
+if not settings.is_development:
+    app.add_middleware(LoginRateLimitMiddleware, max_attempts=5, lockout_seconds=900)
+    app.add_middleware(RateLimitMiddleware)
 
 # CORS middleware
 app.add_middleware(
