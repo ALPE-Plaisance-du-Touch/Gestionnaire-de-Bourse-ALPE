@@ -56,8 +56,8 @@ export function PaymentModal({ isOpen, onClose, payout, onConfirm, isLoading }: 
           </label>
           <div className="flex gap-3">
             {([
-              { value: 'cash', label: 'Especes' },
-              { value: 'check', label: 'Cheque' },
+              { value: 'cash', label: 'Espèces' },
+              { value: 'check', label: 'Chèque' },
               { value: 'transfer', label: 'Virement' },
             ] as const).map((method) => (
               <label
@@ -86,7 +86,7 @@ export function PaymentModal({ isOpen, onClose, payout, onConfirm, isLoading }: 
         {paymentMethod === 'check' && (
           <div className="mb-4">
             <label htmlFor="checkNumber" className="block text-sm font-medium text-gray-700 mb-1">
-              Numero de cheque <span className="text-red-500">*</span>
+              Numéro de chèque <span className="text-red-500">*</span>
             </label>
             <input
               id="checkNumber"
@@ -94,7 +94,7 @@ export function PaymentModal({ isOpen, onClose, payout, onConfirm, isLoading }: 
               value={paymentReference}
               onChange={(e) => setPaymentReference(e.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              placeholder="N de cheque"
+              placeholder="N° de chèque"
               required
             />
           </div>
@@ -104,7 +104,7 @@ export function PaymentModal({ isOpen, onClose, payout, onConfirm, isLoading }: 
         {paymentMethod === 'transfer' && (
           <div className="mb-4">
             <label htmlFor="transferRef" className="block text-sm font-medium text-gray-700 mb-1">
-              Reference / Date du virement <span className="text-red-500">*</span>
+              Référence / Date du virement <span className="text-red-500">*</span>
             </label>
             <input
               id="transferRef"
@@ -112,7 +112,7 @@ export function PaymentModal({ isOpen, onClose, payout, onConfirm, isLoading }: 
               value={paymentReference}
               onChange={(e) => setPaymentReference(e.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              placeholder="Reference ou date du virement"
+              placeholder="Référence ou date du virement"
               required
             />
           </div>
@@ -129,7 +129,7 @@ export function PaymentModal({ isOpen, onClose, payout, onConfirm, isLoading }: 
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            placeholder="Notes supplementaires..."
+            placeholder="Notes supplémentaires..."
           />
         </div>
 
