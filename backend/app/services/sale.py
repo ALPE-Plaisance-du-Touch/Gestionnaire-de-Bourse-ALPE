@@ -323,7 +323,29 @@ async def sync_offline_sales(
     conflicts = 0
     errors = 0
 
+    now = datetime.now()
+    max_future = timedelta(minutes=5)
+    max_past = timedelta(hours=48)
+
     for item in sales:
+        # Validate timestamp bounds
+        if item.sold_at > now + max_future:
+            results.append(SyncSaleResult(
+                client_id=item.client_id,
+                status="error",
+                error_message="Sale timestamp cannot be in the future",
+            ))
+            errors += 1
+            continue
+        if now - item.sold_at > max_past:
+            results.append(SyncSaleResult(
+                client_id=item.client_id,
+                status="error",
+                error_message="Sale timestamp too old for offline sync (max 48h)",
+            ))
+            errors += 1
+            continue
+
         # Validate payment method
         if item.payment_method not in valid_methods:
             results.append(SyncSaleResult(
