@@ -22,6 +22,7 @@ export async function syncPendingSales(editionId: string): Promise<SyncResult> {
     paymentMethod: s.paymentMethod,
     registerNumber: s.registerNumber,
     soldAt: s.soldAt,
+    ticketId: s.ticketId,
   }));
 
   const response = await salesApi.syncSales(editionId, payload);

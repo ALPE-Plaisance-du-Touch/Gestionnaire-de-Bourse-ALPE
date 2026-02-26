@@ -38,6 +38,25 @@ export interface SaleResponse {
   depositorName: string;
   listNumber: number;
   canCancel: boolean;
+  isPrivateSale: boolean;
+  ticketId: string | null;
+}
+
+export interface BatchSaleItem {
+  articleId: string;
+}
+
+export interface RegisterBatchSalesRequest {
+  articles: BatchSaleItem[];
+  paymentMethod: 'cash' | 'card' | 'check';
+  registerNumber?: number;
+}
+
+export interface BatchSalesResponse {
+  ticketId: string;
+  sales: SaleResponse[];
+  total: number;
+  articleCount: number;
 }
 
 export interface TopDepositorStats {
