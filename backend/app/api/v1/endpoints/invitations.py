@@ -190,6 +190,9 @@ async def bulk_create_invitations(
     current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
 ):
     """Create multiple invitations at once."""
+    if len(invitations) > 500:
+        raise HTTPException(status_code=422, detail="Maximum 500 invitations per request")
+
     invitation_dicts = [
         {
             "email": inv.email,

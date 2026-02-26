@@ -41,7 +41,7 @@ class UserSelfUpdate(BaseModel):
     first_name: str | None = Field(None, max_length=100)
     last_name: str | None = Field(None, max_length=100)
     phone: str | None = Field(None, max_length=20)
-    address: str | None = None
+    address: str | None = Field(None, max_length=500)
 
 
 class UserResponse(BaseModel):
