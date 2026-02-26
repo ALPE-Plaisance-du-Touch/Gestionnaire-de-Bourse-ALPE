@@ -18,8 +18,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 "Gestionnaire de Bourse ALPE" is a web application to manage second-hand goods sales events organized by ALPE Plaisance du Touch (France). The target audience is depositors (sellers) and volunteer staff.
 
-**Current status**: Development phase - v0.19 complete (Billetweb API Integration)
-**Next milestone**: v1.0.0 - Production Release
+**Current status**: Development phase - v0.22 complete (all US implemented)
+**Next milestone**: v1.0.0 - Production Release (stabilisation, tests, audits)
 
 See [PLAN.md](PLAN.md) for the unified roadmap and [DEVELOPMENT.md](DEVELOPMENT.md) for detailed task breakdown.
 
@@ -142,7 +142,7 @@ All specs are in `docs/` (v1.0.0 validated):
 |----------|---------|
 | [README.md](docs/README.md) | Vision, objectives, navigation |
 | [glossaire.md](docs/glossaire.md) | French domain terminology |
-| [user-stories.md](docs/user-stories.md) | US-001 to US-014 with acceptance criteria |
+| [user-stories.md](docs/user-stories.md) | US-001 to US-015 with acceptance criteria |
 | [exigences.md](docs/exigences.md) | Functional/non-functional requirements |
 | [domain-model.md](docs/domain-model.md) | Entity model, lifecycles, business rules |
 | [architecture.md](docs/architecture.md) | Technical architecture |
@@ -209,7 +209,7 @@ VITE_API_URL=http://localhost:8000/api
 - **E2E**: Functional test scripts in `tests/` (119/142 scenarios passing)
 - **Coverage target**: 80%+ for business logic
 
-## Implemented Features (v0.1–v0.18)
+## Implemented Features (v0.1–v0.22)
 
 - **Authentication** (v0.2): JWT login, account activation, password reset, RBAC (4 roles), invitation management (single + bulk CSV)
 - **Edition Management** (v0.3): CRUD, configuration, deposit slots, automatic status transitions
@@ -228,8 +228,12 @@ VITE_API_URL=http://localhost:8000/api
 - **Accessibility & UX** (v0.16): WCAG 2.1 AA, password strength indicator, scanner UX
 - **Management Enhancements** (v0.17): Cancellation override, Excel export, bulk reminders
 - **Homepage** (v0.18): Public homepage, active edition constraint
+- **Billetweb API** (v0.19): Admin config, event/session/attendee sync, incremental import
+- **Training Mode** (v0.20): Training edition, force-status, tester flag, visual banner
+- **Deposit Review** (v0.21): Article accept/reject/edit, review finalization, declaration tracking (US-014), label PDF split
+- **Cart Checkout** (v0.22): Multi-article basket, batch payment, ticket_id grouping, cancel confirmation
 
-See [PLAN.md](PLAN.md) for the full roadmap including v0.19 (Billetweb API Integration) in progress.
+See [PLAN.md](PLAN.md) for the full roadmap. All user stories (US-001 to US-015) are implemented.
 
 ## Technical Notes
 

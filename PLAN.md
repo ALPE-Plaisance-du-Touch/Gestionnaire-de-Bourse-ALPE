@@ -44,10 +44,11 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.18 | Page d'accueil | ✅ Done |
 | 0.19 | Intégration API Billetweb | ✅ Done |
 | 0.20 | Mode Formation | ✅ Done |
-| 0.21 | Revue des listes au dépôt | 🔄 In Progress |
+| 0.21 | Revue des listes au dépôt | ✅ Done |
+| 0.22 | Ticket de caisse (panier) | ✅ Done |
 
-**Conformité specs : ~89%** (59/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
-**Specs : 15 US, 24 REQ-F, 120+ AC, 158+ tests** — couverture traçabilité 88%
+**Conformité specs : ~95%** (63/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
+**Specs : 15 US, 24 REQ-F, 120+ AC, 158+ tests** — couverture traçabilité 93%
 
 ---
 
@@ -64,7 +65,8 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.18 | Page d'accueil | Homepage publique, contrainte unicité édition active | Moyenne |
 | 0.19 | Intégration API Billetweb | Config API admin, sync événements/séances/participants | Haute |
 | 0.20 | Mode Formation | Édition formation, forçage étapes, flag testeur, bandeau visuel | Haute |
-| 0.21 | Revue des listes au dépôt | Revue articles par bénévole (accepter/refuser/éditer), suivi avancement | Haute |
+| 0.21 | Revue des listes au dépôt | Revue articles par bénévole (accepter/refuser/éditer), suivi avancement | ✅ Done |
+| 0.22 | Ticket de caisse (panier) | Panier multi-articles, paiement batch, ticket_id | ✅ Done |
 | 1.0.0 | Feature Freeze & Production | Bug fixes, tests intégration, perf, audit, release | - |
 
 ---
@@ -304,32 +306,32 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 **Exigences :** US-015, REQ-F-024
 
 ### Backend : modèle et migration (TASK-030)
-- [ ] **0.20.1** Champ `is_training` sur Edition + migration
-- [ ] **0.20.2** Champ `is_tester` sur User + migration
-- [ ] **0.20.3** Validation : max 1 édition formation non clôturée
-- [ ] **0.20.4** Exclusion des éditions formation de la contrainte REQ-F-019 (unicité édition active)
+- [x] **0.20.1** Champ `is_training` sur Edition + migration
+- [x] **0.20.2** Champ `is_tester` sur User + migration
+- [x] **0.20.3** Validation : max 1 édition formation non clôturée
+- [x] **0.20.4** Exclusion des éditions formation de la contrainte REQ-F-019 (unicité édition active)
 
 ### Backend : forçage transitions (TASK-031)
-- [ ] **0.20.5** Endpoint `POST /editions/{id}/force-status` (admin/gestionnaire, formation uniquement)
-- [ ] **0.20.6** Bypass des vérifications de dates et prérequis pour les éditions formation
+- [x] **0.20.5** Endpoint `POST /editions/{id}/force-status` (admin/gestionnaire, formation uniquement)
+- [x] **0.20.6** Bypass des vérifications de dates et prérequis pour les éditions formation
 
 ### Backend : visibilité et accès (TASK-032)
-- [ ] **0.20.7** Filtrage des éditions formation dans les endpoints déposant (exclure si non testeur)
-- [ ] **0.20.8** Endpoint `PATCH /users/{id}/tester` (admin only, toggle is_tester)
-- [ ] **0.20.9** Guard d'accès : 403 si déposant non testeur tente d'accéder à une édition formation
+- [x] **0.20.7** Filtrage des éditions formation dans les endpoints déposant (exclure si non testeur)
+- [x] **0.20.8** Endpoint `PATCH /users/{id}/tester` (admin only, toggle is_tester)
+- [x] **0.20.9** Guard d'accès : 403 si déposant non testeur tente d'accéder à une édition formation
 
 ### Frontend : création et gestion (TASK-033)
-- [ ] **0.20.10** Checkbox "Mode formation" dans EditionCreateModal
-- [ ] **0.20.11** Bouton/sélecteur forçage d'étape sur EditionDetailPage (si formation)
-- [ ] **0.20.12** Toggle testeur dans la gestion des utilisateurs (AdminUsersPage)
+- [x] **0.20.10** Checkbox "Mode formation" dans EditionCreateModal
+- [x] **0.20.11** Bouton/sélecteur forçage d'étape sur EditionDetailPage (si formation)
+- [x] **0.20.12** Toggle testeur dans la gestion des utilisateurs (AdminUsersPage)
 
 ### Frontend : bandeau visuel (TASK-034)
-- [ ] **0.20.13** Composant TrainingBanner affiché sur tous les écrans liés à une édition formation
-- [ ] **0.20.14** Intégration du bandeau dans les pages admin, déposant et bénévole
+- [x] **0.20.13** Composant TrainingBanner affiché sur tous les écrans liés à une édition formation
+- [x] **0.20.14** Intégration du bandeau dans les pages admin, déposant et bénévole
 
 ### Tests & docs
-- [ ] **0.20.15** Tests unitaires backend (création, forçage, visibilité, accès)
-- [ ] **0.20.16** Mise à jour DEVELOPMENT.md et PLAN.md
+- [x] **0.20.15** Tests unitaires backend (création, forçage, visibilité, accès)
+- [x] **0.20.16** Mise à jour DEVELOPMENT.md et PLAN.md
 
 ---
 
@@ -339,43 +341,64 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 **Exigences :** US-013, REQ-F-022
 
 ### Backend : modèle et migration (TASK-035)
-- [ ] **0.21.1** Ajout statut `ACCEPTED` et `REJECTED` dans ArticleStatus + champs `rejection_reason`, `rejected_at`, `rejected_by_user_id`, `reviewed_at`, `reviewed_by_user_id` sur Article
-- [ ] **0.21.2** Ajout statut `REVIEWED` dans ListStatus sur ItemList
-- [ ] **0.21.3** Migration Alembic pour les nouveaux champs et statuts
+- [x] **0.21.1** Ajout statut `ACCEPTED` et `REJECTED` dans ArticleStatus + champs `rejection_reason`, `rejected_at`, `rejected_by_user_id`, `reviewed_at`, `reviewed_by_user_id` sur Article
+- [x] **0.21.2** Ajout statut `REVIEWED` dans ListStatus sur ItemList
+- [x] **0.21.3** Migration Alembic pour les nouveaux champs et statuts
 
 ### Backend : endpoints de revue (TASK-036)
-- [ ] **0.21.4** Endpoint `GET /editions/{id}/review` — liste des listes avec statut de revue (à traiter / en cours / terminée)
-- [ ] **0.21.5** Endpoint `POST /articles/{id}/accept` — accepter un article (validated → accepted)
-- [ ] **0.21.6** Endpoint `POST /articles/{id}/reject` — refuser un article avec motif optionnel (validated → rejected)
-- [ ] **0.21.7** Endpoint `PUT /articles/{id}/review-edit` — éditer un article lors de la revue (mêmes validations que déclaration)
-- [ ] **0.21.8** Endpoint `POST /lists/{id}/finalize-review` — finaliser la revue (checked_in → reviewed, tous articles traités)
+- [x] **0.21.4** Endpoint `GET /editions/{id}/review` — liste des listes avec statut de revue (à traiter / en cours / terminée)
+- [x] **0.21.5** Endpoint `POST /articles/{id}/accept` — accepter un article (validated → accepted)
+- [x] **0.21.6** Endpoint `POST /articles/{id}/reject` — refuser un article avec motif optionnel (validated → rejected)
+- [x] **0.21.7** Endpoint `PUT /articles/{id}/review-edit` — éditer un article lors de la revue (mêmes validations que déclaration)
+- [x] **0.21.8** Endpoint `POST /lists/{id}/finalize-review` — finaliser la revue (checked_in → reviewed, tous articles traités)
 
 ### Backend : logique métier (TASK-037)
-- [ ] **0.21.9** Service de revue : validations (édition en statut dépôt, rôle bénévole+, article en statut validated)
-- [ ] **0.21.10** Exclusion des articles refusés des compteurs (article_count, total_value, reversements)
-- [ ] **0.21.11** Transition automatique : articles acceptés → on_sale quand édition passe en statut vente
+- [x] **0.21.9** Service de revue : validations (édition en statut dépôt, rôle bénévole+, article en statut validated)
+- [x] **0.21.10** Exclusion des articles refusés des compteurs (article_count, total_value, reversements)
+- [x] **0.21.11** Transition automatique : articles acceptés → on_sale quand édition passe en statut vente
 
 ### Frontend : page de revue (TASK-038)
-- [ ] **0.21.12** Page ReviewListsPage (`/editions/:id/review`) — liste des listes triable/filtrable par statut de revue
-- [ ] **0.21.13** Page ReviewListDetailPage — détail d'une liste avec 3 boutons par article (Accepter, Refuser, Éditer)
-- [ ] **0.21.14** Modale de refus (résumé article, champ motif optionnel, confirmation)
-- [ ] **0.21.15** Formulaire d'édition inline (mêmes validations que ArticleForm)
-- [ ] **0.21.16** Bouton "Finaliser la revue" + récapitulatif (acceptés / refusés)
+- [x] **0.21.12** Page ReviewListsPage (`/editions/:id/review`) — liste des listes triable/filtrable par statut de revue
+- [x] **0.21.13** Page ReviewListDetailPage — détail d'une liste avec 3 boutons par article (Accepter, Refuser, Éditer)
+- [x] **0.21.14** Modale de refus (résumé article, champ motif optionnel, confirmation)
+- [x] **0.21.15** Formulaire d'édition inline (mêmes validations que ArticleForm)
+- [x] **0.21.16** Bouton "Finaliser la revue" + récapitulatif (acceptés / refusés)
 
 ### Frontend : vue déposant et suivi (TASK-039)
-- [ ] **0.21.17** Zone "Articles refusés" dans ListDetailPage pour le déposant (lecture seule, motif affiché)
-- [ ] **0.21.18** Bloc "Avancement de la revue" sur EditionDetailPage (listes traitées, barre de progression)
+- [x] **0.21.17** Zone "Articles refusés" dans ListDetailPage pour le déposant (lecture seule, motif affiché)
+- [x] **0.21.18** Bloc "Avancement de la revue" sur EditionDetailPage (listes traitées, barre de progression)
 
 ### Tests & docs
-- [ ] **0.21.19** Tests unitaires backend (acceptation, refus, édition revue, finalisation, validations, compteurs)
-- [ ] **0.21.20** Tests unitaires frontend (ReviewListsPage, ReviewListDetailPage, modale refus)
-- [ ] **0.21.21** Mise à jour DEVELOPMENT.md et PLAN.md
+- [x] **0.21.19** Tests unitaires backend (acceptation, refus, édition revue, finalisation, validations, compteurs)
+- [x] **0.21.20** Tests unitaires frontend (ReviewListsPage, ReviewListDetailPage, modale refus)
+- [x] **0.21.21** Mise à jour DEVELOPMENT.md et PLAN.md
+
+---
+
+## v0.22 - Ticket de caisse (panier multi-articles) ✅
+
+**Branche :** `feature/us-013-deposit-review` (inclus dans la même PR)
+
+### Backend
+- [x] **0.22.1** Champ `ticket_id` (UUID) sur Sale + migration + index
+- [x] **0.22.2** Schemas batch : `BatchSaleItem`, `RegisterBatchSalesRequest`, `BatchSalesResponse`
+- [x] **0.22.3** Service `register_batch_sales()` : validation édition, boucle articles, ticket_id partagé, commit unique
+- [x] **0.22.4** Endpoint `POST /editions/{id}/sales/batch` (response 201)
+- [x] **0.22.5** Ajout `ticket_id` dans `sync_offline_sales()` et `OfflineSaleItem`
+
+### Frontend
+- [x] **0.22.6** Types : `BatchSaleItem`, `RegisterBatchSalesRequest`, `BatchSalesResponse`, `ticketId` sur `SaleResponse`
+- [x] **0.22.7** API : `registerBatchSales()` + `ticketId` dans `SyncSalePayload`
+- [x] **0.22.8** IndexedDB : `ticketId` sur `PendingSale`
+- [x] **0.22.9** Hook `useOfflineSales` : `registerBatchSales()` (online API / offline IndexedDB)
+- [x] **0.22.10** SalesPage : panier React state, scan direct-to-cart, flux 2 phases (scan → paiement)
+- [x] **0.22.11** Confirmation annulation vente (double-clic Annuler → Confirmer/Non)
 
 ---
 
 ## v1.0.0 - Feature Freeze & Production
 
-**Prérequis :** Toutes les versions 0.1 à 0.21 terminées et testées.
+**Prérequis :** Toutes les versions 0.1 à 0.22 terminées et testées.
 
 À partir de cette version, plus aucune fonctionnalité n'est ajoutée.
 Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
@@ -396,7 +419,7 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 - [ ] **PRE-009** Compléter traçabilité : tests manquants pour REQ-F-012, F-013, F-015, F-016
 - [x] **PRE-010** ~~Créer REQ-F-018 pour US-010~~ — **FAIT** (déjà créée)
 - [ ] **PRE-011** Revue documentation (README utilisateur, guides déploiement)
-- [ ] **PRE-012** Implémenter US-014 / REQ-F-023 : tableau de bord suivi déclarations (spec prête, dev à faire)
+- [x] **PRE-012** Implémenter US-014 / REQ-F-023 : tableau de bord suivi déclarations (implémenté en v0.21)
 
 ### Stabilisation
 - [ ] **PRE-013** Optimisation performance (lazy loading, bundle size, requêtes N+1)
@@ -437,7 +460,7 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 | TASK-026 | 0.19 | Sync participants depuis Billetweb | REQ-F-021, US-012 AC-10/11/12/13 |
 | TASK-027 | 0.19 | Erreurs API & accès Billetweb | US-012 AC-14/15/16 |
 | TASK-028 | — | ~~Refus article au dépôt~~ (remplacé par TASK-035 à 039) | ~~US-013~~ |
-| TASK-029 | 1.0 | Suivi déclarations déposants | US-014, REQ-F-023 |
+| TASK-029 | 0.21 | ~~Suivi déclarations déposants~~ (remplacé par TASK-041) | ~~US-014~~ |
 | TASK-030 | 0.20 | Modèle édition formation + flag testeur | US-015 AC-1/AC-5, REQ-F-024 |
 | TASK-031 | 0.20 | Forçage transitions d'étapes | US-015 AC-2 |
 | TASK-032 | 0.20 | Visibilité et accès formation | US-015 AC-4/AC-7 |
@@ -448,6 +471,8 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 | TASK-037 | 0.21 | Logique métier revue (validations, compteurs, transition vente) | US-013 AC-7/AC-10 |
 | TASK-038 | 0.21 | Frontend page de revue + actions articles | US-013 AC-1/AC-2/AC-3/AC-4/AC-5/AC-6 |
 | TASK-039 | 0.21 | Frontend vue déposant refusés + suivi avancement | US-013 AC-8/AC-9/AC-10 |
+| TASK-040 | 0.22 | Ticket de caisse (panier multi-articles) | US-004 (amélioration) |
+| TASK-041 | 0.21 | Suivi déclarations déposants (US-014) | US-014, REQ-F-023 |
 
 ---
 

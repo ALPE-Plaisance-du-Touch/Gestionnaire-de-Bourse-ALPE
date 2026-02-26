@@ -34,9 +34,11 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.18 | Homepage & Edition Constraint | ✅ Done | 100% |
 | 0.19 | Billetweb API Integration | ✅ Done | 100% |
 | 0.20 | Training Mode (US-015) | ✅ Done | 100% |
+| 0.21 | Deposit Review (US-013) & Declaration Tracking (US-014) | ✅ Done | 100% |
+| 0.22 | Cart Checkout (Ticket de caisse) | ✅ Done | 100% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.20 (Training Mode complete)
+**Current Version:** 0.22 (Cart Checkout complete)
 **Next Target:** v1.0.0 - Production Release
 
 ---
@@ -695,9 +697,58 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
+## v0.21 - Deposit Review & Declaration Tracking (US-013, US-014) ✅
+
+**Branch:** `feature/us-013-deposit-review`
+
+### Backend Tasks ✅
+- [x] **0.21.1** Article review statuses (ACCEPTED, REJECTED) + review fields (rejection_reason, rejected_at, rejected_by, reviewed_at, reviewed_by)
+- [x] **0.21.2** List status REVIEWED + NOT_FINALIZED for deposit phase
+- [x] **0.21.3** Alembic migration for review fields and statuses
+- [x] **0.21.4** ReviewService: accept, reject (with reason), edit during review, finalize
+- [x] **0.21.5** Review endpoints: GET review lists, POST accept/reject, PUT review-edit, POST finalize-review
+- [x] **0.21.6** Exclude rejected articles from payout calculations
+- [x] **0.21.7** Auto-transition accepted articles to on_sale when edition enters sale phase
+- [x] **0.21.8** Declaration tracking endpoints: GET summary, GET lists, GET depositors, POST remind
+- [x] **0.21.9** Not_finalized list status management (draft lists locked at deposit phase entry)
+
+### Frontend Tasks ✅
+- [x] **0.21.10** Review API module and TypeScript types
+- [x] **0.21.11** ReviewListsPage: filterable/sortable list of lists with review status
+- [x] **0.21.12** ReviewListDetailPage: accept/reject/edit per article, finalize button
+- [x] **0.21.13** Rejected articles section in label PDF (sale vs rejected split)
+- [x] **0.21.14** Label generation button on finalized review lists
+- [x] **0.21.15** Depositor view: rejected articles zone (read-only with reason)
+- [x] **0.21.16** Review progress block on EditionDetailPage
+- [x] **0.21.17** DeclarationProgressPage: summary cards, progress bar, depositor/list views, filters, bulk reminders
+- [x] **0.21.18** Declaration deadline enforcement (read-only after deadline)
+
+---
+
+## v0.22 - Cart Checkout / Ticket de caisse ✅
+
+**Branch:** `feature/us-013-deposit-review` (included in same PR)
+
+### Backend Tasks ✅
+- [x] **0.22.1** `ticket_id` (UUID) field on Sale model + migration + index
+- [x] **0.22.2** Batch sale schemas (BatchSaleItem, RegisterBatchSalesRequest, BatchSalesResponse)
+- [x] **0.22.3** `register_batch_sales()` service: edition validation, article loop, shared ticket_id, single commit
+- [x] **0.22.4** `POST /editions/{id}/sales/batch` endpoint (201 response)
+- [x] **0.22.5** `ticket_id` support in `sync_offline_sales()` and OfflineSaleItem
+
+### Frontend Tasks ✅
+- [x] **0.22.6** TypeScript types: batch types, ticketId on SaleResponse
+- [x] **0.22.7** API: `registerBatchSales()` method, ticketId in SyncSalePayload
+- [x] **0.22.8** IndexedDB: ticketId on PendingSale
+- [x] **0.22.9** useOfflineSales hook: `registerBatchSales()` (online API / offline IndexedDB)
+- [x] **0.22.10** SalesPage: cart state, direct scan-to-cart, 2-phase flow (scan → payment)
+- [x] **0.22.11** Sale cancel confirmation step (Annuler → Confirmer/Non)
+
+---
+
 ## v1.0.0 - Production Release
 
-**Prerequisites:** All versions 0.1 through 0.20 completed and tested.
+**Prerequisites:** All versions 0.1 through 0.22 completed and tested.
 
 ### Relecture & qualité (pré-release)
 - [ ] **PRE-001** Relecture orthographe et grammaire de toute l'application (textes UI, messages d'erreur, emails, labels)
