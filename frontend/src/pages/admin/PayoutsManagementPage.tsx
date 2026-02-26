@@ -19,9 +19,9 @@ function downloadBlob(blob: Blob, filename: string) {
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
   pending: { label: 'En attente', className: 'bg-gray-100 text-gray-800' },
-  ready: { label: 'Pret', className: 'bg-amber-100 text-amber-800' },
-  paid: { label: 'Paye', className: 'bg-green-100 text-green-800' },
-  cancelled: { label: 'Annule', className: 'bg-red-100 text-red-800' },
+  ready: { label: 'Prêt', className: 'bg-amber-100 text-amber-800' },
+  paid: { label: 'Payé', className: 'bg-green-100 text-green-800' },
+  cancelled: { label: 'Annulé', className: 'bg-red-100 text-red-800' },
 };
 
 const LIST_TYPE_LABELS: Record<string, string> = {
@@ -74,7 +74,7 @@ export function PayoutsManagementPage() {
   const calculateMutation = useMutation({
     mutationFn: () => payoutsApi.calculatePayouts(editionId!),
     onSuccess: (result) => {
-      setSuccessMessage(`${result.totalPayouts} reversement(s) calcule(s) pour ${result.totalDepositors} deposant(s).`);
+      setSuccessMessage(`${result.totalPayouts} reversement(s) calculé(s) pour ${result.totalDepositors} déposant(s).`);
       setErrorMessage('');
       queryClient.invalidateQueries({ queryKey: ['payouts'] });
       queryClient.invalidateQueries({ queryKey: ['payout-stats'] });
@@ -100,7 +100,7 @@ export function PayoutsManagementPage() {
       }),
     onSuccess: () => {
       setPaymentPayout(null);
-      setSuccessMessage('Paiement enregistre avec succes.');
+      setSuccessMessage('Paiement enregistré avec succès.');
       setErrorMessage('');
       queryClient.invalidateQueries({ queryKey: ['payouts'] });
       queryClient.invalidateQueries({ queryKey: ['payout-stats'] });
@@ -123,12 +123,12 @@ export function PayoutsManagementPage() {
       }),
     onSuccess: () => {
       setNotesPayout(null);
-      setSuccessMessage('Notes mises a jour.');
+      setSuccessMessage('Notes mises à jour.');
       setErrorMessage('');
       queryClient.invalidateQueries({ queryKey: ['payouts'] });
     },
     onError: (error: Error) => {
-      setErrorMessage(error.message || 'Erreur lors de la mise a jour des notes.');
+      setErrorMessage(error.message || 'Erreur lors de la mise à jour des notes.');
     },
   });
 
@@ -136,7 +136,7 @@ export function PayoutsManagementPage() {
   const recalculateMutation = useMutation({
     mutationFn: (payoutId: string) => payoutsApi.recalculate(editionId!, payoutId),
     onSuccess: () => {
-      setSuccessMessage('Reversement recalcule.');
+      setSuccessMessage('Reversement recalculé.');
       setErrorMessage('');
       queryClient.invalidateQueries({ queryKey: ['payouts'] });
       queryClient.invalidateQueries({ queryKey: ['payout-stats'] });
@@ -152,7 +152,7 @@ export function PayoutsManagementPage() {
       const blob = await payoutsApi.downloadReceipt(editionId!, payout.id);
       downloadBlob(blob, `Reversement_${payout.listNumber}_${payout.depositorName.replace(/\s+/g, '_')}.pdf`);
     } catch {
-      setErrorMessage('Erreur lors du telechargement du bordereau.');
+      setErrorMessage('Erreur lors du téléchargement du bordereau.');
     }
   };
 
@@ -161,9 +161,9 @@ export function PayoutsManagementPage() {
     try {
       const blob = await payoutsApi.downloadAllReceipts(editionId!);
       downloadBlob(blob, `Bordereaux_reversements.pdf`);
-      setSuccessMessage('PDF global genere avec succes.');
+      setSuccessMessage('PDF global généré avec succès.');
     } catch {
-      setErrorMessage('Erreur lors de la generation du PDF global.');
+      setErrorMessage('Erreur lors de la génération du PDF global.');
     }
   };
 
@@ -173,7 +173,7 @@ export function PayoutsManagementPage() {
       const blob = await payoutsApi.exportExcel(editionId!);
       downloadBlob(blob, 'Reversements_export.xlsx');
     } catch {
-      setErrorMessage('Erreur lors du telechargement de l\'export Excel.');
+      setErrorMessage('Erreur lors du téléchargement de l\'export Excel.');
     }
   };
 
@@ -181,7 +181,7 @@ export function PayoutsManagementPage() {
   const reminderMutation = useMutation({
     mutationFn: (payoutId: string) => payoutsApi.sendReminder(editionId!, payoutId),
     onSuccess: (data) => {
-      setSuccessMessage(data.message || 'Email de relance envoye.');
+      setSuccessMessage(data.message || 'Email de relance envoyé.');
       setErrorMessage('');
     },
     onError: (error: Error) => {
@@ -193,7 +193,7 @@ export function PayoutsManagementPage() {
   const bulkReminderMutation = useMutation({
     mutationFn: () => payoutsApi.sendBulkReminder(editionId!),
     onSuccess: (data) => {
-      setSuccessMessage(data.message || `${data.emailsQueued} email(s) de relance envoye(s).`);
+      setSuccessMessage(data.message || `${data.emailsQueued} email(s) de relance envoyé(s).`);
       setErrorMessage('');
       queryClient.invalidateQueries({ queryKey: ['payouts'] });
     },
@@ -268,7 +268,7 @@ export function PayoutsManagementPage() {
             <p className="text-2xl font-bold mt-1">{Number(stats.totalCommission).toFixed(2)} EUR</p>
           </div>
           <div className="rounded-lg p-4 bg-amber-50 text-amber-700">
-            <p className="text-sm opacity-80">A reverser</p>
+            <p className="text-sm opacity-80">À reverser</p>
             <p className="text-2xl font-bold mt-1">{Number(stats.totalNet).toFixed(2)} EUR</p>
           </div>
           <div className="rounded-lg p-4 bg-purple-50 text-purple-700">
@@ -307,7 +307,7 @@ export function PayoutsManagementPage() {
             variant="outline"
             onClick={() => navigate(`/editions/${editionId}/payouts/dashboard`)}
           >
-            Statistiques detaillees
+            Statistiques détaillées
           </Button>
           <Button
             variant="outline"
@@ -334,9 +334,9 @@ export function PayoutsManagementPage() {
               >
                 <option value="">Tous</option>
                 <option value="pending">En attente</option>
-                <option value="ready">Pret</option>
-                <option value="paid">Paye</option>
-                <option value="cancelled">Annule</option>
+                <option value="ready">Prêt</option>
+                <option value="paid">Payé</option>
+                <option value="cancelled">Annulé</option>
               </select>
             </div>
 
@@ -350,7 +350,7 @@ export function PayoutsManagementPage() {
                   type="text"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder="Nom du deposant..."
+                  placeholder="Nom du déposant..."
                   className="block w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
                 />
               </div>
@@ -513,7 +513,7 @@ export function PayoutsManagementPage() {
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
               >
-                Precedent
+                Précédent
               </Button>
               <Button
                 variant="outline"
@@ -573,7 +573,7 @@ export function PayoutsManagementPage() {
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   <span className="text-sm font-medium text-gray-700">
-                    Marquer comme absent (a recontacter)
+                    Marquer comme absent (à recontacter)
                   </span>
                 </label>
               </div>

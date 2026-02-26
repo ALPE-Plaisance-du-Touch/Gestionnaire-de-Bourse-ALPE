@@ -7,9 +7,9 @@ import { TrainingBanner } from '@/components/ui/TrainingBanner';
 import type { ReviewListItem } from '@/types';
 
 const REVIEW_STATUS_LABELS: Record<string, { label: string; className: string }> = {
-  pending: { label: 'A traiter', className: 'bg-gray-100 text-gray-800' },
+  pending: { label: 'À traiter', className: 'bg-gray-100 text-gray-800' },
   in_progress: { label: 'En cours', className: 'bg-amber-100 text-amber-800' },
-  reviewed: { label: 'Terminee', className: 'bg-green-100 text-green-800' },
+  reviewed: { label: 'Terminée', className: 'bg-green-100 text-green-800' },
 };
 
 function getListReviewStatus(item: ReviewListItem): string {
@@ -49,9 +49,9 @@ export function ReviewListsPage() {
             to={`/editions/${editionId}`}
             className="text-sm text-blue-600 hover:text-blue-700 mb-1 inline-block"
           >
-            &larr; Retour a l'edition
+            &larr; Retour à l'édition
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Revue des listes au depot</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Revue des listes au dépôt</h1>
         </div>
       </div>
 
@@ -61,17 +61,17 @@ export function ReviewListsPage() {
       {summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 mb-6">
           <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-sm text-gray-500">Listes traitees</p>
+            <p className="text-sm text-gray-500">Listes traitées</p>
             <p className="text-2xl font-bold text-gray-900">
               {summary.reviewedLists}/{summary.totalLists}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-sm text-gray-500">Articles acceptes</p>
+            <p className="text-sm text-gray-500">Articles acceptés</p>
             <p className="text-2xl font-bold text-green-600">{summary.acceptedArticles}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-sm text-gray-500">Articles refuses</p>
+            <p className="text-sm text-gray-500">Articles refusés</p>
             <p className="text-2xl font-bold text-red-600">{summary.rejectedArticles}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
@@ -87,7 +87,7 @@ export function ReviewListsPage() {
           <div className="flex justify-between text-sm text-gray-600 mb-2">
             <span>Progression de la revue</span>
             <span>
-              {summary.acceptedArticles + summary.rejectedArticles}/{summary.totalArticles} articles traites
+              {summary.acceptedArticles + summary.rejectedArticles}/{summary.totalArticles} articles traités
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3 flex overflow-hidden">
@@ -106,10 +106,10 @@ export function ReviewListsPage() {
           </div>
           <div className="flex gap-4 mt-2 text-xs text-gray-500">
             <span className="flex items-center gap-1">
-              <span className="w-3 h-3 bg-green-500 rounded-full inline-block" /> Acceptes
+              <span className="w-3 h-3 bg-green-500 rounded-full inline-block" /> Acceptés
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-3 h-3 bg-red-500 rounded-full inline-block" /> Refuses
+              <span className="w-3 h-3 bg-red-500 rounded-full inline-block" /> Refusés
             </span>
             <span className="flex items-center gap-1">
               <span className="w-3 h-3 bg-gray-200 rounded-full inline-block" /> En attente
@@ -127,9 +127,9 @@ export function ReviewListsPage() {
           onChange={(e) => setStatusFilter(e.target.value)}
         >
           <option value="">Toutes les listes</option>
-          <option value="pending">A traiter</option>
+          <option value="pending">À traiter</option>
           <option value="in_progress">En cours</option>
-          <option value="reviewed">Terminees</option>
+          <option value="reviewed">Terminées</option>
         </select>
       </div>
 
@@ -138,18 +138,18 @@ export function ReviewListsPage() {
         {isLoading ? (
           <div className="p-8 text-center text-gray-500">Chargement...</div>
         ) : items.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">Aucune liste trouvee.</div>
+          <div className="p-8 text-center text-gray-500">Aucune liste trouvée.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">N&deg;</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deposant</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Déposant</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
                   <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Articles</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acceptes</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Refuses</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acceptés</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Refusés</th>
                   <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">En attente</th>
                   <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Statut</th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>

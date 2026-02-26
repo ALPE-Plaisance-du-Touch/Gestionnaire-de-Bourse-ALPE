@@ -10,9 +10,9 @@ import { ArticleForm } from '@/components/articles/ArticleForm';
 import type { Article, CreateArticleRequest, UpdateArticleRequest } from '@/types';
 
 const CATEGORY_LABELS: Record<string, string> = {
-  clothing: 'Vetements',
+  clothing: 'Vêtements',
   shoes: 'Chaussures',
-  nursery: 'Puericulture',
+  nursery: 'Puériculture',
   toys: 'Jouets',
   books: 'Livres',
   accessories: 'Accessoires',
@@ -31,8 +31,8 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
   validated: { label: 'En attente', className: 'bg-amber-100 text-amber-800' },
-  accepted: { label: 'Accepte', className: 'bg-green-100 text-green-800' },
-  rejected: { label: 'Refuse', className: 'bg-red-100 text-red-800' },
+  accepted: { label: 'Accepté', className: 'bg-green-100 text-green-800' },
+  rejected: { label: 'Refusé', className: 'bg-red-100 text-red-800' },
 };
 
 function formatPrice(price: number): string {
@@ -81,7 +81,7 @@ export function ReviewListDetailPage() {
     mutationFn: (articleId: string) => reviewApi.acceptArticle(editionId!, articleId),
     onSuccess: () => {
       invalidateQueries();
-      setSuccessMessage('Article accepte.');
+      setSuccessMessage('Article accepté.');
       setTimeout(() => setSuccessMessage(''), 3000);
     },
     onError: (error: Error) => {
@@ -97,7 +97,7 @@ export function ReviewListDetailPage() {
       invalidateQueries();
       setRejectingArticle(null);
       setRejectionReason('');
-      setSuccessMessage('Article refuse.');
+      setSuccessMessage('Article refusé.');
       setTimeout(() => setSuccessMessage(''), 3000);
     },
     onError: (error: Error) => {
@@ -112,7 +112,7 @@ export function ReviewListDetailPage() {
     onSuccess: () => {
       invalidateQueries();
       setEditingArticle(null);
-      setSuccessMessage('Article modifie.');
+      setSuccessMessage('Article modifié.');
       setTimeout(() => setSuccessMessage(''), 3000);
     },
     onError: (error: Error) => {
@@ -126,7 +126,7 @@ export function ReviewListDetailPage() {
     onSuccess: () => {
       invalidateQueries();
       setShowFinalizeConfirm(false);
-      setSuccessMessage('Revue finalisee avec succes.');
+      setSuccessMessage('Revue finalisée avec succès.');
     },
     onError: (error: Error) => {
       setShowFinalizeConfirm(false);
@@ -145,10 +145,10 @@ export function ReviewListDetailPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Etiquettes_liste_${listDetail?.number ?? ''}.pdf`;
+      a.download = `Étiquettes_liste_${listDetail?.number ?? ''}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
-      setSuccessMessage('Etiquettes generees.');
+      setSuccessMessage('Étiquettes générées.');
       setTimeout(() => setSuccessMessage(''), 3000);
     },
     onError: (error: Error) => {
@@ -240,15 +240,15 @@ export function ReviewListDetailPage() {
           </div>
           <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 text-sm">
             <span className="font-semibold text-green-800">{acceptedCount}</span>{' '}
-            <span className="text-green-600">accepte(s)</span>
+            <span className="text-green-600">accepté(s)</span>
           </div>
           <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-2 text-sm">
             <span className="font-semibold text-red-800">{rejectedCount}</span>{' '}
-            <span className="text-red-600">refuse(s)</span>
+            <span className="text-red-600">refusé(s)</span>
           </div>
           {isReviewed && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 text-sm text-blue-700 font-medium">
-              Revue finalisee
+              Revue finalisée
             </div>
           )}
         </div>
@@ -352,7 +352,7 @@ export function ReviewListDetailPage() {
                                       variant="outline"
                                       onClick={() => setEditingArticle(article)}
                                     >
-                                      Editer
+                                      Modifier
                                     </Button>
                                   </>
                                 )}
@@ -454,7 +454,7 @@ export function ReviewListDetailPage() {
               <h3 className="font-semibold text-gray-900">Finaliser la revue</h3>
               {canFinalize ? (
                 <p className="text-sm text-gray-500 mt-1">
-                  {acceptedCount} article(s) accepte(s), {rejectedCount} refuse(s). Tous les articles ont ete traites.
+                  {acceptedCount} article(s) accepté(s), {rejectedCount} refusé(s). Tous les articles ont été traités.
                 </p>
               ) : (
                 <p className="text-sm text-amber-600 mt-1">
@@ -478,9 +478,9 @@ export function ReviewListDetailPage() {
         <div className="mt-8 bg-white rounded-lg shadow p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h3 className="font-semibold text-gray-900">Etiquettes</h3>
+              <h3 className="font-semibold text-gray-900">Étiquettes</h3>
               <p className="text-sm text-gray-500 mt-1">
-                Generez les etiquettes PDF pour les {acceptedCount} article(s) accepte(s) de cette liste.
+                Générez les étiquettes PDF pour les {acceptedCount} article(s) accepté(s) de cette liste.
               </p>
             </div>
             <Button
@@ -491,7 +491,7 @@ export function ReviewListDetailPage() {
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
               </svg>
-              Imprimer les etiquettes
+              Imprimer les étiquettes
             </Button>
           </div>
         </div>
@@ -524,7 +524,7 @@ export function ReviewListDetailPage() {
                 onChange={(e) => setRejectionReason(e.target.value)}
                 placeholder="Ex: Article tache, trop use..."
               />
-              <p className="text-xs text-gray-500 mt-1">{rejectionReason.length}/200 caracteres</p>
+              <p className="text-xs text-gray-500 mt-1">{rejectionReason.length}/200 caractères</p>
             </div>
             <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={() => setRejectingArticle(null)}>
@@ -568,7 +568,7 @@ export function ReviewListDetailPage() {
         onClose={() => setShowFinalizeConfirm(false)}
         onConfirm={() => finalizeMutation.mutate()}
         title="Finaliser la revue"
-        message={`Vous allez finaliser la revue de cette liste : ${acceptedCount} article(s) accepte(s) et ${rejectedCount} refuse(s). Cette action est irreversible.`}
+        message={`Vous allez finaliser la revue de cette liste : ${acceptedCount} article(s) accepté(s) et ${rejectedCount} refusé(s). Cette action est irréversible.`}
         confirmLabel="Finaliser"
         variant="warning"
         isLoading={finalizeMutation.isPending}
