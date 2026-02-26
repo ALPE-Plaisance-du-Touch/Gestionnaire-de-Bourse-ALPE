@@ -417,9 +417,9 @@ Permet de résoudre les questions sur les articles, le dépôt ou la récupérat
 Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 
 ### Relecture & qualité (pré-release)
-- [ ] **PRE-001** Relecture orthographe et grammaire de toute l'application (textes UI, messages d'erreur, emails, labels)
-- [ ] **PRE-002** Audit sécurité par agent dédié (OWASP Top 10, injection, XSS, CSRF, auth bypass, headers, RBAC)
-- [ ] **PRE-003** Audit dette technique par agent dédié (code mort, dépendances obsolètes, patterns incohérents, TODO/FIXME, couverture tests)
+- [x] **PRE-001** ~~Relecture orthographe et grammaire de toute l'application~~ — **FAIT** (177 corrections, 4 commits)
+- [x] **PRE-002** ~~Audit sécurité par agent dédié~~ — **FAIT** (17 vulnérabilités, 13 corrigées, 4 reportées PRE-013→016)
+- [x] **PRE-003** ~~Audit dette technique par agent dédié~~ — **FAIT** (17 alertes, 10 corrigées, 5 reportées PRE-017→021)
 
 ### Tests & validation
 - [ ] **PRE-004** Tests d'intégration end-to-end (scénario complet déposant + bénévole + gestionnaire)
@@ -440,10 +440,16 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 - [ ] **PRE-015** VULN-012 : Rate limiting distribué (Redis ou nginx) pour fonctionner avec plusieurs workers Gunicorn
 - [ ] **PRE-016** VULN-009 : Migrer le refresh token de localStorage vers un cookie httpOnly Secure SameSite=Strict (changement backend + frontend)
 
+### Dette technique — items reportés (audit 2026-02-26)
+- [ ] **PRE-017** Refactoriser duplication logique `register_sale()` / `register_batch_sales()` dans sale.py (extraire validation commune)
+- [ ] **PRE-018** Corriger N+1 queries dans `generate_all_receipts()` et `generate_payout_excel_export()` (joinedload articles)
+- [ ] **PRE-019** Décomposer `EditionDetailPage.tsx` (1884 lignes) en sous-composants par onglet
+- [ ] **PRE-020** Ajouter React.lazy() / code splitting pour les routes admin, recharts, scanner QR
+- [ ] **PRE-021** Ajouter tests frontend : SalesPage, useOfflineSales, ReviewListDetailPage, PayoutsManagementPage
+
 ### Stabilisation
-- [ ] **PRE-017** Optimisation performance (lazy loading, bundle size, requêtes N+1)
-- [ ] **PRE-018** Bug fixes identifiés durant les tests
-- [ ] **PRE-019** Tag release + déploiement production
+- [ ] **PRE-022** Bug fixes identifiés durant les tests
+- [ ] **PRE-023** Tag release + déploiement production
 
 ---
 
