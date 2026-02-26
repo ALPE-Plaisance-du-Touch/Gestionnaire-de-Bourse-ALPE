@@ -434,10 +434,16 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 - [ ] **PRE-011** Revue documentation (README utilisateur, guides déploiement)
 - [x] **PRE-012** Implémenter US-014 / REQ-F-023 : tableau de bord suivi déclarations (implémenté en v0.21)
 
+### Sécurité — vulnérabilités reportées (audit 2026-02-26)
+- [ ] **PRE-013** VULN-004/007 : Révocation de tokens JWT (table blacklist ou champ `token_invalidated_at` sur User) — invalidation au logout et changement de mot de passe
+- [ ] **PRE-014** VULN-011 : Séparer les champs token invitation et reset password (migration DB + refactor auth service)
+- [ ] **PRE-015** VULN-012 : Rate limiting distribué (Redis ou nginx) pour fonctionner avec plusieurs workers Gunicorn
+- [ ] **PRE-016** VULN-009 : Migrer le refresh token de localStorage vers un cookie httpOnly Secure SameSite=Strict (changement backend + frontend)
+
 ### Stabilisation
-- [ ] **PRE-013** Optimisation performance (lazy loading, bundle size, requêtes N+1)
-- [ ] **PRE-014** Bug fixes identifiés durant les tests
-- [ ] **PRE-015** Tag release + déploiement production
+- [ ] **PRE-017** Optimisation performance (lazy loading, bundle size, requêtes N+1)
+- [ ] **PRE-018** Bug fixes identifiés durant les tests
+- [ ] **PRE-019** Tag release + déploiement production
 
 ---
 
