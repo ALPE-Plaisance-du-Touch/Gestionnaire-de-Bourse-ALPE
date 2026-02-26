@@ -14,7 +14,7 @@ const STATUS_OPTIONS = [
   { value: 'deposit', label: 'Dépôt' },
   { value: 'sale', label: 'Vente' },
   { value: 'settlement', label: 'Bilan' },
-  { value: 'closed', label: 'Clôturé' },
+  { value: 'closed', label: 'Clôturée' },
   { value: 'archived', label: 'Archivé' },
 ];
 
@@ -24,7 +24,7 @@ const STATUS_LABELS: Record<EditionStatus, { label: string; className: string }>
   deposit: { label: 'Dépôt', className: 'bg-blue-100 text-blue-800' },
   sale: { label: 'Vente', className: 'bg-green-100 text-green-800' },
   settlement: { label: 'Bilan', className: 'bg-yellow-100 text-yellow-800' },
-  closed: { label: 'Clôturé', className: 'bg-orange-100 text-orange-800' },
+  closed: { label: 'Clôturée', className: 'bg-orange-100 text-orange-800' },
   archived: { label: 'Archivé', className: 'bg-gray-100 text-gray-500' },
 };
 
@@ -278,7 +278,7 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
                   </div>
                   {isStaleForArchiving(edition) && (
                     <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">
-                      A archiver
+                      À archiver
                     </span>
                   )}
                   <div className="flex items-center gap-2 pt-1">
@@ -383,7 +383,7 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
                         </span>
                         {isStaleForArchiving(edition) && (
                           <span className="ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">
-                            A archiver
+                            À archiver
                           </span>
                         )}
                       </td>

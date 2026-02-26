@@ -153,8 +153,8 @@ export function LabelsManagementPage() {
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <StatCard label="Déposants" value={stats.totalDepositors} sublabel="avec listes validées" />
-          <StatCard label="Listes validees" value={stats.totalLists} sublabel={`${stats.labelsGenerated} déjà générées`} />
-          <StatCard label="Etiquettes" value={stats.totalLabels} sublabel="au total" />
+          <StatCard label="Listes validées" value={stats.totalLists} sublabel={`${stats.labelsGenerated} déjà générées`} />
+          <StatCard label="Étiquettes" value={stats.totalLabels} sublabel="au total" />
         </div>
       )}
       {statsLoading && (
@@ -221,7 +221,7 @@ export function LabelsManagementPage() {
                 onClick={toggleAllDepositors}
                 className="text-sm text-blue-600 hover:text-blue-800"
               >
-                {selectedDepositorIds.size === depositors.length ? 'Tout desélectionnér' : 'Tout sélectionnér'}
+                {selectedDepositorIds.size === depositors.length ? 'Tout désélectionner' : 'Tout sélectionner'}
               </button>
             </div>
             {depositors.length === 0 ? (

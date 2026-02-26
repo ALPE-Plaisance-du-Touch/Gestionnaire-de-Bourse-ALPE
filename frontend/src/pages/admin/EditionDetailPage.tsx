@@ -885,7 +885,7 @@ export function EditionDetailPage() {
             )}
             {edition.billetwebEventId && edition.lastBilletwebSync && (
               <p className="text-xs text-gray-500 mt-2">
-                Derniere sync API : {new Date(edition.lastBilletwebSync).toLocaleString('fr-FR')}
+                Dernière sync API : {new Date(edition.lastBilletwebSync).toLocaleString('fr-FR')}
               </p>
             )}
 

@@ -3,10 +3,10 @@ interface PasswordStrengthIndicatorProps {
 }
 
 const CRITERIA = [
-  { label: 'Au moins 8 caracteres', test: (p: string) => p.length >= 8 },
+  { label: 'Au moins 8 caractères', test: (p: string) => p.length >= 8 },
   { label: 'Au moins une lettre', test: (p: string) => /[A-Za-z]/.test(p) },
   { label: 'Au moins un chiffre', test: (p: string) => /\d/.test(p) },
-  { label: 'Au moins un caractere special (@$!%*#?&)', test: (p: string) => /[@$!%*#?&]/.test(p) },
+  { label: 'Au moins un caractère spécial (@$!%*#?&)', test: (p: string) => /[@$!%*#?&]/.test(p) },
 ] as const;
 
 function getStrength(score: number): { label: string; color: string; barColor: string; segments: number } {
