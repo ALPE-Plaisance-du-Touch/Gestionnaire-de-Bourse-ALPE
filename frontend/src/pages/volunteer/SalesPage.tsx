@@ -420,6 +420,7 @@ function SaleItem({
   cancelling: boolean;
   cancelDisabled: boolean;
 }) {
+  const [confirming, setConfirming] = useState(false);
   const soldAt = new Date(sale.soldAt);
   const time = soldAt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
@@ -442,14 +443,35 @@ function SaleItem({
       <div className="flex items-center gap-3 ml-3">
         <span className="font-semibold text-gray-900">{Number(sale.price).toFixed(2)} EUR</span>
         {sale.canCancel && !cancelDisabled && (
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={cancelling}
-            className="text-xs text-red-600 hover:text-red-700 disabled:opacity-50"
-          >
-            Annuler
-          </button>
+          confirming ? (
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => { onCancel(); setConfirming(false); }}
+                disabled={cancelling}
+                className="text-xs font-medium text-white bg-red-600 hover:bg-red-700 px-2 py-1 rounded disabled:opacity-50"
+              >
+                Confirmer
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirming(false)}
+                disabled={cancelling}
+                className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
+              >
+                Non
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirming(true)}
+              disabled={cancelling}
+              className="text-xs text-red-600 hover:text-red-700 disabled:opacity-50"
+            >
+              Annuler
+            </button>
+          )
         )}
       </div>
     </div>
