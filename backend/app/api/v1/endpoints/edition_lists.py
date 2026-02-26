@@ -350,7 +350,7 @@ async def send_declaration_reminders(
                 )
                 sent += 1
             except Exception as e:
-                logger.error(f"Failed to send reminder to {dep.user.email}: {e}")
+                logger.warning("Failed to send reminder to user %s: %s", dep.user_id, e)
         logger.info(f"Declaration reminders sent: {sent}/{len(targets)}")
 
     background_tasks.add_task(_send_reminders)

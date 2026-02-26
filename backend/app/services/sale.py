@@ -1,7 +1,10 @@
 """Sale service for checkout operations."""
 
+import logging
 import uuid
 from datetime import datetime, timedelta, timezone
+
+logger = logging.getLogger(__name__)
 from decimal import Decimal
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -442,7 +445,7 @@ async def sync_offline_sales(
                     conflicts=conflict_details,
                 )
             except Exception:
-                pass  # Don't fail sync because of email error
+                logger.warning("Failed to send sale conflict notification email")
 
     return SyncSalesResponse(
         synced=synced,

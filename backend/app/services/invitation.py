@@ -1,7 +1,10 @@
 """Invitation service for managing depositor invitations."""
 
+import logging
 import secrets
 from datetime import datetime, timedelta, timezone
+
+logger = logging.getLogger(__name__)
 from typing import TYPE_CHECKING
 
 from sqlalchemy import select
@@ -441,6 +444,7 @@ class InvitationService:
                         first_name=user.first_name,
                     )
             except Exception:
+                logger.warning("Failed to resend invitation %s", invitation_id)
                 result["skipped"] += 1
 
         return result

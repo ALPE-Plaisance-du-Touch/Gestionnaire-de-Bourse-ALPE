@@ -60,10 +60,10 @@ class EmailService:
                 use_tls=settings.smtp_use_tls,
                 start_tls=False,  # MailHog doesn't support STARTTLS
             )
-            logger.info(f"Email sent successfully to {to_email}")
+            logger.info("Email sent successfully (subject: %s)", subject)
             return True
         except Exception as e:
-            logger.error(f"Failed to send email to {to_email}: {e}")
+            logger.warning("Failed to send email (subject: %s): %s", subject, e)
             return False
 
     async def send_invitation_email(

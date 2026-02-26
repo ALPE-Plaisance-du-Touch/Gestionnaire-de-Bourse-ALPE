@@ -290,7 +290,7 @@ async def _notify_managers_of_closure(
                 total_depositors=total_depositors,
             )
         except Exception as e:
-            logger.error(f"Failed to notify {manager.email} of closure: {e}")
+            logger.warning("Failed to notify manager %s of closure: %s", manager.id, e)
 
 
 @router.post(
@@ -546,7 +546,7 @@ async def send_deadline_reminder(
                 )
                 sent += 1
             except Exception as e:
-                logger.error(f"Failed to send deadline reminder to {dep.user.email}: {e}")
+                logger.warning("Failed to send deadline reminder to user %s: %s", dep.user_id, e)
         logger.info(f"Deadline reminders sent: {sent}/{len(depositors)}")
 
     background_tasks.add_task(_send_reminders)
