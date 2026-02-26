@@ -5,6 +5,7 @@ from decimal import Decimal
 from io import BytesIO
 from typing import TYPE_CHECKING
 
+from markupsafe import escape
 from weasyprint import HTML
 
 if TYPE_CHECKING:
@@ -51,8 +52,8 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
         sold_rows += f"""
         <tr>
             <td class="line-num">{article.line_number}</td>
-            <td>{article.description}</td>
-            <td>{cat}</td>
+            <td>{escape(article.description)}</td>
+            <td>{escape(cat)}</td>
             <td class="price">{format_price(article.price)}</td>
         </tr>"""
 
@@ -63,8 +64,8 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
         unsold_rows += f"""
         <tr>
             <td class="line-num">{article.line_number}</td>
-            <td>{article.description}</td>
-            <td>{cat}</td>
+            <td>{escape(article.description)}</td>
+            <td>{escape(cat)}</td>
             <td class="price">{format_price(article.price)}</td>
         </tr>"""
 
@@ -341,14 +342,14 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
     <body>
         <div class="header">
             <h1>BORDEREAU DE REVERSEMENT</h1>
-            <div class="edition">{edition_name}</div>
+            <div class="edition">{escape(edition_name)}</div>
             <div class="date">Généré le {generated_date}</div>
         </div>
 
         <div class="info-grid">
             <div class="info-box">
                 <div class="info-label">Déposant</div>
-                <div class="info-value">{depositor_name}</div>
+                <div class="info-value">{escape(depositor_name)}</div>
             </div>
             <div class="info-box">
                 <div class="info-label">Liste N</div>
@@ -419,7 +420,7 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
         </div>
 
         <div class="footer">
-            ALPE Plaisance du Touch &mdash; {edition_name} &mdash; Bordereau généré le {generated_date}
+            ALPE Plaisance du Touch &mdash; {escape(edition_name)} &mdash; Bordereau généré le {generated_date}
         </div>
     </body>
     </html>

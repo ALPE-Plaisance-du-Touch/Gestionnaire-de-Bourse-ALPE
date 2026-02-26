@@ -9,6 +9,7 @@ from operator import attrgetter
 from typing import TYPE_CHECKING
 
 import qrcode
+from markupsafe import escape
 from qrcode.constants import ERROR_CORRECT_M
 from weasyprint import HTML
 
@@ -160,7 +161,7 @@ def _build_cover_page_html(
         depositor_rows += f"""
         <tr>
             <td style="text-align:center">{i}</td>
-            <td>{dep_info['name']}</td>
+            <td>{escape(dep_info['name'])}</td>
             <td style="text-align:center">{list_nums}</td>
             <td style="text-align:center">{dep_info['total_articles']}</td>
         </tr>
@@ -171,7 +172,7 @@ def _build_cover_page_html(
     return f"""
     <div class="cover-page">
         <h1>Bourse aux Vetements ALPE</h1>
-        <h2>{edition.name}</h2>
+        <h2>{escape(edition.name)}</h2>
         {slot_info}
         <div class="cover-stats">
             <div class="cover-stat">
@@ -223,7 +224,7 @@ def _build_separator_page_html(
 
     return f"""
     <div class="separator-page">
-        <h1 class="separator-name">{depositor_name}</h1>
+        <h1 class="separator-name">{escape(depositor_name)}</h1>
         <p class="separator-lists">{list_numbers}</p>
         {slot_info}
         <p class="separator-count">
@@ -263,9 +264,9 @@ def _build_article_list_html(item_list: "ItemList") -> str:
         sale_rows += f"""
         <tr>
             <td style="text-align:center">{article.line_number}</td>
-            <td>{cat_label}</td>
-            <td>{article.description}{lot_info}</td>
-            <td>{size_info}</td>
+            <td>{escape(cat_label)}</td>
+            <td>{escape(article.description)}{escape(lot_info)}</td>
+            <td>{escape(size_info)}</td>
             <td style="text-align:right">{format_price(article.price)}</td>
         </tr>
         """
@@ -278,14 +279,14 @@ def _build_article_list_html(item_list: "ItemList") -> str:
             cat_label = CATEGORY_LABELS.get(article.category, article.category)
             size_info = article.size or ""
             lot_info = f" (lot de {article.lot_quantity})" if article.is_lot else ""
-            reason = f' <em style="color:#991b1b">({article.rejection_reason})</em>' if article.rejection_reason else ""
+            reason = f' <em style="color:#991b1b">({escape(article.rejection_reason)})</em>' if article.rejection_reason else ""
 
             rejected_rows += f"""
             <tr>
                 <td style="text-align:center">{article.line_number}</td>
-                <td>{cat_label}</td>
-                <td>{article.description}{lot_info}{reason}</td>
-                <td>{size_info}</td>
+                <td>{escape(cat_label)}</td>
+                <td>{escape(article.description)}{escape(lot_info)}{reason}</td>
+                <td>{escape(size_info)}</td>
                 <td style="text-align:right">{format_price(article.price)}</td>
             </tr>
             """
@@ -317,7 +318,7 @@ def _build_article_list_html(item_list: "ItemList") -> str:
 
     return f"""
     <div class="article-list-page">
-        <h2>Liste des articles - {depositor_name} - Liste {item_list.number}</h2>
+        <h2>Liste des articles - {escape(depositor_name)} - Liste {item_list.number}</h2>
         <h3 class="sale-section-title">Articles mis en vente ({len(sale_articles)})</h3>
         <table class="article-table">
             <thead>
@@ -372,9 +373,9 @@ def _build_labels_html(item_list: "ItemList", edition_id: str) -> str:
                 </div>
             </div>
             <div class="label-price">{format_price(article.price)}</div>
-            <div class="label-desc">{desc}</div>
+            <div class="label-desc">{escape(desc)}</div>
             <div class="label-bottom">
-                <span class="label-category">{cat_label}</span>
+                <span class="label-category">{escape(cat_label)}</span>
                 <span class="label-code">{label_code}</span>
             </div>
         </div>
@@ -435,7 +436,7 @@ def generate_labels_pdf(
     <html lang="fr">
     <head>
         <meta charset="UTF-8">
-        <title>Etiquettes - {edition.name}</title>
+        <title>Etiquettes - {escape(edition.name)}</title>
         <style>
             @page {{
                 size: A4 portrait;

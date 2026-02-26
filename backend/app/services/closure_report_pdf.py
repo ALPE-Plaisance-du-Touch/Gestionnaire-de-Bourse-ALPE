@@ -4,6 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
+from markupsafe import escape
 from weasyprint import HTML
 
 if TYPE_CHECKING:
@@ -54,7 +55,7 @@ def _generate_report_html(edition, stats, payouts, closed_by) -> str:
         depositor_rows += f"""
         <tr>
             <td style="text-align:center">{p.item_list.number}</td>
-            <td>{name}</td>
+            <td>{escape(name)}</td>
             <td style="text-align:center">{p.total_articles}</td>
             <td style="text-align:center">{p.sold_articles}</td>
             <td style="text-align:right">{format_price(p.gross_amount)}</td>
@@ -110,12 +111,12 @@ def _generate_report_html(edition, stats, payouts, closed_by) -> str:
 <body>
 
 <h1>RAPPORT DE CLÔTURE</h1>
-<p class="subtitle">{edition_name} - Généré le {generated_date}</p>
+<p class="subtitle">{escape(edition_name)} - Généré le {generated_date}</p>
 
 <h2>Informations édition</h2>
 <table class="summary-table">
-    <tr><td>Nom</td><td>{edition_name}</td></tr>
-    <tr><td>Lieu</td><td>{getattr(edition, 'location', '') or ''}</td></tr>
+    <tr><td>Nom</td><td>{escape(edition_name)}</td></tr>
+    <tr><td>Lieu</td><td>{escape(getattr(edition, 'location', '') or '')}</td></tr>
     <tr><td>Nombre de déposants</td><td>{nb_depositors}</td></tr>
     <tr><td>Nombre de listes</td><td>{total_payouts}</td></tr>
 </table>
@@ -169,7 +170,7 @@ def _generate_report_html(edition, stats, payouts, closed_by) -> str:
 
 <div class="footer">
     <p><strong>ALPE Plaisance du Touch</strong></p>
-    <p>Rapport généré le {generated_date}{f' par {closed_by}' if closed_by else ''}</p>
+    <p>Rapport généré le {generated_date}{f' par {escape(closed_by)}' if closed_by else ''}</p>
     <p>Ce document est un récapitulatif interne à usage des gestionnaires de la bourse.</p>
 </div>
 

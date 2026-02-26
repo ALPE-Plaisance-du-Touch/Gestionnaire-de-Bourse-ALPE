@@ -5,6 +5,7 @@ from decimal import Decimal
 from io import BytesIO
 from typing import TYPE_CHECKING
 
+from markupsafe import escape
 from weasyprint import HTML
 
 if TYPE_CHECKING:
@@ -61,8 +62,8 @@ def generate_list_pdf(item_list: "ItemList", depositor_name: str) -> bytes:
         article_rows += f"""
         <tr>
             <td class="line-num">{article.line_number}</td>
-            <td class="category">{category_label}</td>
-            <td class="description">{article.description}{lot_info}{size_info}</td>
+            <td class="category">{escape(category_label)}</td>
+            <td class="description">{escape(article.description)}{escape(lot_info)}{escape(size_info)}</td>
             <td class="price">{format_price(article.price)}</td>
         </tr>
         """
@@ -259,7 +260,7 @@ def generate_list_pdf(item_list: "ItemList", depositor_name: str) -> bytes:
         <div class="info-grid">
             <div class="info-box">
                 <div class="info-label">Déposant</div>
-                <div class="info-value">{depositor_name}</div>
+                <div class="info-value">{escape(depositor_name)}</div>
             </div>
             <div class="info-box">
                 <div class="info-label">Type de liste</div>
