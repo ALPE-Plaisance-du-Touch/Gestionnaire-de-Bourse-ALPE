@@ -61,12 +61,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     def _get_client_id(self, request: Request) -> str:
         """Get a unique identifier for the client.
 
-        Uses X-Forwarded-For header if behind a proxy, otherwise client IP.
+        Prefers X-Real-IP (set by nginx) over X-Forwarded-For to avoid
+        IP spoofing via crafted headers.
         """
-        forwarded = request.headers.get("x-forwarded-for")
-        if forwarded:
-            # Take the first IP in the chain (original client)
-            return forwarded.split(",")[0].strip()
+        real_ip = request.headers.get("x-real-ip")
+        if real_ip:
+            return real_ip.strip()
         return request.client.host if request.client else "unknown"
 
     def _is_excluded(self, path: str) -> bool:
