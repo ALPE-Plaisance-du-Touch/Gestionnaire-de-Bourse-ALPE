@@ -12,14 +12,14 @@ if TYPE_CHECKING:
 
 STATUS_LABELS = {
     "pending": "En attente",
-    "ready": "Pret",
-    "paid": "Paye",
-    "cancelled": "Annule",
+    "ready": "Prêt",
+    "paid": "Payé",
+    "cancelled": "Annulé",
 }
 
 PAYMENT_LABELS = {
-    "cash": "Especes",
-    "check": "Cheque",
+    "cash": "Espèces",
+    "check": "Chèque",
     "transfer": "Virement",
 }
 
@@ -40,8 +40,8 @@ def generate_closure_report_pdf(
 
 
 def _generate_report_html(edition, stats, payouts, closed_by) -> str:
-    generated_date = datetime.now().strftime("%d/%m/%Y a %H:%M")
-    edition_name = edition.name if hasattr(edition, "name") else "Edition"
+    generated_date = datetime.now().strftime("%d/%m/%Y à %H:%M")
+    edition_name = edition.name if hasattr(edition, "name") else "Édition"
 
     # Build depositor summary rows
     depositor_rows = ""
@@ -109,22 +109,22 @@ def _generate_report_html(edition, stats, payouts, closed_by) -> str:
 </head>
 <body>
 
-<h1>RAPPORT DE CLOTURE</h1>
-<p class="subtitle">{edition_name} - Genere le {generated_date}</p>
+<h1>RAPPORT DE CLÔTURE</h1>
+<p class="subtitle">{edition_name} - Généré le {generated_date}</p>
 
-<h2>Informations edition</h2>
+<h2>Informations édition</h2>
 <table class="summary-table">
     <tr><td>Nom</td><td>{edition_name}</td></tr>
     <tr><td>Lieu</td><td>{getattr(edition, 'location', '') or ''}</td></tr>
-    <tr><td>Nombre de deposants</td><td>{nb_depositors}</td></tr>
+    <tr><td>Nombre de déposants</td><td>{nb_depositors}</td></tr>
     <tr><td>Nombre de listes</td><td>{total_payouts}</td></tr>
 </table>
 
-<h2>Statistiques generales</h2>
+<h2>Statistiques générales</h2>
 <div class="info-grid">
     <div class="info-box">
         <div class="value">{total_articles}</div>
-        <div class="label">Articles deposes</div>
+        <div class="label">Articles déposés</div>
     </div>
     <div class="info-box">
         <div class="value">{sold_articles}</div>
@@ -136,7 +136,7 @@ def _generate_report_html(edition, stats, payouts, closed_by) -> str:
     </div>
 </div>
 
-<h2>Resume financier</h2>
+<h2>Résumé financier</h2>
 <table class="summary-table">
     <tr><td>Total des ventes</td><td>{format_price(total_sales)}</td></tr>
     <tr><td>Commission ALPE</td><td>{format_price(total_commission)}</td></tr>
@@ -145,15 +145,15 @@ def _generate_report_html(edition, stats, payouts, closed_by) -> str:
 </table>
 
 <div class="highlight">
-    <div>Reversements effectues : <span class="amount">{payouts_paid} / {total_payouts}</span></div>
+    <div>Reversements effectués : <span class="amount">{payouts_paid} / {total_payouts}</span></div>
 </div>
 
-<h2>Recapitulatif par deposant</h2>
+<h2>Récapitulatif par déposant</h2>
 <table class="data">
     <thead>
         <tr>
             <th>N liste</th>
-            <th>Deposant</th>
+            <th>Déposant</th>
             <th>Articles</th>
             <th>Vendus</th>
             <th>Ventes</th>
@@ -169,8 +169,8 @@ def _generate_report_html(edition, stats, payouts, closed_by) -> str:
 
 <div class="footer">
     <p><strong>ALPE Plaisance du Touch</strong></p>
-    <p>Rapport genere le {generated_date}{f' par {closed_by}' if closed_by else ''}</p>
-    <p>Ce document est un recapitulatif interne a usage des gestionnaires de la bourse.</p>
+    <p>Rapport généré le {generated_date}{f' par {closed_by}' if closed_by else ''}</p>
+    <p>Ce document est un récapitulatif interne à usage des gestionnaires de la bourse.</p>
 </div>
 
 </body>

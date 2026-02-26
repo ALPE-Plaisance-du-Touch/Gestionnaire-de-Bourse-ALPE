@@ -259,7 +259,7 @@ class EmailService:
 
         return await self._send_email(
             to_email=to_email,
-            subject=f"Edition cloturee : {edition_name}",
+            subject=f"Édition clôturée : {edition_name}",
             html_content=html_content,
             text_content=text_content,
         )
@@ -277,7 +277,7 @@ class EmailService:
         text_template = self.jinja_env.get_template("payout_reminder.txt")
 
         context = {
-            "first_name": first_name or "Deposant",
+            "first_name": first_name or "Déposant",
             "net_amount": net_amount,
             "edition_name": edition_name or "Bourse ALPE",
             "location": location,
@@ -309,7 +309,7 @@ class EmailService:
         text_template = self.jinja_env.get_template("deadline_reminder.txt")
 
         context = {
-            "first_name": first_name or "Deposant",
+            "first_name": first_name or "Déposant",
             "edition_name": edition_name,
             "deadline": deadline,
             "lists_url": lists_url,
@@ -321,7 +321,7 @@ class EmailService:
 
         return await self._send_email(
             to_email=to_email,
-            subject=f"Rappel : date limite de declaration - {edition_name}",
+            subject=f"Rappel : date limite de déclaration - {edition_name}",
             html_content=html_content,
             text_content=text_content,
         )
@@ -373,7 +373,7 @@ class EmailService:
         text_template = self.jinja_env.get_template("registrations_open.txt")
 
         context = {
-            "first_name": first_name or "Deposant",
+            "first_name": first_name or "Déposant",
             "edition_name": edition_name,
             "declaration_deadline": declaration_deadline,
             "lists_url": lists_url,

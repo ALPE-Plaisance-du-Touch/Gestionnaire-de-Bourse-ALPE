@@ -17,15 +17,15 @@ if TYPE_CHECKING:
 
 # Category labels in French
 CATEGORY_LABELS = {
-    "clothing": "Vetements",
+    "clothing": "Vêtements",
     "shoes": "Chaussures",
-    "nursery": "Puericulture",
+    "nursery": "Puériculture",
     "toys": "Jouets",
     "games": "Jeux",
     "books": "Livres",
     "accessories": "Accessoires",
     "stroller": "Poussette",
-    "car_seat": "Siege auto",
+    "car_seat": "Siège auto",
     "other": "Autres",
 }
 

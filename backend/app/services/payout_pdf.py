@@ -12,9 +12,9 @@ if TYPE_CHECKING:
     from app.models.payout import Payout
 
 CATEGORY_LABELS = {
-    "clothing": "Vetements",
+    "clothing": "Vêtements",
     "shoes": "Chaussures",
-    "nursery": "Puericulture",
+    "nursery": "Puériculture",
     "toys": "Jouets",
     "books": "Livres",
     "accessories": "Accessoires",
@@ -23,7 +23,7 @@ CATEGORY_LABELS = {
 
 LIST_TYPE_LABELS = {
     "standard": "Standard",
-    "list_1000": "Liste 1000 (Adherent ALPE)",
+    "list_1000": "Liste 1000 (Adhérent ALPE)",
     "list_2000": "Liste 2000 (Famille/Amis)",
 }
 
@@ -37,8 +37,8 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
     depositor = payout.depositor
     depositor_name = f"{depositor.first_name} {depositor.last_name}"
     list_type_label = LIST_TYPE_LABELS.get(item_list.list_type, item_list.list_type)
-    generated_date = datetime.now().strftime("%d/%m/%Y a %H:%M")
-    edition_name = edition.name if hasattr(edition, "name") else "Edition"
+    generated_date = datetime.now().strftime("%d/%m/%Y à %H:%M")
+    edition_name = edition.name if hasattr(edition, "name") else "Édition"
 
     articles = sorted(item_list.articles, key=lambda a: a.line_number)
     sold_articles = [a for a in articles if a.status == "sold"]
@@ -73,7 +73,7 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
     if payout.sold_articles == 0:
         zero_sales_msg = """
         <div class="info-message">
-            Aucun article vendu. Seuls les invendus sont a recuperer.
+            Aucun article vendu. Seuls les invendus sont à récupérer.
         </div>"""
 
     # All sold message
@@ -81,7 +81,7 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
     if payout.sold_articles == payout.total_articles and payout.total_articles > 0:
         all_sold_msg = """
         <div class="success-message">
-            Felicitations, tous vos articles ont trouve preneur !
+            Félicitations, tous vos articles ont trouvé preneur !
         </div>"""
 
     # Sold articles table
@@ -94,7 +94,7 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
                 <tr>
                     <th>N</th>
                     <th>Description</th>
-                    <th>Categorie</th>
+                    <th>Catégorie</th>
                     <th style="text-align: right">Prix de vente</th>
                 </tr>
             </thead>
@@ -118,8 +118,8 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
                 <tr>
                     <th>N</th>
                     <th>Description</th>
-                    <th>Categorie</th>
-                    <th style="text-align: right">Prix demande</th>
+                    <th>Catégorie</th>
+                    <th style="text-align: right">Prix demandé</th>
                 </tr>
             </thead>
             <tbody>
@@ -342,12 +342,12 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
         <div class="header">
             <h1>BORDEREAU DE REVERSEMENT</h1>
             <div class="edition">{edition_name}</div>
-            <div class="date">Genere le {generated_date}</div>
+            <div class="date">Généré le {generated_date}</div>
         </div>
 
         <div class="info-grid">
             <div class="info-box">
-                <div class="info-label">Deposant</div>
+                <div class="info-label">Déposant</div>
                 <div class="info-value">{depositor_name}</div>
             </div>
             <div class="info-box">
@@ -355,7 +355,7 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
                 <div class="info-value">{item_list.number} ({list_type_label})</div>
             </div>
             <div class="info-box">
-                <div class="info-label">Articles deposes</div>
+                <div class="info-label">Articles déposés</div>
                 <div class="info-value">{payout.total_articles}</div>
             </div>
             <div class="info-box">
@@ -383,7 +383,7 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
                 </tr>
                 {fee_label}
                 <tr class="net-row">
-                    <td>Montant a reverser</td>
+                    <td>Montant à reverser</td>
                     <td class="price">{format_price(payout.net_amount)}</td>
                 </tr>
             </table>
@@ -392,34 +392,34 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
         <div class="payment-section">
             <h2>Paiement et retrait</h2>
             <div class="checkbox-line">
-                Mode de paiement : &#9744; Especes &nbsp;&nbsp; &#9744; Cheque &nbsp;&nbsp; &#9744; Virement
+                Mode de paiement : &#9744; Espèces &nbsp;&nbsp; &#9744; Chèque &nbsp;&nbsp; &#9744; Virement
             </div>
             <div class="checkbox-line">
                 Date du paiement : _____ / _____ / __________
             </div>
             <div class="checkbox-line">
-                &#9744; Invendus recuperes
+                &#9744; Invendus récupérés
             </div>
 
             <div class="signature-line">
                 <div class="signature-box">
-                    <div class="label">Signature du benevole</div>
+                    <div class="label">Signature du bénévole</div>
                     <div class="line">&nbsp;</div>
                 </div>
                 <div class="signature-box">
-                    <div class="label">Signature du deposant</div>
+                    <div class="label">Signature du déposant</div>
                     <div class="line">&nbsp;</div>
                 </div>
             </div>
 
             <div class="legal-notice">
-                Je soussigne(e) reconnais avoir recu la somme de {format_price(payout.net_amount)}
-                et recupere mes articles invendus.
+                Je soussigné(e) reconnais avoir reçu la somme de {format_price(payout.net_amount)}
+                et récupéré mes articles invendus.
             </div>
         </div>
 
         <div class="footer">
-            ALPE Plaisance du Touch &mdash; {edition_name} &mdash; Bordereau genere le {generated_date}
+            ALPE Plaisance du Touch &mdash; {edition_name} &mdash; Bordereau généré le {generated_date}
         </div>
     </body>
     </html>
