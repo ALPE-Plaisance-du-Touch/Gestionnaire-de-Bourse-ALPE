@@ -3,7 +3,9 @@
 import re
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
+
+from app.schemas.user import UserResponse
 
 
 # Password validation pattern: min 8 chars, 1 letter, 1 digit, 1 special char
@@ -105,28 +107,6 @@ class PasswordReset(BaseModel):
                 "one letter, one digit, and one special character (@$!%*#?&)"
             )
         return v
-
-
-class UserResponse(BaseModel):
-    """Response schema for user data."""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    id: str
-    email: EmailStr
-    first_name: str
-    last_name: str
-    phone: str | None = None
-    role: str
-    is_active: bool
-    is_verified: bool
-    created_at: datetime
-    last_login_at: datetime | None = None
-
-    @property
-    def full_name(self) -> str:
-        """Get user's full name."""
-        return f"{self.first_name} {self.last_name}"
 
 
 class LoginResponse(BaseModel):
