@@ -26,7 +26,7 @@ router = APIRouter()
 
 
 @router.post(
-    "/",
+    "",
     response_model=TicketDetailResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Create a new ticket",
@@ -53,7 +53,7 @@ async def create_ticket(
 
 
 @router.get(
-    "/",
+    "",
     response_model=TicketListResponse,
     summary="List tickets for an edition",
 )

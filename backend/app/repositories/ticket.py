@@ -25,6 +25,7 @@ class TicketRepository:
             .options(
                 joinedload(Ticket.created_by),
                 joinedload(Ticket.assigned_to),
+                joinedload(Ticket.edition),
                 joinedload(Ticket.messages).joinedload(TicketMessage.sender),
             )
             .where(Ticket.id == ticket_id)

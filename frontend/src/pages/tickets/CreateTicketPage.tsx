@@ -4,7 +4,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ticketsApi } from '@/api/tickets';
 import { useAuth } from '@/contexts';
 import { Button } from '@/components/ui/Button';
-import type { User } from '@/types';
 
 export function CreateTicketPage() {
   const { id: editionId } = useParams<{ id: string }>();
@@ -23,8 +22,10 @@ export function CreateTicketPage() {
     queryKey: ['edition-depositors', editionId],
     queryFn: async () => {
       const { apiClient } = await import('@/api/client');
-      const response = await apiClient.get(`/v1/editions/${editionId}/depositors`);
-      return (response.data as { depositors: Array<{ user: User }> }).depositors;
+      const response = await apiClient.get(`/v1/editions/${editionId}/billetweb/depositors`, {
+        params: { limit: 100 },
+      });
+      return (response.data as { items: Array<{ userId: string; userFirstName: string; userLastName: string; userEmail: string }> }).items;
     },
     enabled: !!editionId && !!isStaff,
   });
@@ -80,8 +81,8 @@ export function CreateTicketPage() {
             >
               <option value="">-- Aucun (ticket interne) --</option>
               {depositors.map((d) => (
-                <option key={d.user.id} value={d.user.id}>
-                  {d.user.firstName} {d.user.lastName} ({d.user.email})
+                <option key={d.userId} value={d.userId}>
+                  {d.userFirstName} {d.userLastName} ({d.userEmail})
                 </option>
               ))}
             </select>
