@@ -7,6 +7,7 @@ import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, Edition
 import { MyEditionsPage, MyListsPage, ListDetailPage } from '@/pages/depositor';
 import { SalesPage } from '@/pages/volunteer/SalesPage';
 import { ProfilePage, PrivacyPolicyPage } from '@/pages/account';
+import { TicketListPage, TicketDetailPage, CreateTicketPage } from '@/pages/tickets';
 import { HelpPage } from '@/pages/help';
 import { HomePage } from '@/pages/home';
 
@@ -231,6 +232,38 @@ export const router = createBrowserRouter([
           <ProtectedRoute>
             <MainLayout>
               <ListDetailPage />
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+
+      // Ticket routes - any authenticated user
+      {
+        path: '/editions/:id/tickets',
+        element: (
+          <ProtectedRoute>
+            <MainLayout>
+              <TicketListPage />
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/editions/:id/tickets/new',
+        element: (
+          <ProtectedRoute>
+            <MainLayout>
+              <CreateTicketPage />
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/editions/:id/tickets/:ticketId',
+        element: (
+          <ProtectedRoute>
+            <MainLayout>
+              <TicketDetailPage />
             </MainLayout>
           </ProtectedRoute>
         ),
