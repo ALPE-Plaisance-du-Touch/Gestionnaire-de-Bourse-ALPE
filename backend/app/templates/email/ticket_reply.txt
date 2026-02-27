@@ -1,0 +1,17 @@
+Bourse ALPE - Nouvelle réponse à votre message
+
+Bonjour,
+
+Vous avez reçu une nouvelle réponse concernant votre ticket « {{ ticket_subject }} » pour l'édition {{ edition_name }}.
+
+---
+{{ reply_preview }}
+---
+
+Pour voir la conversation complète, connectez-vous à votre espace :
+{{ ticket_url }}
+
+---
+ALPE Plaisance du Touch
+Cet email a été envoyé automatiquement, merci de ne pas y répondre.
+Besoin d'aide ? Contactez-nous : {{ support_email }}

@@ -359,6 +359,37 @@ class EmailService:
         )
 
 
+    async def send_ticket_reply_email(
+        self,
+        to_email: str,
+        ticket_subject: str,
+        reply_preview: str,
+        edition_name: str,
+    ) -> bool:
+        """Send a notification email when staff replies to a depositor ticket."""
+        ticket_url = f"{settings.frontend_url}/tickets"
+
+        html_template = self.jinja_env.get_template("ticket_reply.html")
+        text_template = self.jinja_env.get_template("ticket_reply.txt")
+
+        context = {
+            "ticket_subject": ticket_subject,
+            "reply_preview": reply_preview,
+            "edition_name": edition_name,
+            "ticket_url": ticket_url,
+            "support_email": settings.support_email,
+        }
+
+        html_content = html_template.render(**context)
+        text_content = text_template.render(**context)
+
+        return await self._send_email(
+            to_email=to_email,
+            subject=f"Nouvelle réponse - {ticket_subject}",
+            html_content=html_content,
+            text_content=text_content,
+        )
+
     async def send_registrations_open_email(
         self,
         to_email: str,
