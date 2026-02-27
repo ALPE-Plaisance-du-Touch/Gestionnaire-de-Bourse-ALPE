@@ -23,10 +23,10 @@ class TicketRepository:
         result = await self.db.execute(
             select(Ticket)
             .options(
-                joinedload(Ticket.created_by),
-                joinedload(Ticket.assigned_to),
+                joinedload(Ticket.created_by).joinedload(User.role),
+                joinedload(Ticket.assigned_to).joinedload(User.role),
                 joinedload(Ticket.edition),
-                joinedload(Ticket.messages).joinedload(TicketMessage.sender),
+                joinedload(Ticket.messages).joinedload(TicketMessage.sender).joinedload(User.role),
             )
             .where(Ticket.id == ticket_id)
         )
