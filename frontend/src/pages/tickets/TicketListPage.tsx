@@ -83,7 +83,7 @@ export function TicketListPage() {
             {data.tickets.map((ticket) => (
               <div
                 key={ticket.id}
-                className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                className="bg-white border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors shadow-sm"
                 onClick={() => navigate(`/editions/${editionId}/tickets/${ticket.id}`)}
               >
                 <div className="flex items-start justify-between">

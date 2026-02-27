@@ -128,65 +128,67 @@ export function TicketDetailPage() {
       </div>
 
       {/* Messages */}
-      <div className="space-y-4 mb-6">
-        {ticket.messages.map((msg) => {
-          const isOwnMessage = msg.senderId === user?.id;
-          return (
-            <div
-              key={msg.id}
-              className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
-            >
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="space-y-4 mb-6">
+          {ticket.messages.map((msg) => {
+            const isOwnMessage = msg.senderId === user?.id;
+            return (
               <div
-                className={`max-w-[75%] rounded-lg p-3 ${
-                  isOwnMessage
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-900'
-                }`}
+                key={msg.id}
+                className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
               >
-                <p className={`text-xs font-medium mb-1 ${isOwnMessage ? 'text-blue-100' : 'text-gray-500'}`}>
-                  {msg.senderName}
-                </p>
-                <p className="whitespace-pre-wrap">{msg.content}</p>
-                <p className={`text-xs mt-1 ${isOwnMessage ? 'text-blue-200' : 'text-gray-400'}`}>
-                  {formatDate(msg.createdAt)}
-                </p>
+                <div
+                  className={`max-w-[75%] rounded-lg p-3 ${
+                    isOwnMessage
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-900'
+                  }`}
+                >
+                  <p className={`text-xs font-medium mb-1 ${isOwnMessage ? 'text-blue-100' : 'text-gray-500'}`}>
+                    {msg.senderName}
+                  </p>
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                  <p className={`text-xs mt-1 ${isOwnMessage ? 'text-blue-200' : 'text-gray-400'}`}>
+                    {formatDate(msg.createdAt)}
+                  </p>
+                </div>
               </div>
-            </div>
-          );
-        })}
-        <div ref={messagesEndRef} />
-      </div>
+            );
+          })}
+          <div ref={messagesEndRef} />
+        </div>
 
-      {/* Reply form */}
-      {ticket.status === 'open' && (
-        <form onSubmit={handleReply} className="border-t border-gray-200 pt-4">
-          <textarea
-            value={replyContent}
-            onChange={(e) => setReplyContent(e.target.value)}
-            placeholder="Votre réponse..."
-            rows={3}
-            maxLength={5000}
-            className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-          />
-          <div className="flex justify-between items-center mt-2">
-            <span className="text-xs text-gray-400">
-              {replyContent.length} / 5000
-            </span>
-            <Button
-              type="submit"
-              disabled={!replyContent.trim()}
-              isLoading={replyMutation.isPending}
-            >
-              Envoyer
-            </Button>
-          </div>
-          {replyMutation.isError && (
-            <p className="text-red-500 text-sm mt-2">
-              Erreur lors de l'envoi. Réessayez.
-            </p>
-          )}
-        </form>
-      )}
+        {/* Reply form */}
+        {ticket.status === 'open' && (
+          <form onSubmit={handleReply} className="border-t border-gray-200 pt-4">
+            <textarea
+              value={replyContent}
+              onChange={(e) => setReplyContent(e.target.value)}
+              placeholder="Votre réponse..."
+              rows={3}
+              maxLength={5000}
+              className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+            />
+            <div className="flex justify-between items-center mt-2">
+              <span className="text-xs text-gray-400">
+                {replyContent.length} / 5000
+              </span>
+              <Button
+                type="submit"
+                disabled={!replyContent.trim()}
+                isLoading={replyMutation.isPending}
+              >
+                Envoyer
+              </Button>
+            </div>
+            {replyMutation.isError && (
+              <p className="text-red-500 text-sm mt-2">
+                Erreur lors de l'envoi. Réessayez.
+              </p>
+            )}
+          </form>
+        )}
+      </div>
     </div>
   );
 }

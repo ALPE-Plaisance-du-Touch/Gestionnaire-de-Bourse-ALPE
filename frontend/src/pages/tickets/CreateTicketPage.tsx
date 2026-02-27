@@ -67,74 +67,76 @@ export function CreateTicketPage() {
 
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Nouveau ticket</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {isStaff && depositors && depositors.length > 0 && (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {isStaff && depositors && depositors.length > 0 && (
+            <div>
+              <label htmlFor="assignedTo" className="block text-sm font-medium text-gray-700 mb-1">
+                Destinataire (déposant)
+              </label>
+              <select
+                id="assignedTo"
+                value={assignedToId}
+                onChange={(e) => setAssignedToId(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">-- Aucun (ticket interne) --</option>
+                {depositors.map((d) => (
+                  <option key={d.userId} value={d.userId}>
+                    {d.userFirstName} {d.userLastName} ({d.userEmail})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div>
-            <label htmlFor="assignedTo" className="block text-sm font-medium text-gray-700 mb-1">
-              Destinataire (déposant)
+            <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
+              Sujet
             </label>
-            <select
-              id="assignedTo"
-              value={assignedToId}
-              onChange={(e) => setAssignedToId(e.target.value)}
+            <input
+              id="subject"
+              type="text"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              maxLength={200}
+              placeholder="Sujet du ticket..."
               className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">-- Aucun (ticket interne) --</option>
-              {depositors.map((d) => (
-                <option key={d.userId} value={d.userId}>
-                  {d.userFirstName} {d.userLastName} ({d.userEmail})
-                </option>
-              ))}
-            </select>
+            />
           </div>
-        )}
 
-        <div>
-          <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
-            Sujet
-          </label>
-          <input
-            id="subject"
-            type="text"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            maxLength={200}
-            placeholder="Sujet du ticket..."
-            className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
+          <div>
+            <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
+              Message
+            </label>
+            <textarea
+              id="content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              maxLength={5000}
+              rows={6}
+              placeholder="Décrivez votre demande..."
+              className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+            />
+            <p className="text-xs text-gray-400 mt-1 text-right">{content.length} / 5000</p>
+          </div>
 
-        <div>
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
-            Message
-          </label>
-          <textarea
-            id="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            maxLength={5000}
-            rows={6}
-            placeholder="Décrivez votre demande..."
-            className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-          />
-          <p className="text-xs text-gray-400 mt-1 text-right">{content.length} / 5000</p>
-        </div>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-
-        <div className="flex justify-end gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate(`/editions/${editionId}/tickets`)}
-          >
-            Annuler
-          </Button>
-          <Button type="submit" isLoading={createMutation.isPending}>
-            Créer le ticket
-          </Button>
-        </div>
-      </form>
+          <div className="flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate(`/editions/${editionId}/tickets`)}
+            >
+              Annuler
+            </Button>
+            <Button type="submit" isLoading={createMutation.isPending}>
+              Créer le ticket
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
