@@ -3104,3 +3104,34 @@ links:
   - rel: requirement
     id: REQ-F-025  # Messagerie interne (à créer)
 ```
+
+## US-017 — Documentation utilisateur intégrée
+
+```yaml
+id: US-017
+title: Documentation utilisateur intégrée
+actor: deposant, benevole, gestionnaire, admin
+benefit: "...pour comprendre et utiliser toutes les fonctionnalités de l'application de manière autonome"
+as_a: "En tant qu'utilisateur de l'application (quel que soit mon rôle)"
+i_want: "Je veux accéder à une aide complète et contextuelle directement dans l'application, couvrant l'ensemble des fonctionnalités"
+so_that: "Afin de pouvoir utiliser la plateforme efficacement sans avoir besoin de formation ou d'assistance extérieure"
+
+# Contexte métier
+notes: |
+  - L'aide actuelle est très sommaire et insuffisante pour un usage autonome
+  - L'objectif est une documentation exhaustive couvrant tous les parcours utilisateur par rôle :
+    déposant (déclaration, dépôt, suivi des ventes, récupération, reversement),
+    bénévole (caisse, scan, revue d'articles),
+    gestionnaire (configuration d'édition, import Billetweb, gestion des créneaux, reversements),
+    administrateur (gestion des utilisateurs, invitations, clôture, archivage)
+  - L'aide doit être contextuelle (adaptée à la page courante) et consultable globalement
+  - Inclure des guides pas-à-pas, FAQ, et glossaire des termes métier
+  - Détails d'implémentation (format, navigation, recherche) à définir ultérieurement
+
+dependencies:
+  - US-001  # Comptes utilisateurs (rôles)
+
+links:
+  - rel: requirement
+    id: REQ-F-026  # Documentation utilisateur (à créer)
+```

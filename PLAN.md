@@ -409,9 +409,21 @@ Permet de résoudre les questions sur les articles, le dépôt ou la récupérat
 
 ---
 
+## v0.24 - Documentation utilisateur intégrée (US-017)
+
+**Branche :** `feature/us-017-user-docs`
+**Exigences :** US-017, REQ-F-026 (à créer)
+
+Aide exhaustive et contextuelle dans l'application, couvrant tous les parcours par rôle
+(déposant, bénévole, gestionnaire, administrateur). Guides pas-à-pas, FAQ, glossaire métier.
+
+**Détails d'implémentation à définir.**
+
+---
+
 ## v1.0.0 - Feature Freeze & Production
 
-**Prérequis :** Toutes les versions 0.1 à 0.23 terminées et testées.
+**Prérequis :** Toutes les versions 0.1 à 0.24 terminées et testées.
 
 À partir de cette version, plus aucune fonctionnalité n'est ajoutée.
 Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
@@ -499,6 +511,7 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 | TASK-040 | 0.22 | Ticket de caisse (panier multi-articles) | US-004 (amélioration) |
 | TASK-041 | 0.21 | Suivi déclarations déposants (US-014) | US-014, REQ-F-023 |
 | TASK-042 | 0.23 | Messagerie interne déposants ↔ bénévoles | US-016, REQ-F-025 |
+| TASK-043 | 0.24 | Documentation utilisateur intégrée | US-017, REQ-F-026 |
 
 ---
 
