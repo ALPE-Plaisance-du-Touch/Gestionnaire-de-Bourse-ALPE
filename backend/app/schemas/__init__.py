@@ -119,6 +119,15 @@ from app.schemas.audit import (
     AuditLogListResponse,
     AuditLogResponse,
 )
+from app.schemas.ticket import (
+    CreateMessageRequest,
+    CreateTicketRequest,
+    TicketDetailResponse,
+    TicketListResponse,
+    TicketMessageResponse,
+    TicketResponse,
+    UnreadCountResponse,
+)
 
 __all__ = [
     # Article
@@ -230,4 +239,12 @@ __all__ = [
     # Audit
     "AuditLogResponse",
     "AuditLogListResponse",
+    # Ticket
+    "CreateMessageRequest",
+    "CreateTicketRequest",
+    "TicketDetailResponse",
+    "TicketListResponse",
+    "TicketMessageResponse",
+    "TicketResponse",
+    "UnreadCountResponse",
 ]

@@ -12,6 +12,7 @@ from app.models.sale import Sale
 from app.models.payout import Payout
 from app.models.audit_log import AuditLog
 from app.models.app_setting import AppSetting
+from app.models.ticket import Ticket, TicketMessage
 
 __all__ = [
     "Base",
@@ -27,4 +28,6 @@ __all__ = [
     "Payout",
     "AuditLog",
     "AppSetting",
+    "Ticket",
+    "TicketMessage",
 ]

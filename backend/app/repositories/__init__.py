@@ -8,6 +8,7 @@ from app.repositories.edition_depositor import EditionDepositorRepository
 from app.repositories.item_list import ItemListRepository
 from app.repositories.payout import PayoutRepository
 from app.repositories.sale import SaleRepository
+from app.repositories.ticket import TicketRepository
 from app.repositories.user import UserRepository
 
 __all__ = [
@@ -19,5 +20,6 @@ __all__ = [
     "ItemListRepository",
     "PayoutRepository",
     "SaleRepository",
+    "TicketRepository",
     "UserRepository",
 ]
