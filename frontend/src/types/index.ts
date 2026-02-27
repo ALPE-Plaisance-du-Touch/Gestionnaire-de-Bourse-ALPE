@@ -16,3 +16,4 @@ export * from './payout';
 export * from './dashboard';
 export * from './billetweb-api';
 export * from './review';
+export * from './ticket';
