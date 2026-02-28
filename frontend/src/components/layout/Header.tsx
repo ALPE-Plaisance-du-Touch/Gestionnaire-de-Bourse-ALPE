@@ -163,12 +163,6 @@ export function Header() {
                     )}
                   </Link>
                 )}
-                <Link
-                  to="/aide"
-                  className="text-gray-600 hover:text-gray-900 font-medium"
-                >
-                  Aide
-                </Link>
                 {isManagerOrAdmin && (
                   <div className="relative" ref={adminMenuRef}>
                     <button
@@ -257,6 +251,12 @@ export function Header() {
                     )}
                   </div>
                 )}
+                <Link
+                  to="/aide"
+                  className="text-gray-600 hover:text-gray-900 font-medium"
+                >
+                  Aide
+                </Link>
               </>
             ) : null}
           </nav>
