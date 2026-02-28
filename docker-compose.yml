@@ -75,7 +75,7 @@ services:
 
   # phpMyAdmin (database admin UI)
   phpmyadmin:
-    image: phpmyadmin:5
+    image: phpmyadmin:5.2
     container_name: bourse-phpmyadmin
     ports:
       - "8080:80"
@@ -92,7 +92,7 @@ services:
 
   # MailHog (email testing)
   mailhog:
-    image: mailhog/mailhog:latest
+    image: mailhog/mailhog:v1.0.1
     container_name: bourse-mailhog
     ports:
       - "1025:1025"  # SMTP

@@ -1,7 +1,7 @@
 """Unit tests for edition closure service."""
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from app.models import Edition, User
@@ -18,7 +18,7 @@ def _make_edition(**kwargs):
     edition.name = kwargs.get("name", "Bourse Test")
     edition.status = kwargs.get("status", EditionStatus.SETTLEMENT.value)
     edition.retrieval_end_datetime = kwargs.get(
-        "retrieval_end_datetime", datetime.now() - timedelta(days=1)
+        "retrieval_end_datetime", datetime.now(timezone.utc) - timedelta(days=1)
     )
     edition.closed_at = kwargs.get("closed_at", None)
     edition.closed_by_id = kwargs.get("closed_by_id", None)
@@ -128,7 +128,7 @@ class TestCheckClosurePrerequisites:
         service = EditionService(db)
         service.repository = AsyncMock()
         edition = _make_edition(
-            retrieval_end_datetime=datetime.now() + timedelta(days=1)
+            retrieval_end_datetime=datetime.now(timezone.utc) + timedelta(days=1)
         )
         service.repository.get_by_id = AsyncMock(return_value=edition)
 
@@ -179,7 +179,7 @@ class TestCloseEdition:
         edition = _make_edition()
         closed_edition = _make_edition(
             status=EditionStatus.CLOSED.value,
-            closed_at=datetime.now(),
+            closed_at=datetime.now(timezone.utc),
             closed_by_id="admin-1",
         )
         service.repository.get_by_id = AsyncMock(return_value=edition)
@@ -209,7 +209,7 @@ class TestCloseEdition:
         service = EditionService(db)
         service.repository = AsyncMock()
         edition = _make_edition(
-            retrieval_end_datetime=datetime.now() + timedelta(days=1)
+            retrieval_end_datetime=datetime.now(timezone.utc) + timedelta(days=1)
         )
         service.repository.get_by_id = AsyncMock(return_value=edition)
 
@@ -238,7 +238,7 @@ class TestArchiveEdition:
         edition = _make_edition(status=EditionStatus.CLOSED.value)
         archived_edition = _make_edition(
             status=EditionStatus.ARCHIVED.value,
-            archived_at=datetime.now(),
+            archived_at=datetime.now(timezone.utc),
         )
         service.repository.get_by_id = AsyncMock(return_value=edition)
         service.repository.archive_edition = AsyncMock(return_value=archived_edition)

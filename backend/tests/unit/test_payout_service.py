@@ -1,7 +1,7 @@
 """Unit tests for payout service."""
 
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -74,8 +74,8 @@ def _make_payout(item_list=None, **kwargs):
     payout.payment_reference = kwargs.get("payment_reference", None)
     payout.notes = kwargs.get("notes", None)
     payout.processed_by_id = kwargs.get("processed_by_id", None)
-    payout.created_at = kwargs.get("created_at", datetime.now())
-    payout.updated_at = kwargs.get("updated_at", datetime.now())
+    payout.created_at = kwargs.get("created_at", datetime.now(timezone.utc))
+    payout.updated_at = kwargs.get("updated_at", datetime.now(timezone.utc))
 
     if item_list is None:
         item_list = _make_item_list()

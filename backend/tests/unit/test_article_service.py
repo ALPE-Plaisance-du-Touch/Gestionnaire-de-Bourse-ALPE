@@ -1,7 +1,7 @@
 """Unit tests for Article service."""
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock
 
@@ -45,7 +45,7 @@ def mock_edition():
     edition.id = "edition-123"
     edition.status = EditionStatus.REGISTRATIONS_OPEN.value
     # Use naive datetime (no timezone) to match the service implementation
-    edition.declaration_deadline = datetime.utcnow() + timedelta(days=7)
+    edition.declaration_deadline = datetime.now(timezone.utc) + timedelta(days=7)
     return edition
 
 

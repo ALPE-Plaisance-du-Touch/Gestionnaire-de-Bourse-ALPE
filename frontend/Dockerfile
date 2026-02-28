@@ -1,6 +1,6 @@
 # Frontend Dockerfile - Multi-stage build
 # Stage 1: Development
-FROM node:20-alpine AS development
+FROM node:20.18-alpine AS development
 
 WORKDIR /app
 
@@ -18,7 +18,7 @@ EXPOSE 5173
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
 # Stage 2: Build
-FROM node:20-alpine AS build
+FROM node:20.18-alpine AS build
 
 WORKDIR /app
 
@@ -37,7 +37,7 @@ ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # Stage 3: Production (Nginx)
-FROM nginx:alpine AS production
+FROM nginx:1.27-alpine AS production
 
 # Copy built files
 COPY --from=build /app/dist /usr/share/nginx/html

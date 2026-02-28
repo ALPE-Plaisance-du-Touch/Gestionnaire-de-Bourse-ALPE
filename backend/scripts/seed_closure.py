@@ -14,7 +14,7 @@ to enable the edition closure test (A-03).
 
 import asyncio
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -61,7 +61,7 @@ async def main():
             if not pending_payouts:
                 print("\n  = All payouts already PAID")
             else:
-                now = datetime.utcnow()
+                now = datetime.now(timezone.utc)
                 for payout in pending_payouts:
                     payout.status = "paid"
                     payout.payment_method = "cash"

@@ -42,8 +42,8 @@ class TicketRepository:
     ) -> tuple[list[Ticket], int]:
         base_query = select(Ticket).where(Ticket.edition_id == edition_id)
 
-        # Depositors only see their own tickets
-        if user.is_depositor:
+        # Managers/admins see all tickets; others only see their own
+        if not (user.is_manager or user.is_administrator):
             base_query = base_query.where(
                 (Ticket.created_by_id == user.id) | (Ticket.assigned_to_id == user.id)
             )
@@ -73,20 +73,26 @@ class TicketRepository:
 
         return tickets, total
 
-    async def get_unread_count(self, user_id: str, edition_id: str) -> int:
-        """Count unread messages across all tickets visible to user."""
-        # Messages not sent by the user, not yet read, in tickets the user participates in
-        result = await self.db.execute(
-            select(func.count())
+    async def get_unread_count(self, user: User, edition_id: str) -> int:
+        """Count tickets with unread messages visible to user."""
+        query = (
+            select(func.count(TicketMessage.ticket_id.distinct()))
             .select_from(TicketMessage)
             .join(Ticket, TicketMessage.ticket_id == Ticket.id)
             .where(
                 Ticket.edition_id == edition_id,
-                TicketMessage.sender_id != user_id,
+                TicketMessage.sender_id != user.id,
                 TicketMessage.is_read == False,  # noqa: E712
-                (Ticket.created_by_id == user_id) | (Ticket.assigned_to_id == user_id),
             )
         )
+
+        # Managers/admins see all tickets; others only see their own
+        if not (user.is_manager or user.is_administrator):
+            query = query.where(
+                (Ticket.created_by_id == user.id) | (Ticket.assigned_to_id == user.id)
+            )
+
+        result = await self.db.execute(query)
         return result.scalar_one()
 
     async def get_unread_count_for_ticket(
