@@ -74,10 +74,9 @@ class TicketRepository:
         return tickets, total
 
     async def get_unread_count(self, user_id: str, edition_id: str) -> int:
-        """Count unread messages across all tickets visible to user."""
-        # Messages not sent by the user, not yet read, in tickets the user participates in
+        """Count tickets with unread messages visible to user."""
         result = await self.db.execute(
-            select(func.count())
+            select(func.count(TicketMessage.ticket_id.distinct()))
             .select_from(TicketMessage)
             .join(Ticket, TicketMessage.ticket_id == Ticket.id)
             .where(
