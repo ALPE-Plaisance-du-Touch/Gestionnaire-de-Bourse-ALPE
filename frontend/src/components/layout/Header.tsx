@@ -163,6 +163,12 @@ export function Header() {
                     )}
                   </Link>
                 )}
+                <Link
+                  to="/aide"
+                  className="text-gray-600 hover:text-gray-900 font-medium"
+                >
+                  Aide
+                </Link>
                 {isManagerOrAdmin && (
                   <div className="relative" ref={adminMenuRef}>
                     <button
@@ -431,6 +437,13 @@ export function Header() {
           )}
 
           <div className="border-t border-gray-200 my-2" />
+          <Link
+            to="/aide"
+            className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+            onClick={closeMobileMenu}
+          >
+            Aide
+          </Link>
           <Link
             to="/profile"
             className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
