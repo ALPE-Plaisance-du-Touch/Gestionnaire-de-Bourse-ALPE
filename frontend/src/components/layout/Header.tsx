@@ -234,6 +234,16 @@ export function Header() {
                               >
                                 Journal d'audit
                               </Link>
+                              <Link
+                                ref={(el) => { menuItemsRef.current[4] = el; }}
+                                to="/admin/settings"
+                                role="menuitem"
+                                tabIndex={-1}
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                                onClick={() => setIsAdminMenuOpen(false)}
+                              >
+                                Paramètres
+                              </Link>
                             </>
                           )}
                         </div>
@@ -407,6 +417,13 @@ export function Header() {
                     onClick={closeMobileMenu}
                   >
                     Journal d'audit
+                  </Link>
+                  <Link
+                    to="/admin/settings"
+                    className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                    onClick={closeMobileMenu}
+                  >
+                    Paramètres
                   </Link>
                 </>
               )}
