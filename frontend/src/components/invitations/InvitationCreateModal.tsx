@@ -165,7 +165,7 @@ export function InvitationCreateModal({ isOpen, onClose }: InvitationCreateModal
 
           {/* Depositor lookup result */}
           {isLookingUp && (
-            <p className="text-xs text-gray-400">Recherche du deposant...</p>
+            <p className="text-xs text-gray-400">Recherche du déposant...</p>
           )}
           {lookup?.found && (
             <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-lg text-sm">
@@ -179,12 +179,12 @@ export function InvitationCreateModal({ isOpen, onClose }: InvitationCreateModal
                   onClick={handlePrefill}
                   className="text-xs font-medium text-green-800 underline hover:text-green-900"
                 >
-                  Pre-remplir
+                  Pré-remplir
                 </button>
               </div>
               {lookup.lastEditionName && (
                 <p className="text-xs mt-0.5 text-green-600">
-                  Derniere participation : {lookup.lastEditionName}
+                  Dernière participation : {lookup.lastEditionName}
                 </p>
               )}
             </div>

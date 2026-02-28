@@ -129,9 +129,6 @@ class InvalidTokenError(AuthenticationError):
         self.code = "TOKEN_INVALID"
 
 
-# Alias for backwards compatibility
-TokenInvalidError = InvalidTokenError
-
 
 class UserNotFoundError(NotFoundError):
     """User not found."""

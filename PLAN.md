@@ -457,9 +457,9 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 
 ### Relecture & qualité (pré-release)
-- [ ] **PRE-001** Relecture orthographe et grammaire de toute l'application (textes UI, messages d'erreur, emails, labels)
-- [ ] **PRE-002** Audit sécurité par agent dédié (OWASP Top 10, injection, XSS, CSRF, auth bypass, headers, RBAC)
-- [ ] **PRE-003** Audit dette technique par agent dédié (code mort, dépendances obsolètes, patterns incohérents, TODO/FIXME, couverture tests)
+- [x] **PRE-001** ~~Relecture orthographe et grammaire de toute l'application~~ — **FAIT** (177 corrections, 4 commits)
+- [x] **PRE-002** ~~Audit sécurité par agent dédié~~ — **FAIT** (17 vulnérabilités, 13 corrigées, 4 reportées PRE-013→016)
+- [x] **PRE-003** ~~Audit dette technique par agent dédié~~ — **FAIT** (17 alertes, 10 corrigées, 5 reportées PRE-017→021)
 
 ### Tests & validation
 - [ ] **PRE-004** Tests d'intégration end-to-end (scénario complet déposant + bénévole + gestionnaire)
@@ -474,10 +474,22 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 - [ ] **PRE-011** Revue documentation (README utilisateur, guides déploiement)
 - [x] **PRE-012** Implémenter US-014 / REQ-F-023 : tableau de bord suivi déclarations (implémenté en v0.21)
 
+### Sécurité — vulnérabilités reportées (audit 2026-02-26)
+- [ ] **PRE-013** VULN-004/007 : Révocation de tokens JWT (table blacklist ou champ `token_invalidated_at` sur User) — invalidation au logout et changement de mot de passe
+- [ ] **PRE-014** VULN-011 : Séparer les champs token invitation et reset password (migration DB + refactor auth service)
+- [ ] **PRE-015** VULN-012 : Rate limiting distribué (Redis ou nginx) pour fonctionner avec plusieurs workers Gunicorn
+- [ ] **PRE-016** VULN-009 : Migrer le refresh token de localStorage vers un cookie httpOnly Secure SameSite=Strict (changement backend + frontend)
+
+### Dette technique — items reportés (audit 2026-02-26)
+- [ ] **PRE-017** Refactoriser duplication logique `register_sale()` / `register_batch_sales()` dans sale.py (extraire validation commune)
+- [ ] **PRE-018** Corriger N+1 queries dans `generate_all_receipts()` et `generate_payout_excel_export()` (joinedload articles)
+- [ ] **PRE-019** Décomposer `EditionDetailPage.tsx` (1884 lignes) en sous-composants par onglet
+- [ ] **PRE-020** Ajouter React.lazy() / code splitting pour les routes admin, recharts, scanner QR
+- [ ] **PRE-021** Ajouter tests frontend : SalesPage, useOfflineSales, ReviewListDetailPage, PayoutsManagementPage
+
 ### Stabilisation
-- [ ] **PRE-013** Optimisation performance (lazy loading, bundle size, requêtes N+1)
-- [ ] **PRE-014** Bug fixes identifiés durant les tests
-- [ ] **PRE-015** Tag release + déploiement production
+- [ ] **PRE-022** Bug fixes identifiés durant les tests
+- [ ] **PRE-023** Tag release + déploiement production
 
 ---
 

@@ -44,7 +44,7 @@ export function InvitationStatsPage() {
       const blob = await invitationsApi.exportExcel();
       downloadBlob(blob, 'Invitations_export.xlsx');
     } catch {
-      setErrorMessage('Erreur lors du telechargement de l\'export Excel.');
+      setErrorMessage('Erreur lors du téléchargement de l\'export Excel.');
     }
   };
 
@@ -88,7 +88,7 @@ export function InvitationStatsPage() {
               color="green"
             />
             <StatCard
-              label="Delai moyen"
+              label="Délai moyen"
               value={`${stats.avgActivationDelayDays.toFixed(1)} j`}
               color="blue"
             />
@@ -112,7 +112,7 @@ export function InvitationStatsPage() {
             </div>
             <div className="bg-white rounded-lg shadow p-4 text-center">
               <p className="text-3xl font-bold text-green-600">{stats.activated}</p>
-              <p className="text-sm text-gray-500">Activees</p>
+              <p className="text-sm text-gray-500">Activées</p>
             </div>
             <div className="bg-white rounded-lg shadow p-4 text-center">
               <p className="text-3xl font-bold text-amber-600">{stats.pending}</p>
@@ -120,17 +120,17 @@ export function InvitationStatsPage() {
             </div>
             <div className="bg-white rounded-lg shadow p-4 text-center">
               <p className="text-3xl font-bold text-red-600">{stats.expired}</p>
-              <p className="text-sm text-gray-500">Expirees</p>
+              <p className="text-sm text-gray-500">Expirées</p>
             </div>
           </div>
 
           {/* Daily evolution chart */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Evolution par jour
+              Évolution par jour
             </h2>
             {stats.dailyEvolution.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">Aucune donnee</p>
+              <p className="text-gray-500 text-center py-8">Aucune donnée</p>
             ) : (
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={stats.dailyEvolution}>
@@ -144,7 +144,7 @@ export function InvitationStatsPage() {
                     dataKey="sent"
                     stroke="#3b82f6"
                     strokeWidth={2}
-                    name="Envoyees"
+                    name="Envoyées"
                     dot={{ r: 3 }}
                   />
                   <Line
@@ -152,7 +152,7 @@ export function InvitationStatsPage() {
                     dataKey="activated"
                     stroke="#10b981"
                     strokeWidth={2}
-                    name="Activees"
+                    name="Activées"
                     dot={{ r: 3 }}
                   />
                 </LineChart>
@@ -166,7 +166,7 @@ export function InvitationStatsPage() {
               Ventilation par type de liste
             </h2>
             {stats.byListType.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">Aucune donnee</p>
+              <p className="text-gray-500 text-center py-4">Aucune donnée</p>
             ) : (
               <table className="w-full text-sm">
                 <thead>

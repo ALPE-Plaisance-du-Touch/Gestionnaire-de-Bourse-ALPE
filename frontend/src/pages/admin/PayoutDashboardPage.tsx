@@ -15,10 +15,10 @@ import { payoutsApi } from '@/api';
 import { Button } from '@/components/ui';
 
 const CATEGORY_LABELS: Record<string, string> = {
-  clothing: 'Vetements',
+  clothing: 'Vêtements',
   toys: 'Jouets',
   books: 'Livres',
-  childcare: 'Puericulture',
+  childcare: 'Puériculture',
   other: 'Autres',
 };
 
@@ -51,7 +51,7 @@ export function PayoutDashboardPage() {
       const blob = await payoutsApi.exportExcel(editionId!);
       downloadBlob(blob, 'Reversements_export.xlsx');
     } catch {
-      setErrorMessage('Erreur lors du telechargement de l\'export Excel.');
+      setErrorMessage('Erreur lors du téléchargement de l\'export Excel.');
     }
   };
 

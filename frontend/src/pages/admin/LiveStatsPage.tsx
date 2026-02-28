@@ -66,7 +66,7 @@ export function LiveStatsPage() {
             </h2>
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-4 bg-green-50 rounded-lg">
-                <p className="text-sm text-gray-600">Especes</p>
+                <p className="text-sm text-gray-600">Espèces</p>
                 <p className="text-2xl font-bold text-green-700">
                   {Number(stats.revenueCash).toFixed(2)} EUR
                 </p>
@@ -78,7 +78,7 @@ export function LiveStatsPage() {
                 </p>
               </div>
               <div className="text-center p-4 bg-amber-50 rounded-lg">
-                <p className="text-sm text-gray-600">Cheque</p>
+                <p className="text-sm text-gray-600">Chèque</p>
                 <p className="text-2xl font-bold text-amber-700">
                   {Number(stats.revenueCheck).toFixed(2)} EUR
                 </p>

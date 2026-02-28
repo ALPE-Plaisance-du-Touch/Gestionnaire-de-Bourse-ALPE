@@ -61,11 +61,11 @@ export function BilletwebAttendeesSyncModal({
       ) : syncMutation.isSuccess ? (
         <div className="space-y-4">
           <div className="p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg">
-            <p className="font-medium">Synchronisation terminee</p>
+            <p className="font-medium">Synchronisation terminée</p>
             <p className="text-sm mt-1">
               {syncMutation.data.newCreated} nouvelle(s) invitation(s),{' '}
-              {syncMutation.data.existingLinked} existant(s) associe(s),{' '}
-              {syncMutation.data.alreadyRegistered} deja inscrit(s).
+              {syncMutation.data.existingLinked} existant(s) associé(s),{' '}
+              {syncMutation.data.alreadyRegistered} déjà inscrit(s).
             </p>
           </div>
           <div className="flex justify-end">
@@ -77,10 +77,10 @@ export function BilletwebAttendeesSyncModal({
           {/* Last sync info */}
           {lastSync && !forceFull && (
             <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-              Derniere synchronisation : {new Date(lastSync).toLocaleString('fr-FR')}
+              Dernière synchronisation : {new Date(lastSync).toLocaleString('fr-FR')}
               <br />
               <span className="text-xs text-blue-600">
-                Seules les inscriptions modifiees depuis seront recuperees.
+                Seules les inscriptions modifiées depuis seront récupérées.
               </span>
             </div>
           )}
@@ -88,7 +88,7 @@ export function BilletwebAttendeesSyncModal({
           {/* Force full sync info */}
           {forceFull && (
             <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-              Synchronisation complete activee : toutes les inscriptions Billetweb seront recuperees.
+              Synchronisation complète activée : toutes les inscriptions Billetweb seront récupérées.
             </div>
           )}
 
@@ -98,11 +98,11 @@ export function BilletwebAttendeesSyncModal({
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 bg-gray-50 rounded-lg text-center">
                   <p className="text-2xl font-semibold text-gray-900">{stats.totalRows}</p>
-                  <p className="text-xs text-gray-500">Inscriptions trouvees</p>
+                  <p className="text-xs text-gray-500">Inscriptions trouvées</p>
                 </div>
                 <div className="p-3 bg-gray-50 rounded-lg text-center">
                   <p className="text-2xl font-semibold text-gray-900">{stats.rowsToProcess}</p>
-                  <p className="text-xs text-gray-500">A traiter</p>
+                  <p className="text-xs text-gray-500">À traiter</p>
                 </div>
               </div>
 
@@ -118,19 +118,19 @@ export function BilletwebAttendeesSyncModal({
                   </div>
                   <div className="p-2 bg-gray-50 rounded text-center">
                     <p className="font-medium text-gray-800">{stats.alreadyRegistered}</p>
-                    <p className="text-xs text-gray-500">Deja inscrits</p>
+                    <p className="text-xs text-gray-500">Déjà inscrits</p>
                   </div>
                 </div>
               )}
 
               {stats.rowsUnpaidInvalid > 0 && (
                 <p className="text-xs text-gray-500">
-                  {stats.rowsUnpaidInvalid} inscription(s) non payee(s)/invalide(s) ignoree(s).
+                  {stats.rowsUnpaidInvalid} inscription(s) non payée(s)/invalide(s) ignorée(s).
                 </p>
               )}
               {stats.duplicatesInFile > 0 && (
                 <p className="text-xs text-gray-500">
-                  {stats.duplicatesInFile} doublon(s) ignore(s).
+                  {stats.duplicatesInFile} doublon(s) ignoré(s).
                 </p>
               )}
             </div>
@@ -160,14 +160,14 @@ export function BilletwebAttendeesSyncModal({
           {/* No data + force full sync link */}
           {stats && stats.rowsToProcess === 0 && (
             <div className="p-4 bg-gray-50 text-gray-500 text-center rounded-lg">
-              <p>Aucune nouvelle inscription a importer.</p>
+              <p>Aucune nouvelle inscription à importer.</p>
               {lastSync && !forceFull && (
                 <button
                   type="button"
                   className="mt-2 text-sm text-blue-600 hover:text-blue-800 underline"
                   onClick={() => setForceFull(true)}
                 >
-                  Relancer une synchronisation complete
+                  Relancer une synchronisation complète
                 </button>
               )}
             </div>
@@ -182,7 +182,7 @@ export function BilletwebAttendeesSyncModal({
                   className="text-xs text-gray-500 hover:text-gray-700 underline"
                   onClick={() => setForceFull(true)}
                 >
-                  Sync complete
+                  Sync complète
                 </button>
               )}
             </div>

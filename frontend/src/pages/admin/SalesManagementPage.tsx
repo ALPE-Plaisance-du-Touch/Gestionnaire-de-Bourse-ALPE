@@ -7,15 +7,15 @@ import type { SaleResponse } from '@/types';
 
 const PAYMENT_OPTIONS = [
   { value: 'all', label: 'Tous les moyens' },
-  { value: 'cash', label: 'Especes' },
+  { value: 'cash', label: 'Espèces' },
   { value: 'card', label: 'CB' },
-  { value: 'check', label: 'Cheque' },
+  { value: 'check', label: 'Chèque' },
 ];
 
 const PAYMENT_LABELS: Record<string, string> = {
-  cash: 'Especes',
+  cash: 'Espèces',
   card: 'CB',
-  check: 'Cheque',
+  check: 'Chèque',
 };
 
 function formatDateTime(dateString: string): string {
@@ -120,7 +120,7 @@ export function SalesManagementPage() {
           </div>
         ) : sales.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
-            Aucune vente trouvee.
+            Aucune vente trouvée.
           </div>
         ) : (
           <div className="overflow-x-auto">

@@ -152,10 +152,10 @@ export function EditionDepositorsPage() {
     return (
       <div className="p-6 max-w-6xl mx-auto">
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
-          Edition introuvable ou erreur lors du chargement.
+          Édition introuvable ou erreur lors du chargement.
         </div>
         <Link to="/editions" className="text-blue-600 hover:text-blue-700">
-          ← Retour a la liste des editions
+          ← Retour à la liste des éditions
         </Link>
       </div>
     );
@@ -335,7 +335,7 @@ export function EditionDepositorsPage() {
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
               >
-                Precedent
+                Précédent
               </Button>
               <Button
                 variant="outline"

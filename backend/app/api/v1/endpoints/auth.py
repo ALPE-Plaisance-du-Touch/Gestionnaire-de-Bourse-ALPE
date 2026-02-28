@@ -209,7 +209,7 @@ async def request_password_reset(
             token=token,
             first_name=first_name,
         )
-        logger.info(f"Password reset email queued for {request.email}")
+        logger.info("Password reset email queued")
 
     return MessageResponse(
         message="If an account with this email exists, a password reset link has been sent."

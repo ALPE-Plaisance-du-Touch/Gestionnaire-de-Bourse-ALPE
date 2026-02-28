@@ -3,7 +3,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ScanRequest(BaseModel):
@@ -76,7 +76,7 @@ class OfflineSaleItem(BaseModel):
 
 
 class SyncSalesRequest(BaseModel):
-    sales: list[OfflineSaleItem]
+    sales: list[OfflineSaleItem] = Field(..., max_length=500)
 
 
 class SyncSaleResult(BaseModel):
@@ -119,7 +119,7 @@ class BatchSaleItem(BaseModel):
 
 
 class RegisterBatchSalesRequest(BaseModel):
-    articles: list[BatchSaleItem]
+    articles: list[BatchSaleItem] = Field(..., max_length=100)
     payment_method: str
     register_number: int = 1
 

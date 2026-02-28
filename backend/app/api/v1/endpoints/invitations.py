@@ -158,7 +158,7 @@ async def create_invitation(
             token=token,
             first_name=user.first_name,
         )
-        logger.info(f"Invitation created for {user.email}, email queued")
+        logger.info(f"Invitation created for user {user.id}, email queued")
 
         return InvitationResponse(
             id=user.id,
@@ -190,6 +190,9 @@ async def bulk_create_invitations(
     current_user: Annotated[User, Depends(require_role(["manager", "administrator"]))],
 ):
     """Create multiple invitations at once."""
+    if len(invitations) > 500:
+        raise HTTPException(status_code=422, detail="Maximum 500 invitations per request")
+
     invitation_dicts = [
         {
             "email": inv.email,
@@ -237,7 +240,7 @@ async def resend_invitation(
             token=token,
             first_name=user.first_name,
         )
-        logger.info(f"Invitation resent for {user.email}, email queued")
+        logger.info(f"Invitation resent for user {user.id}, email queued")
 
         return InvitationResendResponse(
             id=user.id,
@@ -326,7 +329,7 @@ async def delete_invitation(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Invitation not found",
         )
-    logger.info(f"Invitation {invitation_id} deleted by {current_user.email}")
+    logger.info(f"Invitation {invitation_id} deleted by user {current_user.id}")
 
 
 ManagerRole = Annotated[User, Depends(require_role(["manager", "administrator"]))]

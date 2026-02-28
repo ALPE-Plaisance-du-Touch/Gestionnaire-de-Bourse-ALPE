@@ -14,9 +14,9 @@ import type { PendingSale } from '@/services/db';
 type PaymentMethod = 'cash' | 'card' | 'check';
 
 const PAYMENT_LABELS: Record<PaymentMethod, string> = {
-  cash: 'Especes',
+  cash: 'Espèces',
   card: 'CB',
-  check: 'Cheque',
+  check: 'Chèque',
 };
 
 export function SalesPage() {
@@ -75,7 +75,7 @@ export function SalesPage() {
         playErrorBeep();
         setScanError(
           data.status === 'sold'
-            ? 'Cet article a deja ete vendu !'
+            ? 'Cet article a déjà été vendu !'
             : `Article non disponible (statut: ${data.status})`
         );
         return;
@@ -84,7 +84,7 @@ export function SalesPage() {
       // Check if already in cart
       if (cart.some(a => a.articleId === data.articleId)) {
         playErrorBeep();
-        setScanError('Cet article est deja dans le panier');
+        setScanError('Cet article est déjà dans le panier');
         return;
       }
 
@@ -93,7 +93,7 @@ export function SalesPage() {
       playSuccessBeep();
     },
     onError: (error: Error) => {
-      setScanError(error.message || 'Article non trouve');
+      setScanError(error.message || 'Article non trouvé');
       playErrorBeep();
     },
   });
@@ -106,7 +106,7 @@ export function SalesPage() {
       playSuccessBeep();
       const suffix = data.isOffline ? ' (hors-ligne)' : '';
       setSuccessMessage(
-        `Paye${suffix} ! ${data.articleCount} article${data.articleCount > 1 ? 's' : ''} - ${data.total.toFixed(2)} EUR`
+        `Payé${suffix} ! ${data.articleCount} article${data.articleCount > 1 ? 's' : ''} - ${data.total.toFixed(2)} EUR`
       );
       setCart([]);
       setSelectedPayment(null);
@@ -200,7 +200,7 @@ export function SalesPage() {
             to={backLink}
             className="text-sm text-blue-600 hover:text-blue-700 mb-1 inline-block"
           >
-            &larr; {canViewEdition ? "Retour a l'edition" : "Retour a l'accueil"}
+            &larr; {canViewEdition ? "Retour à l'édition" : "Retour à l'accueil"}
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Caisse</h1>
           <Link to="/aide#guide-benevole" className="text-xs text-gray-500 hover:text-blue-600">

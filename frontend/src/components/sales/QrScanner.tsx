@@ -108,7 +108,7 @@ export function QrScanner({ onScan, disabled = false }: QrScannerProps) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
             </svg>
             <p className="text-sm text-gray-500 mb-3">
-              Scanner un QR code avec la camera
+              Scanner un QR code avec la caméra
             </p>
             <button
               type="button"
@@ -116,7 +116,7 @@ export function QrScanner({ onScan, disabled = false }: QrScannerProps) {
               disabled={disabled}
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Activer la camera
+              Activer la caméra
             </button>
           </div>
         )}
@@ -127,7 +127,7 @@ export function QrScanner({ onScan, disabled = false }: QrScannerProps) {
               onClick={stopScanning}
               className="text-sm text-red-600 hover:text-red-700"
             >
-              Arreter la camera
+              Arrêter la caméra
             </button>
           </div>
         )}
@@ -136,13 +136,13 @@ export function QrScanner({ onScan, disabled = false }: QrScannerProps) {
       {/* Scan timeout hint */}
       {showScanHint && (
         <div className="text-sm text-blue-700 bg-blue-50 p-3 rounded-md">
-          Difficulte a scanner ? Utilisez la saisie manuelle ci-dessous.
+          Difficulté à scanner ? Utilisez la saisie manuelle ci-dessous.
         </div>
       )}
 
       {cameraError && (
         <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-md">
-          Camera indisponible : {cameraError}. Utilisez la saisie manuelle ci-dessous.
+          Caméra indisponible : {cameraError}. Utilisez la saisie manuelle ci-dessous.
         </div>
       )}
 
@@ -171,7 +171,7 @@ export function QrScanner({ onScan, disabled = false }: QrScannerProps) {
           </button>
         </form>
         {formatWarning && (
-          <p className="text-xs text-amber-600">Format inhabituel. Verifiez le code-barres.</p>
+          <p className="text-xs text-amber-600">Format inhabituel. Vérifiez le code-barres.</p>
         )}
       </div>
     </div>

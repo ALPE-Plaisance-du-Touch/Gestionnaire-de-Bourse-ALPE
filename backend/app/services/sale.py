@@ -1,8 +1,11 @@
 """Sale service for checkout operations."""
 
+import logging
 import uuid
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
+
+logger = logging.getLogger(__name__)
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -323,7 +326,29 @@ async def sync_offline_sales(
     conflicts = 0
     errors = 0
 
+    now = datetime.now(timezone.utc)
+    max_future = timedelta(minutes=5)
+    max_past = timedelta(hours=48)
+
     for item in sales:
+        # Validate timestamp bounds
+        if item.sold_at > now + max_future:
+            results.append(SyncSaleResult(
+                client_id=item.client_id,
+                status="error",
+                error_message="Sale timestamp cannot be in the future",
+            ))
+            errors += 1
+            continue
+        if now - item.sold_at > max_past:
+            results.append(SyncSaleResult(
+                client_id=item.client_id,
+                status="error",
+                error_message="Sale timestamp too old for offline sync (max 48h)",
+            ))
+            errors += 1
+            continue
+
         # Validate payment method
         if item.payment_method not in valid_methods:
             results.append(SyncSaleResult(
@@ -420,7 +445,7 @@ async def sync_offline_sales(
                     conflicts=conflict_details,
                 )
             except Exception:
-                pass  # Don't fail sync because of email error
+                logger.warning("Failed to send sale conflict notification email")
 
     return SyncSalesResponse(
         synced=synced,
@@ -430,7 +455,7 @@ async def sync_offline_sales(
     )
 
 
-def _sale_to_response(sale: Sale, current_user: User) -> SaleResponse:
+def __sale_to_response(sale: Sale, current_user: User) -> SaleResponse:
     elapsed = datetime.now(timezone.utc) - sale.sold_at
     can_cancel = elapsed <= CANCEL_TIME_LIMIT or current_user.is_manager or current_user.is_administrator
 

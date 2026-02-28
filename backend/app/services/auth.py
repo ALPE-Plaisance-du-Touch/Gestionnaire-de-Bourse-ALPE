@@ -24,7 +24,7 @@ from app.schemas import (
     TokenResponse,
     TokenValidationResponse,
 )
-from app.schemas.auth import UserResponse
+from app.schemas.user import UserResponse
 
 
 class AuthService:

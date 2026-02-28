@@ -9,7 +9,7 @@ const STATUS_LABELS: Record<string, { label: string; className: string }> = {
   deposit: { label: 'Dépôt', className: 'bg-blue-100 text-blue-800' },
   sale: { label: 'Vente', className: 'bg-green-100 text-green-800' },
   settlement: { label: 'Bilan', className: 'bg-yellow-100 text-yellow-800' },
-  closed: { label: 'Clôturé', className: 'bg-orange-100 text-orange-800' },
+  closed: { label: 'Clôturée', className: 'bg-orange-100 text-orange-800' },
   archived: { label: 'Archivé', className: 'bg-gray-100 text-gray-500' },
 };
 

@@ -551,7 +551,7 @@ class EditionService:
 
                 ed.invitation_sent_at = now
             except Exception as e:
-                logger.error(f"Failed to send invitation to {user.email}: {e}")
+                logger.warning("Failed to send invitation to user %s: %s", user.id, e)
 
         await self.db.commit()
 
