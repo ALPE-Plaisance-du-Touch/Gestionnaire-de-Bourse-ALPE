@@ -64,6 +64,7 @@ backups/
 
 # Claude Code local settings
 .claude/settings.local.json
+.claude/agent-memory/
 
 # Audit screenshots
 audit-screenshots/
