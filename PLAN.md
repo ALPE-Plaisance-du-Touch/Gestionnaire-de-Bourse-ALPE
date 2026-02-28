@@ -50,7 +50,7 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.24 | Documentation utilisateur | 🔲 À faire |
 
 **Conformité specs : ~97%** (65/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
-**Specs : 16 US, 24 REQ-F, 120+ AC, 158+ tests** — couverture traçabilité 95%
+**Specs : 17 US, 24 REQ-F, 130+ AC, 178+ tests** — couverture traçabilité 95%
 
 ---
 
@@ -426,9 +426,10 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 
 ---
 
-## v0.24 - Documentation utilisateur
+## v0.24 - Documentation utilisateur (US-017)
 
 **Branche :** `feature/user-documentation`
+**Exigences :** US-017, REQ-F-002 (FAQ)
 
 ### Page d'aide enrichie
 - [ ] **0.24.1** Frontend : refonte `HelpPage` — sommaire avec ancres, sections par thème
@@ -527,7 +528,7 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 | TASK-041 | 0.21 | Suivi déclarations déposants (US-014) | US-014, REQ-F-023 |
 | TASK-042 | 0.23 | Messagerie tickets déposant↔staff | US-016 |
 | TASK-043 | 0.23 | Email de contact configurable (admin) | REQ-F-002 (aide contextuelle) |
-| TASK-044 | 0.24 | Documentation utilisateur & FAQ | US-001 AC-6, REQ-F-002 (FAQ) |
+| TASK-044 | 0.24 | Documentation utilisateur & FAQ | US-017, US-001 AC-6, REQ-F-002 (FAQ) |
 
 ---
 
@@ -537,7 +538,7 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 |----------|--------|-------------|
 | Rapport d'analyse | [docs/analysis-report-2026-02-09.md](docs/analysis-report-2026-02-09.md) | Écarts détaillés + prompts prêts à l'emploi par TASK |
 | Suivi d'avancement | [DEVELOPMENT.md](DEVELOPMENT.md) | Checkboxes détaillées par version livrée |
-| User Stories | [docs/user-stories.md](docs/user-stories.md) | US-001 à US-016, critères d'acceptation |
+| User Stories | [docs/user-stories.md](docs/user-stories.md) | US-001 à US-017, critères d'acceptation |
 | Exigences | [docs/exigences.md](docs/exigences.md) | REQ-F-001 à F-024, REQ-NF-001 à NF-012 |
 | Architecture | [docs/architecture.md](docs/architecture.md) | C4, ADR, stack technique |
 | Sécurité | [docs/securite.md](docs/securite.md) | Matrice RBAC, RGPD, audit, anti-fraude |
