@@ -73,19 +73,26 @@ class TicketRepository:
 
         return tickets, total
 
-    async def get_unread_count(self, user_id: str, edition_id: str) -> int:
+    async def get_unread_count(self, user: User, edition_id: str) -> int:
         """Count tickets with unread messages visible to user."""
-        result = await self.db.execute(
+        query = (
             select(func.count(TicketMessage.ticket_id.distinct()))
             .select_from(TicketMessage)
             .join(Ticket, TicketMessage.ticket_id == Ticket.id)
             .where(
                 Ticket.edition_id == edition_id,
-                TicketMessage.sender_id != user_id,
+                TicketMessage.sender_id != user.id,
                 TicketMessage.is_read == False,  # noqa: E712
-                (Ticket.created_by_id == user_id) | (Ticket.assigned_to_id == user_id),
             )
         )
+
+        # Depositors only see their own tickets; staff sees all
+        if user.is_depositor:
+            query = query.where(
+                (Ticket.created_by_id == user.id) | (Ticket.assigned_to_id == user.id)
+            )
+
+        result = await self.db.execute(query)
         return result.scalar_one()
 
     async def get_unread_count_for_ticket(

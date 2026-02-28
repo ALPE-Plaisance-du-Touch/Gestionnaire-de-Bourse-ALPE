@@ -89,7 +89,7 @@ async def get_unread_count(
     current_user: CurrentActiveUser,
 ):
     return await ticket_service.get_unread_count(
-        user_id=current_user.id,
+        user=current_user,
         edition_id=edition_id,
         db=db,
     )

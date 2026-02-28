@@ -278,8 +278,8 @@ async def reopen_ticket(
 
 
 async def get_unread_count(
-    user_id: str, edition_id: str, db: AsyncSession
+    user: User, edition_id: str, db: AsyncSession
 ) -> UnreadCountResponse:
     ticket_repo = TicketRepository(db)
-    count = await ticket_repo.get_unread_count(user_id, edition_id)
+    count = await ticket_repo.get_unread_count(user, edition_id)
     return UnreadCountResponse(unread_count=count)
