@@ -237,11 +237,11 @@ export const router = createBrowserRouter([
         ),
       },
 
-      // Ticket routes - any authenticated user
+      // Ticket routes - depositors and managers/admins (not volunteers)
       {
         path: '/editions/:id/tickets',
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['depositor', 'manager', 'administrator']}>
             <MainLayout>
               <TicketListPage />
             </MainLayout>
@@ -251,7 +251,7 @@ export const router = createBrowserRouter([
       {
         path: '/editions/:id/tickets/new',
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['depositor', 'manager', 'administrator']}>
             <MainLayout>
               <CreateTicketPage />
             </MainLayout>
@@ -261,7 +261,7 @@ export const router = createBrowserRouter([
       {
         path: '/editions/:id/tickets/:ticketId',
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['depositor', 'manager', 'administrator']}>
             <MainLayout>
               <TicketDetailPage />
             </MainLayout>

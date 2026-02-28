@@ -65,6 +65,7 @@ backups/
 # Claude Code local settings
 .claude/settings.local.json
 .claude/agent-memory/
+.claude/chrome-profile/
 
 # Audit screenshots
 audit-screenshots/
