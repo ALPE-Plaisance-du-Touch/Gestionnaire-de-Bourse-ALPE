@@ -1,7 +1,7 @@
 """Unit tests for ItemList service."""
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -40,7 +40,7 @@ def mock_edition():
     edition.id = "edition-123"
     edition.status = EditionStatus.REGISTRATIONS_OPEN.value
     # Use naive datetime (no timezone) to match the service implementation
-    edition.declaration_deadline = datetime.utcnow() + timedelta(days=7)
+    edition.declaration_deadline = datetime.now(timezone.utc) + timedelta(days=7)
     return edition
 
 
@@ -67,7 +67,7 @@ class TestCanModifyLists:
     def test_can_modify_when_registrations_open(self, mock_edition):
         """Can modify lists when edition is registrations_open."""
         mock_edition.status = EditionStatus.REGISTRATIONS_OPEN.value
-        mock_edition.declaration_deadline = datetime.utcnow() + timedelta(days=7)
+        mock_edition.declaration_deadline = datetime.now(timezone.utc) + timedelta(days=7)
 
         service = ItemListService(AsyncMock())
         assert service._can_modify_lists(mock_edition) is True
@@ -75,7 +75,7 @@ class TestCanModifyLists:
     def test_can_modify_when_draft(self, mock_edition):
         """Can modify lists when edition is draft."""
         mock_edition.status = EditionStatus.DRAFT.value
-        mock_edition.declaration_deadline = datetime.utcnow() + timedelta(days=7)
+        mock_edition.declaration_deadline = datetime.now(timezone.utc) + timedelta(days=7)
 
         service = ItemListService(AsyncMock())
         assert service._can_modify_lists(mock_edition) is True
@@ -90,7 +90,7 @@ class TestCanModifyLists:
     def test_cannot_modify_when_deadline_passed(self, mock_edition):
         """Cannot modify lists when deadline has passed."""
         mock_edition.status = EditionStatus.REGISTRATIONS_OPEN.value
-        mock_edition.declaration_deadline = datetime.utcnow() - timedelta(days=1)
+        mock_edition.declaration_deadline = datetime.now(timezone.utc) - timedelta(days=1)
 
         service = ItemListService(AsyncMock())
         assert service._can_modify_lists(mock_edition) is False
@@ -164,7 +164,7 @@ class TestCreateList:
     @pytest.mark.asyncio
     async def test_create_list_deadline_passed(self, mock_db, mock_depositor, mock_edition):
         """Raise error when deadline has passed."""
-        mock_edition.declaration_deadline = datetime.utcnow() - timedelta(days=1)
+        mock_edition.declaration_deadline = datetime.now(timezone.utc) - timedelta(days=1)
 
         service = ItemListService(mock_db)
         service.edition_repo.get_by_id = AsyncMock(return_value=mock_edition)

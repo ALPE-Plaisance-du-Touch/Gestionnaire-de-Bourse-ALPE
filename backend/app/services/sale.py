@@ -1,7 +1,7 @@
 """Sale service for checkout operations."""
 
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -117,7 +117,7 @@ async def register_sale(
         raise ArticleAlreadySoldError(article_id)
 
     # Create sale
-    sold_at = datetime.now()
+    sold_at = datetime.now(timezone.utc)
     sale = Sale(
         sold_at=sold_at,
         price=article.price,
@@ -168,7 +168,7 @@ async def register_batch_sales(
     ticket_id = str(uuid.uuid4())
     sale_repo = SaleRepository(db)
     article_repo = ArticleRepository(db)
-    sold_at = datetime.now()
+    sold_at = datetime.now(timezone.utc)
     is_private = _is_private_sale_time(sold_at)
     sales: list[Sale] = []
 
@@ -234,7 +234,7 @@ async def cancel_sale(
         raise ValidationError("Sale not found")
 
     # Check cancellation time limit
-    elapsed = datetime.now() - sale.sold_at
+    elapsed = datetime.now(timezone.utc) - sale.sold_at
     if elapsed > CANCEL_TIME_LIMIT:
         if not (user.is_manager or user.is_administrator):
             raise ValidationError(
@@ -375,7 +375,7 @@ async def sync_offline_sales(
             article_id=item.article_id,
             seller_id=seller.id,
             is_offline_sale=True,
-            synced_at=datetime.now(),
+            synced_at=datetime.now(timezone.utc),
             is_private_sale=_is_private_sale_time(item.sold_at),
             ticket_id=item.ticket_id,
         )
@@ -431,7 +431,7 @@ async def sync_offline_sales(
 
 
 def _sale_to_response(sale: Sale, current_user: User) -> SaleResponse:
-    elapsed = datetime.now() - sale.sold_at
+    elapsed = datetime.now(timezone.utc) - sale.sold_at
     can_cancel = elapsed <= CANCEL_TIME_LIMIT or current_user.is_manager or current_user.is_administrator
 
     depositor = sale.article.item_list.depositor

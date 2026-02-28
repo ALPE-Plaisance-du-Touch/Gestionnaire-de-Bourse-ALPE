@@ -20,7 +20,7 @@ Results: List #101 = 16.00E gross, List #1001 = 25.00E gross
 
 import asyncio
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 
@@ -71,7 +71,7 @@ async def main():
             print(f"\nEdition: {edition.name}")
             print(f"Seller: {seller.email}")
 
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
             created = 0
             skipped = 0
 

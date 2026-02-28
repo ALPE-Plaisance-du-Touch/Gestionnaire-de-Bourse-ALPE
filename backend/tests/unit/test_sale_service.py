@@ -1,7 +1,7 @@
 """Unit tests for sale service."""
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -80,7 +80,7 @@ def _make_sale(article, seller, **kwargs):
     sale.price = article.price
     sale.payment_method = kwargs.get("payment_method", PaymentMethod.CASH.value)
     sale.register_number = kwargs.get("register_number", 1)
-    sale.sold_at = kwargs.get("sold_at", datetime.now())
+    sale.sold_at = kwargs.get("sold_at", datetime.now(timezone.utc))
     sale.edition_id = article.item_list.edition_id
     return sale
 
@@ -89,7 +89,7 @@ class TestSaleToResponse:
     def test_basic_response(self):
         seller = _make_user()
         article = _make_article()
-        sale = _make_sale(article, seller, sold_at=datetime.now())
+        sale = _make_sale(article, seller, sold_at=datetime.now(timezone.utc))
 
         response = _sale_to_response(sale, seller)
 
@@ -105,7 +105,7 @@ class TestSaleToResponse:
     def test_can_cancel_within_time_limit(self):
         seller = _make_user(role_name="volunteer")
         article = _make_article()
-        sale = _make_sale(article, seller, sold_at=datetime.now())
+        sale = _make_sale(article, seller, sold_at=datetime.now(timezone.utc))
 
         response = _sale_to_response(sale, seller)
         assert response.can_cancel is True
@@ -113,7 +113,7 @@ class TestSaleToResponse:
     def test_cannot_cancel_after_time_limit_as_volunteer(self):
         seller = _make_user(role_name="volunteer")
         article = _make_article()
-        sale = _make_sale(article, seller, sold_at=datetime.now() - timedelta(minutes=10))
+        sale = _make_sale(article, seller, sold_at=datetime.now(timezone.utc) - timedelta(minutes=10))
 
         response = _sale_to_response(sale, seller)
         assert response.can_cancel is False
@@ -121,7 +121,7 @@ class TestSaleToResponse:
     def test_can_cancel_after_time_limit_as_manager(self):
         manager = _make_user(role_name="manager")
         article = _make_article()
-        sale = _make_sale(article, manager, sold_at=datetime.now() - timedelta(minutes=10))
+        sale = _make_sale(article, manager, sold_at=datetime.now(timezone.utc) - timedelta(minutes=10))
 
         response = _sale_to_response(sale, manager)
         assert response.can_cancel is True
@@ -225,7 +225,7 @@ class TestCancelSale:
         db = AsyncMock()
         volunteer = _make_user(role_name="volunteer")
         article = _make_article()
-        sale = _make_sale(article, volunteer, sold_at=datetime.now())
+        sale = _make_sale(article, volunteer, sold_at=datetime.now(timezone.utc))
 
         with patch("app.services.sale.SaleRepository") as MockSaleRepo, \
              patch("app.services.sale.ArticleRepository") as MockArticleRepo:
@@ -242,7 +242,7 @@ class TestCancelSale:
         db = AsyncMock()
         volunteer = _make_user(role_name="volunteer")
         article = _make_article()
-        sale = _make_sale(article, volunteer, sold_at=datetime.now() - timedelta(minutes=10))
+        sale = _make_sale(article, volunteer, sold_at=datetime.now(timezone.utc) - timedelta(minutes=10))
 
         with patch("app.services.sale.SaleRepository") as MockSaleRepo:
             MockSaleRepo.return_value.get_by_id = AsyncMock(return_value=sale)
@@ -255,7 +255,7 @@ class TestCancelSale:
         db = AsyncMock()
         manager = _make_user(role_name="manager")
         article = _make_article()
-        sale = _make_sale(article, manager, sold_at=datetime.now() - timedelta(minutes=10))
+        sale = _make_sale(article, manager, sold_at=datetime.now(timezone.utc) - timedelta(minutes=10))
 
         with patch("app.services.sale.SaleRepository") as MockSaleRepo, \
              patch("app.services.sale.ArticleRepository") as MockArticleRepo:
@@ -281,7 +281,7 @@ class TestSyncOfflineSales:
                 article_id="article-abc",
                 payment_method="cash",
                 register_number=1,
-                sold_at=datetime.now(),
+                sold_at=datetime.now(timezone.utc),
             ),
         ]
 
@@ -313,7 +313,7 @@ class TestSyncOfflineSales:
                 article_id="article-abc",
                 payment_method="cash",
                 register_number=1,
-                sold_at=datetime.now(),
+                sold_at=datetime.now(timezone.utc),
             ),
         ]
 
@@ -343,7 +343,7 @@ class TestSyncOfflineSales:
                 article_id="nonexistent",
                 payment_method="cash",
                 register_number=1,
-                sold_at=datetime.now(),
+                sold_at=datetime.now(timezone.utc),
             ),
         ]
 
@@ -384,21 +384,21 @@ class TestSyncOfflineSales:
                 article_id="art-ok",
                 payment_method="card",
                 register_number=2,
-                sold_at=datetime.now(),
+                sold_at=datetime.now(timezone.utc),
             ),
             OfflineSaleItem(
                 client_id="conflict-1",
                 article_id="art-sold",
                 payment_method="cash",
                 register_number=1,
-                sold_at=datetime.now(),
+                sold_at=datetime.now(timezone.utc),
             ),
             OfflineSaleItem(
                 client_id="error-1",
                 article_id="nonexistent",
                 payment_method="cash",
                 register_number=1,
-                sold_at=datetime.now(),
+                sold_at=datetime.now(timezone.utc),
             ),
         ]
 

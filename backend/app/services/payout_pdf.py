@@ -1,6 +1,6 @@
 """PDF generation service for payout receipts (bordereaux de reversement)."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from io import BytesIO
 from typing import TYPE_CHECKING
@@ -37,7 +37,7 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
     depositor = payout.depositor
     depositor_name = f"{depositor.first_name} {depositor.last_name}"
     list_type_label = LIST_TYPE_LABELS.get(item_list.list_type, item_list.list_type)
-    generated_date = datetime.now().strftime("%d/%m/%Y a %H:%M")
+    generated_date = datetime.now(timezone.utc).strftime("%d/%m/%Y a %H:%M")
     edition_name = edition.name if hasattr(edition, "name") else "Edition"
 
     articles = sorted(item_list.articles, key=lambda a: a.line_number)

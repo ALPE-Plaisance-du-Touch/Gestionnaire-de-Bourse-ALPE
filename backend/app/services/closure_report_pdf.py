@@ -1,6 +1,6 @@
 """PDF generation service for edition closure reports."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
@@ -40,7 +40,7 @@ def generate_closure_report_pdf(
 
 
 def _generate_report_html(edition, stats, payouts, closed_by) -> str:
-    generated_date = datetime.now().strftime("%d/%m/%Y a %H:%M")
+    generated_date = datetime.now(timezone.utc).strftime("%d/%m/%Y a %H:%M")
     edition_name = edition.name if hasattr(edition, "name") else "Edition"
 
     # Build depositor summary rows
