@@ -18,8 +18,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 "Gestionnaire de Bourse ALPE" is a web application to manage second-hand goods sales events organized by ALPE Plaisance du Touch (France). The target audience is depositors (sellers) and volunteer staff.
 
-**Current status**: Development phase - v0.22 complete (all US implemented)
-**Next milestone**: v1.0.0 - Production Release (stabilisation, tests, audits)
+**Current status**: Development phase - v0.23 complete (all US implemented)
+**Next milestone**: v0.24 - User Documentation, then v1.0.0 - Production Release
 
 See [PLAN.md](PLAN.md) for the unified roadmap and [DEVELOPMENT.md](DEVELOPMENT.md) for detailed task breakdown.
 
@@ -50,7 +50,7 @@ See [PLAN.md](PLAN.md) for the unified roadmap and [DEVELOPMENT.md](DEVELOPMENT.
 ├── backend/
 │   ├── app/
 │   │   ├── api/v1/          # API routes
-│   │   │   └── endpoints/   # auth, editions, deposit_slots, invitations, billetweb, articles, labels, sales, payouts, users, audit, config
+│   │   │   └── endpoints/   # auth, editions, deposit_slots, invitations, billetweb, articles, labels, sales, payouts, users, audit, config, tickets
 │   │   ├── models/          # SQLAlchemy models (User, Edition, DepositSlot, etc.)
 │   │   ├── repositories/    # Data access layer
 │   │   ├── schemas/         # Pydantic schemas
@@ -68,7 +68,7 @@ See [PLAN.md](PLAN.md) for the unified roadmap and [DEVELOPMENT.md](DEVELOPMENT.
 │   │   ├── components/      # UI components (ui/, auth/, editions/, invitations/, articles/, billetweb/, layout/, payouts/, sales/)
 │   │   ├── contexts/        # React contexts (AuthContext)
 │   │   ├── hooks/           # Custom hooks (useConfig, useNetworkStatus, useOfflineSales)
-│   │   ├── pages/           # Page components (auth/, admin/, depositor/, volunteer/, home/, account/, help/)
+│   │   ├── pages/           # Page components (auth/, admin/, depositor/, volunteer/, home/, account/, help/, tickets/)
 │   │   ├── services/        # IndexedDB offline services
 │   │   ├── types/           # TypeScript types
 │   │   └── routes.tsx
@@ -209,7 +209,7 @@ VITE_API_URL=http://localhost:8000/api
 - **E2E**: Functional test scripts in `tests/` (119/142 scenarios passing)
 - **Coverage target**: 80%+ for business logic
 
-## Implemented Features (v0.1–v0.22)
+## Implemented Features (v0.1–v0.23)
 
 - **Authentication** (v0.2): JWT login, account activation, password reset, RBAC (4 roles), invitation management (single + bulk CSV)
 - **Edition Management** (v0.3): CRUD, configuration, deposit slots, automatic status transitions
@@ -232,8 +232,9 @@ VITE_API_URL=http://localhost:8000/api
 - **Training Mode** (v0.20): Training edition, force-status, tester flag, visual banner
 - **Deposit Review** (v0.21): Article accept/reject/edit, review finalization, declaration tracking (US-014), label PDF split
 - **Cart Checkout** (v0.22): Multi-article basket, batch payment, ticket_id grouping, cancel confirmation
+- **Messaging & Admin Settings** (v0.23): Ticket system (depositor↔staff), email notifications, configurable support email, admin settings page
 
-See [PLAN.md](PLAN.md) for the full roadmap. All user stories (US-001 to US-015) are implemented.
+See [PLAN.md](PLAN.md) for the full roadmap. All user stories (US-001 to US-016) are implemented.
 
 ## Technical Notes
 
