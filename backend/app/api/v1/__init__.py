@@ -18,6 +18,7 @@ from app.api.v1.endpoints import (
     payouts,
     review,
     sales,
+    tickets,
     users,
 )
 
@@ -60,6 +61,12 @@ api_router.include_router(
     edition_lists.router,
     prefix="/editions/{edition_id}/declarations",
     tags=["Declarations"],
+)
+
+api_router.include_router(
+    tickets.router,
+    prefix="/editions/{edition_id}/tickets",
+    tags=["Tickets"],
 )
 
 # Depositor endpoints (article declaration)

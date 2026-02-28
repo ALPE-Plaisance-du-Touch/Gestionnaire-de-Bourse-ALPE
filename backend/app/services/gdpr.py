@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.models import Article, EditionDepositor, ItemList, Payout, Sale, User
+from app.models.ticket import Ticket, TicketMessage
 from app.repositories import UserRepository
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,7 @@ class GDPRService:
             "item_lists": [],
             "sales_as_seller": [],
             "payouts": [],
+            "tickets": [],
         }
 
         # Edition registrations
@@ -110,6 +112,30 @@ class GDPRService:
                 "paid_at": payout.paid_at.isoformat() if payout.paid_at else None,
             })
 
+        # Tickets (created or assigned)
+        result = await self.db.execute(
+            select(Ticket)
+            .options(joinedload(Ticket.messages))
+            .where(
+                (Ticket.created_by_id == user.id) | (Ticket.assigned_to_id == user.id)
+            )
+        )
+        tickets = result.unique().scalars().all()
+        for ticket in tickets:
+            ticket_data = {
+                "subject": ticket.subject,
+                "status": ticket.status,
+                "created_at": ticket.created_at.isoformat() if ticket.created_at else None,
+                "messages": [],
+            }
+            for msg in ticket.messages:
+                if msg.sender_id == user.id:
+                    ticket_data["messages"].append({
+                        "content": msg.content,
+                        "created_at": msg.created_at.isoformat() if msg.created_at else None,
+                    })
+            data["tickets"].append(ticket_data)
+
         return data
 
     async def delete_account(self, user: User) -> None:
@@ -118,6 +144,13 @@ class GDPRService:
         Anonymizes personal data while preserving transaction records
         for accounting/legal requirements.
         """
+        # Anonymize ticket message contents sent by this user
+        result = await self.db.execute(
+            select(TicketMessage).where(TicketMessage.sender_id == user.id)
+        )
+        for msg in result.scalars().all():
+            msg.content = "[contenu supprimé]"
+
         await self.user_repo.anonymize(user)
         logger.info(f"User account anonymized for GDPR: {user.id}")
 

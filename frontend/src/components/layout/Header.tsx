@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth, useIsAuthenticated, useUser } from '@/contexts';
+import { editionsApi } from '@/api/editions';
+import { ticketsApi } from '@/api/tickets';
 
 export function Header() {
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
@@ -34,6 +37,26 @@ export function Header() {
   const { logout } = useAuth();
 
   const isManagerOrAdmin = user && (user.role === 'administrator' || user.role === 'manager');
+
+  // Fetch active edition for ticket badge
+  const { data: activeEditionData } = useQuery({
+    queryKey: ['active-edition'],
+    queryFn: () => editionsApi.getActiveEdition(),
+    enabled: isAuthenticated,
+    staleTime: 60000,
+  });
+
+  const activeEditionId = activeEditionData?.edition?.id ?? activeEditionData?.trainingEdition?.id;
+
+  // Fetch unread ticket count (polling every 30s)
+  const { data: unreadData } = useQuery({
+    queryKey: ['tickets-unread', activeEditionId],
+    queryFn: () => ticketsApi.getUnreadCount(activeEditionId!),
+    enabled: isAuthenticated && !!activeEditionId,
+    refetchInterval: 30000,
+  });
+
+  const unreadCount = unreadData?.unreadCount ?? 0;
 
   const handleLogout = async () => {
     await logout();
@@ -127,6 +150,19 @@ export function Header() {
                 >
                   Mes listes
                 </Link>
+                {activeEditionId && (
+                  <Link
+                    to={`/editions/${activeEditionId}/tickets`}
+                    className="relative text-gray-600 hover:text-gray-900 font-medium"
+                  >
+                    Messages
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-2 -right-3 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                )}
                 {isManagerOrAdmin && (
                   <div className="relative" ref={adminMenuRef}>
                     <button
@@ -197,6 +233,16 @@ export function Header() {
                                 onClick={() => setIsAdminMenuOpen(false)}
                               >
                                 Journal d'audit
+                              </Link>
+                              <Link
+                                ref={(el) => { menuItemsRef.current[4] = el; }}
+                                to="/admin/settings"
+                                role="menuitem"
+                                tabIndex={-1}
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                                onClick={() => setIsAdminMenuOpen(false)}
+                              >
+                                Paramètres
                               </Link>
                             </>
                           )}
@@ -321,6 +367,20 @@ export function Header() {
           >
             Mes listes
           </Link>
+          {activeEditionId && (
+            <Link
+              to={`/editions/${activeEditionId}/tickets`}
+              className="flex items-center justify-between px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+              onClick={closeMobileMenu}
+            >
+              Messages
+              {unreadCount > 0 && (
+                <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </Link>
+          )}
 
           {isManagerOrAdmin && (
             <>
@@ -357,6 +417,13 @@ export function Header() {
                     onClick={closeMobileMenu}
                   >
                     Journal d'audit
+                  </Link>
+                  <Link
+                    to="/admin/settings"
+                    className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                    onClick={closeMobileMenu}
+                  >
+                    Paramètres
                   </Link>
                 </>
               )}

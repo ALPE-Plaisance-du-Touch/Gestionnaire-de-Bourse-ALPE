@@ -3,10 +3,11 @@ import { MainLayout } from '@/components/layout';
 import { ProtectedRoute } from '@/components/auth';
 import { AuthProvider } from '@/contexts';
 import { LoginPage, ActivatePage, ForgotPasswordPage, ResetPasswordPage } from '@/pages/auth';
-import { InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, EditionDepositorsPage, LabelsManagementPage, LiveStatsPage, PayoutsManagementPage, PayoutDashboardPage, InvitationStatsPage, AuditLogPage, SalesManagementPage, AdminDashboardPage, UsersManagementPage, BilletwebSettingsPage, ReviewListsPage, ReviewListDetailPage, DeclarationProgressPage } from '@/pages/admin';
+import { AppSettingsPage, InvitationsPageWrapper, EditionsPageWrapper, EditionDetailPage, EditionDepositorsPage, LabelsManagementPage, LiveStatsPage, PayoutsManagementPage, PayoutDashboardPage, InvitationStatsPage, AuditLogPage, SalesManagementPage, AdminDashboardPage, UsersManagementPage, BilletwebSettingsPage, ReviewListsPage, ReviewListDetailPage, DeclarationProgressPage } from '@/pages/admin';
 import { MyEditionsPage, MyListsPage, ListDetailPage } from '@/pages/depositor';
 import { SalesPage } from '@/pages/volunteer/SalesPage';
 import { ProfilePage, PrivacyPolicyPage } from '@/pages/account';
+import { TicketListPage, TicketDetailPage, CreateTicketPage } from '@/pages/tickets';
 import { HelpPage } from '@/pages/help';
 import { HomePage } from '@/pages/home';
 
@@ -236,6 +237,38 @@ export const router = createBrowserRouter([
         ),
       },
 
+      // Ticket routes - any authenticated user
+      {
+        path: '/editions/:id/tickets',
+        element: (
+          <ProtectedRoute>
+            <MainLayout>
+              <TicketListPage />
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/editions/:id/tickets/new',
+        element: (
+          <ProtectedRoute>
+            <MainLayout>
+              <CreateTicketPage />
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/editions/:id/tickets/:ticketId',
+        element: (
+          <ProtectedRoute>
+            <MainLayout>
+              <TicketDetailPage />
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+
       // Account routes - any authenticated user
       {
         path: '/profile',
@@ -305,6 +338,17 @@ export const router = createBrowserRouter([
           <ProtectedRoute allowedRoles={['administrator']}>
             <MainLayout>
               <AuditLogPage />
+            </MainLayout>
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: '/admin/settings',
+        element: (
+          <ProtectedRoute allowedRoles={['administrator']}>
+            <MainLayout>
+              <AppSettingsPage />
             </MainLayout>
           </ProtectedRoute>
         ),
