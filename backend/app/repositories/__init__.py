@@ -1,5 +1,6 @@
 """Data access repositories package."""
 
+from app.repositories.app_setting import AppSettingRepository
 from app.repositories.article import ArticleRepository
 from app.repositories.billetweb_import_log import BilletwebImportLogRepository
 from app.repositories.deposit_slot import DepositSlotRepository
@@ -8,9 +9,11 @@ from app.repositories.edition_depositor import EditionDepositorRepository
 from app.repositories.item_list import ItemListRepository
 from app.repositories.payout import PayoutRepository
 from app.repositories.sale import SaleRepository
+from app.repositories.ticket import TicketRepository
 from app.repositories.user import UserRepository
 
 __all__ = [
+    "AppSettingRepository",
     "ArticleRepository",
     "BilletwebImportLogRepository",
     "DepositSlotRepository",
@@ -19,5 +22,6 @@ __all__ = [
     "ItemListRepository",
     "PayoutRepository",
     "SaleRepository",
+    "TicketRepository",
     "UserRepository",
 ]

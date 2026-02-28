@@ -108,6 +108,7 @@ export function AdminDashboardPage() {
     { label: 'Statistiques', to: `/editions/${editionId}/stats` },
     { label: 'Reversements', to: `/editions/${editionId}/payouts` },
     { label: 'Utilisateurs', to: '/admin/users' },
+    { label: 'Paramètres', to: '/admin/settings' },
     { label: 'Config Billetweb', to: '/admin/settings/billetweb' },
   ];
 
