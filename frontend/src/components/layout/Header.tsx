@@ -37,6 +37,7 @@ export function Header() {
   const { logout } = useAuth();
 
   const isManagerOrAdmin = user && (user.role === 'administrator' || user.role === 'manager');
+  const canAccessTickets = user && user.role !== 'volunteer';
 
   // Fetch active edition for ticket badge
   const { data: activeEditionData } = useQuery({
@@ -52,7 +53,7 @@ export function Header() {
   const { data: unreadData } = useQuery({
     queryKey: ['tickets-unread', activeEditionId],
     queryFn: () => ticketsApi.getUnreadCount(activeEditionId!),
-    enabled: isAuthenticated && !!activeEditionId,
+    enabled: isAuthenticated && !!activeEditionId && !!canAccessTickets,
     refetchInterval: 30000,
   });
 
@@ -150,14 +151,14 @@ export function Header() {
                 >
                   Mes listes
                 </Link>
-                {activeEditionId && (
+                {activeEditionId && canAccessTickets && (
                   <Link
                     to={`/editions/${activeEditionId}/tickets`}
-                    className="relative text-gray-600 hover:text-gray-900 font-medium"
+                    className="inline-flex items-center gap-1.5 text-gray-600 hover:text-gray-900 font-medium"
                   >
                     Messages
                     {unreadCount > 0 && (
-                      <span className="absolute -top-2 -right-3 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                      <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
                         {unreadCount > 99 ? '99+' : unreadCount}
                       </span>
                     )}
@@ -373,7 +374,7 @@ export function Header() {
           >
             Mes listes
           </Link>
-          {activeEditionId && (
+          {activeEditionId && canAccessTickets && (
             <Link
               to={`/editions/${activeEditionId}/tickets`}
               className="flex items-center justify-between px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"

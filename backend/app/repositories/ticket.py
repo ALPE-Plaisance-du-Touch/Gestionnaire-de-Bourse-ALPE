@@ -42,8 +42,8 @@ class TicketRepository:
     ) -> tuple[list[Ticket], int]:
         base_query = select(Ticket).where(Ticket.edition_id == edition_id)
 
-        # Depositors only see their own tickets
-        if user.is_depositor:
+        # Managers/admins see all tickets; others only see their own
+        if not (user.is_manager or user.is_administrator):
             base_query = base_query.where(
                 (Ticket.created_by_id == user.id) | (Ticket.assigned_to_id == user.id)
             )
@@ -86,8 +86,8 @@ class TicketRepository:
             )
         )
 
-        # Depositors only see their own tickets; staff sees all
-        if user.is_depositor:
+        # Managers/admins see all tickets; others only see their own
+        if not (user.is_manager or user.is_administrator):
             query = query.where(
                 (Ticket.created_by_id == user.id) | (Ticket.assigned_to_id == user.id)
             )

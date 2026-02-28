@@ -48,6 +48,8 @@ async def create_ticket(
         )
     except EditionNotFoundError:
         raise HTTPException(status_code=404, detail="Edition not found")
+    except AuthorizationError:
+        raise HTTPException(status_code=403, detail="Volunteers cannot create tickets")
     except ValidationError as e:
         raise HTTPException(status_code=400, detail=e.message)
 
@@ -166,7 +168,7 @@ async def close_ticket(
     except NotFoundError:
         raise HTTPException(status_code=404, detail="Ticket not found")
     except AuthorizationError:
-        raise HTTPException(status_code=403, detail="Only staff can close tickets")
+        raise HTTPException(status_code=403, detail="Only managers can close tickets")
     except ValidationError as e:
         raise HTTPException(status_code=400, detail=e.message)
 
@@ -191,6 +193,6 @@ async def reopen_ticket(
     except NotFoundError:
         raise HTTPException(status_code=404, detail="Ticket not found")
     except AuthorizationError:
-        raise HTTPException(status_code=403, detail="Only staff can reopen tickets")
+        raise HTTPException(status_code=403, detail="Only managers can reopen tickets")
     except ValidationError as e:
         raise HTTPException(status_code=400, detail=e.message)
