@@ -1,6 +1,6 @@
 # Backend Dockerfile - Multi-stage build
 # Stage 1: Development
-FROM python:3.11-slim AS development
+FROM python:3.11.12-slim AS development
 
 WORKDIR /app
 
@@ -31,7 +31,7 @@ EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
 # Stage 2: Production build
-FROM python:3.11-slim AS production
+FROM python:3.11.12-slim AS production
 
 WORKDIR /app
 

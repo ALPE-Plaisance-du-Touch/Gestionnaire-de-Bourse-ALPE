@@ -36,10 +36,12 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 | 0.20 | Training Mode (US-015) | ✅ Done | 100% |
 | 0.21 | Deposit Review (US-013) & Declaration Tracking (US-014) | ✅ Done | 100% |
 | 0.22 | Cart Checkout (Ticket de caisse) | ✅ Done | 100% |
+| 0.23 | Messaging & Admin Settings (US-016) | ✅ Done | 100% |
+| 0.24 | User Documentation | 🔲 Not Started | 0% |
 | **1.0.0** | **Production Release** | 🔲 Not Started | 0% |
 
-**Current Version:** 0.22 (Cart Checkout complete)
-**Next Target:** v1.0.0 - Production Release
+**Current Version:** 0.23 (Messaging & Admin Settings complete)
+**Next Target:** v0.24 - User Documentation
 
 ---
 
@@ -746,9 +748,52 @@ Each functional milestone increments the minor version (0.1 → 0.2 → ... → 
 
 ---
 
+## v0.23 - Messaging & Admin Settings (US-016) ✅
+
+**Branch:** `feature/us-016-messaging`
+
+### Backend Tasks ✅
+- [x] **0.23.1** Ticket and TicketMessage models + migration (UUID pk, status enum, priority, foreign keys to User/Edition)
+- [x] **0.23.2** TicketRepository with joinedload (created_by, assigned_to, messages, User.role)
+- [x] **0.23.3** TicketService (create, reply, update_status, list with filters, RBAC logic)
+- [x] **0.23.4** Pydantic schemas (CreateTicketRequest, ReplyToTicketRequest, UpdateTicketStatusRequest, TicketResponse, TicketMessageResponse)
+- [x] **0.23.5** API endpoints: 7 routes (create, list, get, reply, update status, list by edition, my tickets)
+- [x] **0.23.6** Email notification to depositor when staff replies (send_ticket_reply_email)
+- [x] **0.23.7** Configurable support email: `_get_support_email(db)` helper, `GET/PUT /config/support-email` (admin), mutable `EmailService.support_email`
+
+### Frontend Tasks ✅
+- [x] **0.23.8** `ticketsApi` module (create, list, getById, reply, updateStatus)
+- [x] **0.23.9** `TicketListPage` (ticket list with status filters, create button)
+- [x] **0.23.10** `CreateTicketPage` (subject + message form, edition selector)
+- [x] **0.23.11** `TicketDetailPage` (conversation thread, reply form, staff status controls)
+- [x] **0.23.12** Routes: `/editions/:id/tickets`, `/editions/:id/tickets/new`, `/editions/:id/tickets/:ticketId`
+- [x] **0.23.13** `configApi` module (getSupportEmail, updateSupportEmail)
+- [x] **0.23.14** `AppSettingsPage` (admin general settings, support email field)
+- [x] **0.23.15** Route `/admin/settings` + link in admin menu dropdown and dashboard
+
+---
+
+## v0.24 - User Documentation
+
+**Branch:** `feature/user-documentation`
+
+### Frontend Tasks
+- [ ] **0.24.1** Refactor `HelpPage` with table of contents and themed sections
+- [ ] **0.24.2** "How it works" section (deposit, sale, payout, 20% commission)
+- [ ] **0.24.3** "Depositor guide" section (step-by-step: registration to payout)
+- [ ] **0.24.4** "FAQ" section (pricing, rejected articles, deadlines, payment methods)
+- [ ] **0.24.5** "Rules" section (accepted/rejected items, category limits, indicative prices)
+- [ ] **0.24.6** "Contact & support" section (dynamic support email via useConfig, link to messaging)
+- [ ] **0.24.7** "Volunteer guide" section (scanning, sales, list review — visible to volunteer+)
+- [ ] **0.24.8** "Manager guide" section (imports, editions, payouts — visible to manager+)
+- [ ] **0.24.9** "Help" link in header/footer for all users (including unauthenticated)
+- [ ] **0.24.10** Contextual help links from relevant pages (e.g., FAQ link from article declaration)
+
+---
+
 ## v1.0.0 - Production Release
 
-**Prerequisites:** All versions 0.1 through 0.22 completed and tested.
+**Prerequisites:** All versions 0.1 through 0.24 completed and tested.
 
 ### Relecture & qualité (pré-release)
 - [ ] **PRE-001** Relecture orthographe et grammaire de toute l'application (textes UI, messages d'erreur, emails, labels)

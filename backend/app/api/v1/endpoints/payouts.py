@@ -314,8 +314,8 @@ async def send_payout_reminder_endpoint(
     )
 
     # Track reminder in notes
-    from datetime import datetime
-    reminder_note = f"Relance envoyee le {datetime.now().strftime('%d/%m/%Y')}"
+    from datetime import datetime, timezone
+    reminder_note = f"Relance envoyee le {datetime.now(timezone.utc).strftime('%d/%m/%Y')}"
     if payout.notes:
         payout.notes = f"{payout.notes} | {reminder_note}"
     else:
@@ -335,7 +335,7 @@ async def send_bulk_payout_reminders(
     db: DBSession,
     current_user: ManagerRole,
 ):
-    from datetime import datetime
+    from datetime import datetime, timezone
 
     from sqlalchemy import select
     from sqlalchemy.orm import joinedload
@@ -367,7 +367,7 @@ async def send_bulk_payout_reminders(
     if not payouts:
         return {"emails_queued": 0, "message": "Aucun deposant a relancer"}
 
-    reminder_note = f"Relance bulk le {datetime.now().strftime('%d/%m/%Y')}"
+    reminder_note = f"Relance bulk le {datetime.now(timezone.utc).strftime('%d/%m/%Y')}"
     for payout in payouts:
         depositor = payout.depositor
         background_tasks.add_task(

@@ -1,6 +1,6 @@
 """Review service for deposit article verification (US-013)."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -145,7 +145,7 @@ class ReviewService:
         article = await self._get_reviewable_article(article_id)
 
         article.status = ArticleStatus.ACCEPTED.value
-        article.reviewed_at = datetime.utcnow()
+        article.reviewed_at = datetime.now(timezone.utc)
         article.reviewed_by_user_id = user.id
 
         await self.db.commit()
@@ -172,9 +172,9 @@ class ReviewService:
 
         article.status = ArticleStatus.REJECTED.value
         article.rejection_reason = rejection_reason
-        article.rejected_at = datetime.utcnow()
+        article.rejected_at = datetime.now(timezone.utc)
         article.rejected_by_user_id = user.id
-        article.reviewed_at = datetime.utcnow()
+        article.reviewed_at = datetime.now(timezone.utc)
         article.reviewed_by_user_id = user.id
 
         await self.db.commit()
@@ -271,7 +271,7 @@ class ReviewService:
             )
 
         item_list.status = ListStatus.REVIEWED.value
-        item_list.reviewed_at = datetime.utcnow()
+        item_list.reviewed_at = datetime.now(timezone.utc)
         item_list.reviewed_by_user_id = user.id
 
         await self.db.commit()

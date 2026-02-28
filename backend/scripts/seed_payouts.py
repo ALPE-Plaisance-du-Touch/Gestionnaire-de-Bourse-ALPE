@@ -17,7 +17,7 @@ Mix of statuses for filter testing.
 
 import asyncio
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 
@@ -153,7 +153,7 @@ async def main():
                 if payout_101 and payout_101.status == "pending":
                     payout_101.status = "paid"
                     payout_101.payment_method = "cash"
-                    payout_101.paid_at = datetime.utcnow()
+                    payout_101.paid_at = datetime.now(timezone.utc)
                     payout_101.processed_by_id = admin.id
                     list_101.status = "payout_completed"
                     print(f"\n  * List #101 payout marked PAID (cash)")

@@ -27,9 +27,11 @@ logger = logging.getLogger(__name__)
 
 def _user_can_access_ticket(user: User, ticket: Ticket) -> bool:
     """Check if a user has access to a ticket."""
-    if not user.is_depositor:
-        return True  # Staff sees everything
-    return ticket.created_by_id == user.id or ticket.assigned_to_id == user.id
+    if user.is_manager or user.is_administrator:
+        return True
+    if user.is_depositor:
+        return ticket.created_by_id == user.id or ticket.assigned_to_id == user.id
+    return False  # Volunteers cannot access tickets
 
 
 def _ticket_to_response(
@@ -83,17 +85,20 @@ async def create_ticket(
     db: AsyncSession,
     assigned_to_id: str | None = None,
 ) -> TicketDetailResponse:
+    if not (user.is_depositor or user.is_manager or user.is_administrator):
+        raise AuthorizationError("Volunteers cannot create tickets")
+
     edition_repo = EditionRepository(db)
     edition = await edition_repo.get_by_id(edition_id)
     if not edition:
         raise EditionNotFoundError(edition_id)
 
-    # Depositors cannot assign tickets — they go to staff generically
-    if user.is_depositor:
+    # Only managers/admins can create tickets on behalf of others
+    if not (user.is_manager or user.is_administrator):
         assigned_to_id = None
 
-    # Staff creating a ticket must specify a depositor
-    if not user.is_depositor and assigned_to_id:
+    # Manager/admin creating a ticket must specify a depositor
+    if (user.is_manager or user.is_administrator) and assigned_to_id:
         user_repo = UserRepository(db)
         target = await user_repo.get_by_id(assigned_to_id)
         if not target:
@@ -155,8 +160,8 @@ async def reply_to_ticket(
     await ticket_repo.add_message(message)
     await db.commit()
 
-    # Send email notification if staff replies to depositor
-    if not user.is_depositor:
+    # Send email notification if manager/admin replies to depositor
+    if user.is_manager or user.is_administrator:
         depositor = ticket.created_by if ticket.assigned_to_id is None else ticket.assigned_to
         if depositor and depositor.is_depositor:
             try:
@@ -236,8 +241,8 @@ async def get_ticket_detail(
 async def close_ticket(
     ticket_id: str, user: User, db: AsyncSession
 ) -> TicketResponse:
-    if user.is_depositor:
-        raise AuthorizationError("Only staff can close tickets")
+    if not (user.is_manager or user.is_administrator):
+        raise AuthorizationError("Only managers can close tickets")
 
     ticket_repo = TicketRepository(db)
     ticket = await ticket_repo.get_by_id(ticket_id)
@@ -258,8 +263,8 @@ async def close_ticket(
 async def reopen_ticket(
     ticket_id: str, user: User, db: AsyncSession
 ) -> TicketResponse:
-    if user.is_depositor:
-        raise AuthorizationError("Only staff can reopen tickets")
+    if not (user.is_manager or user.is_administrator):
+        raise AuthorizationError("Only managers can reopen tickets")
 
     ticket_repo = TicketRepository(db)
     ticket = await ticket_repo.get_by_id(ticket_id)
@@ -278,8 +283,8 @@ async def reopen_ticket(
 
 
 async def get_unread_count(
-    user_id: str, edition_id: str, db: AsyncSession
+    user: User, edition_id: str, db: AsyncSession
 ) -> UnreadCountResponse:
     ticket_repo = TicketRepository(db)
-    count = await ticket_repo.get_unread_count(user_id, edition_id)
+    count = await ticket_repo.get_unread_count(user, edition_id)
     return UnreadCountResponse(unread_count=count)

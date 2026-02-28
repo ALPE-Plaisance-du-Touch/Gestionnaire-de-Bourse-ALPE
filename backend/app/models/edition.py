@@ -1,6 +1,6 @@
 """Edition model for sale events."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import TYPE_CHECKING
@@ -151,6 +151,6 @@ class Edition(Base, UUIDMixin, TimestampMixin):
             EditionStatus.REGISTRATIONS_OPEN.value,
         ):
             return False
-        if self.declaration_deadline and datetime.utcnow() > self.declaration_deadline:
+        if self.declaration_deadline and datetime.now(timezone.utc) > self.declaration_deadline:
             return False
         return True

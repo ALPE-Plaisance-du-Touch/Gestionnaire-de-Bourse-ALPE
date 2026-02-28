@@ -48,7 +48,7 @@ services:
 
   # Frontend (React build served by Nginx with SSL)
   nginx:
-    image: nginx:alpine
+    image: nginx:1.27-alpine
     container_name: bourse-nginx
     ports:
       - "80:80"
@@ -82,7 +82,7 @@ services:
   #     -d ${DOMAIN} --email ${ADMIN_EMAIL} --agree-tos --no-eff-email
   # Then restart nginx to pick up the new cert.
   certbot:
-    image: certbot/certbot
+    image: certbot/certbot:v3.1
     container_name: bourse-certbot
     volumes:
       - certbot_conf:/etc/letsencrypt

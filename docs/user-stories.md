@@ -3075,3 +3075,184 @@ test_scenarios:
   - T-US015-11 : Parcours complet : déclaration, dépôt, vente, clôture (OK)
   - T-US015-12 : Coexistence d'une édition formation et d'une édition réelle active (OK, pas de conflit)
 ```
+
+## US-017 — Consulter la documentation et l'aide intégrée
+
+```yaml
+id: US-017
+title: Consulter la documentation et l'aide intégrée
+actor: visiteur | deposant | benevole | gestionnaire | administrateur
+benefit: "...pour comprendre comment utiliser l'application selon mon rôle"
+as_a: "En tant qu'utilisateur de la plateforme (quel que soit mon rôle)"
+i_want: "Je veux consulter une documentation d'aide intégrée à l'application, adaptée à mon rôle"
+so_that: "Afin de comprendre le fonctionnement de la bourse, savoir comment utiliser les fonctionnalités qui me concernent et trouver rapidement la réponse à mes questions"
+
+# Contexte métier
+notes: |
+  - La bourse ALPE implique des utilisateurs aux profils très variés : déposants occasionnels peu familiers avec le numérique, bénévoles formés rapidement, gestionnaires référents
+  - Chaque rôle n'utilise qu'une partie de l'application et a besoin d'une aide ciblée
+  - La documentation déposant doit être accessible sans connexion (les déposants potentiels doivent pouvoir se renseigner avant de s'inscrire)
+  - Les guides bénévole et gestionnaire contiennent des informations opérationnelles qui ne doivent pas être exposées au public
+  - La page d'aide existante (`/aide`) ne contient que 2 sections sommaires (cycle de vie des listes, certification de conformité)
+  - Les specs mentionnent : "Lien vers la FAQ et contact support bénévoles" (US-001 AC-6) et "FAQ intégrée pour les questions fréquentes" (REQ-F-002)
+  - L'email de contact est configurable par l'administrateur (v0.23) et doit être affiché dynamiquement
+
+acceptance_criteria:
+  # AC-1 : Page d'aide accessible à tous — sommaire et navigation
+  - GIVEN je suis un visiteur non authentifié OU un utilisateur connecté (quel que soit mon rôle)
+    WHEN j'accède à la page d'aide (`/aide`)
+    THEN je vois :
+      • Un titre "Aide" avec une brève introduction
+      • Un sommaire avec ancres vers chaque section, permettant d'y accéder en un clic
+      • Les sections s'affichent dans l'ordre logique du parcours utilisateur
+      • Le sommaire est toujours visible pour faciliter la navigation (sticky ou en haut de page)
+
+  # AC-2 : Section "Comment ça marche" — présentation du fonctionnement
+  - GIVEN j'accède à la page d'aide
+    WHEN je consulte la section "Comment ça marche"
+    THEN je vois une explication claire du fonctionnement de la bourse :
+      • Principe général : dépôt d'articles par les déposants, vente au public, reversement au déposant
+      • Commission : 20% prélevés par l'association ALPE
+      • Étapes chronologiques : inscription → déclaration des articles → dépôt physique → vente → récupération des invendus → reversement
+      • Volume typique : ~250 déposants, ~3000 articles par édition
+    AND cette section est accessible sans authentification
+
+  # AC-3 : Section "Guide du déposant" — parcours pas à pas
+  - GIVEN j'accède à la page d'aide
+    WHEN je consulte la section "Guide du déposant"
+    THEN je vois un guide pas à pas couvrant :
+      • Inscription via Billetweb et activation du compte (lien d'invitation, mot de passe)
+      • Déclaration des articles dans mes listes (max 24 articles dont 12 vêtements, 2 listes max)
+      • Règles de prix (minimum 1€, prix indicatifs par catégorie)
+      • Validation de la liste et certification de conformité (irréversible)
+      • Date limite de déclaration (3 semaines avant la collecte)
+      • Jour du dépôt : apporter les articles avec les étiquettes préparées par ALPE
+      • Revue par les bénévoles : articles acceptés, refusés ou corrigés
+      • Après la vente : récupération des invendus et reversement (80% du montant des ventes)
+    AND cette section est accessible sans authentification
+
+  # AC-4 : Section "FAQ" — questions fréquentes
+  - GIVEN j'accède à la page d'aide
+    WHEN je consulte la section "FAQ"
+    THEN je vois une liste de questions/réponses organisée par thème :
+      • Inscription et compte :
+        - "Comment m'inscrire ?" → Via Billetweb, puis activation avec le lien reçu par email
+        - "Mon lien d'activation a expiré, que faire ?" → Contacter les organisateurs pour une relance
+        - "J'ai oublié mon mot de passe" → Utiliser la page "Mot de passe oublié"
+      • Articles et listes :
+        - "Combien d'articles puis-je déposer ?" → 24 articles max par liste, 2 listes max
+        - "Quels articles sont refusés ?" → Sièges-autos, biberons, sous-vêtements, etc. (liste complète dans le règlement)
+        - "Comment fixer le prix de mes articles ?" → Minimum 1€, voir la grille de prix indicatifs
+        - "Puis-je modifier ma liste après validation ?" → Non, la validation est définitive
+      • Dépôt et vente :
+        - "Que se passe-t-il le jour du dépôt ?" → Les bénévoles vérifient chaque article
+        - "Un article a été refusé, pourquoi ?" → Non conforme au règlement (taché, abîmé, incomplet)
+      • Paiement et reversement :
+        - "Quand et comment suis-je payé ?" → Lors de la restitution, en espèces, chèque ou virement
+        - "Comment est calculé mon reversement ?" → 80% du total des ventes, 20% pour ALPE
+    AND cette section est accessible sans authentification
+
+  # AC-5 : Section "Règlement" — articles acceptés et refusés
+  - GIVEN j'accède à la page d'aide
+    WHEN je consulte la section "Règlement"
+    THEN je vois :
+      • Les catégories d'articles acceptés : vêtements, puériculture, jouets, livres, chaussures, etc.
+      • Les limites par catégorie (1 manteau max par liste, 1 sac à main max, 5 livres adultes max, etc.)
+      • La liste complète des articles refusés (sièges-autos, biberons, sous-vêtements adultes, etc.)
+      • La grille de prix indicatifs par catégorie (ex: jupe 3-10€, poussette 30-150€)
+      • Les critères de conformité (propre, en bon état, complet, prêt à être vendu)
+    AND cette section est accessible sans authentification
+
+  # AC-6 : Section "Contact et assistance"
+  - GIVEN j'accède à la page d'aide
+    WHEN je consulte la section "Contact et assistance"
+    THEN je vois :
+      • L'email de contact de l'association affiché dynamiquement (valeur configurée par l'administrateur)
+      • Si je suis connecté et qu'une bourse est active : un lien vers la messagerie interne ("Envoyer un message aux organisateurs")
+      • Si je ne suis pas connecté : l'email de contact comme seul moyen de communication
+    AND l'email affiché correspond à la valeur configurée dans les paramètres (pas la valeur par défaut codée en dur)
+
+  # AC-7 : Section "Guide bénévole" — visible uniquement pour les bénévoles et rôles supérieurs
+  - GIVEN je suis connecté en tant que bénévole, gestionnaire ou administrateur
+    WHEN j'accède à la page d'aide
+    THEN je vois une section supplémentaire "Guide bénévole" contenant :
+      • Scanner un article : utiliser le scanner QR ou saisir le code manuellement
+      • Enregistrer une vente : scan → confirmation → choix du mode de paiement
+      • Panier multi-articles : scanner plusieurs articles, valider le lot en une seule transaction
+      • Annuler une vente : possible dans les 5 minutes suivant l'enregistrement
+      • Revue des listes au dépôt : accepter, refuser ou corriger les articles d'un déposant
+      • Mode hors ligne : fonctionnement sans connexion, synchronisation automatique au retour du réseau
+    AND cette section n'est PAS visible pour les déposants ni les visiteurs non connectés
+
+  # AC-8 : Section "Guide gestionnaire" — visible uniquement pour les gestionnaires et administrateurs
+  - GIVEN je suis connecté en tant que gestionnaire ou administrateur
+    WHEN j'accède à la page d'aide
+    THEN je vois une section supplémentaire "Guide gestionnaire" contenant :
+      • Créer et configurer une édition : dates clés, créneaux de dépôt, taux de commission
+      • Importer les inscriptions : via fichier CSV ou synchronisation API Billetweb
+      • Gérer les invitations : création manuelle, relance, import CSV en masse
+      • Générer les étiquettes : par créneau ou pour toute l'édition, impression PDF
+      • Suivre les reversements : calcul, génération des bordereaux, enregistrement des paiements
+      • Consulter les statistiques : tableau de bord en temps réel, export Excel
+    AND cette section n'est PAS visible pour les bénévoles, déposants ou visiteurs
+
+  # AC-9 : Lien d'accès dans la navigation
+  - GIVEN je navigue dans l'application
+    THEN un lien "Aide" est accessible :
+      • Dans le footer de toutes les pages (déjà existant)
+      • Dans le menu de navigation principal pour les utilisateurs connectés
+    AND le lien mène à la page `/aide`
+    AND la page est accessible sans authentification (les sections protégées sont simplement masquées)
+
+  # AC-10 : Liens contextuels depuis les pages métier
+  - GIVEN je suis sur une page de l'application liée à une fonctionnalité documentée
+    WHEN la page concerne une action complexe (déclaration d'articles, validation de liste, scan QR)
+    THEN un lien discret "Besoin d'aide ?" est disponible, pointant vers la section d'aide correspondante
+    EXEMPLE :
+      • Page de déclaration d'articles → lien vers `/aide#guide-deposant`
+      • Page de vente (scan) → lien vers `/aide#guide-benevole`
+
+dependencies:
+  - US-001  # Activation de compte (lien FAQ dans l'email de confirmation)
+  - US-002  # Déclaration d'articles (aide contextuelle, FAQ)
+  - US-016  # Messagerie (lien depuis la section contact)
+
+links:
+  - rel: requirement
+    id: REQ-F-002  # FAQ intégrée pour les questions fréquentes
+  - rel: partial
+    id: US-001 AC-6  # Lien vers la FAQ et contact support bénévoles
+
+business_rules:
+  - La page d'aide est accessible à `/aide` sans authentification
+  - Les sections "Comment ça marche", "Guide du déposant", "FAQ", "Règlement" et "Contact" sont publiques
+  - La section "Guide bénévole" n'est visible que pour les rôles bénévole, gestionnaire et administrateur
+  - La section "Guide gestionnaire" n'est visible que pour les rôles gestionnaire et administrateur
+  - L'email de contact affiché provient de la configuration dynamique (endpoint `/config/public`)
+  - Le lien vers la messagerie interne n'est affiché que si l'utilisateur est connecté ET qu'une bourse est active
+  - Les contenus sont statiques (pas de CMS) — le texte est écrit directement dans le composant React
+  - Aucun backend supplémentaire n'est nécessaire (la page utilise les API existantes : config public, auth context)
+  - Le sommaire doit permettre de partager un lien direct vers une section (ancre HTML)
+
+test_scenarios:
+  - T-US017-01 : Page d'aide accessible sans connexion (OK, sections publiques visibles)
+  - T-US017-02 : Sommaire avec ancres fonctionnelles (OK, clic → scroll vers section)
+  - T-US017-03 : Section "Comment ça marche" présente et complète (OK)
+  - T-US017-04 : Section "Guide du déposant" avec parcours complet (OK)
+  - T-US017-05 : Section "FAQ" avec questions/réponses organisées par thème (OK)
+  - T-US017-06 : Section "Règlement" avec catégories, limites et prix indicatifs (OK)
+  - T-US017-07 : Section "Contact" avec email dynamique (OK, pas la valeur par défaut)
+  - T-US017-08 : Lien messagerie visible uniquement si connecté + bourse active (OK)
+  - T-US017-09 : Section "Guide bénévole" visible pour bénévole connecté (OK)
+  - T-US017-10 : Section "Guide bénévole" invisible pour déposant connecté (OK, section absente)
+  - T-US017-11 : Section "Guide gestionnaire" visible pour gestionnaire connecté (OK)
+  - T-US017-12 : Section "Guide gestionnaire" invisible pour bénévole connecté (OK, section absente)
+  - T-US017-13 : Visiteur non connecté ne voit ni guide bénévole ni guide gestionnaire (OK)
+  - T-US017-14 : Lien "Aide" dans le footer de toutes les pages (OK, déjà existant)
+  - T-US017-15 : Lien "Aide" dans le menu navigation pour utilisateurs connectés (OK)
+  - T-US017-16 : Lien contextuel "Besoin d'aide ?" sur la page de déclaration d'articles (OK, pointe vers #guide-deposant)
+  - T-US017-17 : Lien contextuel sur la page de vente/scan (OK, pointe vers #guide-benevole)
+  - T-US017-18 : Responsive mobile (OK, sommaire et sections lisibles sur petit écran)
+  - T-US017-19 : Ancres partageables (OK, URL `/aide#faq` ouvre directement la section FAQ)
+  - T-US017-20 : Administrateur voit toutes les sections (publiques + bénévole + gestionnaire) (OK)
+```

@@ -203,6 +203,9 @@ export function SalesPage() {
             &larr; {canViewEdition ? "Retour a l'edition" : "Retour a l'accueil"}
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Caisse</h1>
+          <Link to="/aide#guide-benevole" className="text-xs text-gray-500 hover:text-blue-600">
+            Besoin d'aide ?
+          </Link>
         </div>
       </div>
 

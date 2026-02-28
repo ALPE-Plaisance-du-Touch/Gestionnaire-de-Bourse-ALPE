@@ -17,7 +17,7 @@ Creates data matching tests/data/ fixtures for MCP Chrome DevTools E2E scenarios
 import asyncio
 import sys
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
 
@@ -284,7 +284,7 @@ async def seed_users(session: AsyncSession, roles: dict[str, Role]) -> tuple[dic
     """Create 8 test users matching tests/data/users/accounts.json."""
     print("\n--- Seeding users...")
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     users = {}
     invitation_tokens = {}
 

@@ -46,9 +46,11 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.20 | Mode Formation | ✅ Done |
 | 0.21 | Revue des listes au dépôt | ✅ Done |
 | 0.22 | Ticket de caisse (panier) | ✅ Done |
+| 0.23 | Messagerie & Paramètres admin | ✅ Done |
+| 0.24 | Documentation utilisateur | 🔲 À faire |
 
-**Conformité specs : ~95%** (63/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
-**Specs : 15 US, 24 REQ-F, 120+ AC, 158+ tests** — couverture traçabilité 93%
+**Conformité specs : ~97%** (65/66 exigences couvertes) — voir [rapport d'analyse](docs/analysis-report-2026-02-09.md)
+**Specs : 17 US, 24 REQ-F, 130+ AC, 178+ tests** — couverture traçabilité 95%
 
 ---
 
@@ -67,6 +69,8 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 | 0.20 | Mode Formation | Édition formation, forçage étapes, flag testeur, bandeau visuel | Haute |
 | 0.21 | Revue des listes au dépôt | Revue articles par bénévole (accepter/refuser/éditer), suivi avancement | ✅ Done |
 | 0.22 | Ticket de caisse (panier) | Panier multi-articles, paiement batch, ticket_id | ✅ Done |
+| 0.23 | Messagerie & Paramètres admin | Tickets déposant↔staff, email de contact configurable | ✅ Done |
+| 0.24 | Documentation utilisateur | Page d'aide complète, FAQ, guides par rôle | À faire |
 | 1.0.0 | Feature Freeze & Production | Bug fixes, tests intégration, perf, audit, release | - |
 
 ---
@@ -396,9 +400,58 @@ et les corrections de sécurité sont acceptés à partir de ce point.
 
 ---
 
+## v0.23 - Messagerie & Paramètres admin (US-016) ✅
+
+**Branche :** `feature/us-016-messaging`
+
+### Système de messagerie / tickets (US-016)
+- [x] **0.23.1** Backend : modèles `Ticket` et `TicketMessage` + migration (UUID, statut open/in_progress/resolved/closed, priorité)
+- [x] **0.23.2** Backend : `TicketRepository` avec joinedload (created_by, assigned_to, messages, User.role)
+- [x] **0.23.3** Backend : `TicketService` (create, reply, update status, list with filters)
+- [x] **0.23.4** Backend : schemas Pydantic (CreateTicketRequest, ReplyRequest, TicketResponse, TicketMessageResponse)
+- [x] **0.23.5** Backend : endpoints CRUD tickets (7 routes, RBAC déposant/staff)
+- [x] **0.23.6** Backend : notification email au déposant quand un staff répond
+- [x] **0.23.7** Frontend : `ticketsApi` (create, list, getById, reply, updateStatus)
+- [x] **0.23.8** Frontend : `TicketListPage` (liste tickets, filtres statut, création)
+- [x] **0.23.9** Frontend : `CreateTicketPage` (formulaire sujet + message + édition)
+- [x] **0.23.10** Frontend : `TicketDetailPage` (conversation, réponses, changement statut staff)
+- [x] **0.23.11** Frontend : routes `/editions/:id/tickets`, badge compteur dans navigation
+
+### Email de contact configurable
+- [x] **0.23.12** Backend : helper `_get_support_email(db)` — lecture DB-first, fallback env var
+- [x] **0.23.13** Backend : endpoints admin `GET/PUT /config/support-email` (RequireAdmin)
+- [x] **0.23.14** Backend : attribut mutable `EmailService.support_email` (singleton)
+- [x] **0.23.15** Frontend : `AppSettingsPage` — page admin paramètres généraux
+- [x] **0.23.16** Frontend : route `/admin/settings` + lien dans menu admin et dashboard
+
+---
+
+## v0.24 - Documentation utilisateur (US-017)
+
+**Branche :** `feature/user-documentation`
+**Exigences :** US-017, REQ-F-002 (FAQ)
+
+### Page d'aide enrichie
+- [ ] **0.24.1** Frontend : refonte `HelpPage` — sommaire avec ancres, sections par thème
+- [ ] **0.24.2** Section "Comment ça marche" — présentation du fonctionnement de la bourse (dépôt, vente, reversement, commission 20%)
+- [ ] **0.24.3** Section "Guide du déposant" — étapes de A à Z (inscription, déclaration articles, dépôt, récupération, paiement)
+- [ ] **0.24.4** Section "FAQ" — questions fréquentes (prix, articles refusés, date limite, paiement, etc.)
+- [ ] **0.24.5** Section "Règlement" — articles acceptés/refusés, limites par catégorie, grille de prix indicatifs
+- [ ] **0.24.6** Section "Contact & assistance" — email de contact dynamique (via useConfig), lien vers la messagerie
+
+### Guides par rôle (sections conditionnelles)
+- [ ] **0.24.7** Section "Guide bénévole" — scan articles, enregistrement ventes, revue des listes (visible si bénévole+)
+- [ ] **0.24.8** Section "Guide gestionnaire" — import inscriptions, gestion éditions, reversements (visible si gestionnaire+)
+
+### Accessibilité et navigation
+- [ ] **0.24.9** Lien "Aide" dans le header/footer pour tous les utilisateurs (y compris non connectés)
+- [ ] **0.24.10** Liens contextuels vers les sections d'aide depuis les pages concernées (ex: lien vers FAQ depuis la déclaration)
+
+---
+
 ## v1.0.0 - Feature Freeze & Production
 
-**Prérequis :** Toutes les versions 0.1 à 0.22 terminées et testées.
+**Prérequis :** Toutes les versions 0.1 à 0.24 terminées et testées.
 
 À partir de cette version, plus aucune fonctionnalité n'est ajoutée.
 Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
@@ -473,6 +526,9 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 | TASK-039 | 0.21 | Frontend vue déposant refusés + suivi avancement | US-013 AC-8/AC-9/AC-10 |
 | TASK-040 | 0.22 | Ticket de caisse (panier multi-articles) | US-004 (amélioration) |
 | TASK-041 | 0.21 | Suivi déclarations déposants (US-014) | US-014, REQ-F-023 |
+| TASK-042 | 0.23 | Messagerie tickets déposant↔staff | US-016 |
+| TASK-043 | 0.23 | Email de contact configurable (admin) | REQ-F-002 (aide contextuelle) |
+| TASK-044 | 0.24 | Documentation utilisateur & FAQ | US-017, US-001 AC-6, REQ-F-002 (FAQ) |
 
 ---
 
@@ -482,7 +538,7 @@ Seuls les bugfixes, la stabilisation et l'optimisation sont acceptés.
 |----------|--------|-------------|
 | Rapport d'analyse | [docs/analysis-report-2026-02-09.md](docs/analysis-report-2026-02-09.md) | Écarts détaillés + prompts prêts à l'emploi par TASK |
 | Suivi d'avancement | [DEVELOPMENT.md](DEVELOPMENT.md) | Checkboxes détaillées par version livrée |
-| User Stories | [docs/user-stories.md](docs/user-stories.md) | US-001 à US-015, critères d'acceptation |
+| User Stories | [docs/user-stories.md](docs/user-stories.md) | US-001 à US-017, critères d'acceptation |
 | Exigences | [docs/exigences.md](docs/exigences.md) | REQ-F-001 à F-024, REQ-NF-001 à NF-012 |
 | Architecture | [docs/architecture.md](docs/architecture.md) | C4, ADR, stack technique |
 | Sécurité | [docs/securite.md](docs/securite.md) | Matrice RBAC, RGPD, audit, anti-fraude |

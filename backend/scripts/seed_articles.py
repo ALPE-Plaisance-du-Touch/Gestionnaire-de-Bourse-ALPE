@@ -17,7 +17,7 @@ Total: 13 articles ON_SALE with barcodes
 
 import asyncio
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 
@@ -93,8 +93,8 @@ async def promote_list_101(session: AsyncSession, item_list: ItemList) -> None:
 
     item_list.status = "checked_in"
     item_list.is_validated = True
-    item_list.validated_at = datetime.utcnow()
-    item_list.checked_in_at = datetime.utcnow()
+    item_list.validated_at = datetime.now(timezone.utc)
+    item_list.checked_in_at = datetime.now(timezone.utc)
     print(f"  + List #{item_list.number} -> checked_in, validated")
 
     await session.flush()
@@ -123,7 +123,7 @@ async def create_list_with_articles(
         print(f"  = List #{list_number} already exists, skipping")
         return
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     item_list = ItemList(
         depositor_id=depositor.id,
         edition_id=edition.id,
