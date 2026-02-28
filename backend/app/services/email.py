@@ -22,6 +22,7 @@ class EmailService:
             loader=PackageLoader("app", "templates/email"),
             autoescape=select_autoescape(["html", "xml"]),
         )
+        self.support_email = settings.support_email
 
     async def _send_email(
         self,
@@ -92,7 +93,7 @@ class EmailService:
             "first_name": first_name or "Déposant",
             "activation_url": activation_url,
             "expiry_days": settings.invitation_token_expire_days,
-            "support_email": settings.support_email,
+            "support_email": self.support_email,
         }
 
         html_content = html_template.render(**context)
@@ -131,7 +132,7 @@ class EmailService:
             "first_name": first_name or "Utilisateur",
             "reset_url": reset_url,
             "expiry_hours": 24,  # Password reset tokens expire in 24h
-            "support_email": settings.support_email,
+            "support_email": self.support_email,
         }
 
         html_content = html_template.render(**context)
@@ -176,7 +177,7 @@ class EmailService:
             "edition_name": edition_name or "Bourse ALPE",
             "slot_datetime": slot_datetime,
             "expiry_days": settings.invitation_token_expire_days,
-            "support_email": settings.support_email,
+            "support_email": self.support_email,
         }
 
         html_content = html_template.render(**context)
@@ -218,7 +219,7 @@ class EmailService:
             "login_url": login_url,
             "edition_name": edition_name or "Bourse ALPE",
             "slot_datetime": slot_datetime,
-            "support_email": settings.support_email,
+            "support_email": self.support_email,
         }
 
         html_content = html_template.render(**context)
@@ -251,7 +252,7 @@ class EmailService:
             "closed_at": closed_at,
             "total_sales": total_sales,
             "total_depositors": total_depositors,
-            "support_email": settings.support_email,
+            "support_email": self.support_email,
         }
 
         html_content = html_template.render(**context)
@@ -281,7 +282,7 @@ class EmailService:
             "net_amount": net_amount,
             "edition_name": edition_name or "Bourse ALPE",
             "location": location,
-            "support_email": settings.support_email,
+            "support_email": self.support_email,
         }
 
         html_content = html_template.render(**context)
@@ -313,7 +314,7 @@ class EmailService:
             "edition_name": edition_name,
             "deadline": deadline,
             "lists_url": lists_url,
-            "support_email": settings.support_email,
+            "support_email": self.support_email,
         }
 
         html_content = html_template.render(**context)
@@ -377,7 +378,7 @@ class EmailService:
             "reply_preview": reply_preview,
             "edition_name": edition_name,
             "ticket_url": ticket_url,
-            "support_email": settings.support_email,
+            "support_email": self.support_email,
         }
 
         html_content = html_template.render(**context)
@@ -408,7 +409,7 @@ class EmailService:
             "edition_name": edition_name,
             "declaration_deadline": declaration_deadline,
             "lists_url": lists_url,
-            "support_email": settings.support_email,
+            "support_email": self.support_email,
         }
 
         html_content = html_template.render(**context)
