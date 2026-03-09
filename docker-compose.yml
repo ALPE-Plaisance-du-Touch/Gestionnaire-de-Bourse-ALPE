@@ -7,7 +7,7 @@ services:
       target: development
     container_name: bourse-backend
     ports:
-      - "8000:8000"
+      - "8347:8000"
     volumes:
       - ./backend:/app
       - backend-cache:/app/.cache
@@ -42,7 +42,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - VITE_API_URL=http://localhost:8000/api
+      - VITE_API_URL=http://localhost:8347/api
     depends_on:
       - backend
     networks:

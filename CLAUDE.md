@@ -199,7 +199,7 @@ CORS_ORIGINS=http://localhost:5173,http://localhost:3000
 
 ### Frontend (.env)
 ```env
-VITE_API_URL=http://localhost:8000/api
+VITE_API_URL=http://localhost:8347/api
 ```
 
 ## Testing
