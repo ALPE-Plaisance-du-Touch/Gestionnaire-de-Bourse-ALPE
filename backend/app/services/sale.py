@@ -455,7 +455,7 @@ async def sync_offline_sales(
     )
 
 
-def __sale_to_response(sale: Sale, current_user: User) -> SaleResponse:
+def _sale_to_response(sale: Sale, current_user: User) -> SaleResponse:
     elapsed = datetime.now(timezone.utc) - sale.sold_at
     can_cancel = elapsed <= CANCEL_TIME_LIMIT or current_user.is_manager or current_user.is_administrator
 
