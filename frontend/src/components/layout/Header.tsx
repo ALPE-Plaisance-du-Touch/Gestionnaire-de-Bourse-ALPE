@@ -1,35 +1,27 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth, useIsAuthenticated, useUser } from '@/contexts';
 import { editionsApi } from '@/api/editions';
 import { ticketsApi } from '@/api/tickets';
 
-export function Header() {
-  const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const adminMenuRef = useRef<HTMLDivElement>(null);
-  const adminButtonRef = useRef<HTMLButtonElement>(null);
-  const menuItemsRef = useRef<(HTMLAnchorElement | null)[]>([]);
+interface HeaderProps {
+  sidebarTrigger?: React.ReactNode;
+}
 
-  // Close admin menu when clicking outside
+export function Header({ sidebarTrigger }: HeaderProps) {
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (adminMenuRef.current && !adminMenuRef.current.contains(event.target as Node)) {
-        setIsAdminMenuOpen(false);
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  // Focus first menu item when menu opens
-  useEffect(() => {
-    if (isAdminMenuOpen) {
-      const firstItem = menuItemsRef.current[0];
-      if (firstItem) firstItem.focus();
-    }
-  }, [isAdminMenuOpen]);
 
   const navigate = useNavigate();
   const isAuthenticated = useIsAuthenticated();
@@ -39,7 +31,6 @@ export function Header() {
   const isManagerOrAdmin = user && (user.role === 'administrator' || user.role === 'manager');
   const canAccessTickets = user && user.role !== 'volunteer';
 
-  // Fetch active edition for ticket badge
   const { data: activeEditionData } = useQuery({
     queryKey: ['active-edition'],
     queryFn: () => editionsApi.getActiveEdition(),
@@ -49,7 +40,6 @@ export function Header() {
 
   const activeEditionId = activeEditionData?.edition?.id ?? activeEditionData?.trainingEdition?.id;
 
-  // Fetch unread ticket count (polling every 30s)
   const { data: unreadData } = useQuery({
     queryKey: ['tickets-unread', activeEditionId],
     queryFn: () => ticketsApi.getUnreadCount(activeEditionId!),
@@ -68,399 +58,163 @@ export function Header() {
     ? user.firstName || user.email.split('@')[0]
     : '';
 
-  const handleAdminButtonKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Escape' && isAdminMenuOpen) {
-      setIsAdminMenuOpen(false);
-      adminButtonRef.current?.focus();
-    } else if (e.key === 'ArrowDown' && !isAdminMenuOpen) {
-      e.preventDefault();
-      setIsAdminMenuOpen(true);
-    }
-  }, [isAdminMenuOpen]);
-
-  const handleMenuKeyDown = useCallback((e: React.KeyboardEvent) => {
-    const items = menuItemsRef.current.filter(Boolean) as HTMLAnchorElement[];
-    const currentIndex = items.indexOf(document.activeElement as HTMLAnchorElement);
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        if (currentIndex < items.length - 1) {
-          items[currentIndex + 1].focus();
-        } else {
-          items[0].focus();
-        }
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        if (currentIndex > 0) {
-          items[currentIndex - 1].focus();
-        } else {
-          items[items.length - 1].focus();
-        }
-        break;
-      case 'Escape':
-        setIsAdminMenuOpen(false);
-        adminButtonRef.current?.focus();
-        break;
-      case 'Tab':
-        setIsAdminMenuOpen(false);
-        break;
-    }
-  }, []);
-
-  const closeMobileMenu = () => setIsMobileMenuOpen(false);
-
-  // Block body scroll when mobile menu is open
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => { document.body.style.overflow = ''; };
-  }, [isMobileMenuOpen]);
+  const initials = user
+    ? `${(user.firstName?.[0] || '').toUpperCase()}${(user.lastName?.[0] || '').toUpperCase()}`
+    : '';
 
   return (
-    <>
-    <header className="bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-xl font-bold text-blue-600">
+    <header className="bg-white border-b border-sand h-16 shrink-0">
+      <div className={`h-full flex items-center justify-between ${isManagerOrAdmin ? 'px-4 lg:px-6' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'}`}>
+        {/* Left side */}
+        <div className="flex items-center gap-3">
+          {sidebarTrigger}
+          {!isManagerOrAdmin && (
+            <Link to="/" className="text-lg font-bold text-primary">
               Bourse ALPE
-            </span>
-          </Link>
+            </Link>
+          )}
+        </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6" aria-label="Navigation principale">
-            {isAuthenticated ? (
-              <>
-                {isManagerOrAdmin && (
-                  <Link
-                    to="/editions"
-                    className="text-gray-600 hover:text-gray-900 font-medium"
-                  >
-                    Éditions
-                  </Link>
-                )}
-                <Link
-                  to="/lists"
-                  className="text-gray-600 hover:text-gray-900 font-medium"
-                >
-                  Mes listes
-                </Link>
-                {activeEditionId && canAccessTickets && (
-                  <Link
-                    to={`/editions/${activeEditionId}/tickets`}
-                    className="inline-flex items-center gap-1.5 text-gray-600 hover:text-gray-900 font-medium"
-                  >
-                    Messages
-                    {unreadCount > 0 && (
-                      <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
-                        {unreadCount > 99 ? '99+' : unreadCount}
-                      </span>
-                    )}
-                  </Link>
-                )}
-                {isManagerOrAdmin && (
-                  <div className="relative" ref={adminMenuRef}>
-                    <button
-                      ref={adminButtonRef}
-                      onClick={() => setIsAdminMenuOpen(!isAdminMenuOpen)}
-                      onKeyDown={handleAdminButtonKeyDown}
-                      aria-expanded={isAdminMenuOpen}
-                      aria-haspopup="true"
-                      className="flex items-center gap-1 text-gray-600 hover:text-gray-900 font-medium"
-                    >
-                      Administration
-                      <svg
-                        className={`w-4 h-4 transition-transform ${isAdminMenuOpen ? 'rotate-180' : ''}`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    {isAdminMenuOpen && (
-                      <div
-                        className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50"
-                        role="menu"
-                        aria-label="Menu administration"
-                        onKeyDown={handleMenuKeyDown}
-                      >
-                        <div className="py-1">
-                          <Link
-                            ref={(el) => { menuItemsRef.current[0] = el; }}
-                            to="/admin"
-                            role="menuitem"
-                            tabIndex={-1}
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
-                            onClick={() => setIsAdminMenuOpen(false)}
-                          >
-                            Tableau de bord
-                          </Link>
-                          <Link
-                            ref={(el) => { menuItemsRef.current[1] = el; }}
-                            to="/admin/invitations"
-                            role="menuitem"
-                            tabIndex={-1}
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
-                            onClick={() => setIsAdminMenuOpen(false)}
-                          >
-                            Invitations
-                          </Link>
-                          {user.role === 'administrator' && (
-                            <>
-                              <Link
-                                ref={(el) => { menuItemsRef.current[2] = el; }}
-                                to="/admin/users"
-                                role="menuitem"
-                                tabIndex={-1}
-                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
-                                onClick={() => setIsAdminMenuOpen(false)}
-                              >
-                                Utilisateurs
-                              </Link>
-                              <Link
-                                ref={(el) => { menuItemsRef.current[3] = el; }}
-                                to="/admin/audit-logs"
-                                role="menuitem"
-                                tabIndex={-1}
-                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
-                                onClick={() => setIsAdminMenuOpen(false)}
-                              >
-                                Journal d'audit
-                              </Link>
-                              <Link
-                                ref={(el) => { menuItemsRef.current[4] = el; }}
-                                to="/admin/settings"
-                                role="menuitem"
-                                tabIndex={-1}
-                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
-                                onClick={() => setIsAdminMenuOpen(false)}
-                              >
-                                Paramètres
-                              </Link>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-                <Link
-                  to="/aide"
-                  className="text-gray-600 hover:text-gray-900 font-medium"
-                >
-                  Aide
-                </Link>
-              </>
-            ) : null}
-          </nav>
-
-          {/* Mobile hamburger + User menu */}
-          <div className="flex items-center gap-2">
-            {/* Hamburger button - mobile only */}
-            {isAuthenticated && (
-              <button
-                type="button"
-                className="md:hidden p-3 text-gray-600 hover:text-gray-900 rounded-md"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                aria-expanded={isMobileMenuOpen}
-                aria-controls="mobile-menu"
-                aria-label={isMobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-              >
-                {isMobileMenuOpen ? (
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                ) : (
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                )}
-              </button>
-            )}
-
-            {/* Desktop user menu */}
-            <div className="hidden md:flex items-center gap-4">
-              {isAuthenticated ? (
-                <>
-                  <Link
-                    to="/profile"
-                    className="text-sm text-gray-600 hover:text-gray-900"
-                  >
-                    Bonjour, <strong>{displayName}</strong>
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="text-sm text-gray-600 hover:text-gray-900"
-                  >
-                    Déconnexion
-                  </button>
-                </>
-              ) : (
-                <Link
-                  to="/login"
-                  className="text-sm font-medium text-blue-600 hover:text-blue-700"
-                >
-                  Connexion
-                </Link>
-              )}
-            </div>
-
-            {/* Mobile login link */}
-            {!isAuthenticated && (
+        {/* Center nav - depositor/volunteer only (no sidebar) */}
+        {isAuthenticated && !isManagerOrAdmin && (
+          <nav className="hidden md:flex items-center gap-1" aria-label="Navigation principale">
+            <Link
+              to="/lists"
+              className="px-4 py-2 rounded-xl text-sm font-medium text-bark-light hover:bg-cream-dark hover:text-bark transition-colors"
+            >
+              Mon espace
+            </Link>
+            {activeEditionId && canAccessTickets && (
               <Link
-                to="/login"
-                className="md:hidden text-sm font-medium text-blue-600 hover:text-blue-700"
+                to={`/editions/${activeEditionId}/tickets`}
+                className="px-4 py-2 rounded-xl text-sm font-medium text-bark-light hover:bg-cream-dark hover:text-bark transition-colors inline-flex items-center gap-2"
               >
-                Connexion
+                Messages
+                {unreadCount > 0 && (
+                  <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-secondary rounded-full">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
               </Link>
             )}
-          </div>
+            <Link
+              to="/aide"
+              className="px-4 py-2 rounded-xl text-sm font-medium text-bark-light hover:bg-cream-dark hover:text-bark transition-colors"
+            >
+              Aide
+            </Link>
+          </nav>
+        )}
+
+        {/* Right side */}
+        <div className="flex items-center gap-2">
+          {isAuthenticated ? (
+            <div className="relative" ref={userMenuRef}>
+              <button
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-cream-dark transition-colors"
+                aria-expanded={isUserMenuOpen}
+                aria-haspopup="true"
+              >
+                {/* Avatar circle */}
+                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold">
+                  {initials}
+                </div>
+                <span className="hidden md:block text-sm font-medium text-bark">
+                  {displayName}
+                </span>
+                <svg
+                  className={`hidden md:block w-4 h-4 text-bark-muted transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`}
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {isUserMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-sand z-50 py-1">
+                  <div className="px-4 py-3 border-b border-sand">
+                    <p className="text-sm font-medium text-bark">{user?.firstName} {user?.lastName}</p>
+                    <p className="text-xs text-bark-muted truncate">{user?.email}</p>
+                  </div>
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-bark-light hover:bg-cream-dark hover:text-bark transition-colors"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Mon profil
+                  </Link>
+                  <Link
+                    to="/aide"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-bark-light hover:bg-cream-dark hover:text-bark transition-colors"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Aide
+                  </Link>
+                  {/* Mobile-only nav links */}
+                  {!isManagerOrAdmin && (
+                    <div className="md:hidden border-t border-sand mt-1 pt-1">
+                      <Link
+                        to="/lists"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-bark-light hover:bg-cream-dark hover:text-bark transition-colors"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        Mon espace
+                      </Link>
+                      {activeEditionId && canAccessTickets && (
+                        <Link
+                          to={`/editions/${activeEditionId}/tickets`}
+                          className="flex items-center justify-between px-4 py-2.5 text-sm text-bark-light hover:bg-cream-dark hover:text-bark transition-colors"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <span className="flex items-center gap-3">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                            </svg>
+                            Messages
+                          </span>
+                          {unreadCount > 0 && (
+                            <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-secondary rounded-full">
+                              {unreadCount > 99 ? '99+' : unreadCount}
+                            </span>
+                          )}
+                        </Link>
+                      )}
+                    </div>
+                  )}
+                  <div className="border-t border-sand mt-1 pt-1">
+                    <button
+                      onClick={() => { setIsUserMenuOpen(false); handleLogout(); }}
+                      className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-error hover:bg-cream-dark transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      Déconnexion
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="text-sm font-medium text-primary hover:text-primary-dark px-4 py-2 rounded-xl hover:bg-primary/5 transition-colors"
+            >
+              Connexion
+            </Link>
+          )}
         </div>
       </div>
     </header>
-
-    {/* Mobile menu backdrop */}
-    {isMobileMenuOpen && isAuthenticated && (
-      <div
-        className="fixed inset-0 bg-black/50 z-40 md:hidden"
-        onClick={closeMobileMenu}
-        aria-hidden="true"
-      />
-    )}
-
-    {/* Mobile menu drawer */}
-    {isAuthenticated && (
-      <div
-        id="mobile-menu"
-        className={`fixed inset-y-0 right-0 w-64 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out md:hidden ${
-          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
-          <span className="font-semibold text-gray-900">Menu</span>
-          <button
-            type="button"
-            onClick={closeMobileMenu}
-            className="p-2 text-gray-500 hover:text-gray-900 rounded-md"
-            aria-label="Fermer le menu"
-          >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        <nav className="px-4 py-4 space-y-1 overflow-y-auto" aria-label="Navigation mobile">
-          {isManagerOrAdmin && (
-            <Link
-              to="/editions"
-              className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-              onClick={closeMobileMenu}
-            >
-              Éditions
-            </Link>
-          )}
-          <Link
-            to="/lists"
-            className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-            onClick={closeMobileMenu}
-          >
-            Mes listes
-          </Link>
-          {activeEditionId && canAccessTickets && (
-            <Link
-              to={`/editions/${activeEditionId}/tickets`}
-              className="flex items-center justify-between px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-              onClick={closeMobileMenu}
-            >
-              Messages
-              {unreadCount > 0 && (
-                <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
-            </Link>
-          )}
-
-          {isManagerOrAdmin && (
-            <>
-              <div className="border-t border-gray-200 my-2" />
-              <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Administration
-              </p>
-              <Link
-                to="/admin"
-                className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                onClick={closeMobileMenu}
-              >
-                Tableau de bord
-              </Link>
-              <Link
-                to="/admin/invitations"
-                className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                onClick={closeMobileMenu}
-              >
-                Invitations
-              </Link>
-              {user?.role === 'administrator' && (
-                <>
-                  <Link
-                    to="/admin/users"
-                    className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                    onClick={closeMobileMenu}
-                  >
-                    Utilisateurs
-                  </Link>
-                  <Link
-                    to="/admin/audit-logs"
-                    className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                    onClick={closeMobileMenu}
-                  >
-                    Journal d'audit
-                  </Link>
-                  <Link
-                    to="/admin/settings"
-                    className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                    onClick={closeMobileMenu}
-                  >
-                    Paramètres
-                  </Link>
-                </>
-              )}
-            </>
-          )}
-
-          <div className="border-t border-gray-200 my-2" />
-          <Link
-            to="/aide"
-            className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-            onClick={closeMobileMenu}
-          >
-            Aide
-          </Link>
-          <Link
-            to="/profile"
-            className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-            onClick={closeMobileMenu}
-          >
-            Mon profil
-          </Link>
-          <button
-            onClick={() => { closeMobileMenu(); handleLogout(); }}
-            className="block w-full text-left px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-          >
-            Déconnexion
-          </button>
-        </nav>
-      </div>
-    )}
-    </>
   );
 }
