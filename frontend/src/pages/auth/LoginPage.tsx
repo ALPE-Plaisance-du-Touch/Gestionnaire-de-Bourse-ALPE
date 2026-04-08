@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts';
 import { Button, Input } from '@/components/ui';
+import { Card } from '@/components/ui/Card';
 import { ApiException } from '@/api/client';
 
 export function LoginPage() {
@@ -13,7 +14,6 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  // Get redirect path and success message from location state
   const locationState = location.state as { from?: string; message?: string } | null;
   const from = locationState?.from || '/';
   const successMessage = locationState?.message || null;
@@ -27,7 +27,6 @@ export function LoginPage() {
       navigate(from, { replace: true });
     } catch (err) {
       if (err instanceof ApiException) {
-        // For authentication errors (401), show a generic message for security
         if (err.status === 401) {
           setError('Identifiants incorrects. Vérifiez votre email et mot de passe.');
         } else if (err.status === 0) {
@@ -42,36 +41,30 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-cream py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div>
-          <h1 className="text-center text-3xl font-bold text-gray-900">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-primary">
             Bourse ALPE
           </h1>
-          <h2 className="mt-2 text-center text-xl text-gray-600">
+          <p className="mt-2 text-bark-muted">
             Connexion à votre compte
-          </h2>
+          </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {successMessage && !error && (
-            <div
-              className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg"
-              role="status"
-            >
-              {successMessage}
-            </div>
-          )}
-          {error && (
-            <div
-              className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
-              role="alert"
-            >
-              {error}
-            </div>
-          )}
+        <Card variant="elevated" padding="lg">
+          <form className="space-y-5" onSubmit={handleSubmit}>
+            {successMessage && !error && (
+              <div className="bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-xl text-sm" role="status">
+                {successMessage}
+              </div>
+            )}
+            {error && (
+              <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-xl text-sm" role="alert">
+                {error}
+              </div>
+            )}
 
-          <div className="space-y-4">
             <Input
               label="Adresse email"
               type="email"
@@ -92,31 +85,31 @@ export function LoginPage() {
               required
               autoComplete="current-password"
             />
-          </div>
 
-          <div className="flex items-center justify-between">
-            <Link
-              to="/forgot-password"
-              className="text-sm text-blue-600 hover:text-blue-500 py-2 inline-block"
+            <div className="flex items-center justify-between">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-primary hover:text-primary-dark font-medium transition-colors"
+              >
+                Mot de passe oublié ?
+              </Link>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading || !email || !password}
             >
-              Mot de passe oublié ?
-            </Link>
-          </div>
+              {isLoading ? 'Connexion...' : 'Se connecter'}
+            </Button>
+          </form>
+        </Card>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isLoading || !email || !password}
-          >
-            {isLoading ? 'Connexion...' : 'Se connecter'}
-          </Button>
-        </form>
-
-        <p className="text-center text-sm text-gray-600">
+        <p className="text-center text-sm text-bark-muted">
           Vous avez reçu une invitation ?{' '}
           <Link
             to="/activate"
-            className="text-blue-600 hover:text-blue-500 font-medium py-2 inline-block"
+            className="text-primary hover:text-primary-dark font-medium transition-colors"
           >
             Activer mon compte
           </Link>
