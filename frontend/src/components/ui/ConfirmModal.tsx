@@ -18,9 +18,9 @@ interface ConfirmModalProps {
   children?: ReactNode;
 }
 
-const variantButtonMap: Record<ConfirmVariant, 'danger' | 'primary'> = {
+const variantButtonMap: Record<ConfirmVariant, 'danger' | 'primary' | 'warm'> = {
   danger: 'danger',
-  warning: 'primary',
+  warning: 'warm',
   info: 'primary',
 };
 
@@ -39,10 +39,10 @@ export function ConfirmModal({
 }: ConfirmModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="md">
-      <div className="space-y-4">
-        {message && <p className="text-gray-600">{message}</p>}
+      <div className="space-y-5">
+        {message && <p className="text-bark-light">{message}</p>}
         {children}
-        <div className="flex justify-end gap-3 pt-2">
+        <div className="flex justify-end gap-3 pt-1">
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
             {cancelLabel}
           </Button>

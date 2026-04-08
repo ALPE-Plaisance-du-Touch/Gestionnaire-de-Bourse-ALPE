@@ -103,7 +103,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-bark/40 backdrop-blur-sm p-4 animate-in fade-in duration-200"
       onClick={handleOverlayClick}
       role="dialog"
       aria-modal="true"
@@ -112,21 +112,27 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
       <div
         ref={modalRef}
         tabIndex={-1}
-        className={`w-full ${sizeStyles[size]} bg-white rounded-lg shadow-xl outline-none`}
+        className={`
+          w-full ${sizeStyles[size]}
+          bg-white rounded-2xl
+          shadow-xl
+          outline-none
+          animate-in zoom-in-95 slide-in-from-bottom-2 duration-200
+        `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h2 id={titleId} className="text-lg font-semibold text-gray-900">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-sand">
+          <h2 id={titleId} className="text-lg font-semibold text-bark">
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+            className="text-bark-muted hover:text-bark hover:bg-cream-dark rounded-xl p-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30"
             aria-label="Fermer"
           >
             <svg
-              className="h-6 w-6"
+              className="h-5 w-5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -143,7 +149,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
         </div>
 
         {/* Content */}
-        <div className="px-6 py-4">{children}</div>
+        <div className="px-6 py-5">{children}</div>
       </div>
     </div>
   );

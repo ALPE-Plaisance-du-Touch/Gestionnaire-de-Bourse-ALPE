@@ -1,21 +1,89 @@
 @import 'tailwindcss';
 
-/* Tailwind v4: Register custom colors as theme tokens */
+/* Tailwind v4: Register custom colors and theme tokens */
 @theme {
-  --color-primary: #2563eb;
-  --color-primary-dark: #1d4ed8;
-  --color-secondary: #64748b;
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
+  /* Primary - Sage green */
+  --color-primary: #6B8F71;
+  --color-primary-light: #8FB396;
+  --color-primary-dark: #567358;
+
+  /* Secondary - Terracotta */
+  --color-secondary: #C4704B;
+  --color-secondary-light: #D4896A;
+  --color-secondary-dark: #A45A38;
+
+  /* Accent - Honey yellow */
+  --color-accent: #E8B931;
+  --color-accent-light: #F0CD5E;
+  --color-accent-dark: #C99E1E;
+
+  /* Semantic colors */
+  --color-success: #6B8F71;
+  --color-warning: #E8B931;
+  --color-error: #C44B4B;
+  --color-error-light: #E87070;
+
+  /* Neutrals - Warm tones */
+  --color-cream: #FAF8F4;
+  --color-cream-dark: #F0EDE6;
+  --color-sand: #E8E2D6;
+  --color-bark: #2D2A26;
+  --color-bark-light: #5C5650;
+  --color-bark-muted: #8C8478;
+
+  /* Typography */
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+
+  /* Border radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+
+  /* Shadows - warm toned */
+  --shadow-soft: 0 1px 3px rgba(45, 42, 38, 0.06), 0 1px 2px rgba(45, 42, 38, 0.04);
+  --shadow-md: 0 4px 6px rgba(45, 42, 38, 0.06), 0 2px 4px rgba(45, 42, 38, 0.04);
+  --shadow-lg: 0 10px 15px rgba(45, 42, 38, 0.06), 0 4px 6px rgba(45, 42, 38, 0.04);
+  --shadow-xl: 0 20px 25px rgba(45, 42, 38, 0.08), 0 8px 10px rgba(45, 42, 38, 0.04);
 }
 
 /* Base styles */
 body {
-  @apply min-h-screen bg-gray-50 text-gray-900 antialiased;
+  font-family: var(--font-body);
+  @apply min-h-screen bg-cream text-bark antialiased;
+}
+
+/* Headings use display font */
+h1, h2, h3 {
+  font-family: var(--font-display);
 }
 
 /* Focus visible styles for accessibility */
 :focus-visible {
   @apply outline-2 outline-offset-2 outline-primary;
+}
+
+/* Smooth transitions for interactive elements */
+a, button, input, select, textarea {
+  @apply transition-all duration-200;
+}
+
+/* Custom scrollbar for warm aesthetic */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-cream-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-sand);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-bark-muted);
 }
