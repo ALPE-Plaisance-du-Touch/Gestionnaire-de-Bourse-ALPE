@@ -27,15 +27,15 @@ export function BilletwebEventSelectModal({
     <Modal isOpen={isOpen} onClose={onClose} title="Importer depuis Billetweb" size="lg">
       {isLoading ? (
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" />
-          <p className="mt-4 text-gray-500">Chargement des événements...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+          <p className="mt-4 text-bark-muted">Chargement des événements...</p>
         </div>
       ) : error ? (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg">
+        <div className="p-4 bg-error/10 border border-error/30 text-error rounded-lg">
           Erreur lors du chargement des événements Billetweb.
         </div>
       ) : events.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-bark-muted">
           Aucun événement trouvé sur votre compte Billetweb.
         </div>
       ) : (
@@ -45,10 +45,10 @@ export function BilletwebEventSelectModal({
               key={event.id}
               type="button"
               onClick={() => onSelect(event)}
-              className="w-full text-left p-4 border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors"
+              className="w-full text-left p-4 border rounded-lg hover:bg-primary/10 hover:border-primary/30 transition-colors"
             >
-              <div className="font-medium text-gray-900">{event.name}</div>
-              <div className="text-sm text-gray-500 mt-1">
+              <div className="font-medium text-bark">{event.name}</div>
+              <div className="text-sm text-bark-muted mt-1">
                 {event.start && event.end && (
                   <span>
                     {event.start} &mdash; {event.end}
@@ -59,11 +59,11 @@ export function BilletwebEventSelectModal({
                 )}
               </div>
               {event.description && (
-                <div className="text-xs text-gray-500 mt-1 line-clamp-2">
+                <div className="text-xs text-bark-muted mt-1 line-clamp-2">
                   {event.description.replace(/<[^>]*>/g, '').substring(0, 150)}
                 </div>
               )}
-              <div className="text-xs text-gray-400 mt-1">ID: {event.id}</div>
+              <div className="text-xs text-bark-muted mt-1">ID: {event.id}</div>
             </button>
           ))}
         </div>

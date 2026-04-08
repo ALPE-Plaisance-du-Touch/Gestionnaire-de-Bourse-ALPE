@@ -11,13 +11,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { EditionStatus, User } from '@/types';
 
 const STATUS_LABELS: Record<EditionStatus, { label: string; className: string }> = {
-  draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-800' },
-  registrations_open: { label: 'Inscriptions ouvertes', className: 'bg-purple-100 text-purple-800' },
-  deposit: { label: 'Dépôt', className: 'bg-blue-100 text-blue-800' },
-  sale: { label: 'Vente', className: 'bg-green-100 text-green-800' },
-  settlement: { label: 'Bilan', className: 'bg-yellow-100 text-yellow-800' },
-  closed: { label: 'Clôturé', className: 'bg-orange-100 text-orange-800' },
-  archived: { label: 'Archivé', className: 'bg-gray-100 text-gray-500' },
+  draft: { label: 'Brouillon', className: 'bg-cream-dark text-bark' },
+  registrations_open: { label: 'Inscriptions ouvertes', className: 'bg-secondary/10 text-secondary-dark' },
+  deposit: { label: 'Dépôt', className: 'bg-primary/10 text-primary-dark' },
+  sale: { label: 'Vente', className: 'bg-primary/10 text-primary-dark' },
+  settlement: { label: 'Bilan', className: 'bg-accent/15 text-accent-dark' },
+  closed: { label: 'Clôturé', className: 'bg-secondary/10 text-secondary-dark' },
+  archived: { label: 'Archivé', className: 'bg-cream-dark text-bark-muted' },
 };
 
 /**
@@ -529,9 +529,9 @@ export function EditionDetailPage() {
     return (
       <div className="p-6 max-w-4xl mx-auto">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-sand rounded w-1/3"></div>
+          <div className="h-4 bg-sand rounded w-1/4"></div>
+          <div className="h-64 bg-sand rounded"></div>
         </div>
       </div>
     );
@@ -540,10 +540,10 @@ export function EditionDetailPage() {
   if (fetchError || !edition) {
     return (
       <div className="p-6 max-w-4xl mx-auto">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+        <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg mb-4">
           Édition introuvable ou erreur lors du chargement.
         </div>
-        <Link to="/editions" className="text-blue-600 hover:text-blue-700">
+        <Link to="/editions" className="text-primary hover:text-primary-dark">
           ← Retour à la liste des éditions
         </Link>
       </div>
@@ -575,7 +575,7 @@ export function EditionDetailPage() {
       <div className="mb-6">
         <Link
           to="/editions"
-          className="text-sm text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 mb-2"
+          className="text-sm text-primary hover:text-primary-dark inline-flex items-center gap-1 mb-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -584,8 +584,8 @@ export function EditionDetailPage() {
         </Link>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{edition.name}</h1>
-            <p className="mt-1 text-gray-600">
+            <h1 className="text-2xl font-bold text-bark">{edition.name}</h1>
+            <p className="mt-1 text-bark-light">
               Configurez les dates clés et les créneaux de dépôt.
             </p>
           </div>
@@ -599,7 +599,7 @@ export function EditionDetailPage() {
 
       {/* Success message */}
       {success && (
-        <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-6 bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg" role="alert">
           <p className="font-medium">Modifications enregistrées !</p>
           <p className="text-sm mt-1">
             {statusMutation.isSuccess
@@ -611,21 +611,21 @@ export function EditionDetailPage() {
 
       {/* Error message */}
       {error && (
-        <div ref={errorRef} className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+        <div ref={errorRef} className="mb-6 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg" role="alert">
           {error}
         </div>
       )}
 
       {/* Tab navigation */}
-      <div className="flex border-b border-gray-200 mb-6">
+      <div className="flex border-b border-sand mb-6">
         {visibleTabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
             className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
               currentTab === tab.id
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-bark-muted hover:text-bark'
             }`}
             onClick={() => setActiveTab(tab.id)}
           >
@@ -639,14 +639,14 @@ export function EditionDetailPage() {
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Not editable warning */}
         {!isEditable && (
-          <div className="mb-6 bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg">
+          <div className="mb-6 bg-accent/10 border border-accent/40 text-accent-dark px-4 py-3 rounded-lg">
             Cette édition est clôturée et ne peut plus être modifiée.
           </div>
         )}
         {/* Basic Information Section */}
         <section className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-medium text-gray-900">
+            <h2 className="text-lg font-medium text-bark">
               Informations générales
             </h2>
             {edition.billetwebEventId && (
@@ -654,7 +654,7 @@ export function EditionDetailPage() {
                 href={`https://www.billetweb.fr/bo/dashboard.php?event=${edition.billetwebEventId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
+                className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-dark"
               >
                 Voir sur Billetweb
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -706,7 +706,7 @@ export function EditionDetailPage() {
             />
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-light mb-1">
                 Description
               </label>
               <textarea
@@ -714,7 +714,7 @@ export function EditionDetailPage() {
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Description optionnelle de l'édition..."
                 rows={2}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                className="block w-full rounded-md border-sand shadow-sm focus:border-primary focus:ring-primary sm:text-sm border p-2"
               />
             </div>
           </fieldset>
@@ -722,17 +722,17 @@ export function EditionDetailPage() {
 
         {/* Configuration Section */}
         <section className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-2">
+          <h2 className="text-lg font-medium text-bark mb-2">
             Configuration de l'édition
           </h2>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-bark-muted mb-4">
             Définissez les dates clés et le taux de commission.
             {edition.status === 'draft' && " Une fois les dates configurées, vous pourrez ouvrir les inscriptions."}
           </p>
 
           <fieldset disabled={!isEditable} className="space-y-6">
             {/* Commission Rate */}
-            <div className="bg-gray-50 p-4 rounded-lg" data-field="commissionRate">
+            <div className="bg-cream p-4 rounded-lg" data-field="commissionRate">
               <div className="max-w-xs">
                 <Input
                   label="Taux de commission ALPE (%)"
@@ -747,7 +747,7 @@ export function EditionDetailPage() {
                 />
               </div>
               {!fieldErrors.commissionRate && (
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-bark-muted mt-2">
                   Commission prélevée sur les ventes (par défaut 20%).
                   Les frais d'inscription (5€ pour 2 listes) sont gérés via Billetweb.
                 </p>
@@ -764,7 +764,7 @@ export function EditionDetailPage() {
                 error={fieldErrors.declarationDeadline}
               />
               {!fieldErrors.declarationDeadline && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-bark-muted mt-1">
                   Après cette date, les déposants ne pourront plus modifier leurs listes.
                 </p>
               )}
@@ -772,7 +772,7 @@ export function EditionDetailPage() {
 
             {/* Deposit Dates */}
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Période de dépôt</h3>
+              <h3 className="text-sm font-medium text-bark-light mb-2">Période de dépôt</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   label="Début du dépôt"
@@ -794,7 +794,7 @@ export function EditionDetailPage() {
 
             {/* Retrieval Dates */}
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Période de récupération</h3>
+              <h3 className="text-sm font-medium text-bark-light mb-2">Période de récupération</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div data-field="retrievalStart">
                   <Input
@@ -852,10 +852,10 @@ export function EditionDetailPage() {
       {currentTab === 'deposants' && (
         <div className="space-y-8">
           <section className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-2">
+            <h2 className="text-lg font-medium text-bark mb-2">
               Inscriptions Billetweb
             </h2>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-bark-muted mb-4">
               Importez les inscriptions depuis Billetweb pour associer les déposants à cette édition.
             </p>
 
@@ -884,18 +884,18 @@ export function EditionDetailPage() {
               </div>
             )}
             {edition.billetwebEventId && edition.lastBilletwebSync && (
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-bark-muted mt-2">
                 Dernière sync API : {new Date(edition.lastBilletwebSync).toLocaleString('fr-FR')}
               </p>
             )}
 
             {importStats && importStats.totalDepositors > 0 && (
-              <div className="mt-4 bg-gray-50 rounded-lg p-4">
+              <div className="mt-4 bg-cream rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-medium text-gray-700">Historique des imports</h4>
+                  <h4 className="text-sm font-medium text-bark-light">Historique des imports</h4>
                   <Link
                     to={`/editions/${edition.id}/depositors`}
-                    className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-dark font-medium"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -905,20 +905,20 @@ export function EditionDetailPage() {
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-500">Déposants inscrits</p>
-                    <p className="text-xl font-semibold text-gray-900">{importStats.totalDepositors}</p>
+                    <p className="text-bark-muted">Déposants inscrits</p>
+                    <p className="text-xl font-semibold text-bark">{importStats.totalDepositors}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Imports effectués</p>
-                    <p className="text-xl font-semibold text-gray-900">{importStats.totalImports}</p>
+                    <p className="text-bark-muted">Imports effectués</p>
+                    <p className="text-xl font-semibold text-bark">{importStats.totalImports}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Lignes importées</p>
-                    <p className="text-xl font-semibold text-gray-900">{importStats.totalImported}</p>
+                    <p className="text-bark-muted">Lignes importées</p>
+                    <p className="text-xl font-semibold text-bark">{importStats.totalImported}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Invitations en attente</p>
-                    <p className="text-xl font-semibold text-gray-900">{importStats.pendingInvitations ?? 0}</p>
+                    <p className="text-bark-muted">Invitations en attente</p>
+                    <p className="text-xl font-semibold text-bark">{importStats.pendingInvitations ?? 0}</p>
                   </div>
                 </div>
               </div>
@@ -975,15 +975,15 @@ export function EditionDetailPage() {
 
           {/* Labels */}
           {['registrations_open', 'deposit', 'sale'].includes(edition.status) && (
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="bg-white border border-sand rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900">Étiquettes</h3>
-                  <p className="text-sm text-gray-500">Générez les étiquettes PDF pour les listes validées.</p>
+                  <h3 className="text-sm font-semibold text-bark">Étiquettes</h3>
+                  <p className="text-sm text-bark-muted">Générez les étiquettes PDF pour les listes validées.</p>
                 </div>
                 <Link
                   to={`/editions/${edition.id}/labels`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
@@ -996,16 +996,16 @@ export function EditionDetailPage() {
 
           {/* Sales & Stats */}
           {edition.status === 'sale' && (
-            <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+            <div className="bg-white border border-sand rounded-lg p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900">Ventes</h3>
-                  <p className="text-sm text-gray-500">Accédez à la caisse, la gestion des ventes et aux statistiques en direct.</p>
+                  <h3 className="text-sm font-semibold text-bark">Ventes</h3>
+                  <p className="text-sm text-bark-muted">Accédez à la caisse, la gestion des ventes et aux statistiques en direct.</p>
                 </div>
                 <div className="flex gap-2 flex-wrap">
                   <Link
                     to={`/editions/${edition.id}/sales`}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
@@ -1014,7 +1014,7 @@ export function EditionDetailPage() {
                   </Link>
                   <Link
                     to={`/editions/${edition.id}/sales/manage`}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
@@ -1023,7 +1023,7 @@ export function EditionDetailPage() {
                   </Link>
                   <Link
                     to={`/editions/${edition.id}/stats`}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-secondary text-white rounded-lg text-sm font-medium hover:bg-secondary-dark transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -1037,15 +1037,15 @@ export function EditionDetailPage() {
 
           {/* Payouts */}
           {['sale', 'settlement', 'closed'].includes(edition.status) && (
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="bg-white border border-sand rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900">Reversements</h3>
-                  <p className="text-sm text-gray-500">Calculez et gérez les reversements aux déposants.</p>
+                  <h3 className="text-sm font-semibold text-bark">Reversements</h3>
+                  <p className="text-sm text-bark-muted">Calculez et gérez les reversements aux déposants.</p>
                 </div>
                 <Link
                   to={`/editions/${edition.id}/payouts`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-dark transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -1058,11 +1058,11 @@ export function EditionDetailPage() {
 
           {/* Closure report */}
           {edition.status === 'closed' && (
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="bg-white border border-sand rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900">Rapport de clôture</h3>
-                  <p className="text-sm text-gray-500">Télécharger le rapport PDF récapitulatif de l'édition.</p>
+                  <h3 className="text-sm font-semibold text-bark">Rapport de clôture</h3>
+                  <p className="text-sm text-bark-muted">Télécharger le rapport PDF récapitulatif de l'édition.</p>
                 </div>
                 <button
                   type="button"
@@ -1081,7 +1081,7 @@ export function EditionDetailPage() {
                       setError('Erreur lors du téléchargement du rapport de clôture.');
                     }
                   }}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-error text-white rounded-lg text-sm font-medium hover:bg-error transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -1098,7 +1098,7 @@ export function EditionDetailPage() {
       {currentTab === 'actions' && (
         <div className="space-y-6">
           {/* Status Info */}
-          <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
+          <div className="bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg text-sm">
             <strong>Statut actuel :</strong>{' '}
             {edition.status === 'draft'
               ? 'Brouillon - Configurez les dates et ouvrez les inscriptions'
@@ -1117,11 +1117,11 @@ export function EditionDetailPage() {
 
           {/* Training mode toggle */}
           {isAdmin && (
-            <div className="bg-amber-50 border border-amber-300 rounded-lg p-4">
+            <div className="bg-accent/10 border border-accent/40 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-amber-900">Mode formation</h3>
-                  <p className="text-sm text-amber-700">
+                  <h3 className="text-sm font-semibold text-accent-dark">Mode formation</h3>
+                  <p className="text-sm text-accent-dark">
                     {edition.isTraining
                       ? 'Cette édition est en mode formation. Les données sont destinées à l\'entraînement uniquement.'
                       : 'Activer le mode formation pour pouvoir forcer les changements d\'étape et utiliser cette édition pour l\'entraînement.'}
@@ -1142,9 +1142,9 @@ export function EditionDetailPage() {
 
           {/* Training mode: Force status transition (US-015) */}
           {edition.isTraining && (
-            <div className="bg-amber-50 border border-amber-300 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-amber-900 mb-2">Forcer le changement d'étape (formation)</h3>
-              <p className="text-sm text-amber-700 mb-3">
+            <div className="bg-accent/10 border border-accent/40 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-accent-dark mb-2">Forcer le changement d'étape (formation)</h3>
+              <p className="text-sm text-accent-dark mb-3">
                 En mode formation, vous pouvez changer librement l'étape du cycle de vie sans vérification des prérequis.
               </p>
               <div className="flex gap-2 flex-wrap">
@@ -1202,11 +1202,11 @@ export function EditionDetailPage() {
 
           {/* Revert to draft */}
           {edition.status === 'registrations_open' && isAdmin && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="bg-accent/10 border border-accent/40 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-yellow-900">Revenir en brouillon</h3>
-                  <p className="text-sm text-yellow-700">
+                  <h3 className="text-sm font-semibold text-accent-dark">Revenir en brouillon</h3>
+                  <p className="text-sm text-accent-dark">
                     Annuler l'ouverture des inscriptions et repasser l'édition en brouillon.
                   </p>
                 </div>
@@ -1225,11 +1225,11 @@ export function EditionDetailPage() {
 
           {/* Closure */}
           {edition.status === 'settlement' && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="bg-error/10 border border-error/30 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-red-900">Clôture de l'édition</h3>
-                  <p className="text-sm text-red-700">
+                  <h3 className="text-sm font-semibold text-error">Clôture de l'édition</h3>
+                  <p className="text-sm text-error">
                     La clôture est définitive et irréversible. Vérifiez les prérequis avant de confirmer.
                   </p>
                 </div>
@@ -1246,11 +1246,11 @@ export function EditionDetailPage() {
 
           {/* Archive */}
           {edition.status === 'closed' && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div className="bg-cream border border-sand rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900">Archivage</h3>
-                  <p className="text-sm text-gray-500">
+                  <h3 className="text-sm font-semibold text-bark">Archivage</h3>
+                  <p className="text-sm text-bark-muted">
                     Archiver cette édition pour la retirer de la liste active.
                   </p>
                 </div>
@@ -1269,11 +1269,11 @@ export function EditionDetailPage() {
 
           {/* Delete */}
           {isAdmin && edition.status === 'draft' && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="bg-error/10 border border-error/30 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-red-900">Supprimer l'édition</h3>
-                  <p className="text-sm text-red-700">
+                  <h3 className="text-sm font-semibold text-error">Supprimer l'édition</h3>
+                  <p className="text-sm text-error">
                     Supprimer définitivement cette édition et toutes ses données.
                   </p>
                 </div>
@@ -1300,16 +1300,16 @@ export function EditionDetailPage() {
         size="lg"
       >
         <div className="space-y-4">
-          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+          <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg text-sm">
             La clôture est définitive et irréversible. L'édition passera en lecture seule.
           </div>
 
-          <h3 className="text-sm font-semibold text-gray-900">Prérequis</h3>
+          <h3 className="text-sm font-semibold text-bark">Prérequis</h3>
 
           {isClosureCheckLoading ? (
             <div className="animate-pulse space-y-2">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-8 bg-gray-200 rounded" />
+                <div key={i} className="h-8 bg-sand rounded" />
               ))}
             </div>
           ) : closureCheck ? (
@@ -1317,20 +1317,20 @@ export function EditionDetailPage() {
               {closureCheck.checks.map((check, i) => (
                 <li key={i} className="flex items-start gap-2">
                   {check.passed ? (
-                    <svg className="w-5 h-5 text-green-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-primary shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   ) : (
-                    <svg className="w-5 h-5 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-error shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   )}
                   <div>
-                    <span className={`text-sm font-medium ${check.passed ? 'text-green-800' : 'text-red-800'}`}>
+                    <span className={`text-sm font-medium ${check.passed ? 'text-primary-dark' : 'text-error'}`}>
                       {check.label}
                     </span>
                     {check.detail && (
-                      <p className="text-xs text-gray-500">{check.detail}</p>
+                      <p className="text-xs text-bark-muted">{check.detail}</p>
                     )}
                   </div>
                 </li>
@@ -1406,10 +1406,10 @@ export function EditionDetailPage() {
         title="Inscrire un déposant"
       >
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 mb-4">
+        <div className="flex border-b border-sand mb-4">
           <button
             type="button"
-            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${depositorMode === 'new' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${depositorMode === 'new' ? 'border-primary text-primary' : 'border-transparent text-bark-muted hover:text-bark'}`}
             onClick={() => {
               setDepositorMode('new');
               setUserSearch('');
@@ -1422,7 +1422,7 @@ export function EditionDetailPage() {
           </button>
           <button
             type="button"
-            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${depositorMode === 'existing' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${depositorMode === 'existing' ? 'border-primary text-primary' : 'border-transparent text-bark-muted hover:text-bark'}`}
             onClick={() => {
               setDepositorMode('existing');
               setSelectedUser(null);
@@ -1436,7 +1436,7 @@ export function EditionDetailPage() {
 
         <form onSubmit={(e) => { e.preventDefault(); manualDepositorMutation.mutate(); }} className="space-y-4">
           {manualDepositorError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+            <div className="bg-error/10 border border-error/30 rounded-lg p-3 text-sm text-error">
               {manualDepositorError}
             </div>
           )}
@@ -1452,15 +1452,15 @@ export function EditionDetailPage() {
                     onChange={(e) => setUserSearch(e.target.value)}
                   />
                   {isSearchingUsers && (
-                    <p className="text-sm text-gray-500 mt-2">Recherche...</p>
+                    <p className="text-sm text-bark-muted mt-2">Recherche...</p>
                   )}
                   {userSearchResults && userSearchResults.items.length > 0 && (
-                    <ul className="mt-2 border border-gray-200 rounded-lg divide-y divide-gray-100 max-h-48 overflow-y-auto">
+                    <ul className="mt-2 border border-sand rounded-lg divide-y divide-gray-100 max-h-48 overflow-y-auto">
                       {userSearchResults.items.map(user => (
                         <li key={user.id}>
                           <button
                             type="button"
-                            className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center justify-between"
+                            className="w-full text-left px-3 py-2 hover:bg-cream flex items-center justify-between"
                             onClick={() => {
                               setSelectedUser(user);
                               setManualDepositorForm(f => ({
@@ -1475,27 +1475,27 @@ export function EditionDetailPage() {
                           >
                             <div>
                               <span className="font-medium text-sm">{user.firstName} {user.lastName}</span>
-                              <span className="text-gray-500 text-sm ml-2">{user.email}</span>
+                              <span className="text-bark-muted text-sm ml-2">{user.email}</span>
                             </div>
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{user.role}</span>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-cream-dark text-bark-light">{user.role}</span>
                           </button>
                         </li>
                       ))}
                     </ul>
                   )}
                   {userSearchResults && userSearchResults.items.length === 0 && debouncedUserSearch.length >= 2 && (
-                    <p className="text-sm text-gray-500 mt-2">Aucun utilisateur trouvé</p>
+                    <p className="text-sm text-bark-muted mt-2">Aucun utilisateur trouvé</p>
                   )}
                 </div>
               ) : (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
+                <div className="bg-primary/10 border border-primary/30 rounded-lg p-3 flex items-center justify-between">
                   <div>
                     <span className="font-medium text-sm">{selectedUser.firstName} {selectedUser.lastName}</span>
-                    <span className="text-gray-600 text-sm ml-2">{selectedUser.email}</span>
+                    <span className="text-bark-light text-sm ml-2">{selectedUser.email}</span>
                   </div>
                   <button
                     type="button"
-                    className="text-sm text-blue-600 hover:text-blue-800"
+                    className="text-sm text-primary hover:text-primary-dark"
                     onClick={() => {
                       setSelectedUser(null);
                       setManualDepositorForm(f => ({ ...f, email: '', firstName: '', lastName: '', phone: '' }));
@@ -1607,7 +1607,7 @@ export function EditionDetailPage() {
         title={edition.status === 'draft' ? "Envoyer les invitations et ouvrir les inscriptions" : "Envoyer les invitations"}
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-bark-light">
             {edition.status === 'draft' ? (
               <>L'édition passera en statut <strong>Inscriptions ouvertes</strong> et les emails d'invitation seront envoyés aux déposants qui ne les ont pas encore reçus.</>
             ) : (
@@ -1615,15 +1615,15 @@ export function EditionDetailPage() {
             )}
           </p>
           {importStats && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+            <div className="bg-primary/10 border border-primary/30 rounded-lg p-3 text-sm text-primary-dark">
               <p><strong>{importStats.pendingInvitations ?? 0}</strong> invitation(s) en attente d'envoi</p>
-              <p className="text-xs text-blue-600 mt-1">
+              <p className="text-xs text-primary mt-1">
                 Les nouveaux utilisateurs recevront un lien d'activation. Les utilisateurs existants recevront une notification.
               </p>
             </div>
           )}
           {edition.status === 'draft' && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
+            <div className="bg-accent/10 border border-accent/40 rounded-lg p-3 text-sm text-accent-dark">
               Cette action n'est possible que si aucune autre édition n'est déjà active.
             </div>
           )}
@@ -1654,11 +1654,11 @@ export function EditionDetailPage() {
         title="Ouvrir les inscriptions (sans notification)"
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-bark-light">
             L'édition passera en statut <strong>Inscriptions ouvertes</strong> sans envoyer de notification aux déposants.
             Vous pourrez envoyer les invitations séparément.
           </p>
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
+          <div className="bg-accent/10 border border-accent/40 rounded-lg p-3 text-sm text-accent-dark">
             Cette action n'est possible que si aucune autre édition n'est déjà active.
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t">
@@ -1725,11 +1725,11 @@ function ReviewProgressBlock({ editionId }: { editionId: string }) {
   const pct = total > 0 ? Math.round((treated / total) * 100) : 0;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4">
+    <div className="bg-white border border-sand rounded-lg p-4">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900">Revue des articles au depot</h3>
-          <p className="text-sm text-gray-500">
+          <h3 className="text-sm font-semibold text-bark">Revue des articles au depot</h3>
+          <p className="text-sm text-bark-muted">
             {summary
               ? `${summary.reviewedLists}/${summary.totalLists} listes traitees, ${treated}/${total} articles (${pct}%)`
               : 'Chargement...'}
@@ -1737,7 +1737,7 @@ function ReviewProgressBlock({ editionId }: { editionId: string }) {
         </div>
         <Link
           to={`/editions/${editionId}/review`}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -1746,13 +1746,13 @@ function ReviewProgressBlock({ editionId }: { editionId: string }) {
         </Link>
       </div>
       {summary && total > 0 && (
-        <div className="w-full bg-gray-200 rounded-full h-2 flex overflow-hidden">
+        <div className="w-full bg-sand rounded-full h-2 flex overflow-hidden">
           <div
-            className="bg-green-500 h-2"
+            className="bg-primary h-2"
             style={{ width: `${(summary.acceptedArticles / total) * 100}%` }}
           />
           <div
-            className="bg-red-500 h-2"
+            className="bg-error h-2"
             style={{ width: `${(summary.rejectedArticles / total) * 100}%` }}
           />
         </div>
@@ -1793,11 +1793,11 @@ function DeclarationProgressBlock({ editionId, hasDeadline }: { editionId: strin
     : 0;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4">
+    <div className="bg-white border border-sand rounded-lg p-4">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900">Suivi des déclarations</h3>
-          <p className="text-sm text-gray-500">
+          <h3 className="text-sm font-semibold text-bark">Suivi des déclarations</h3>
+          <p className="text-sm text-bark-muted">
             {summary
               ? `${summary.depositorsWithLists}/${summary.totalDepositors} déposants, ${summary.validatedLists}/${summary.totalLists} listes validées (${pct}%), ${summary.totalArticles} articles`
               : 'Chargement...'}
@@ -1807,7 +1807,7 @@ function DeclarationProgressBlock({ editionId, hasDeadline }: { editionId: strin
           {hasDeadline && incompleteCount > 0 && (
             <button
               onClick={() => setShowReminderConfirm(true)}
-              className="inline-flex items-center gap-2 px-3 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-2 bg-secondary text-white rounded-lg text-sm font-medium hover:bg-secondary transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -1817,7 +1817,7 @@ function DeclarationProgressBlock({ editionId, hasDeadline }: { editionId: strin
           )}
           <Link
             to={`/editions/${editionId}/declarations`}
-            className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -1830,38 +1830,38 @@ function DeclarationProgressBlock({ editionId, hasDeadline }: { editionId: strin
       {/* Depositor status badges */}
       {summary && (
         <div className="flex flex-wrap gap-2 mb-3">
-          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-cream-dark text-bark-light">
             Sans liste : {summary.depositorsNone}
           </span>
-          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-accent/15 text-accent-dark">
             En cours : {summary.depositorsStarted}
           </span>
-          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800">
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-secondary/10 text-secondary-dark">
             Partiels : {summary.depositorsPartial}
           </span>
-          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary-dark">
             Complets : {summary.depositorsComplete}
           </span>
         </div>
       )}
 
       {summary && summary.totalLists > 0 && (
-        <div className="w-full bg-gray-200 rounded-full h-2 flex overflow-hidden">
+        <div className="w-full bg-sand rounded-full h-2 flex overflow-hidden">
           <div
-            className="bg-green-500 h-2"
+            className="bg-primary h-2"
             style={{ width: `${pct}%` }}
           />
         </div>
       )}
 
       {reminderSuccess && (
-        <div className="mt-3 text-sm text-green-700 bg-green-50 border border-green-200 px-3 py-2 rounded-lg">
+        <div className="mt-3 text-sm text-primary-dark bg-primary/10 border border-primary/30 px-3 py-2 rounded-lg">
           {reminderSuccess}
         </div>
       )}
 
       {reminderMutation.isError && (
-        <div className="mt-3 text-sm text-red-700 bg-red-50 border border-red-200 px-3 py-2 rounded-lg">
+        <div className="mt-3 text-sm text-error bg-error/10 border border-error/30 px-3 py-2 rounded-lg">
           Erreur lors de l'envoi des rappels.
         </div>
       )}
@@ -1874,7 +1874,7 @@ function DeclarationProgressBlock({ editionId, hasDeadline }: { editionId: strin
         confirmLabel="Envoyer"
         isLoading={reminderMutation.isPending}
       >
-        <p className="text-gray-600">
+        <p className="text-bark-light">
           Envoyer un rappel de déclaration à <span className="font-medium">{incompleteCount} déposant{incompleteCount > 1 ? 's' : ''}</span> qui
           n'ont pas encore finalisé toutes leurs listes ?
         </p>

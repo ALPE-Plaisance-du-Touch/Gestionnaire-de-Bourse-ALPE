@@ -127,7 +127,7 @@ describe('EditionDetailPage', () => {
 
     await waitFor(() => {
       const statusBadge = screen.getByText('Brouillon');
-      expect(statusBadge).toHaveClass('bg-gray-100', 'text-gray-800');
+      expect(statusBadge).toHaveClass('bg-cream-dark', 'text-bark');
     });
   });
 

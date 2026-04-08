@@ -6,9 +6,9 @@ import { Button, Modal, ConfirmModal, Select, Input, TrainingBanner } from '@/co
 import type { ListType, EditionDepositorWithUser, DepositorUpdateRequest } from '@/types';
 
 const LIST_TYPE_LABELS: Record<ListType, { label: string; className: string }> = {
-  standard: { label: 'Standard', className: 'bg-gray-100 text-gray-800' },
-  list_1000: { label: 'Liste 1000', className: 'bg-blue-100 text-blue-800' },
-  list_2000: { label: 'Liste 2000', className: 'bg-purple-100 text-purple-800' },
+  standard: { label: 'Standard', className: 'bg-cream-dark text-bark' },
+  list_1000: { label: 'Liste 1000', className: 'bg-primary/10 text-primary-dark' },
+  list_2000: { label: 'Liste 2000', className: 'bg-secondary/10 text-secondary-dark' },
 };
 
 const LIST_TYPE_OPTIONS = [
@@ -140,9 +140,9 @@ export function EditionDepositorsPage() {
     return (
       <div className="p-6 max-w-6xl mx-auto">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-sand rounded w-1/3"></div>
+          <div className="h-4 bg-sand rounded w-1/4"></div>
+          <div className="h-64 bg-sand rounded"></div>
         </div>
       </div>
     );
@@ -151,10 +151,10 @@ export function EditionDepositorsPage() {
   if (!edition) {
     return (
       <div className="p-6 max-w-6xl mx-auto">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+        <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg mb-4">
           Édition introuvable ou erreur lors du chargement.
         </div>
-        <Link to="/editions" className="text-blue-600 hover:text-blue-700">
+        <Link to="/editions" className="text-primary hover:text-primary-dark">
           ← Retour à la liste des éditions
         </Link>
       </div>
@@ -176,17 +176,17 @@ export function EditionDepositorsPage() {
       <div className="mb-6">
         <Link
           to={`/editions/${id}`}
-          className="text-sm text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 mb-2"
+          className="text-sm text-primary hover:text-primary-dark inline-flex items-center gap-1 mb-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           Retour à l'édition
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-bark">
           Déposants - {edition.name}
         </h1>
-        <p className="mt-1 text-gray-600">
+        <p className="mt-1 text-bark-light">
           {total} déposant{total !== 1 ? 's' : ''} inscrit{total !== 1 ? 's' : ''} à cette édition.
         </p>
       </div>
@@ -197,7 +197,7 @@ export function EditionDepositorsPage() {
       <div className="mb-6 bg-white rounded-lg shadow p-4">
         <div className="flex flex-wrap items-center gap-4">
           <div>
-            <label htmlFor="listType" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="listType" className="block text-sm font-medium text-bark-light mb-1">
               Type de liste
             </label>
             <select
@@ -207,7 +207,7 @@ export function EditionDepositorsPage() {
                 setListTypeFilter(e.target.value as ListType | '');
                 setPage(1);
               }}
-              className="block w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+              className="block w-48 rounded-md border-sand shadow-sm focus:border-primary focus:ring-primary sm:text-sm border p-2"
             >
               <option value="">Tous les types</option>
               <option value="standard">Standard</option>
@@ -221,25 +221,25 @@ export function EditionDepositorsPage() {
       {/* Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-cream">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                 Déposant
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                 Email
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                 Type
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                 Créneau
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                 Ville
               </th>
               {!isEditionLocked && (
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                <th className="px-4 py-3 text-right text-xs font-medium text-bark-muted uppercase tracking-wider w-20">
                   Actions
                 </th>
               )}
@@ -248,7 +248,7 @@ export function EditionDepositorsPage() {
           <tbody className="bg-white divide-y divide-gray-200">
             {depositors.length === 0 ? (
               <tr>
-                <td colSpan={isEditionLocked ? 5 : 6} className="px-4 py-12 text-center text-gray-500">
+                <td colSpan={isEditionLocked ? 5 : 6} className="px-4 py-12 text-center text-bark-muted">
                   {listTypeFilter
                     ? 'Aucun déposant trouvé avec ce type de liste.'
                     : 'Aucun déposant inscrit pour cette édition.'}
@@ -258,14 +258,14 @@ export function EditionDepositorsPage() {
               depositors.map((depositor) => {
                 const listTypeInfo = LIST_TYPE_LABELS[depositor.listType];
                 return (
-                  <tr key={depositor.id} className="hover:bg-gray-50">
+                  <tr key={depositor.id} className="hover:bg-cream">
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-bark">
                         {depositor.userFirstName} {depositor.userLastName}
                       </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{depositor.userEmail}</div>
+                      <div className="text-sm text-bark">{depositor.userEmail}</div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span
@@ -275,14 +275,14 @@ export function EditionDepositorsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-bark-muted">
                         {depositor.slotStartDatetime
                           ? formatDatetime(depositor.slotStartDatetime)
                           : '-'}
                       </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-bark-muted">
                         {depositor.city
                           ? `${depositor.postalCode ? depositor.postalCode + ' ' : ''}${depositor.city}`
                           : '-'}
@@ -294,7 +294,7 @@ export function EditionDepositorsPage() {
                           <button
                             type="button"
                             onClick={() => openEditModal(depositor)}
-                            className="p-1.5 rounded text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                            className="p-1.5 rounded text-bark-muted hover:text-primary hover:bg-primary/10 transition-colors"
                             title="Modifier"
                           >
                             <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -305,7 +305,7 @@ export function EditionDepositorsPage() {
                           <button
                             type="button"
                             onClick={() => openDeleteModal(depositor)}
-                            className="p-1.5 rounded text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            className="p-1.5 rounded text-bark-muted hover:text-error hover:bg-error/10 transition-colors"
                             title="Supprimer"
                           >
                             <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -324,8 +324,8 @@ export function EditionDepositorsPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="bg-gray-50 px-6 py-3 flex items-center justify-between border-t">
-            <div className="text-sm text-gray-500">
+          <div className="bg-cream px-6 py-3 flex items-center justify-between border-t">
+            <div className="text-sm text-bark-muted">
               Page {page} sur {totalPages} ({total} déposants)
             </div>
             <div className="flex gap-2">
@@ -358,7 +358,7 @@ export function EditionDepositorsPage() {
         size="lg"
       >
         <div className="space-y-4">
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-bark-muted">
             {editingDepositor?.userEmail}
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -411,7 +411,7 @@ export function EditionDepositorsPage() {
             />
           </div>
           {updateMutation.isError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">
+            <div className="bg-error/10 border border-error/30 text-error px-3 py-2 rounded text-sm">
               {updateMutation.error instanceof Error
                 ? updateMutation.error.message
                 : 'Erreur lors de la modification'}
@@ -438,14 +438,14 @@ export function EditionDepositorsPage() {
         variant="danger"
         isLoading={deleteMutation.isPending}
       >
-        <p className="text-gray-600">
+        <p className="text-bark-light">
           Voulez-vous vraiment supprimer <strong>{deletingDepositor?.userFirstName} {deletingDepositor?.userLastName}</strong> ({deletingDepositor?.userEmail}) de cette édition ?
         </p>
-        <p className="text-sm text-gray-500 mt-2">
+        <p className="text-sm text-bark-muted mt-2">
           Cette action est irréversible. Le déposant devra être réinscrit manuellement.
         </p>
         {deleteError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm mt-3">
+          <div className="bg-error/10 border border-error/30 text-error px-3 py-2 rounded text-sm mt-3">
             {deleteError}
           </div>
         )}

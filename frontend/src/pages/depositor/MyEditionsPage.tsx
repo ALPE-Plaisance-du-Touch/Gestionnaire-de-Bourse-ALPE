@@ -4,13 +4,13 @@ import { depositorListsApi } from '@/api';
 import type { MyEditionSummary } from '@/api/depositor-lists';
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
-  draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-800' },
-  registrations_open: { label: 'Inscriptions ouvertes', className: 'bg-purple-100 text-purple-800' },
-  deposit: { label: 'Dépôt', className: 'bg-blue-100 text-blue-800' },
-  sale: { label: 'Vente', className: 'bg-green-100 text-green-800' },
-  settlement: { label: 'Bilan', className: 'bg-yellow-100 text-yellow-800' },
-  closed: { label: 'Clôturée', className: 'bg-orange-100 text-orange-800' },
-  archived: { label: 'Archivé', className: 'bg-gray-100 text-gray-500' },
+  draft: { label: 'Brouillon', className: 'bg-cream-dark text-bark' },
+  registrations_open: { label: 'Inscriptions ouvertes', className: 'bg-secondary/10 text-secondary-dark' },
+  deposit: { label: 'Dépôt', className: 'bg-primary/10 text-primary-dark' },
+  sale: { label: 'Vente', className: 'bg-primary/10 text-primary-dark' },
+  settlement: { label: 'Bilan', className: 'bg-accent/15 text-accent-dark' },
+  closed: { label: 'Clôturée', className: 'bg-secondary/10 text-secondary-dark' },
+  archived: { label: 'Archivé', className: 'bg-cream-dark text-bark-muted' },
 };
 
 const LIST_TYPE_LABELS: Record<string, string> = {
@@ -67,7 +67,7 @@ export function MyEditionsPage() {
   if (error) {
     return (
       <div className="p-6 max-w-4xl mx-auto">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
           Erreur lors du chargement de vos éditions. Veuillez réessayer.
         </div>
       </div>
@@ -78,8 +78,8 @@ export function MyEditionsPage() {
     <div className="p-6 max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Mes éditions</h1>
-        <p className="mt-1 text-gray-600">
+        <h1 className="text-2xl font-bold text-bark">Mes éditions</h1>
+        <p className="mt-1 text-bark-light">
           Sélectionnez une édition pour gérer vos listes d'articles.
         </p>
       </div>
@@ -87,12 +87,12 @@ export function MyEditionsPage() {
       {/* Content */}
       {isLoading ? (
         <div className="bg-white rounded-lg shadow p-8 text-center">
-          <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
-          <p className="mt-2 text-gray-500">Chargement...</p>
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+          <p className="mt-2 text-bark-muted">Chargement...</p>
         </div>
       ) : editions.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-8 text-center">
-          <div className="text-gray-400 mb-4">
+          <div className="text-bark-muted mb-4">
             <svg
               className="w-16 h-16 mx-auto"
               fill="none"
@@ -107,8 +107,8 @@ export function MyEditionsPage() {
               />
             </svg>
           </div>
-          <p className="text-gray-500 mb-2">Vous n'êtes inscrit à aucune édition.</p>
-          <p className="text-sm text-gray-400">
+          <p className="text-bark-muted mb-2">Vous n'êtes inscrit à aucune édition.</p>
+          <p className="text-sm text-bark-muted">
             Contactez l'organisation pour vous inscrire à une bourse aux vêtements.
           </p>
         </div>
@@ -117,7 +117,7 @@ export function MyEditionsPage() {
           {editions.map((edition) => {
             const statusInfo = STATUS_LABELS[edition.status] || {
               label: edition.status,
-              className: 'bg-gray-100 text-gray-800',
+              className: 'bg-cream-dark text-bark',
             };
             const canDeclare = isDeclarationOpen(edition);
             const canAccess = canAccessEdition(edition);
@@ -127,7 +127,7 @@ export function MyEditionsPage() {
               <div
                 key={edition.id}
                 className={`bg-white rounded-lg shadow overflow-hidden ${
-                  canAccess ? 'hover:shadow-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg' : 'opacity-75'
+                  canAccess ? 'hover:shadow-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg' : 'opacity-75'
                 }`}
                 onClick={() => canAccess && navigate(`/depositor/editions/${edition.id}/lists`)}
                 role={canAccess ? 'link' : undefined}
@@ -143,7 +143,7 @@ export function MyEditionsPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
-                        <h3 className="text-lg font-semibold text-gray-900">
+                        <h3 className="text-lg font-semibold text-bark">
                           {edition.name}
                         </h3>
                         <span
@@ -152,14 +152,14 @@ export function MyEditionsPage() {
                           {statusInfo.label}
                         </span>
                       </div>
-                      <p className="mt-1 text-sm text-gray-500">
+                      <p className="mt-1 text-sm text-bark-muted">
                         Du {formatDate(edition.startDatetime)} au {formatDate(edition.endDatetime)}
                       </p>
-                      <p className="mt-1 text-sm text-gray-600">
+                      <p className="mt-1 text-sm text-bark-light">
                         Type de liste : <span className="font-medium">{LIST_TYPE_LABELS[edition.listType] || edition.listType}</span>
                       </p>
                       {edition.declarationDeadline && (
-                        <p className={`mt-2 text-sm ${deadlinePassed ? 'text-red-600' : 'text-orange-600'}`}>
+                        <p className={`mt-2 text-sm ${deadlinePassed ? 'text-error' : 'text-secondary-dark'}`}>
                           {deadlinePassed ? (
                             <>Date limite de déclaration dépassée ({formatDate(edition.declarationDeadline)})</>
                           ) : (
@@ -171,7 +171,7 @@ export function MyEditionsPage() {
                     {canAccess && (
                       <div className="ml-4">
                         <svg
-                          className="w-6 h-6 text-gray-400"
+                          className="w-6 h-6 text-bark-muted"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -188,8 +188,8 @@ export function MyEditionsPage() {
                   </div>
                 </div>
                 {canAccess && (
-                  <div className={`px-5 py-3 border-t ${canDeclare ? 'bg-blue-50 border-blue-100' : 'bg-gray-50 border-gray-200'}`}>
-                    <p className={`text-sm ${canDeclare ? 'text-blue-700' : 'text-gray-600'}`}>
+                  <div className={`px-5 py-3 border-t ${canDeclare ? 'bg-primary/10 border-primary/30' : 'bg-cream border-sand'}`}>
+                    <p className={`text-sm ${canDeclare ? 'text-primary-dark' : 'text-bark-light'}`}>
                       {canDeclare ? 'Cliquez pour gérer vos listes d\'articles' : 'Cliquez pour consulter vos listes (lecture seule)'}
                     </p>
                   </div>

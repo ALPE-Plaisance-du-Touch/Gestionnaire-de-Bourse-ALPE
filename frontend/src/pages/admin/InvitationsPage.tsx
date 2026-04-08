@@ -15,11 +15,11 @@ const STATUS_OPTIONS = [
 ];
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
-  pending: { label: 'En attente', className: 'bg-yellow-100 text-yellow-800' },
-  sent: { label: 'Envoyé', className: 'bg-blue-100 text-blue-800' },
-  activated: { label: 'Activé', className: 'bg-green-100 text-green-800' },
-  expired: { label: 'Expiré', className: 'bg-red-100 text-red-800' },
-  cancelled: { label: 'Annulé', className: 'bg-gray-100 text-gray-800' },
+  pending: { label: 'En attente', className: 'bg-accent/15 text-accent-dark' },
+  sent: { label: 'Envoyé', className: 'bg-primary/10 text-primary-dark' },
+  activated: { label: 'Activé', className: 'bg-primary/10 text-primary-dark' },
+  expired: { label: 'Expiré', className: 'bg-error/10 text-error' },
+  cancelled: { label: 'Annulé', className: 'bg-cream-dark text-bark' },
 };
 
 function formatDate(dateString: string): string {
@@ -248,7 +248,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
           Erreur lors du chargement des invitations. Veuillez réessayer.
         </div>
       </div>
@@ -259,8 +259,8 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Gestion des invitations</h1>
-        <p className="mt-1 text-gray-600">
+        <h1 className="text-2xl font-bold text-bark">Gestion des invitations</h1>
+        <p className="mt-1 text-bark-light">
           Gérez les invitations des déposants pour l'édition en cours.
         </p>
       </div>
@@ -268,20 +268,20 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
       {/* Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Total</p>
-          <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+          <p className="text-sm text-bark-muted">Total</p>
+          <p className="text-2xl font-bold text-bark">{stats.total}</p>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">En attente</p>
-          <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
+          <p className="text-sm text-bark-muted">En attente</p>
+          <p className="text-2xl font-bold text-accent-dark">{stats.pending}</p>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Activés</p>
-          <p className="text-2xl font-bold text-green-600">{stats.activated}</p>
+          <p className="text-sm text-bark-muted">Activés</p>
+          <p className="text-2xl font-bold text-primary">{stats.activated}</p>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Expirés</p>
-          <p className="text-2xl font-bold text-red-600">{stats.expired}</p>
+          <p className="text-sm text-bark-muted">Expirés</p>
+          <p className="text-2xl font-bold text-error">{stats.expired}</p>
         </div>
       </div>
 
@@ -308,62 +308,62 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
 
       {/* Success/Error messages */}
       {resendMutation.isSuccess && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg" role="alert">
           Invitation renvoyée avec succès !
         </div>
       )}
       {resendMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg" role="alert">
           Erreur lors de l'envoi de l'invitation. Veuillez réessayer.
         </div>
       )}
       {deleteMutation.isSuccess && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg" role="alert">
           Invitation supprimée avec succès !
         </div>
       )}
       {deleteMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg" role="alert">
           Erreur lors de la suppression de l'invitation. Veuillez réessayer.
         </div>
       )}
       {bulkDeleteResult && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex justify-between items-center" role="alert">
+        <div className="mb-4 bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg flex justify-between items-center" role="alert">
           <span>
             {bulkDeleteResult.deleted} invitation{bulkDeleteResult.deleted > 1 ? 's' : ''} supprimée{bulkDeleteResult.deleted > 1 ? 's' : ''} avec succès
             {bulkDeleteResult.notFound > 0 && ` (${bulkDeleteResult.notFound} non trouvée${bulkDeleteResult.notFound > 1 ? 's' : ''})`}
           </span>
-          <button onClick={() => setBulkDeleteResult(null)} className="text-green-700 hover:text-green-900">
+          <button onClick={() => setBulkDeleteResult(null)} className="text-primary-dark hover:text-primary-dark">
             ✕
           </button>
         </div>
       )}
       {bulkDeleteMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg" role="alert">
           Erreur lors de la suppression en masse. Veuillez réessayer.
         </div>
       )}
       {bulkResendResult && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex justify-between items-center" role="alert">
+        <div className="mb-4 bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg flex justify-between items-center" role="alert">
           <span>
             {bulkResendResult.resent} invitation{bulkResendResult.resent > 1 ? 's' : ''} relancée{bulkResendResult.resent > 1 ? 's' : ''} avec succès
             {bulkResendResult.skipped > 0 && ` (${bulkResendResult.skipped} ignorée${bulkResendResult.skipped > 1 ? 's' : ''})`}
           </span>
-          <button onClick={() => setBulkResendResult(null)} className="text-green-700 hover:text-green-900">
+          <button onClick={() => setBulkResendResult(null)} className="text-primary-dark hover:text-primary-dark">
             ✕
           </button>
         </div>
       )}
       {bulkResendMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg" role="alert">
           Erreur lors de la relance en masse. Veuillez réessayer.
         </div>
       )}
 
       {/* Selection bar */}
       {selectedIds.size > 0 && (
-        <div className="mb-4 bg-blue-50 border border-blue-200 px-4 py-3 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <span className="text-blue-700">
+        <div className="mb-4 bg-primary/10 border border-primary/30 px-4 py-3 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <span className="text-primary-dark">
             {selectedIds.size} invitation{selectedIds.size > 1 ? 's' : ''} sélectionnée{selectedIds.size > 1 ? 's' : ''}
           </span>
           <div className="flex flex-wrap gap-2">
@@ -387,7 +387,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
               variant="primary"
               size="sm"
               onClick={handleBulkDeleteClick}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-error hover:bg-error"
             >
               Supprimer la sélection
             </Button>
@@ -399,15 +399,15 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center">
-            <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
-            <p className="mt-2 text-gray-500">Chargement...</p>
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+            <p className="mt-2 text-bark-muted">Chargement...</p>
           </div>
         ) : invitations.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
+          <div className="p-8 text-center text-bark-muted">
             Aucune invitation trouvée.
             {statusFilter !== 'all' && (
               <button
-                className="block mx-auto mt-2 text-blue-600 hover:underline"
+                className="block mx-auto mt-2 text-primary hover:underline"
                 onClick={() => setStatusFilter('all')}
               >
                 Voir toutes les invitations
@@ -418,22 +418,22 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
           <>
           {/* Mobile card layout */}
           <div className="md:hidden">
-            <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 border-b border-gray-200">
+            <div className="flex items-center gap-3 px-4 py-2 bg-cream border-b border-sand">
               <input
                 type="checkbox"
                 checked={isAllSelected}
                 ref={(el) => { if (el) el.indeterminate = isSomeSelected; }}
                 onChange={handleSelectAll}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="h-4 w-4 rounded border-sand text-primary focus:ring-primary"
                 aria-label="Sélectionner tout"
               />
-              <span className="text-xs text-gray-500">{invitations.length} invitation{invitations.length > 1 ? 's' : ''}</span>
+              <span className="text-xs text-bark-muted">{invitations.length} invitation{invitations.length > 1 ? 's' : ''}</span>
             </div>
             <div className="divide-y divide-gray-200">
               {invitations.map((invitation) => {
                 const statusInfo = STATUS_LABELS[invitation.status] || {
                   label: invitation.status,
-                  className: 'bg-gray-100 text-gray-800',
+                  className: 'bg-cream-dark text-bark',
                 };
                 const canResend =
                   invitation.status === 'pending' ||
@@ -446,22 +446,22 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
                         type="checkbox"
                         checked={selectedIds.has(invitation.id)}
                         onChange={() => handleSelectOne(invitation.id)}
-                        className="h-4 w-4 mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="h-4 w-4 mt-1 rounded border-sand text-primary focus:ring-primary"
                         aria-label={`Sélectionner ${invitation.email}`}
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <div className="font-medium text-gray-900 text-sm truncate">{invitation.email}</div>
+                          <div className="font-medium text-bark text-sm truncate">{invitation.email}</div>
                           <span className={`inline-flex shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full ${statusInfo.className}`}>
                             {statusInfo.label}
                           </span>
                         </div>
                         {(invitation.firstName || invitation.lastName) && (
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-bark-muted">
                             {`${invitation.firstName || ''} ${invitation.lastName || ''}`.trim()}
                           </div>
                         )}
-                        <div className="text-xs text-gray-400 mt-1">
+                        <div className="text-xs text-bark-muted mt-1">
                           Créée le {formatShortDate(invitation.createdAt)}
                           {invitation.status === 'activated' && invitation.usedAt
                             ? ` · Activée le ${formatShortDate(invitation.usedAt)}`
@@ -485,7 +485,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
                             size="sm"
                             onClick={() => handleDeleteClick(invitation)}
                             disabled={deleteMutation.isPending}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-error hover:text-error hover:bg-error/10"
                           >
                             Supprimer
                           </Button>
@@ -501,7 +501,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
           {/* Desktop table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-cream">
                 <tr>
                   <th className="px-4 py-3 w-12">
                     <input
@@ -511,26 +511,26 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
                         if (el) el.indeterminate = isSomeSelected;
                       }}
                       onChange={handleSelectAll}
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4 rounded border-sand text-primary focus:ring-primary"
                       aria-label="Sélectionner tout"
                     />
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                     Email
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                     Nom
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                     Statut
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                     Créée le
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                     {statusFilter === 'activated' ? 'Activée le' : 'Expire le'}
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-bark-muted uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -539,7 +539,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
                 {invitations.map((invitation) => {
                   const statusInfo = STATUS_LABELS[invitation.status] || {
                     label: invitation.status,
-                    className: 'bg-gray-100 text-gray-800',
+                    className: 'bg-cream-dark text-bark',
                   };
                   const canResend =
                     invitation.status === 'pending' ||
@@ -547,23 +547,23 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
                     invitation.status === 'expired';
 
                   return (
-                    <tr key={invitation.id} className="hover:bg-gray-50">
+                    <tr key={invitation.id} className="hover:bg-cream">
                       <td className="px-4 py-4 w-12">
                         <input
                           type="checkbox"
                           checked={selectedIds.has(invitation.id)}
                           onChange={() => handleSelectOne(invitation.id)}
-                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="h-4 w-4 rounded border-sand text-primary focus:ring-primary"
                           aria-label={`Sélectionner ${invitation.email}`}
                         />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-bark">
                           {invitation.email}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm text-bark">
                           {invitation.firstName || invitation.lastName
                             ? `${invitation.firstName || ''} ${invitation.lastName || ''}`.trim()
                             : '-'}
@@ -576,10 +576,10 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
                           {statusInfo.label}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-bark-muted">
                         {formatShortDate(invitation.createdAt)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-bark-muted">
                         {invitation.status === 'activated' && invitation.usedAt
                           ? formatDate(invitation.usedAt)
                           : invitation.expiresAt
@@ -602,7 +602,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
                           size="sm"
                           onClick={() => handleDeleteClick(invitation)}
                           disabled={deleteMutation.isPending}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="text-error hover:text-error hover:bg-error/10"
                         >
                           Supprimer
                         </Button>
@@ -619,7 +619,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
 
       {/* Footer info */}
       {invitations.length > 0 && (
-        <p className="mt-4 text-sm text-gray-500 text-right">
+        <p className="mt-4 text-sm text-bark-muted text-right">
           {invitations.length} invitation{invitations.length > 1 ? 's' : ''} affichée
           {invitations.length > 1 ? 's' : ''}
         </p>
@@ -636,7 +636,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
         confirmLabel="Relancer"
         isLoading={resendMutation.isPending}
       >
-        <p className="text-sm text-blue-600 bg-blue-50 p-3 rounded">
+        <p className="text-sm text-primary bg-primary/10 p-3 rounded">
           Un nouveau lien d'activation sera généré et envoyé par email.
         </p>
       </ConfirmModal>
@@ -651,17 +651,17 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
         confirmLabel="Supprimer"
         isLoading={deleteMutation.isPending}
       >
-        <p className="text-gray-600">
+        <p className="text-bark-light">
           Êtes-vous sûr de vouloir supprimer l'invitation pour{' '}
           <span className="font-medium">{invitationToDelete?.email}</span> ?
         </p>
         {invitationToDelete?.status === 'activated' ? (
-          <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded">
+          <p className="text-sm text-accent-dark bg-accent/10 p-3 rounded">
             Cette invitation a déjà été activée. L'utilisateur sera retiré de la liste
             des invitations, mais son compte sera conservé.
           </p>
         ) : (
-          <p className="text-sm text-red-600 bg-red-50 p-3 rounded">
+          <p className="text-sm text-error bg-error/10 p-3 rounded">
             Cette action est irréversible. L'invitation sera définitivement supprimée.
           </p>
         )}
@@ -677,11 +677,11 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
         confirmLabel={`Supprimer (${selectedIds.size})`}
         isLoading={bulkDeleteMutation.isPending}
       >
-        <p className="text-gray-600">
+        <p className="text-bark-light">
           Êtes-vous sûr de vouloir supprimer{' '}
           <span className="font-medium">{selectedIds.size} invitation{selectedIds.size > 1 ? 's' : ''}</span> ?
         </p>
-        <p className="text-sm text-red-600 bg-red-50 p-3 rounded">
+        <p className="text-sm text-error bg-error/10 p-3 rounded">
           Les invitations en attente seront définitivement supprimées.
           Les comptes déjà activés seront retirés de la liste mais conservés.
         </p>
@@ -698,7 +698,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
         confirmLabel={`Relancer (${resendableSelectedCount})`}
         isLoading={bulkResendMutation.isPending}
       >
-        <p className="text-sm text-blue-600 bg-blue-50 p-3 rounded">
+        <p className="text-sm text-primary bg-primary/10 p-3 rounded">
           Un nouveau lien d'activation sera généré et envoyé par email pour chaque invitation en attente ou expirée.
         </p>
       </ConfirmModal>

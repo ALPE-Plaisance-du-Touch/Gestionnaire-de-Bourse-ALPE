@@ -51,32 +51,32 @@ export function AppSettingsPage() {
   if (isLoading) {
     return (
       <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" />
-        <p className="mt-4 text-gray-500">Chargement...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+        <p className="mt-4 text-bark-muted">Chargement...</p>
       </div>
     );
   }
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <nav className="mb-6 text-sm text-gray-500">
-        <Link to="/admin" className="hover:text-blue-600">Tableau de bord</Link>
+      <nav className="mb-6 text-sm text-bark-muted">
+        <Link to="/admin" className="hover:text-primary">Tableau de bord</Link>
         <span className="mx-2">/</span>
-        <span className="text-gray-900">Paramètres</span>
+        <span className="text-bark">Paramètres</span>
       </nav>
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Paramètres généraux</h1>
-      <p className="text-gray-600 mb-8">
+      <h1 className="text-2xl font-bold text-bark mb-2">Paramètres généraux</h1>
+      <p className="text-bark-light mb-8">
         Configurez les paramètres globaux de l'application.
       </p>
 
       {successMessage && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">
+        <div className="mb-4 p-3 bg-primary/10 border border-primary/30 text-primary-dark rounded-lg text-sm">
           {successMessage}
         </div>
       )}
       {errorMessage && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">
+        <div className="mb-4 p-3 bg-error/10 border border-error/30 text-error rounded-lg text-sm">
           {errorMessage}
         </div>
       )}
@@ -92,7 +92,7 @@ export function AppSettingsPage() {
         />
 
         {data?.source === 'default' && (
-          <p className="text-xs text-amber-600">
+          <p className="text-xs text-accent-dark">
             Valeur par défaut (variable d'environnement). Enregistrez pour personnaliser.
           </p>
         )}

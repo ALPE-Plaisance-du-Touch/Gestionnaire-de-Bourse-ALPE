@@ -291,7 +291,7 @@ describe('EditionsListPage', () => {
       // Find and click the confirm button in modal (it's the red one)
       const modalButtons = screen.getAllByRole('button');
       const confirmButton = modalButtons.find(
-        (btn) => btn.textContent === 'Supprimer' && btn.classList.contains('bg-red-600')
+        (btn) => btn.textContent === 'Supprimer' && btn.classList.contains('bg-error')
       );
 
       if (confirmButton) {

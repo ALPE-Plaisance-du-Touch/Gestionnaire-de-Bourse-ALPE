@@ -131,10 +131,10 @@ export function DepositSlotsEditor({ editionId, disabled = false, onSyncBilletwe
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-md font-medium text-gray-900 whitespace-nowrap">
+        <h3 className="text-md font-medium text-bark whitespace-nowrap">
           Créneaux de dépôt
           {slots.length > 0 && (
-            <span className="text-sm font-normal text-gray-500 ml-2">({slots.length})</span>
+            <span className="text-sm font-normal text-bark-muted ml-2">({slots.length})</span>
           )}
         </h3>
         <div className="flex items-center gap-2 shrink-0">
@@ -152,15 +152,15 @@ export function DepositSlotsEditor({ editionId, disabled = false, onSyncBilletwe
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">
+        <div className="bg-error/10 border border-error/30 text-error px-3 py-2 rounded text-sm">
           {error}
         </div>
       )}
 
       {isLoading ? (
-        <div className="text-sm text-gray-500">Chargement des créneaux...</div>
+        <div className="text-sm text-bark-muted">Chargement des créneaux...</div>
       ) : slots.length === 0 && !isAdding ? (
-        <div className="text-sm text-gray-500 italic">
+        <div className="text-sm text-bark-muted italic">
           Aucun créneau de dépôt configuré.
         </div>
       ) : (
@@ -168,8 +168,8 @@ export function DepositSlotsEditor({ editionId, disabled = false, onSyncBilletwe
           {dayGroups.map((group) => (
             <div key={group.dayKey}>
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-semibold text-gray-800 capitalize">{group.label}</span>
-                <span className="text-xs text-gray-400">{group.slots.length} créneaux</span>
+                <span className="text-sm font-semibold text-bark capitalize">{group.label}</span>
+                <span className="text-xs text-bark-muted">{group.slots.length} créneaux</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                 {group.slots.map((slot) => (
@@ -188,7 +188,7 @@ export function DepositSlotsEditor({ editionId, disabled = false, onSyncBilletwe
       )}
 
       {isAdding && (
-        <div className="border rounded-lg p-4 bg-gray-50 space-y-3">
+        <div className="border rounded-lg p-4 bg-cream space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Input
               label="Début"
@@ -229,9 +229,9 @@ export function DepositSlotsEditor({ editionId, disabled = false, onSyncBilletwe
                 onChange={(e) =>
                   setNewSlot({ ...newSlot, reservedForLocals: e.target.checked })
                 }
-                className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                className="h-4 w-4 text-primary border-sand rounded"
               />
-              <label htmlFor="reserved-locals" className="ml-2 text-sm text-gray-700">
+              <label htmlFor="reserved-locals" className="ml-2 text-sm text-bark-light">
                 Réservé aux Plaisançois
               </label>
             </div>
@@ -269,7 +269,7 @@ export function DepositSlotsEditor({ editionId, disabled = false, onSyncBilletwe
       )}
 
       {!disabled && slots.length === 0 && !isAdding && (
-        <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded">
+        <div className="text-xs text-bark-muted bg-primary/10 p-3 rounded">
           <strong>Exemples de créneaux standards :</strong>
           <ul className="list-disc list-inside mt-1 space-y-0.5">
             <li>Mercredi matin 9h30-11h30 : 20 déposants</li>
@@ -325,21 +325,21 @@ function CompactSlotChip({
 }) {
   const count = slot.registeredCount ?? 0;
   const ratio = slot.maxCapacity > 0 ? count / slot.maxCapacity : 0;
-  let occupancyClass = 'text-gray-500';
-  if (ratio >= 0.9) occupancyClass = 'text-red-600 font-medium';
-  else if (ratio >= 0.75) occupancyClass = 'text-orange-600 font-medium';
+  let occupancyClass = 'text-bark-muted';
+  if (ratio >= 0.9) occupancyClass = 'text-error font-medium';
+  else if (ratio >= 0.75) occupancyClass = 'text-secondary-dark font-medium';
 
   return (
-    <div className="group relative bg-white border border-gray-200 rounded-md px-3 py-2 hover:border-gray-300 transition-colors">
+    <div className="group relative bg-white border border-sand rounded-md px-3 py-2 hover:border-bark-muted transition-colors">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-900">
+        <span className="text-sm font-medium text-bark">
           {formatTime(slot.startDatetime)} - {formatTime(slot.endDatetime)}
         </span>
         {!disabled && (
           <button
             type="button"
             onClick={onDelete}
-            className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity -mr-1"
+            className="opacity-0 group-hover:opacity-100 text-error hover:text-error transition-opacity -mr-1"
             title="Supprimer"
           >
             <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -356,7 +356,7 @@ function CompactSlotChip({
           <button
             type="button"
             onClick={onShowParticipants}
-            className="text-blue-500 hover:text-blue-700 transition-colors"
+            className="text-primary hover:text-primary-dark transition-colors"
             title="Voir les participants"
           >
             <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -365,7 +365,7 @@ function CompactSlotChip({
           </button>
         )}
         {slot.reservedForLocals && (
-          <span className="text-xs text-purple-700 bg-purple-50 px-1 rounded">local</span>
+          <span className="text-xs text-secondary-dark bg-secondary/10 px-1 rounded">local</span>
         )}
       </div>
     </div>
@@ -379,24 +379,24 @@ function SlotParticipants({ editionId, slotId }: { editionId: string; slotId: st
   });
 
   if (isLoading) {
-    return <div className="text-sm text-gray-400">Chargement...</div>;
+    return <div className="text-sm text-bark-muted">Chargement...</div>;
   }
 
   const participants = data?.items ?? [];
 
   if (participants.length === 0) {
-    return <div className="text-sm text-gray-400 italic">Aucun participant</div>;
+    return <div className="text-sm text-bark-muted italic">Aucun participant</div>;
   }
 
   return (
     <ul className="space-y-1">
       {participants.map((p) => (
         <li key={p.id} className="flex items-center justify-between text-sm">
-          <span className="text-gray-900 font-medium">
+          <span className="text-bark font-medium">
             {p.userFirstName} {p.userLastName.toUpperCase()}
           </span>
           {p.userEmail && (
-            <span className="text-gray-400 text-xs ml-2 truncate">{p.userEmail}</span>
+            <span className="text-bark-muted text-xs ml-2 truncate">{p.userEmail}</span>
           )}
         </li>
       ))}

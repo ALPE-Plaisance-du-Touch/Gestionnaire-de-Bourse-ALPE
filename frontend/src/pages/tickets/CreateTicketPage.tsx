@@ -60,25 +60,25 @@ export function CreateTicketPage() {
     <div className="max-w-2xl mx-auto">
       <button
         onClick={() => navigate(`/editions/${editionId}/tickets`)}
-        className="text-sm text-blue-600 hover:text-blue-700 mb-4 inline-block"
+        className="text-sm text-primary hover:text-primary-dark mb-4 inline-block"
       >
         &larr; Retour aux tickets
       </button>
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Nouveau ticket</h1>
+      <h1 className="text-2xl font-bold text-bark mb-6">Nouveau ticket</h1>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-sand p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           {isStaff && depositors && depositors.length > 0 && (
             <div>
-              <label htmlFor="assignedTo" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="assignedTo" className="block text-sm font-medium text-bark-light mb-1">
                 Destinataire (déposant)
               </label>
               <select
                 id="assignedTo"
                 value={assignedToId}
                 onChange={(e) => setAssignedToId(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full rounded-lg border border-sand p-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="">-- Aucun (ticket interne) --</option>
                 {depositors.map((d) => (
@@ -91,7 +91,7 @@ export function CreateTicketPage() {
           )}
 
           <div>
-            <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="subject" className="block text-sm font-medium text-bark-light mb-1">
               Sujet
             </label>
             <input
@@ -101,12 +101,12 @@ export function CreateTicketPage() {
               onChange={(e) => setSubject(e.target.value)}
               maxLength={200}
               placeholder="Sujet du ticket..."
-              className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-sand p-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary"
             />
           </div>
 
           <div>
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="content" className="block text-sm font-medium text-bark-light mb-1">
               Message
             </label>
             <textarea
@@ -116,12 +116,12 @@ export function CreateTicketPage() {
               maxLength={5000}
               rows={6}
               placeholder="Décrivez votre demande..."
-              className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+              className="w-full rounded-lg border border-sand p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary resize-none"
             />
-            <p className="text-xs text-gray-400 mt-1 text-right">{content.length} / 5000</p>
+            <p className="text-xs text-bark-muted mt-1 text-right">{content.length} / 5000</p>
           </div>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-error text-sm">{error}</p>}
 
           <div className="flex justify-end gap-3">
             <Button

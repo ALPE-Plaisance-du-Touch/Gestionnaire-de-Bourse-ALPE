@@ -21,7 +21,7 @@ export function ProtectedRoute({ children, allowedRoles = [] }: ProtectedRoutePr
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" role="status" aria-label="Chargement">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
       </div>
     );
   }
@@ -36,16 +36,16 @@ export function ProtectedRoute({ children, allowedRoles = [] }: ProtectedRoutePr
     const hasRequiredRole = allowedRoles.includes(user.role);
     if (!hasRequiredRole) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center bg-cream">
           <div className="max-w-md w-full text-center px-4">
             <div className="text-6xl mb-4">🚫</div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Accès refusé</h1>
-            <p className="text-gray-600 mb-6">
+            <h1 className="text-2xl font-bold text-bark mb-2">Accès refusé</h1>
+            <p className="text-bark-light mb-6">
               Vous n'avez pas les permissions nécessaires pour accéder à cette page.
             </p>
             <a
               href="/"
-              className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="inline-block px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
             >
               Retour à l'accueil
             </a>

@@ -54,7 +54,7 @@ export function InvitationStatsPage() {
       <div className="mb-6">
         <Link
           to="/admin/invitations"
-          className="text-sm text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 mb-2"
+          className="text-sm text-primary hover:text-primary-dark inline-flex items-center gap-1 mb-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -62,7 +62,7 @@ export function InvitationStatsPage() {
           Retour aux invitations
         </Link>
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Statistiques invitations</h1>
+          <h1 className="text-2xl font-bold text-bark">Statistiques invitations</h1>
           <Button variant="outline" onClick={handleExportExcel}>
             Exporter Excel
           </Button>
@@ -70,14 +70,14 @@ export function InvitationStatsPage() {
       </div>
 
       {errorMessage && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex justify-between">
+        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg flex justify-between">
           <span>{errorMessage}</span>
-          <button onClick={() => setErrorMessage('')} className="text-red-700 font-bold">x</button>
+          <button onClick={() => setErrorMessage('')} className="text-error font-bold">x</button>
         </div>
       )}
 
       {isLoading ? (
-        <div className="text-center py-12 text-gray-500">Chargement des statistiques...</div>
+        <div className="text-center py-12 text-bark-muted">Chargement des statistiques...</div>
       ) : stats ? (
         <div className="space-y-6">
           {/* Stats cards */}
@@ -107,30 +107,30 @@ export function InvitationStatsPage() {
           {/* Summary cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white rounded-lg shadow p-4 text-center">
-              <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
-              <p className="text-sm text-gray-500">Total invitations</p>
+              <p className="text-3xl font-bold text-bark">{stats.total}</p>
+              <p className="text-sm text-bark-muted">Total invitations</p>
             </div>
             <div className="bg-white rounded-lg shadow p-4 text-center">
-              <p className="text-3xl font-bold text-green-600">{stats.activated}</p>
-              <p className="text-sm text-gray-500">Activées</p>
+              <p className="text-3xl font-bold text-primary">{stats.activated}</p>
+              <p className="text-sm text-bark-muted">Activées</p>
             </div>
             <div className="bg-white rounded-lg shadow p-4 text-center">
-              <p className="text-3xl font-bold text-amber-600">{stats.pending}</p>
-              <p className="text-sm text-gray-500">En attente</p>
+              <p className="text-3xl font-bold text-accent-dark">{stats.pending}</p>
+              <p className="text-sm text-bark-muted">En attente</p>
             </div>
             <div className="bg-white rounded-lg shadow p-4 text-center">
-              <p className="text-3xl font-bold text-red-600">{stats.expired}</p>
-              <p className="text-sm text-gray-500">Expirées</p>
+              <p className="text-3xl font-bold text-error">{stats.expired}</p>
+              <p className="text-sm text-bark-muted">Expirées</p>
             </div>
           </div>
 
           {/* Daily evolution chart */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <h2 className="text-lg font-semibold text-bark mb-4">
               Évolution par jour
             </h2>
             {stats.dailyEvolution.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">Aucune donnée</p>
+              <p className="text-bark-muted text-center py-8">Aucune donnée</p>
             ) : (
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={stats.dailyEvolution}>
@@ -162,23 +162,23 @@ export function InvitationStatsPage() {
 
           {/* List type breakdown */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <h2 className="text-lg font-semibold text-bark mb-4">
               Ventilation par type de liste
             </h2>
             {stats.byListType.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">Aucune donnée</p>
+              <p className="text-bark-muted text-center py-4">Aucune donnée</p>
             ) : (
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-2 font-medium text-gray-600">Type</th>
-                    <th className="text-right py-2 font-medium text-gray-600">Nombre</th>
-                    <th className="text-right py-2 font-medium text-gray-600">Pourcentage</th>
+                  <tr className="border-b border-sand">
+                    <th className="text-left py-2 font-medium text-bark-light">Type</th>
+                    <th className="text-right py-2 font-medium text-bark-light">Nombre</th>
+                    <th className="text-right py-2 font-medium text-bark-light">Pourcentage</th>
                   </tr>
                 </thead>
                 <tbody>
                   {stats.byListType.map((lt) => (
-                    <tr key={lt.listType} className="border-b border-gray-100">
+                    <tr key={lt.listType} className="border-b border-sand">
                       <td className="py-2 font-medium">
                         {LIST_TYPE_LABELS[lt.listType] || lt.listType}
                       </td>
@@ -206,10 +206,10 @@ function StatCard({
   color: 'blue' | 'green' | 'amber' | 'purple';
 }) {
   const colorClasses = {
-    blue: 'bg-blue-50 text-blue-700',
-    green: 'bg-green-50 text-green-700',
-    amber: 'bg-amber-50 text-amber-700',
-    purple: 'bg-purple-50 text-purple-700',
+    blue: 'bg-primary/10 text-primary-dark',
+    green: 'bg-primary/10 text-primary-dark',
+    amber: 'bg-accent/10 text-accent-dark',
+    purple: 'bg-secondary/10 text-secondary-dark',
   };
 
   return (

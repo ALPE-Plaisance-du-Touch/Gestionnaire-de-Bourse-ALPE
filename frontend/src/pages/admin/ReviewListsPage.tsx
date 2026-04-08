@@ -7,9 +7,9 @@ import { TrainingBanner } from '@/components/ui/TrainingBanner';
 import type { ReviewListItem } from '@/types';
 
 const REVIEW_STATUS_LABELS: Record<string, { label: string; className: string }> = {
-  pending: { label: 'À traiter', className: 'bg-gray-100 text-gray-800' },
-  in_progress: { label: 'En cours', className: 'bg-amber-100 text-amber-800' },
-  reviewed: { label: 'Terminée', className: 'bg-green-100 text-green-800' },
+  pending: { label: 'À traiter', className: 'bg-cream-dark text-bark' },
+  in_progress: { label: 'En cours', className: 'bg-accent/15 text-accent-dark' },
+  reviewed: { label: 'Terminée', className: 'bg-primary/10 text-primary-dark' },
 };
 
 function getListReviewStatus(item: ReviewListItem): string {
@@ -47,11 +47,11 @@ export function ReviewListsPage() {
         <div>
           <Link
             to={`/editions/${editionId}`}
-            className="text-sm text-blue-600 hover:text-blue-700 mb-1 inline-block"
+            className="text-sm text-primary hover:text-primary-dark mb-1 inline-block"
           >
             &larr; Retour à l'édition
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Revue des listes au dépôt</h1>
+          <h1 className="text-2xl font-bold text-bark">Revue des listes au dépôt</h1>
         </div>
       </div>
 
@@ -61,22 +61,22 @@ export function ReviewListsPage() {
       {summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 mb-6">
           <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-sm text-gray-500">Listes traitées</p>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-sm text-bark-muted">Listes traitées</p>
+            <p className="text-2xl font-bold text-bark">
               {summary.reviewedLists}/{summary.totalLists}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-sm text-gray-500">Articles acceptés</p>
-            <p className="text-2xl font-bold text-green-600">{summary.acceptedArticles}</p>
+            <p className="text-sm text-bark-muted">Articles acceptés</p>
+            <p className="text-2xl font-bold text-primary">{summary.acceptedArticles}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-sm text-gray-500">Articles refusés</p>
-            <p className="text-2xl font-bold text-red-600">{summary.rejectedArticles}</p>
+            <p className="text-sm text-bark-muted">Articles refusés</p>
+            <p className="text-2xl font-bold text-error">{summary.rejectedArticles}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-sm text-gray-500">En attente</p>
-            <p className="text-2xl font-bold text-amber-600">{summary.pendingArticles}</p>
+            <p className="text-sm text-bark-muted">En attente</p>
+            <p className="text-2xl font-bold text-accent-dark">{summary.pendingArticles}</p>
           </div>
         </div>
       )}
@@ -84,35 +84,35 @@ export function ReviewListsPage() {
       {/* Progress bar */}
       {summary && summary.totalArticles > 0 && (
         <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <div className="flex justify-between text-sm text-gray-600 mb-2">
+          <div className="flex justify-between text-sm text-bark-light mb-2">
             <span>Progression de la revue</span>
             <span>
               {summary.acceptedArticles + summary.rejectedArticles}/{summary.totalArticles} articles traités
             </span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-3 flex overflow-hidden">
+          <div className="w-full bg-sand rounded-full h-3 flex overflow-hidden">
             <div
-              className="bg-green-500 h-3"
+              className="bg-primary h-3"
               style={{
                 width: `${(summary.acceptedArticles / summary.totalArticles) * 100}%`,
               }}
             />
             <div
-              className="bg-red-500 h-3"
+              className="bg-error h-3"
               style={{
                 width: `${(summary.rejectedArticles / summary.totalArticles) * 100}%`,
               }}
             />
           </div>
-          <div className="flex gap-4 mt-2 text-xs text-gray-500">
+          <div className="flex gap-4 mt-2 text-xs text-bark-muted">
             <span className="flex items-center gap-1">
-              <span className="w-3 h-3 bg-green-500 rounded-full inline-block" /> Acceptés
+              <span className="w-3 h-3 bg-primary rounded-full inline-block" /> Acceptés
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-3 h-3 bg-red-500 rounded-full inline-block" /> Refusés
+              <span className="w-3 h-3 bg-error rounded-full inline-block" /> Refusés
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-3 h-3 bg-gray-200 rounded-full inline-block" /> En attente
+              <span className="w-3 h-3 bg-sand rounded-full inline-block" /> En attente
             </span>
           </div>
         </div>
@@ -120,9 +120,9 @@ export function ReviewListsPage() {
 
       {/* Filter */}
       <div className="mb-4 flex items-center gap-4">
-        <label className="text-sm font-medium text-gray-700">Filtrer :</label>
+        <label className="text-sm font-medium text-bark-light">Filtrer :</label>
         <select
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="rounded-lg border border-sand px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
@@ -136,23 +136,23 @@ export function ReviewListsPage() {
       {/* Table */}
       <div className="bg-white rounded-lg shadow">
         {isLoading ? (
-          <div className="p-8 text-center text-gray-500">Chargement...</div>
+          <div className="p-8 text-center text-bark-muted">Chargement...</div>
         ) : items.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">Aucune liste trouvée.</div>
+          <div className="p-8 text-center text-bark-muted">Aucune liste trouvée.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-cream">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">N&deg;</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Déposant</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Articles</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acceptés</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Refusés</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">En attente</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Statut</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">N&deg;</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Déposant</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Type</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-bark-muted uppercase">Articles</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-bark-muted uppercase">Acceptés</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-bark-muted uppercase">Refusés</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-bark-muted uppercase">En attente</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-bark-muted uppercase">Statut</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-bark-muted uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -160,20 +160,20 @@ export function ReviewListsPage() {
                   const reviewStatus = getListReviewStatus(item);
                   const statusInfo = REVIEW_STATUS_LABELS[reviewStatus] ?? REVIEW_STATUS_LABELS.pending;
                   return (
-                    <tr key={item.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.number}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700">{item.depositorName}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500">
+                    <tr key={item.id} className="hover:bg-cream">
+                      <td className="px-4 py-3 text-sm font-medium text-bark">{item.number}</td>
+                      <td className="px-4 py-3 text-sm text-bark-light">{item.depositorName}</td>
+                      <td className="px-4 py-3 text-sm text-bark-muted">
                         {item.listType === 'standard' ? 'Standard' : `Liste ${item.listType}`}
                       </td>
-                      <td className="px-4 py-3 text-sm text-center text-gray-700">{item.articleCount}</td>
-                      <td className="px-4 py-3 text-sm text-center text-green-700 font-medium">
+                      <td className="px-4 py-3 text-sm text-center text-bark-light">{item.articleCount}</td>
+                      <td className="px-4 py-3 text-sm text-center text-primary-dark font-medium">
                         {item.reviewStats.accepted}
                       </td>
-                      <td className="px-4 py-3 text-sm text-center text-red-700 font-medium">
+                      <td className="px-4 py-3 text-sm text-center text-error font-medium">
                         {item.reviewStats.rejected}
                       </td>
-                      <td className="px-4 py-3 text-sm text-center text-amber-700 font-medium">
+                      <td className="px-4 py-3 text-sm text-center text-accent-dark font-medium">
                         {item.reviewStats.pending}
                       </td>
                       <td className="px-4 py-3 text-sm text-center">

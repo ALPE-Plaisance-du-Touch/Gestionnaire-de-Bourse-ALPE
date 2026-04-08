@@ -11,13 +11,13 @@ const CATEGORY_LABELS: Record<ArticleCategory, string> = {
 };
 
 const CATEGORY_COLORS: Record<ArticleCategory, string> = {
-  clothing: 'bg-purple-100 text-purple-800',
-  shoes: 'bg-blue-100 text-blue-800',
+  clothing: 'bg-secondary/10 text-secondary-dark',
+  shoes: 'bg-primary/10 text-primary-dark',
   nursery: 'bg-pink-100 text-pink-800',
-  toys: 'bg-yellow-100 text-yellow-800',
-  books: 'bg-green-100 text-green-800',
-  accessories: 'bg-orange-100 text-orange-800',
-  other: 'bg-gray-100 text-gray-800',
+  toys: 'bg-accent/15 text-accent-dark',
+  books: 'bg-primary/10 text-primary-dark',
+  accessories: 'bg-secondary/10 text-secondary-dark',
+  other: 'bg-cream-dark text-bark',
 };
 
 function formatPrice(price: number): string {
@@ -49,7 +49,7 @@ export function ArticleList({
   if (articles.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow p-8 text-center">
-        <div className="text-gray-400 mb-4">
+        <div className="text-bark-muted mb-4">
           <svg
             className="w-16 h-16 mx-auto"
             fill="none"
@@ -64,9 +64,9 @@ export function ArticleList({
             />
           </svg>
         </div>
-        <p className="text-gray-500">Aucun article dans cette liste.</p>
+        <p className="text-bark-muted">Aucun article dans cette liste.</p>
         {isDraft && (
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-sm text-bark-muted mt-1">
             Cliquez sur "Ajouter un article" pour commencer.
           </p>
         )}
@@ -78,25 +78,25 @@ export function ArticleList({
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-cream">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                 #
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                 Article
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                 Catégorie
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                 Détails
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-medium text-bark-muted uppercase tracking-wider">
                 Prix
               </th>
               {isDraft && (
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-bark-muted uppercase tracking-wider">
                   Actions
                 </th>
               )}
@@ -104,16 +104,16 @@ export function ArticleList({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {articles.map((article) => (
-              <tr key={article.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+              <tr key={article.id} className="hover:bg-cream">
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-bark-muted">
                   {article.lineNumber}
                 </td>
                 <td className="px-4 py-3">
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm font-medium text-bark">
                     {article.description}
                   </div>
                   {article.isLot && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary-dark mt-1">
                       Lot de {article.lotQuantity}
                     </span>
                   )}
@@ -127,21 +127,21 @@ export function ArticleList({
                     {CATEGORY_LABELS[article.category]}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-500">
+                <td className="px-4 py-3 text-sm text-bark-muted">
                   <div className="space-y-0.5">
                     {article.size && <div>Taille: {article.size}</div>}
                     {article.brand && <div>Marque: {article.brand}</div>}
                     {article.color && <div>Couleur: {article.color}</div>}
                   </div>
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-bark">
                   {formatPrice(article.price)}
                 </td>
                 {isDraft && (
                   <td className="px-4 py-3 whitespace-nowrap text-right text-sm space-x-1">
                     <button
                       onClick={() => onEdit(article)}
-                      className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded"
+                      className="p-1.5 text-bark-muted hover:text-primary hover:bg-primary/10 rounded"
                       title="Modifier"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +151,7 @@ export function ArticleList({
                     <button
                       onClick={() => onDuplicate(article)}
                       disabled={!canAddMore}
-                      className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="p-1.5 text-bark-muted hover:text-primary hover:bg-primary/10 rounded disabled:opacity-40 disabled:cursor-not-allowed"
                       title={!canAddMore ? 'Liste complète' : 'Dupliquer'}
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -161,7 +161,7 @@ export function ArticleList({
                     <button
                       onClick={() => onDelete(article)}
                       disabled={isDeleting}
-                      className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="p-1.5 text-bark-muted hover:text-error hover:bg-error/10 rounded disabled:opacity-40 disabled:cursor-not-allowed"
                       title="Supprimer"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -175,10 +175,10 @@ export function ArticleList({
           </tbody>
         </table>
       </div>
-      <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
-        <p className="text-sm text-gray-500">
+      <div className="px-4 py-3 bg-cream border-t border-sand">
+        <p className="text-sm text-bark-muted">
           {articles.length} article{articles.length > 1 ? 's' : ''} - Total:{' '}
-          <span className="font-medium text-gray-900">
+          <span className="font-medium text-bark">
             {formatPrice(articles.reduce((sum, a) => sum + a.price, 0))}
           </span>
         </p>

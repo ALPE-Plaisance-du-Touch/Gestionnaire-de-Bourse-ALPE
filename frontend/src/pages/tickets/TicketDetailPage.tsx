@@ -69,11 +69,11 @@ export function TicketDetailPage() {
   };
 
   if (isLoading) {
-    return <p className="text-gray-500">Chargement...</p>;
+    return <p className="text-bark-muted">Chargement...</p>;
   }
 
   if (!ticket) {
-    return <p className="text-red-500">Ticket introuvable.</p>;
+    return <p className="text-error">Ticket introuvable.</p>;
   }
 
   return (
@@ -83,12 +83,12 @@ export function TicketDetailPage() {
         <div>
           <button
             onClick={() => navigate(`/editions/${editionId}/tickets`)}
-            className="text-sm text-blue-600 hover:text-blue-700 mb-2 inline-block"
+            className="text-sm text-primary hover:text-primary-dark mb-2 inline-block"
           >
             &larr; Retour aux tickets
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">{ticket.subject}</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-bark">{ticket.subject}</h1>
+          <p className="text-sm text-bark-muted mt-1">
             Par {ticket.createdByName}
             {ticket.assignedToName && <> &rarr; {ticket.assignedToName}</>}
             {' '}&middot; {formatDate(ticket.createdAt)}
@@ -98,8 +98,8 @@ export function TicketDetailPage() {
           <span
             className={`px-2 py-0.5 text-xs font-medium rounded-full ${
               ticket.status === 'open'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-gray-100 text-gray-600'
+                ? 'bg-primary/10 text-primary-dark'
+                : 'bg-cream-dark text-bark-light'
             }`}
           >
             {ticket.status === 'open' ? 'Ouvert' : 'Fermé'}
@@ -128,7 +128,7 @@ export function TicketDetailPage() {
       </div>
 
       {/* Messages */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-sand p-6">
         <div className="space-y-4 mb-6">
           {ticket.messages.map((msg) => {
             const isOwnMessage = msg.senderId === user?.id;
@@ -140,15 +140,15 @@ export function TicketDetailPage() {
                 <div
                   className={`max-w-[75%] rounded-lg p-3 ${
                     isOwnMessage
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-900'
+                      ? 'bg-primary text-white'
+                      : 'bg-cream-dark text-bark'
                   }`}
                 >
-                  <p className={`text-xs font-medium mb-1 ${isOwnMessage ? 'text-blue-100' : 'text-gray-500'}`}>
+                  <p className={`text-xs font-medium mb-1 ${isOwnMessage ? 'text-primary' : 'text-bark-muted'}`}>
                     {msg.senderName}
                   </p>
                   <p className="whitespace-pre-wrap">{msg.content}</p>
-                  <p className={`text-xs mt-1 ${isOwnMessage ? 'text-blue-200' : 'text-gray-400'}`}>
+                  <p className={`text-xs mt-1 ${isOwnMessage ? 'text-primary' : 'text-bark-muted'}`}>
                     {formatDate(msg.createdAt)}
                   </p>
                 </div>
@@ -160,17 +160,17 @@ export function TicketDetailPage() {
 
         {/* Reply form */}
         {ticket.status === 'open' && (
-          <form onSubmit={handleReply} className="border-t border-gray-200 pt-4">
+          <form onSubmit={handleReply} className="border-t border-sand pt-4">
             <textarea
               value={replyContent}
               onChange={(e) => setReplyContent(e.target.value)}
               placeholder="Votre réponse..."
               rows={3}
               maxLength={5000}
-              className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+              className="w-full rounded-lg border border-sand p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary resize-none"
             />
             <div className="flex justify-between items-center mt-2">
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-bark-muted">
                 {replyContent.length} / 5000
               </span>
               <Button
@@ -182,7 +182,7 @@ export function TicketDetailPage() {
               </Button>
             </div>
             {replyMutation.isError && (
-              <p className="text-red-500 text-sm mt-2">
+              <p className="text-error text-sm mt-2">
                 Erreur lors de l'envoi. Réessayez.
               </p>
             )}

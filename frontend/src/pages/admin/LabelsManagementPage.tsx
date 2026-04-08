@@ -130,19 +130,19 @@ export function LabelsManagementPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb */}
       <nav className="mb-6">
-        <ol className="flex flex-wrap items-center space-x-2 text-sm text-gray-500">
-          <li><Link to="/editions" className="hover:text-gray-700">Éditions</Link></li>
+        <ol className="flex flex-wrap items-center space-x-2 text-sm text-bark-muted">
+          <li><Link to="/editions" className="hover:text-bark">Éditions</Link></li>
           <li>/</li>
-          <li><Link to={`/editions/${editionId}`} className="hover:text-gray-700">{edition?.name || '...'}</Link></li>
+          <li><Link to={`/editions/${editionId}`} className="hover:text-bark">{edition?.name || '...'}</Link></li>
           <li>/</li>
-          <li className="text-gray-900 font-medium">Étiquettes</li>
+          <li className="text-bark font-medium">Étiquettes</li>
         </ol>
       </nav>
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Gestion des étiquettes</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-bark">Gestion des étiquettes</h1>
+        <p className="mt-1 text-sm text-bark-muted">
           Générez les étiquettes PDF pour les listes validées de cette édition.
         </p>
       </div>
@@ -158,12 +158,12 @@ export function LabelsManagementPage() {
         </div>
       )}
       {statsLoading && (
-        <div className="text-center py-4 text-gray-500 mb-8">Chargement des statistiques...</div>
+        <div className="text-center py-4 text-bark-muted mb-8">Chargement des statistiques...</div>
       )}
 
       {/* Generation form */}
       <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Mode de génération</h2>
+        <h2 className="text-lg font-semibold text-bark mb-4">Mode de génération</h2>
 
         {/* Mode selector */}
         <div className="flex flex-wrap gap-3 mb-6">
@@ -182,8 +182,8 @@ export function LabelsManagementPage() {
               }}
               className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
                 mode === option.value
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  ? 'bg-primary text-white border-primary'
+                  : 'bg-white text-bark-light border-sand hover:bg-cream'
               }`}
             >
               {option.label}
@@ -213,36 +213,36 @@ export function LabelsManagementPage() {
         {mode === 'selection' && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-bark-light">
                 Déposants ({selectedDepositorIds.size} sélectionné{selectedDepositorIds.size > 1 ? 's' : ''})
               </label>
               <button
                 type="button"
                 onClick={toggleAllDepositors}
-                className="text-sm text-blue-600 hover:text-blue-800"
+                className="text-sm text-primary hover:text-primary-dark"
               >
                 {selectedDepositorIds.size === depositors.length ? 'Tout désélectionner' : 'Tout sélectionner'}
               </button>
             </div>
             {depositors.length === 0 ? (
-              <p className="text-sm text-gray-500">Aucun déposant avec des listes validées pour cette édition.</p>
+              <p className="text-sm text-bark-muted">Aucun déposant avec des listes validées pour cette édition.</p>
             ) : (
-              <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg divide-y divide-gray-100">
+              <div className="max-h-64 overflow-y-auto border border-sand rounded-lg divide-y divide-gray-100">
                 {depositors.map((dep: LabelDepositor) => (
                   <label
                     key={dep.id}
-                    className="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer"
+                    className="flex items-center px-4 py-2 hover:bg-cream cursor-pointer"
                   >
                     <input
                       type="checkbox"
                       checked={selectedDepositorIds.has(dep.id)}
                       onChange={() => toggleDepositor(dep.id)}
-                      className="h-4 w-4 text-blue-600 rounded border-gray-300"
+                      className="h-4 w-4 text-primary rounded border-sand"
                     />
-                    <span className="ml-3 text-sm text-gray-900">
+                    <span className="ml-3 text-sm text-bark">
                       {dep.firstName} {dep.lastName}
                     </span>
-                    <span className="ml-2 text-xs text-gray-500">({dep.email})</span>
+                    <span className="ml-2 text-xs text-bark-muted">({dep.email})</span>
                   </label>
                 ))}
               </div>
@@ -252,12 +252,12 @@ export function LabelsManagementPage() {
 
         {/* Messages */}
         {successMessage && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
+          <div className="mb-4 p-3 bg-primary/10 border border-primary/30 rounded-lg text-sm text-primary-dark">
             {successMessage}
           </div>
         )}
         {errorMessage && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+          <div className="mb-4 p-3 bg-error/10 border border-error/30 rounded-lg text-sm text-error">
             {errorMessage}
           </div>
         )}
@@ -274,7 +274,7 @@ export function LabelsManagementPage() {
         </Button>
 
         {generateMutation.isPending && (
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-bark-muted">
             La génération peut prendre quelques secondes selon le nombre d'étiquettes...
           </p>
         )}
@@ -286,9 +286,9 @@ export function LabelsManagementPage() {
 function StatCard({ label, value, sublabel }: { label: string; value: number; sublabel: string }) {
   return (
     <div className="bg-white rounded-lg shadow p-5">
-      <div className="text-sm font-medium text-gray-500">{label}</div>
-      <div className="mt-1 text-3xl font-bold text-blue-600">{value}</div>
-      <div className="mt-1 text-xs text-gray-400">{sublabel}</div>
+      <div className="text-sm font-medium text-bark-muted">{label}</div>
+      <div className="mt-1 text-3xl font-bold text-primary">{value}</div>
+      <div className="mt-1 text-xs text-bark-muted">{sublabel}</div>
     </div>
   );
 }

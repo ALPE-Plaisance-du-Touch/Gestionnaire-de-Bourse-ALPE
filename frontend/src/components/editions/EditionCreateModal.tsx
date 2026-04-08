@@ -127,7 +127,7 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
       <Modal isOpen={isOpen} onClose={handleClose} title="Nouvelle édition" size="lg">
         {createdEditionId ? (
           <div className="space-y-4">
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+            <div className="bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg">
               <p className="font-medium">Édition créée avec succès !</p>
               <p className="text-sm mt-1">
                 L'édition <strong>{name}</strong> a été créée en statut brouillon.
@@ -150,14 +150,14 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+              <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
                 {error}
               </div>
             )}
 
             {billetwebConfigured && (
-              <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <span className="text-sm text-blue-700">
+              <div className="flex items-center gap-3 p-3 bg-primary/10 border border-primary/30 rounded-lg">
+                <span className="text-sm text-primary-dark">
                   {billetwebEventId
                     ? `Lié à l'événement Billetweb #${billetwebEventId}`
                     : 'Pré-remplir depuis un événement Billetweb'}
@@ -209,7 +209,7 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
             />
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-light mb-1">
                 Description
               </label>
               <textarea
@@ -217,7 +217,7 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Description optionnelle de l'édition..."
                 rows={3}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                className="block w-full rounded-md border-sand shadow-sm focus:border-primary focus:ring-primary sm:text-sm border p-2"
               />
             </div>
 
@@ -226,13 +226,13 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
                 type="checkbox"
                 checked={isTraining}
                 onChange={(e) => setIsTraining(e.target.checked)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="rounded border-sand text-primary focus:ring-primary"
               />
-              <span className="text-sm font-medium text-gray-700">Bourse de formation</span>
-              <span className="text-xs text-gray-500">(pour former bénévoles et gestionnaires)</span>
+              <span className="text-sm font-medium text-bark-light">Bourse de formation</span>
+              <span className="text-xs text-bark-muted">(pour former bénévoles et gestionnaires)</span>
             </label>
 
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-bark-muted">
               L'édition sera créée en statut "Brouillon". Vous pourrez ensuite la configurer
               avant d'ouvrir les inscriptions.
             </p>

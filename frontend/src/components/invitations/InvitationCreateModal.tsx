@@ -132,7 +132,7 @@ export function InvitationCreateModal({ isOpen, onClose }: InvitationCreateModal
     <Modal isOpen={isOpen} onClose={handleClose} title="Nouvelle invitation" size="md">
       {success ? (
         <div className="space-y-4">
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          <div className="bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg">
             <p className="font-medium">Invitation envoyée avec succès !</p>
             <p className="text-sm mt-1">
               Un email d'invitation a été envoyé à <strong>{email}</strong>.
@@ -148,7 +148,7 @@ export function InvitationCreateModal({ isOpen, onClose }: InvitationCreateModal
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
@@ -165,10 +165,10 @@ export function InvitationCreateModal({ isOpen, onClose }: InvitationCreateModal
 
           {/* Depositor lookup result */}
           {isLookingUp && (
-            <p className="text-xs text-gray-400">Recherche du déposant...</p>
+            <p className="text-xs text-bark-muted">Recherche du déposant...</p>
           )}
           {lookup?.found && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-lg text-sm">
+            <div className="bg-primary/10 border border-primary/30 text-primary-dark px-3 py-2 rounded-lg text-sm">
               <div className="flex items-center justify-between">
                 <span>
                   Déposant existant : <strong>{lookup.firstName} {lookup.lastName}</strong>
@@ -177,13 +177,13 @@ export function InvitationCreateModal({ isOpen, onClose }: InvitationCreateModal
                 <button
                   type="button"
                   onClick={handlePrefill}
-                  className="text-xs font-medium text-green-800 underline hover:text-green-900"
+                  className="text-xs font-medium text-primary-dark underline hover:text-primary-dark"
                 >
                   Pré-remplir
                 </button>
               </div>
               {lookup.lastEditionName && (
-                <p className="text-xs mt-0.5 text-green-600">
+                <p className="text-xs mt-0.5 text-primary">
                   Dernière participation : {lookup.lastEditionName}
                 </p>
               )}
@@ -212,7 +212,7 @@ export function InvitationCreateModal({ isOpen, onClose }: InvitationCreateModal
             onChange={(e) => setListType(e.target.value as ListType)}
           />
 
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-bark-muted">
             L'invitation sera valide pendant 7 jours. Le déposant recevra un email avec un lien
             pour activer son compte.
           </p>
