@@ -1,6 +1,6 @@
 """ItemList service for business logic."""
 
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -335,7 +335,7 @@ class ItemListService:
 
         # Check deadline if set
         if edition.declaration_deadline:
-            if datetime.now(timezone.utc) > edition.declaration_deadline:
+            if datetime.now() > edition.declaration_deadline:
                 return False
 
         return True
