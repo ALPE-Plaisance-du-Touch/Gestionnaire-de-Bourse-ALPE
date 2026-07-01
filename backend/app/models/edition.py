@@ -31,6 +31,14 @@ class EditionStatus(str, Enum):
     ARCHIVED = "archived"
 
 
+class RegistrationMode(str, Enum):
+    """Source of depositor registrations for an edition."""
+
+    MANUAL = "manual"
+    BILLETWEB_CSV = "billetweb_csv"
+    BILLETWEB_API = "billetweb_api"
+
+
 class Edition(Base, UUIDMixin, TimestampMixin):
     """Edition model representing a sale event."""
 
@@ -86,6 +94,32 @@ class Edition(Base, UUIDMixin, TimestampMixin):
 
     # Training mode (US-015)
     is_training: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    # Feature modules toggles (#66) — declaration is the core, always on (no flag)
+    labels_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    deposit_review_enabled: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False
+    )
+    sales_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    payouts_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    deposit_slots_enabled: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False
+    )
+    tickets_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    special_lists_enabled: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False
+    )
+    # Sales sub-settings (only meaningful when sales_enabled)
+    offline_sales_enabled: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False
+    )
+    private_school_sale_enabled: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False
+    )
+    # Depositor registration source (manual / billetweb_csv / billetweb_api)
+    registration_mode: Mapped[str] = mapped_column(
+        String(20), default="manual", nullable=False
+    )
 
     # Creator
     created_by_id: Mapped[str | None] = mapped_column(

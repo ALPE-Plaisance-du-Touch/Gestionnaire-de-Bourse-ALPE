@@ -50,8 +50,27 @@ class EditionRepository:
         description: str | None = None,
         billetweb_event_id: str | None = None,
         is_training: bool = False,
+        **module_flags,
     ) -> Edition:
-        """Create a new edition."""
+        """Create a new edition.
+
+        module_flags carries the feature-module toggles and registration_mode
+        (#66); unknown keys are ignored to stay tolerant to callers.
+        """
+        allowed_flags = {
+            "labels_enabled",
+            "deposit_review_enabled",
+            "sales_enabled",
+            "payouts_enabled",
+            "deposit_slots_enabled",
+            "tickets_enabled",
+            "special_lists_enabled",
+            "offline_sales_enabled",
+            "private_school_sale_enabled",
+            "registration_mode",
+        }
+        flags = {k: v for k, v in module_flags.items() if k in allowed_flags}
+
         edition = Edition(
             name=name,
             start_datetime=start_datetime,
@@ -62,6 +81,7 @@ class EditionRepository:
             created_by_id=created_by.id,
             billetweb_event_id=billetweb_event_id,
             is_training=is_training,
+            **flags,
         )
 
         self.db.add(edition)

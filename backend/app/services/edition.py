@@ -83,6 +83,9 @@ class EditionService:
                 field="end_datetime",
             )
 
+        registration_mode = getattr(data, "registration_mode", "manual")
+        registration_mode = getattr(registration_mode, "value", registration_mode)
+
         return await self.repository.create(
             name=data.name,
             start_datetime=data.start_datetime,
@@ -92,6 +95,16 @@ class EditionService:
             created_by=created_by,
             billetweb_event_id=getattr(data, "billetweb_event_id", None),
             is_training=getattr(data, "is_training", False),
+            labels_enabled=data.labels_enabled,
+            deposit_review_enabled=data.deposit_review_enabled,
+            sales_enabled=data.sales_enabled,
+            payouts_enabled=data.payouts_enabled,
+            deposit_slots_enabled=data.deposit_slots_enabled,
+            tickets_enabled=data.tickets_enabled,
+            special_lists_enabled=data.special_lists_enabled,
+            offline_sales_enabled=data.offline_sales_enabled,
+            private_school_sale_enabled=data.private_school_sale_enabled,
+            registration_mode=registration_mode,
         )
 
     async def get_edition(self, edition_id: str) -> Edition:

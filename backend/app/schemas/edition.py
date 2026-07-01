@@ -4,7 +4,15 @@ from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+
+class RegistrationMode(str, Enum):
+    """Source of depositor registrations for an edition."""
+
+    MANUAL = "manual"
+    BILLETWEB_CSV = "billetweb_csv"
+    BILLETWEB_API = "billetweb_api"
 
 
 class EditionStatus(str, Enum):
@@ -17,6 +25,26 @@ class EditionStatus(str, Enum):
     SETTLEMENT = "settlement"
     CLOSED = "closed"
     ARCHIVED = "archived"
+
+
+def _validate_module_dependencies(obj) -> "EditionCreate":
+    """Enforce module dependencies: payouts and sales sub-settings require sales.
+
+    Only validates fields that are set (not None), so it is safe for partial
+    updates where a field left at None means "unchanged".
+    """
+    sales = getattr(obj, "sales_enabled", None)
+    if sales is False:
+        for dependent in (
+            "payouts_enabled",
+            "offline_sales_enabled",
+            "private_school_sale_enabled",
+        ):
+            if getattr(obj, dependent, None) is True:
+                raise ValueError(
+                    f"{dependent} nécessite que la vente (sales_enabled) soit activée"
+                )
+    return obj
 
 
 class EditionBase(BaseModel):
@@ -38,10 +66,30 @@ class EditionBase(BaseModel):
 
 
 class EditionCreate(EditionBase):
-    """Schema for creating a new edition."""
+    """Schema for creating a new edition.
+
+    Feature modules default to a minimal "adoption" preset (#66):
+    only deposit review and label generation are on; everything else is off.
+    """
 
     billetweb_event_id: str | None = None
     is_training: bool = False
+
+    # Feature modules — minimal adoption preset at creation
+    labels_enabled: bool = True
+    deposit_review_enabled: bool = True
+    sales_enabled: bool = False
+    payouts_enabled: bool = False
+    deposit_slots_enabled: bool = False
+    tickets_enabled: bool = False
+    special_lists_enabled: bool = False
+    offline_sales_enabled: bool = False
+    private_school_sale_enabled: bool = False
+    registration_mode: RegistrationMode = RegistrationMode.MANUAL
+
+    @model_validator(mode="after")
+    def validate_module_dependencies(self) -> "EditionCreate":
+        return _validate_module_dependencies(self)
 
 
 class EditionUpdate(BaseModel):
@@ -63,6 +111,22 @@ class EditionUpdate(BaseModel):
 
     # Training mode toggle
     is_training: bool | None = None
+
+    # Feature modules toggles (#66)
+    labels_enabled: bool | None = None
+    deposit_review_enabled: bool | None = None
+    sales_enabled: bool | None = None
+    payouts_enabled: bool | None = None
+    deposit_slots_enabled: bool | None = None
+    tickets_enabled: bool | None = None
+    special_lists_enabled: bool | None = None
+    offline_sales_enabled: bool | None = None
+    private_school_sale_enabled: bool | None = None
+    registration_mode: RegistrationMode | None = None
+
+    @model_validator(mode="after")
+    def validate_module_dependencies(self) -> "EditionUpdate":
+        return _validate_module_dependencies(self)
 
 
 class EditionStatusUpdate(BaseModel):
@@ -113,6 +177,18 @@ class EditionResponse(BaseModel):
 
     # Training mode (US-015)
     is_training: bool = False
+
+    # Feature modules toggles (#66)
+    labels_enabled: bool = True
+    deposit_review_enabled: bool = True
+    sales_enabled: bool = True
+    payouts_enabled: bool = True
+    deposit_slots_enabled: bool = True
+    tickets_enabled: bool = True
+    special_lists_enabled: bool = True
+    offline_sales_enabled: bool = True
+    private_school_sale_enabled: bool = True
+    registration_mode: str = "manual"
 
     # Closure tracking
     closed_at: datetime | None = None
