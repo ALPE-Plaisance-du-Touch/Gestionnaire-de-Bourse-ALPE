@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from app.api.v1.module_guards import require_module_enabled
 from app.dependencies import DBSession, require_role
 from app.exceptions import (
     ArticleNotFoundError,
@@ -12,6 +13,7 @@ from app.exceptions import (
     ValidationError,
 )
 from app.models import User
+from app.repositories import EditionRepository
 from app.schemas.article import (
     ArticleRejectRequest,
     ArticleResponse,
@@ -35,7 +37,12 @@ def get_review_service(db: DBSession) -> ReviewService:
     return ReviewService(db)
 
 
+def get_edition_repository(db: DBSession) -> EditionRepository:
+    return EditionRepository(db)
+
+
 ReviewServiceDep = Annotated[ReviewService, Depends(get_review_service)]
+EditionRepoDep = Annotated[EditionRepository, Depends(get_edition_repository)]
 VolunteerUser = Annotated[
     User, Depends(require_role(["volunteer", "manager", "administrator"]))
 ]
@@ -50,6 +57,7 @@ VolunteerUser = Annotated[
 async def get_review_lists(
     edition_id: str,
     review_service: ReviewServiceDep,
+    edition_repo: EditionRepoDep,
     current_user: VolunteerUser,
     review_status: str | None = Query(
         None,
@@ -57,6 +65,14 @@ async def get_review_lists(
         description="Filter by review status: pending, in_progress, reviewed",
     ),
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} non trouvée",
+        )
+    require_module_enabled(edition, "deposit_review_enabled")
+
     try:
         lists = await review_service.get_review_lists(
             edition_id, review_status=review_status
@@ -92,8 +108,17 @@ async def get_review_list_detail(
     edition_id: str,
     list_id: str,
     review_service: ReviewServiceDep,
+    edition_repo: EditionRepoDep,
     current_user: VolunteerUser,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} non trouvée",
+        )
+    require_module_enabled(edition, "deposit_review_enabled")
+
     try:
         detail = await review_service.get_review_list_detail(edition_id, list_id)
         return ReviewListDetailResponse(
@@ -126,8 +151,17 @@ async def accept_article(
     edition_id: str,
     article_id: str,
     review_service: ReviewServiceDep,
+    edition_repo: EditionRepoDep,
     current_user: VolunteerUser,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} non trouvée",
+        )
+    require_module_enabled(edition, "deposit_review_enabled")
+
     try:
         article = await review_service.accept_article(article_id, current_user)
         return ArticleResponse.model_validate(article)
@@ -153,9 +187,18 @@ async def reject_article(
     edition_id: str,
     article_id: str,
     review_service: ReviewServiceDep,
+    edition_repo: EditionRepoDep,
     current_user: VolunteerUser,
     request: ArticleRejectRequest | None = None,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} non trouvée",
+        )
+    require_module_enabled(edition, "deposit_review_enabled")
+
     try:
         reason = request.rejection_reason if request else None
         article = await review_service.reject_article(
@@ -185,8 +228,17 @@ async def edit_article_in_review(
     article_id: str,
     request: ArticleUpdate,
     review_service: ReviewServiceDep,
+    edition_repo: EditionRepoDep,
     current_user: VolunteerUser,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} non trouvée",
+        )
+    require_module_enabled(edition, "deposit_review_enabled")
+
     try:
         article = await review_service.edit_article_in_review(
             article_id, request, current_user
@@ -224,8 +276,17 @@ async def finalize_review(
     edition_id: str,
     list_id: str,
     review_service: ReviewServiceDep,
+    edition_repo: EditionRepoDep,
     current_user: VolunteerUser,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} non trouvée",
+        )
+    require_module_enabled(edition, "deposit_review_enabled")
+
     try:
         item_list = await review_service.finalize_review(list_id, current_user)
 
@@ -258,8 +319,17 @@ async def finalize_review(
 async def get_review_summary(
     edition_id: str,
     review_service: ReviewServiceDep,
+    edition_repo: EditionRepoDep,
     current_user: VolunteerUser,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Edition {edition_id} non trouvée",
+        )
+    require_module_enabled(edition, "deposit_review_enabled")
+
     try:
         summary = await review_service.get_review_summary(edition_id)
         return ReviewSummaryResponse(**summary)

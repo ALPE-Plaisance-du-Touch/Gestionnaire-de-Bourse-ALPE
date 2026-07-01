@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from app.api.v1.module_guards import require_module_enabled
 from app.dependencies import DBSession, require_role
 from app.exceptions import EditionNotFoundError, ValidationError
 from app.models import User
@@ -50,12 +51,13 @@ async def list_deposit_slots(
     """List all deposit slots for an edition."""
     # Verify edition exists
     try:
-        await edition_service.get_edition(edition_id)
+        edition = await edition_service.get_edition(edition_id)
     except EditionNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Edition {edition_id} not found",
         )
+    require_module_enabled(edition, "deposit_slots_enabled")
 
     slots, total = await repo.list_by_edition(edition_id)
 
@@ -95,6 +97,7 @@ async def create_deposit_slot(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Edition {edition_id} not found",
         )
+    require_module_enabled(edition, "deposit_slots_enabled")
 
     if edition.is_closed:
         raise HTTPException(
@@ -143,12 +146,13 @@ async def get_deposit_slot(
     """Get a single deposit slot."""
     # Verify edition exists
     try:
-        await edition_service.get_edition(edition_id)
+        edition = await edition_service.get_edition(edition_id)
     except EditionNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Edition {edition_id} not found",
         )
+    require_module_enabled(edition, "deposit_slots_enabled")
 
     slot = await repo.get_by_id(slot_id)
 
@@ -184,6 +188,7 @@ async def update_deposit_slot(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Edition {edition_id} not found",
         )
+    require_module_enabled(edition, "deposit_slots_enabled")
 
     if edition.is_closed:
         raise HTTPException(
@@ -246,6 +251,7 @@ async def delete_deposit_slot(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Edition {edition_id} not found",
         )
+    require_module_enabled(edition, "deposit_slots_enabled")
 
     if edition.is_closed:
         raise HTTPException(

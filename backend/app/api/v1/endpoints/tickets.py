@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from app.api.v1.module_guards import require_module_enabled
 from app.dependencies import CurrentActiveUser, DBSession
 from app.exceptions import (
     AuthorizationError,
@@ -11,6 +12,7 @@ from app.exceptions import (
     NotFoundError,
     ValidationError,
 )
+from app.repositories import EditionRepository
 from app.schemas.ticket import (
     CreateMessageRequest,
     CreateTicketRequest,
@@ -25,6 +27,13 @@ from app.services import ticket as ticket_service
 router = APIRouter()
 
 
+def get_edition_repository(db: DBSession) -> EditionRepository:
+    return EditionRepository(db)
+
+
+EditionRepoDep = Annotated[EditionRepository, Depends(get_edition_repository)]
+
+
 @router.post(
     "",
     response_model=TicketDetailResponse,
@@ -35,8 +44,14 @@ async def create_ticket(
     edition_id: str,
     request: CreateTicketRequest,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: CurrentActiveUser,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "tickets_enabled")
+
     try:
         return await ticket_service.create_ticket(
             edition_id=edition_id,
@@ -62,11 +77,17 @@ async def create_ticket(
 async def list_tickets(
     edition_id: str,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: CurrentActiveUser,
     ticket_status: str | None = Query(None, alias="status"),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "tickets_enabled")
+
     try:
         return await ticket_service.list_tickets(
             edition_id=edition_id,
@@ -88,8 +109,14 @@ async def list_tickets(
 async def get_unread_count(
     edition_id: str,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: CurrentActiveUser,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "tickets_enabled")
+
     return await ticket_service.get_unread_count(
         user=current_user,
         edition_id=edition_id,
@@ -106,8 +133,14 @@ async def get_ticket_detail(
     edition_id: str,
     ticket_id: str,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: CurrentActiveUser,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "tickets_enabled")
+
     try:
         return await ticket_service.get_ticket_detail(
             ticket_id=ticket_id,
@@ -131,8 +164,14 @@ async def reply_to_ticket(
     ticket_id: str,
     request: CreateMessageRequest,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: CurrentActiveUser,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "tickets_enabled")
+
     try:
         return await ticket_service.reply_to_ticket(
             ticket_id=ticket_id,
@@ -157,8 +196,14 @@ async def close_ticket(
     edition_id: str,
     ticket_id: str,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: CurrentActiveUser,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "tickets_enabled")
+
     try:
         return await ticket_service.close_ticket(
             ticket_id=ticket_id,
@@ -182,8 +227,14 @@ async def reopen_ticket(
     edition_id: str,
     ticket_id: str,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: CurrentActiveUser,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "tickets_enabled")
+
     try:
         return await ticket_service.reopen_ticket(
             ticket_id=ticket_id,

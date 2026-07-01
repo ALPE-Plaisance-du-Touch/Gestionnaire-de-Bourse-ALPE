@@ -6,6 +6,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, s
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 
+from app.api.v1.module_guards import require_module_enabled
 from app.dependencies import DBSession, require_role
 from app.exceptions import (
     EditionNotFoundError,
@@ -14,6 +15,7 @@ from app.exceptions import (
     ValidationError,
 )
 from app.models import User
+from app.repositories import EditionRepository
 from app.schemas.payout import (
     CalculatePayoutsResponse,
     PayoutDashboardResponse,
@@ -38,7 +40,13 @@ from app.services.payout import (
 
 router = APIRouter()
 
+
+def get_edition_repository(db: DBSession) -> EditionRepository:
+    return EditionRepository(db)
+
+
 ManagerRole = Annotated[User, Depends(require_role(["manager", "administrator"]))]
+EditionRepoDep = Annotated[EditionRepository, Depends(get_edition_repository)]
 
 
 @router.post(
@@ -49,8 +57,14 @@ ManagerRole = Annotated[User, Depends(require_role(["manager", "administrator"])
 async def calculate_payouts_endpoint(
     edition_id: str,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: ManagerRole,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "payouts_enabled")
+
     try:
         return await calculate_payouts(edition_id, current_user, db)
     except EditionNotFoundError:
@@ -66,12 +80,18 @@ async def calculate_payouts_endpoint(
 async def list_payouts_endpoint(
     edition_id: str,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: ManagerRole,
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
     payout_status: str | None = Query(None, alias="status"),
     search: str | None = None,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "payouts_enabled")
+
     try:
         return await list_payouts(
             edition_id, db,
@@ -90,8 +110,14 @@ async def list_payouts_endpoint(
 async def get_payout_stats_endpoint(
     edition_id: str,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: ManagerRole,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "payouts_enabled")
+
     try:
         return await get_payout_stats(edition_id, db)
     except EditionNotFoundError:
@@ -106,8 +132,14 @@ async def get_payout_stats_endpoint(
 async def get_payout_dashboard_endpoint(
     edition_id: str,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: ManagerRole,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "payouts_enabled")
+
     try:
         return await get_payout_dashboard(edition_id, db)
     except EditionNotFoundError:
@@ -121,8 +153,14 @@ async def get_payout_dashboard_endpoint(
 async def export_payouts_excel_endpoint(
     edition_id: str,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: ManagerRole,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "payouts_enabled")
+
     try:
         excel_bytes, filename = await generate_payout_excel_export(edition_id, db)
     except EditionNotFoundError:
@@ -151,6 +189,7 @@ async def download_closure_report_endpoint(
     edition = await edition_repo.get_by_id(edition_id)
     if not edition:
         raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "payouts_enabled")
 
     payout_repo = PayoutRepository(db)
     stats = await payout_repo.get_stats(edition_id)
@@ -183,8 +222,14 @@ async def get_payout_detail_endpoint(
     edition_id: str,
     payout_id: str,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: ManagerRole,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "payouts_enabled")
+
     try:
         return await get_payout_detail(payout_id, db)
     except PayoutNotFoundError:
@@ -199,8 +244,14 @@ async def download_receipt_endpoint(
     edition_id: str,
     payout_id: str,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: ManagerRole,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "payouts_enabled")
+
     try:
         pdf_bytes, filename = await generate_receipt(payout_id, db)
     except PayoutNotFoundError:
@@ -223,8 +274,14 @@ async def record_payment_endpoint(
     payout_id: str,
     request: RecordPaymentRequest,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: ManagerRole,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "payouts_enabled")
+
     try:
         return await record_payment(
             payout_id,
@@ -252,8 +309,14 @@ async def update_notes_endpoint(
     payout_id: str,
     request: UpdatePayoutNotesRequest,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: ManagerRole,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "payouts_enabled")
+
     try:
         return await update_payout_notes(
             payout_id, request.notes, request.is_absent, current_user, db
@@ -271,8 +334,14 @@ async def recalculate_payout_endpoint(
     edition_id: str,
     payout_id: str,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: ManagerRole,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "payouts_enabled")
+
     try:
         return await recalculate_payout(payout_id, current_user, db)
     except PayoutNotFoundError:
@@ -290,10 +359,16 @@ async def send_payout_reminder_endpoint(
     payout_id: str,
     background_tasks: BackgroundTasks,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: ManagerRole,
 ):
-    from app.repositories import EditionRepository, PayoutRepository
+    from app.repositories import PayoutRepository
     from app.services.email import email_service
+
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "payouts_enabled")
 
     payout_repo = PayoutRepository(db)
     payout = await payout_repo.get_by_id(payout_id)
@@ -349,6 +424,7 @@ async def send_bulk_payout_reminders(
     edition = await edition_repo.get_by_id(edition_id)
     if not edition:
         raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "payouts_enabled")
 
     # Get all unpaid payouts (pending or ready) with depositor info
     result = await db.execute(
@@ -398,8 +474,14 @@ async def send_bulk_payout_reminders(
 async def generate_all_receipts_endpoint(
     edition_id: str,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: ManagerRole,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "payouts_enabled")
+
     try:
         pdf_bytes, filename = await generate_all_receipts(edition_id, db)
     except EditionNotFoundError:
