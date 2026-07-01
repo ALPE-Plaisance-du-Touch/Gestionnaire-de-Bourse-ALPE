@@ -17,6 +17,7 @@ from app.models.edition import EditionStatus
 from app.models.edition_depositor import EditionDepositor
 from app.repositories import EditionRepository
 from app.repositories.payout import PayoutRepository
+from app.services.edition_module_usage import get_module_usage_block
 from app.schemas import EditionCreate, EditionUpdate
 from app.schemas.edition import ClosureCheckItem, ClosureCheckResponse
 
@@ -209,7 +210,60 @@ class EditionService:
         # Build update kwargs (exclude None values)
         update_data = data.model_dump(exclude_unset=True)
 
+        await self._validate_module_changes(edition, update_data)
+
         return await self.repository.update(edition, **update_data)
+
+    # Boolean feature-module flags on Edition (#66).
+    _MODULE_FLAGS = (
+        "labels_enabled",
+        "deposit_review_enabled",
+        "sales_enabled",
+        "payouts_enabled",
+        "deposit_slots_enabled",
+        "tickets_enabled",
+        "special_lists_enabled",
+        "offline_sales_enabled",
+        "private_school_sale_enabled",
+    )
+
+    async def _validate_module_changes(
+        self, edition: Edition, update_data: dict
+    ) -> None:
+        """Validate feature-module toggles against the resulting state (#66).
+
+        Enforces two rules using the effective value of each flag (the value
+        in the update if present, otherwise the current stored value):
+        - Dependencies: payouts and sales sub-settings require sales enabled.
+        - No disabling a module that already has data for this edition.
+        """
+
+        def effective(flag: str) -> bool:
+            return bool(update_data.get(flag, getattr(edition, flag)))
+
+        # Dependency: payouts / offline / private-school sale require sales
+        if not effective("sales_enabled"):
+            for dependent in (
+                "payouts_enabled",
+                "offline_sales_enabled",
+                "private_school_sale_enabled",
+            ):
+                if effective(dependent):
+                    raise ValidationError(
+                        f"{dependent} nécessite que la vente soit activée",
+                        field=dependent,
+                    )
+
+        # No disabling a module already in use
+        for flag in self._MODULE_FLAGS:
+            turning_off = flag in update_data and not update_data[flag]
+            if turning_off and getattr(edition, flag):
+                reason = await get_module_usage_block(self.db, edition.id, flag)
+                if reason:
+                    raise ValidationError(
+                        f"Impossible de désactiver ce module : {reason}.",
+                        field=flag,
+                    )
 
     async def update_status(
         self,
