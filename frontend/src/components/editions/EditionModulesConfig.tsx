@@ -56,6 +56,9 @@ export function EditionModulesConfig({ edition }: EditionModulesConfigProps) {
       setSuccess(true);
       setError(null);
       queryClient.invalidateQueries({ queryKey: ['edition', edition.id] });
+      // The sidebar reads the active edition; refresh it so module links
+      // appear/disappear immediately without a page reload.
+      queryClient.invalidateQueries({ queryKey: ['active-edition'] });
       setTimeout(() => setSuccess(false), 3000);
     },
     onError: (err: unknown) => {
