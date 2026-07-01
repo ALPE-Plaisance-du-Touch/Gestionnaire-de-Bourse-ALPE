@@ -6,6 +6,7 @@ import type {
   CreateEditionRequest,
   UpdateEditionRequest,
   EditionStatus,
+  RegistrationMode,
 } from '@/types';
 
 /**
@@ -44,6 +45,16 @@ interface EditionApiResponse {
   } | null;
   archivedAt: string | null;
   isTraining: boolean;
+  labelsEnabled: boolean;
+  depositReviewEnabled: boolean;
+  salesEnabled: boolean;
+  payoutsEnabled: boolean;
+  depositSlotsEnabled: boolean;
+  ticketsEnabled: boolean;
+  specialListsEnabled: boolean;
+  offlineSalesEnabled: boolean;
+  privateSchoolSaleEnabled: boolean;
+  registrationMode: RegistrationMode;
 }
 
 interface EditionListApiResponse {
@@ -82,6 +93,16 @@ function transformEdition(data: EditionApiResponse): Edition {
     closedBy: data.closedBy,
     archivedAt: data.archivedAt,
     isTraining: data.isTraining,
+    labelsEnabled: data.labelsEnabled,
+    depositReviewEnabled: data.depositReviewEnabled,
+    salesEnabled: data.salesEnabled,
+    payoutsEnabled: data.payoutsEnabled,
+    depositSlotsEnabled: data.depositSlotsEnabled,
+    ticketsEnabled: data.ticketsEnabled,
+    specialListsEnabled: data.specialListsEnabled,
+    offlineSalesEnabled: data.offlineSalesEnabled,
+    privateSchoolSaleEnabled: data.privateSchoolSaleEnabled,
+    registrationMode: data.registrationMode,
   };
 }
 
@@ -162,6 +183,18 @@ export const editionsApi = {
     if (data.retrievalEndDatetime !== undefined) payload.retrieval_end_datetime = data.retrievalEndDatetime;
     if (data.commissionRate !== undefined) payload.commission_rate = data.commissionRate;
     if (data.is_training !== undefined) payload.is_training = data.is_training;
+
+    // Feature module toggles (#66)
+    if (data.labelsEnabled !== undefined) payload.labels_enabled = data.labelsEnabled;
+    if (data.depositReviewEnabled !== undefined) payload.deposit_review_enabled = data.depositReviewEnabled;
+    if (data.salesEnabled !== undefined) payload.sales_enabled = data.salesEnabled;
+    if (data.payoutsEnabled !== undefined) payload.payouts_enabled = data.payoutsEnabled;
+    if (data.depositSlotsEnabled !== undefined) payload.deposit_slots_enabled = data.depositSlotsEnabled;
+    if (data.ticketsEnabled !== undefined) payload.tickets_enabled = data.ticketsEnabled;
+    if (data.specialListsEnabled !== undefined) payload.special_lists_enabled = data.specialListsEnabled;
+    if (data.offlineSalesEnabled !== undefined) payload.offline_sales_enabled = data.offlineSalesEnabled;
+    if (data.privateSchoolSaleEnabled !== undefined) payload.private_school_sale_enabled = data.privateSchoolSaleEnabled;
+    if (data.registrationMode !== undefined) payload.registration_mode = data.registrationMode;
 
     const response = await apiClient.put<EditionApiResponse>(`/v1/editions/${editionId}`, payload);
     return transformEdition(response.data);

@@ -40,7 +40,34 @@ export interface Edition {
   closedBy: EditionCreator | null;
   archivedAt: string | null;
   isTraining: boolean;
+  // Feature module toggles (#66)
+  labelsEnabled: boolean;
+  depositReviewEnabled: boolean;
+  salesEnabled: boolean;
+  payoutsEnabled: boolean;
+  depositSlotsEnabled: boolean;
+  ticketsEnabled: boolean;
+  specialListsEnabled: boolean;
+  offlineSalesEnabled: boolean;
+  privateSchoolSaleEnabled: boolean;
+  registrationMode: RegistrationMode;
 }
+
+export type RegistrationMode = 'manual' | 'billetweb_csv' | 'billetweb_api';
+
+export const EDITION_MODULE_FLAGS = [
+  'labelsEnabled',
+  'depositReviewEnabled',
+  'salesEnabled',
+  'payoutsEnabled',
+  'depositSlotsEnabled',
+  'ticketsEnabled',
+  'specialListsEnabled',
+  'offlineSalesEnabled',
+  'privateSchoolSaleEnabled',
+] as const;
+
+export type EditionModuleFlag = (typeof EDITION_MODULE_FLAGS)[number];
 
 export interface CreateEditionRequest {
   name: string;
@@ -52,7 +79,20 @@ export interface CreateEditionRequest {
   isTraining?: boolean;
 }
 
-export interface UpdateEditionRequest {
+export interface EditionModuleUpdate {
+  labelsEnabled?: boolean;
+  depositReviewEnabled?: boolean;
+  salesEnabled?: boolean;
+  payoutsEnabled?: boolean;
+  depositSlotsEnabled?: boolean;
+  ticketsEnabled?: boolean;
+  specialListsEnabled?: boolean;
+  offlineSalesEnabled?: boolean;
+  privateSchoolSaleEnabled?: boolean;
+  registrationMode?: RegistrationMode;
+}
+
+export interface UpdateEditionRequest extends EditionModuleUpdate {
   name?: string;
   description?: string;
   location?: string;

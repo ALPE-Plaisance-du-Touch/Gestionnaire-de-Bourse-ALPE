@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { editionsApi, billetwebApi, depositSlotsApi, payoutsApi, usersApi, reviewApi, editionListsApi, ApiException } from '@/api';
 import { Button, ConfirmModal, Input, Modal, Select } from '@/components/ui';
-import { DepositSlotsEditor } from '@/components/editions';
+import { DepositSlotsEditor, EditionModulesConfig } from '@/components/editions';
 import { BilletwebSessionsSyncModal } from '@/components/billetweb/BilletwebSessionsSyncModal';
 import { BilletwebAttendeesSyncModal } from '@/components/billetweb/BilletwebAttendeesSyncModal';
 import { TrainingBanner } from '@/components/ui';
@@ -636,6 +636,7 @@ export function EditionDetailPage() {
 
       {/* ===== Tab 1: Configuration ===== */}
       {currentTab === 'config' && (
+      <>
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Not editable warning */}
         {!isEditable && (
@@ -846,6 +847,11 @@ export function EditionDetailPage() {
           </Button>
         </div>
       </form>
+
+      <div className="mt-8">
+        <EditionModulesConfig edition={edition} />
+      </div>
+      </>
       )}
 
       {/* ===== Tab 2: Déposants ===== */}

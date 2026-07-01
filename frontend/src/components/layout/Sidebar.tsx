@@ -34,7 +34,8 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }: 
     staleTime: 60000,
   });
 
-  const activeEditionId = activeEditionData?.edition?.id ?? activeEditionData?.trainingEdition?.id;
+  const activeEdition = activeEditionData?.edition ?? activeEditionData?.trainingEdition;
+  const activeEditionId = activeEdition?.id;
 
   const canAccessTickets = user && user.role !== 'volunteer';
 
@@ -93,7 +94,7 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }: 
               </svg>
             ),
           },
-          {
+          ...(activeEdition?.labelsEnabled ? [{
             label: 'Étiquettes',
             path: `/editions/${activeEditionId}/labels`,
             icon: (
@@ -101,8 +102,8 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }: 
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
               </svg>
             ),
-          },
-          {
+          }] : []),
+          ...(activeEdition?.salesEnabled ? [{
             label: 'Statistiques',
             path: `/editions/${activeEditionId}/stats`,
             icon: (
@@ -110,14 +111,14 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }: 
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             ),
-          },
+          }] : []),
         ] : []),
       ],
     },
     {
       title: 'Ventes',
       items: [
-        ...(activeEditionId ? [
+        ...(activeEditionId && activeEdition?.salesEnabled ? [
           {
             label: 'Caisse',
             path: `/editions/${activeEditionId}/sales`,
@@ -137,7 +138,7 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }: 
             ),
           },
         ] : []),
-        ...(activeEditionId ? [
+        ...(activeEditionId && activeEdition?.payoutsEnabled ? [
           {
             label: 'Reversements',
             path: `/editions/${activeEditionId}/payouts`,
@@ -171,7 +172,7 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }: 
             </svg>
           ),
         },
-        ...(activeEditionId && canAccessTickets ? [
+        ...(activeEditionId && canAccessTickets && activeEdition?.ticketsEnabled ? [
           {
             label: 'Messages',
             path: `/editions/${activeEditionId}/tickets`,
