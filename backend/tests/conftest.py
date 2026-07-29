@@ -1,6 +1,7 @@
 """Pytest configuration and fixtures."""
 
 import asyncio
+import os
 from collections.abc import AsyncGenerator, Generator
 from typing import Any
 
@@ -16,8 +17,14 @@ from app.models import Role, User
 from app.models.base import Base, get_db_session
 from app.services import AuthService
 
-# Use SQLite for tests (in-memory)
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+# In-memory SQLite by default: fast, no service needed.
+# Set TEST_DATABASE_URL to run the suite against MariaDB instead — production runs on
+# MariaDB, and query or migration regressions specific to it do not show up on SQLite.
+#   make test-backend-mariadb
+TEST_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL", "sqlite+aiosqlite:///:memory:"
+)
+IS_SQLITE = TEST_DATABASE_URL.startswith("sqlite")
 
 
 @pytest.fixture(scope="session")
@@ -34,15 +41,29 @@ async def test_engine():
     engine = create_async_engine(
         TEST_DATABASE_URL,
         echo=False,
+        # A real server keeps connections around between tests; SQLite in-memory dies
+        # with its connection, so pooling options only apply to MariaDB.
+        **({} if IS_SQLITE else {"pool_pre_ping": True, "pool_recycle": 3600}),
     )
 
     async with engine.begin() as conn:
+        # MariaDB persists across runs: a previous crash can leave tables behind, and
+        # foreign keys make an ordinary drop_all fail.
+        if not IS_SQLITE:
+            await conn.execute(text("SET FOREIGN_KEY_CHECKS=0"))
+            await conn.run_sync(Base.metadata.drop_all)
+            await conn.execute(text("SET FOREIGN_KEY_CHECKS=1"))
         await conn.run_sync(Base.metadata.create_all)
 
     yield engine
 
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        if not IS_SQLITE:
+            await conn.execute(text("SET FOREIGN_KEY_CHECKS=0"))
+            await conn.run_sync(Base.metadata.drop_all)
+            await conn.execute(text("SET FOREIGN_KEY_CHECKS=1"))
+        else:
+            await conn.run_sync(Base.metadata.drop_all)
 
     await engine.dispose()
 

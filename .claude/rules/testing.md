@@ -18,11 +18,18 @@
 
 ```bash
 docker compose exec frontend npm test     # vitest, non-interactive
-docker compose exec backend pytest
+docker compose exec backend pytest        # backend, on in-memory SQLite
+make test-backend-mariadb                 # same suite, against MariaDB
 ```
 
 Locally, without Docker: `npm test` from `frontend/`.
 Never run bare `vitest` — it enters watch mode and hangs.
+
+**Which backend database.** The suite defaults to in-memory SQLite: fast, no service
+needed. Production runs on MariaDB, and SQLite silently accepts what MariaDB rejects —
+column precision, quoted defaults. Run the MariaDB target before merging anything that
+touches a model, a migration or a query. Point `TEST_DATABASE_URL` at another database
+to override.
 
 ## Development cycle
 
@@ -74,5 +81,10 @@ Never weaken an assertion to get to green: no `.skip`, no deleted test, no
   declaration time. Re-arm them inside the `beforeEach`.
 - **Mock every API the component calls from a timer** (debounced lookups, queries on
   open). An unmocked one rejects after the test ends and pollutes unrelated files.
-- **Backend tests run on SQLite**, production on MariaDB. Query and migration
-  regressions specific to MariaDB will not be caught here.
+- **SQLite hides schema defects.** It ignores decimal precision and accepts a
+  `server_default` written as a string. Two real bugs surfaced only once the suite ran
+  on MariaDB: `server_default="CURRENT_TIMESTAMP"` compiled to a quoted literal
+  (`DEFAULT 'CURRENT_TIMESTAMP'`, error 1067), and a value of `15.0` overflowing
+  `Numeric(5, 4)`. Use `server_default=func.now()`, never the string.
+- **Commission rates are stored as a fraction**, not a percentage: `0.20` means 20%.
+  The column is `Numeric(5, 4)`, so anything from 10 upwards is rejected by MariaDB.

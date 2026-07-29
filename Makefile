@@ -1,5 +1,5 @@
 # Makefile for Bourse ALPE development
-.PHONY: help install dev up down logs shell-backend shell-frontend db-shell migrate seed seed-articles seed-sales seed-payouts seed-closure seed-all test lint clean
+.PHONY: help install dev up down logs shell-backend shell-frontend db-shell migrate seed seed-articles seed-sales seed-payouts seed-closure seed-all test test-backend-mariadb lint clean
 
 # Default target
 help:
@@ -34,7 +34,8 @@ help:
 	@echo ""
 	@echo "Testing:"
 	@echo "  make test           Run all tests"
-	@echo "  make test-backend   Run backend tests"
+	@echo "  make test-backend   Run backend tests (SQLite)"
+	@echo "  make test-backend-mariadb  Run backend tests against MariaDB"
 	@echo "  make test-frontend  Run frontend tests"
 	@echo ""
 	@echo "Code quality:"
@@ -128,6 +129,14 @@ test: test-backend test-frontend
 
 test-backend:
 	docker-compose exec backend pytest
+
+# Same suite against MariaDB instead of the default in-memory SQLite. Production runs
+# on MariaDB, and SQLite silently accepts things it rejects (column precision, quoted
+# defaults). Slower, so it is a separate target rather than the default.
+test-backend-mariadb:
+	docker compose up -d db
+	docker compose exec -T db mariadb -uroot -proot_password -e "CREATE DATABASE IF NOT EXISTS bourse_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; GRANT ALL PRIVILEGES ON bourse_test.* TO 'bourse'@'%'; FLUSH PRIVILEGES;"
+	docker compose run --rm -e TEST_DATABASE_URL="mysql+aiomysql://bourse:bourse_dev@db:3306/bourse_test" backend pytest
 
 test-frontend:
 	docker-compose exec frontend npm test
