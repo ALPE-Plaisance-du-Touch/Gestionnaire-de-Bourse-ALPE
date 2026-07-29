@@ -16,7 +16,7 @@ export default defineConfig({
         name: 'Bourse ALPE - Caisse',
         short_name: 'Bourse ALPE',
         description: 'Gestionnaire de ventes pour la bourse ALPE',
-        theme_color: '#2563eb',
+        theme_color: '#00A0D0',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',

@@ -1,52 +1,87 @@
 @import 'tailwindcss';
 
-/* Tailwind v4: Register custom colors and theme tokens */
+/* Tailwind v4: Register custom colors and theme tokens.
+   Values come from the ALPE design system (.claude/skills/alpe-design/tokens/).
+
+   Token NAMES are kept from the previous warm palette on purpose: 1601 usages across
+   63 files reference them. Renaming would mean rewriting every page at once; instead
+   each name is remapped to its brand equivalent, and the pages are rehabilitated
+   one area at a time (see issues #71 to #78).
+
+   Mapping applied, chosen from how each token is actually used:
+     primary    sage green  -> blue-500   brand primary
+     secondary  terracotta  -> orange-500 brand secondary
+     accent     honey       -> orange     NOT yellow: 66 of its usages are text and 53
+                                          are block backgrounds, both forbidden for the
+                                          brand yellow. Its meaning here is "warning".
+     cream      warm white  -> grey-50    page background (76 usages, all backgrounds)
+     cream-dark warm grey   -> grey-100   alternating background
+     sand       warm beige  -> grey-200   borders (107 of 140 usages are border-sand)
+     bark       near-black  -> grey-800   body text (932 usages)
+     bark-light             -> grey-600   secondary text
+     bark-muted             -> grey-500   muted text
+   The brand yellow is deliberately NOT bound to a token: it is reserved for the
+   swoosh, a rule, or a pill — never text, never a block background. */
 @theme {
-  /* Primary - Sage green */
-  --color-primary: #6B8F71;
-  --color-primary-light: #8FB396;
-  --color-primary-dark: #567358;
+  /* Primary - ALPE blue.
+     White on blue-500 is 3.03:1 — fine for large text and icons, short of AA for body
+     copy. --color-primary-strong (5.98:1) is the one to use behind white text. */
+  --color-primary: #00a0d0;
+  --color-primary-light: #4ec3e6;
+  --color-primary-dark: #0086b2;
+  --color-primary-strong: #006b91;
 
-  /* Secondary - Terracotta */
-  --color-secondary: #C4704B;
-  --color-secondary-light: #D4896A;
-  --color-secondary-dark: #A45A38;
+  /* Secondary - ALPE orange.
+     White on orange-500 only reaches 2.67:1, below AA even for large text. Use
+     --color-secondary for surfaces carrying dark text, and --color-secondary-strong
+     when white text sits on top (4.79:1). */
+  --color-secondary: #f08040;
+  --color-secondary-light: #f7a06c;
+  --color-secondary-dark: #dd6c2b;
+  --color-secondary-strong: #b95520;
 
-  /* Accent - Honey yellow */
-  --color-accent: #E8B931;
-  --color-accent-light: #F0CD5E;
-  --color-accent-dark: #C99E1E;
+  /* Accent - carries "warning" meaning in this app, hence orange, not brand yellow */
+  --color-accent: #f7a06c;
+  --color-accent-light: #fbc19c;
+  --color-accent-dark: #b95520;
 
-  /* Semantic colors */
-  --color-success: #6B8F71;
-  --color-warning: #E8B931;
-  --color-error: #C44B4B;
-  --color-error-light: #E87070;
+  /* Brand yellow - swoosh, rules and pills only. Never text, never a block background. */
+  --color-swoosh: #ffe000;
 
-  /* Neutrals - Warm tones */
-  --color-cream: #FAF8F4;
-  --color-cream-dark: #F0EDE6;
-  --color-sand: #E8E2D6;
-  --color-bark: #2D2A26;
-  --color-bark-light: #5C5650;
-  --color-bark-muted: #8C8478;
+  /* Deep brand ink, for long headings needing more contrast than blue-500 */
+  --color-ink: #005070;
 
-  /* Typography */
-  --font-display: 'DM Serif Display', Georgia, serif;
-  --font-body: 'DM Sans', system-ui, sans-serif;
+  /* Semantic colors - kept close to the brand so nothing reads as a foreign UI colour */
+  --color-success: #3aa650;
+  --color-warning: #e0a100;
+  --color-error: #d64545;
+  --color-error-light: #fdecec;
 
-  /* Border radius */
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.25rem;
-  --radius-2xl: 1.5rem;
+  /* Neutrals - cool-balanced greys that sit calmly next to the blue */
+  --color-cream: #f4f7f9;
+  --color-cream-dark: #e9eef2;
+  --color-sand: #d7dfe6;
+  --color-bark: #262e34;
+  --color-bark-light: #4f5a64;
+  --color-bark-muted: #6b7883;
 
-  /* Shadows - warm toned */
-  --shadow-soft: 0 1px 3px rgba(45, 42, 38, 0.06), 0 1px 2px rgba(45, 42, 38, 0.04);
-  --shadow-md: 0 4px 6px rgba(45, 42, 38, 0.06), 0 2px 4px rgba(45, 42, 38, 0.04);
-  --shadow-lg: 0 10px 15px rgba(45, 42, 38, 0.06), 0 4px 6px rgba(45, 42, 38, 0.04);
-  --shadow-xl: 0 20px 25px rgba(45, 42, 38, 0.08), 0 8px 10px rgba(45, 42, 38, 0.04);
+  /* Typography - Google Fonts substitutes, no original binaries were supplied */
+  --font-display: 'Baloo 2', 'Quicksand', system-ui, sans-serif;
+  --font-heading: 'Quicksand', 'Baloo 2', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Border radius - the logo has no sharp corner, radii run generous */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+
+  /* Shadows - tinted with deep blue, never pure black */
+  --shadow-soft: 0 1px 3px rgba(3, 59, 83, 0.08), 0 1px 2px rgba(3, 59, 83, 0.04);
+  --shadow-md: 0 4px 12px rgba(3, 59, 83, 0.09);
+  --shadow-lg: 0 10px 28px rgba(3, 59, 83, 0.12);
+  --shadow-xl: 0 20px 48px rgba(3, 59, 83, 0.16);
 }
 
 /* Base styles */
@@ -55,12 +90,17 @@ body {
   @apply min-h-screen bg-cream text-bark antialiased;
 }
 
-/* Headings use display font */
+/* Headings use the heading font; --font-display is for hero titles and key figures */
 h1, h2, h3 {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
 }
 
-/* Focus visible styles for accessibility */
+/* Long titles read better when lines break on sense rather than on width */
+h1, h2, h3, h4 {
+  text-wrap: pretty;
+}
+
+/* Focus visible styles for accessibility - never removed */
 :focus-visible {
   @apply outline-2 outline-offset-2 outline-primary;
 }
@@ -70,7 +110,17 @@ a, button, input, select, textarea {
   @apply transition-all duration-200;
 }
 
-/* Custom scrollbar for warm aesthetic */
+/* The brand asks for discreet motion; honour the OS-level preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
