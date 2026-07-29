@@ -10,8 +10,48 @@
 - Never skip hooks (no `--no-verify`)
 
 ## Branches
-- Format: `feature/us-xxx-description` or `feature/description`
-- Never force-push to `main` or `develop`
+
+### Model
+
+```
+feature/xxx  →  dev-{initial}  →  develop  →  main
+ (one topic)    (personal)       (integration)  (production)
+```
+
+| Branch | Purpose | Deploys |
+|---|---|---|
+| `main` | Production | Manual — a push deploys nothing on its own |
+| `develop` | Integration / beta | Automatic on push |
+| `dev-{initial}` | Personal branch, one per developer (`dev-j`) | Local or dedicated subdomain |
+| `feature/*` | One topic, branched **from** the personal branch | — |
+
+### Naming
+- `feature/us-xxx-description` when a user story exists, else `feature/description`
+- English, kebab-case
+- Other prefixes: `fix/`, `chore/`, `docs/`, `test/`
+- Personal branches: `dev-` + first initial (`dev-j`); disambiguate as `dev-ju` / `dev-je` on collision
+
+### Rules
+- `main` and `develop` are protected: merge via approved PR only, never a direct
+  push, never a force-push
+- Full rights on your own `dev-{initial}` branch
+- **Squash merge** into `develop` and `main` — one clean commit per feature.
+  A plain merge is fine from a feature branch into a personal branch
+- Delete feature branches after merge, local and remote
+
+### Spotting stale branches after a squash merge
+Squash merging rewrites SHAs, so `git branch --merged` reports nothing as merged
+and dead branches pile up unnoticed. Compare file trees instead:
+
+```
+git ls-tree -r --name-only origin/develop | sort > /tmp/develop.txt
+git ls-tree -r --name-only origin/<branch> | sort | comm -23 - /tmp/develop.txt
+```
+
+Only files genuinely absent from `develop` come out. Expect a handful of
+false positives — files deleted since — so read the list before deleting.
+Record the SHAs first (`git rev-parse`): a deleted remote branch is restorable
+with `git push origin <sha>:refs/heads/<branch>` only as long as you kept them.
 
 ## Safety
 - Never run destructive git commands without explicit confirmation: `push --force`, `reset --hard`, `checkout .`, `clean -f`, `branch -D`
@@ -20,11 +60,39 @@
 - Investigate unexpected state (unfamiliar files, branches) before deleting or overwriting
 
 ## Remote Operations
-- **NEVER execute remote git commands directly** (`git push`, `git pull`, `git fetch`, `gh pr create`, `gh pr merge`, etc.)
-- Instead, provide the user with the exact command to run and let them execute it manually
-- This applies to ALL interactions with the remote repository without exception
+- **Never execute plain git remote commands directly** (`git push`, `git pull`,
+  `git fetch`): give the user the exact command and let them run it
+- The `gh` CLI is allowed (`gh issue`, `gh pr`, `gh label`, ...)
+- Deleting a remote branch is irreversible in practice: record the SHAs, show
+  the list, and get explicit confirmation before deleting
 
 ## Pull Requests
 - Keep PR title under 70 characters
 - Include a Summary section with 1-3 bullet points
 - Include a Test Plan section
+
+### Closing issues
+GitHub only honours closing keywords on a PR merged into the default branch
+(`main`). Since PRs into `develop` and `main` are squashed, the original SHAs
+disappear and the promotion PR is the only reliable place to carry them:
+
+- Feature PR into a personal branch or `develop`: write `Refs #123` (links
+  without closing)
+- Promotion PR `develop → main`: write `Closes #123` for **every** issue shipped
+
+### Promotion PR (`develop → main`)
+A direct `develop → main` PR can show a bogus `add/add` conflict, because
+squashing made the histories diverge. Go through a promotion branch:
+
+```
+git checkout develop
+git pull origin develop
+git checkout -b promote/vX.Y.Z-to-main
+git merge origin/main        # resolve by ALWAYS keeping develop's version
+```
+
+Beware: a bulk resolution (`-X ours`) can duplicate blocks. Always review the
+real diff before merging.
+
+The version bump belongs **in the promotion PR**, never after it — that is what
+keeps the displayed version equal to the deployed one.
