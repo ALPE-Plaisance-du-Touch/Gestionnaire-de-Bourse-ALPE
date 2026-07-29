@@ -882,7 +882,8 @@ export function formatCurrency(
 | Branche | Usage |
 |---------|-------|
 | `main` | Production stable |
-| `develop` | Intégration continue |
+| `dev` | Intégration continue |
+| `dev-{initiale}` | Branche personnelle (`dev-j`) |
 | `feature/{ticket}-{description}` | Nouvelles fonctionnalités |
 | `fix/{ticket}-{description}` | Corrections de bugs |
 | `hotfix/{ticket}-{description}` | Corrections urgentes prod |

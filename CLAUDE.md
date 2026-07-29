@@ -126,8 +126,11 @@ This file tracks progress during development and is deleted after the PR is merg
 
 ### Git Flow
 - `main` - Production-ready code
-- `develop` - Integration branch
-- `feature/*` - Feature branches (merge to develop)
+- `dev` - Integration branch
+- `dev-{initial}` - Personal branch (`dev-j`)
+- `feature/*` - Feature branches, cut from the personal branch
+
+See [.claude/rules/git-workflow.md](.claude/rules/git-workflow.md) for the full model.
 
 ### Versioning
 We follow semver with versions tracked in [DEVELOPMENT.md](DEVELOPMENT.md):

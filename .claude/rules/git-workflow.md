@@ -14,14 +14,14 @@
 ### Model
 
 ```
-feature/xxx  →  dev-{initial}  →  develop  →  main
- (one topic)    (personal)       (integration)  (production)
+feature/xxx  →  dev-{initial}  →  dev            →  main
+ (one topic)     (personal)      (integration)      (production)
 ```
 
 | Branch | Purpose | Deploys |
 |---|---|---|
 | `main` | Production | Manual — a push deploys nothing on its own |
-| `develop` | Integration / beta | Automatic on push |
+| `dev` | Integration / beta | Automatic on push |
 | `dev-{initial}` | Personal branch, one per developer (`dev-j`) | Local or dedicated subdomain |
 | `feature/*` | One topic, branched **from** the personal branch | — |
 
@@ -32,10 +32,10 @@ feature/xxx  →  dev-{initial}  →  develop  →  main
 - Personal branches: `dev-` + first initial (`dev-j`); disambiguate as `dev-ju` / `dev-je` on collision
 
 ### Rules
-- `main` and `develop` are protected: merge via approved PR only, never a direct
+- `main` and `dev` are protected: merge via approved PR only, never a direct
   push, never a force-push
 - Full rights on your own `dev-{initial}` branch
-- **Squash merge** into `develop` and `main` — one clean commit per feature.
+- **Squash merge** into `dev` and `main` — one clean commit per feature.
   A plain merge is fine from a feature branch into a personal branch
 - Delete feature branches after merge, local and remote
 
@@ -44,11 +44,11 @@ Squash merging rewrites SHAs, so `git branch --merged` reports nothing as merged
 and dead branches pile up unnoticed. Compare file trees instead:
 
 ```
-git ls-tree -r --name-only origin/develop | sort > /tmp/develop.txt
-git ls-tree -r --name-only origin/<branch> | sort | comm -23 - /tmp/develop.txt
+git ls-tree -r --name-only origin/dev | sort > /tmp/dev.txt
+git ls-tree -r --name-only origin/<branch> | sort | comm -23 - /tmp/dev.txt
 ```
 
-Only files genuinely absent from `develop` come out. Expect a handful of
+Only files genuinely absent from `dev` come out. Expect a handful of
 false positives — files deleted since — so read the list before deleting.
 Record the SHAs first (`git rev-parse`): a deleted remote branch is restorable
 with `git push origin <sha>:refs/heads/<branch>` only as long as you kept them.
@@ -73,22 +73,22 @@ with `git push origin <sha>:refs/heads/<branch>` only as long as you kept them.
 
 ### Closing issues
 GitHub only honours closing keywords on a PR merged into the default branch
-(`main`). Since PRs into `develop` and `main` are squashed, the original SHAs
+(`main`). Since PRs into `dev` and `main` are squashed, the original SHAs
 disappear and the promotion PR is the only reliable place to carry them:
 
-- Feature PR into a personal branch or `develop`: write `Refs #123` (links
+- Feature PR into a personal branch or `dev`: write `Refs #123` (links
   without closing)
-- Promotion PR `develop → main`: write `Closes #123` for **every** issue shipped
+- Promotion PR `dev → main`: write `Closes #123` for **every** issue shipped
 
-### Promotion PR (`develop → main`)
-A direct `develop → main` PR can show a bogus `add/add` conflict, because
+### Promotion PR (`dev → main`)
+A direct `dev → main` PR can show a bogus `add/add` conflict, because
 squashing made the histories diverge. Go through a promotion branch:
 
 ```
-git checkout develop
-git pull origin develop
+git checkout dev
+git pull origin dev
 git checkout -b promote/vX.Y.Z-to-main
-git merge origin/main        # resolve by ALWAYS keeping develop's version
+git merge origin/main        # resolve by ALWAYS keeping dev's version
 ```
 
 Beware: a bulk resolution (`-X ours`) can duplicate blocks. Always review the

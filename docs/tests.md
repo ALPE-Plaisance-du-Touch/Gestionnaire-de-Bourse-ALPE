@@ -1127,9 +1127,9 @@ name: Tests
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, dev, 'dev-*']
   pull_request:
-    branches: [main, develop]
+    branches: [main, dev]
 
 jobs:
   # ─────────────────────────────────────────────

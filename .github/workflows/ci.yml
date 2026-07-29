@@ -2,11 +2,11 @@ name: CI
 
 on:
   # Permanent branches plus personal ones (dev-j, ...), per the branch model in
-  # .claude/rules/git-workflow.md. `develop` stays listed until it is renamed.
+  # .claude/rules/git-workflow.md.
   push:
-    branches: [main, dev, develop, 'dev-*']
+    branches: [main, dev, 'dev-*']
   pull_request:
-    branches: [main, dev, develop]
+    branches: [main, dev]
 
 # Cancel superseded runs on the same branch: only the latest push matters.
 concurrency:
