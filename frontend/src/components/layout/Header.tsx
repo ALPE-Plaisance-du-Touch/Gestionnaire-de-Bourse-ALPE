@@ -69,7 +69,7 @@ export function Header({ sidebarTrigger }: HeaderProps) {
         <div className="flex items-center gap-3">
           {sidebarTrigger}
           {!isManagerOrAdmin && (
-            <Link to="/" className="text-lg font-bold text-primary">
+            <Link to="/" className="text-lg font-bold text-primary-strong">
               Bourse ALPE
             </Link>
           )}

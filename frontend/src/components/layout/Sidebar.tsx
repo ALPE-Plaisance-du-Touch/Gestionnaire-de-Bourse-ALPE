@@ -299,7 +299,7 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }: 
         {/* Logo + collapse toggle */}
         <div className={`flex items-center h-16 border-b border-sand ${isCollapsed ? 'justify-center px-2' : 'justify-between px-4'}`}>
           {!isCollapsed && (
-            <Link to="/" className="text-lg font-bold text-primary">
+            <Link to="/" className="text-lg font-bold text-primary-strong">
               Bourse ALPE
             </Link>
           )}
@@ -320,7 +320,7 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }: 
       {/* Mobile sidebar overlay */}
       {isMobileOpen && (
         <div
-          className="fixed inset-0 bg-bark/40 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-ink/50 z-40 lg:hidden"
           onClick={() => onMobileClose()}
           aria-hidden="true"
         />
@@ -335,7 +335,7 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }: 
         `}
       >
         <div className="flex items-center justify-between h-16 px-4 border-b border-sand">
-          <Link to="/" className="text-lg font-bold text-primary" onClick={() => onMobileClose()}>
+          <Link to="/" className="text-lg font-bold text-primary-strong" onClick={() => onMobileClose()}>
             Bourse ALPE
           </Link>
           <button

@@ -454,7 +454,7 @@ export function SalesPage() {
       {isHistoryOpen && (
         <>
           <div
-            className="fixed inset-0 bg-bark/40 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-ink/50 z-40"
             onClick={() => setIsHistoryOpen(false)}
             aria-hidden="true"
           />
