@@ -11,11 +11,18 @@ de publication fiable.
 
 ## [Non publié]
 
+## [0.24.0]
+
 ### Ajouté
 
 - Modules de fonctionnalités configurables par édition : chaque édition peut
   activer ou désactiver les modules qu'elle utilise, et la barre latérale
   n'affiche que les rubriques correspondantes (#66)
+
+### Corrigé
+
+- Mise à jour de dépendances corrigeant des vulnérabilités connues (axios,
+  react-router, vite)
 
 ## [0.23.0] - Messagerie & Paramètres admin
 
