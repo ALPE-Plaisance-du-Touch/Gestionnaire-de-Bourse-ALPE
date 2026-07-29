@@ -12,13 +12,16 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
 }
 
+// White label on a brand colour needs the -strong tones to clear AA: white on
+// primary is 3.03:1 and on secondary 2.67:1, against 5.98:1 and 4.79:1 here.
+// Hover always goes darker, per the design system — never lighter.
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-primary text-white hover:bg-primary-dark focus:ring-primary/40 shadow-soft hover:shadow-md',
-  secondary: 'bg-secondary text-white hover:bg-secondary-dark focus:ring-secondary/40 shadow-soft hover:shadow-md',
-  warm: 'bg-accent text-bark hover:bg-accent-dark focus:ring-accent/40 shadow-soft hover:shadow-md font-semibold',
+  primary: 'bg-primary-strong text-white hover:bg-ink focus:ring-primary/40 shadow-soft hover:shadow-md',
+  secondary: 'bg-secondary-strong text-white hover:bg-accent-dark focus:ring-secondary/40 shadow-soft hover:shadow-md',
+  warm: 'bg-accent text-bark hover:bg-accent-light focus:ring-accent/40 shadow-soft hover:shadow-md font-semibold',
   outline: 'border-2 border-sand text-bark hover:bg-cream-dark hover:border-bark-muted focus:ring-primary/30',
   ghost: 'text-bark-light hover:bg-cream-dark hover:text-bark focus:ring-primary/30',
-  danger: 'bg-error text-white hover:bg-error-light focus:ring-error/40 shadow-soft hover:shadow-md',
+  danger: 'bg-error text-white hover:bg-error-dark focus:ring-error/40 shadow-soft hover:shadow-md',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
