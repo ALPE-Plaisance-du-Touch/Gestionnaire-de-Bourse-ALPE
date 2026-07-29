@@ -9,11 +9,13 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
 }
 
+// The design system marks a highlighted card with a 4px rule along the TOP edge —
+// a coloured border on a single side is explicitly ruled out.
 const variantStyles: Record<CardVariant, string> = {
   default: 'bg-white border border-sand shadow-soft',
   elevated: 'bg-white shadow-md',
   outlined: 'bg-white border-2 border-sand',
-  accent: 'bg-white border-l-4 border-l-primary border border-sand shadow-soft',
+  accent: 'bg-white border-t-4 border-t-primary border border-sand shadow-soft',
 };
 
 const paddingStyles = {

@@ -51,12 +51,20 @@
   /* Deep brand ink, for long headings needing more contrast than blue-500 */
   --color-ink: #005070;
 
-  /* Semantic colors - kept close to the brand so nothing reads as a foreign UI colour */
+  /* Semantic colors - kept close to the brand so nothing reads as a foreign UI colour.
+     The -soft tones are badge and callout backgrounds; the -strong tones are the text
+     laid on them, chosen so every pairing clears AA at small sizes. */
   --color-success: #3aa650;
+  --color-success-soft: #eaf6ec;
+  --color-success-strong: #1f7a33;
   --color-warning: #e0a100;
+  --color-warning-soft: #fef2ea;
+  --color-warning-strong: #8e401a;
   --color-error: #d64545;
   --color-error-light: #fdecec;
+  --color-error-soft: #fdecec;
   --color-error-dark: #b32d2d;
+  --color-info-soft: #e8f6fc;
 
   /* Neutrals - cool-balanced greys that sit calmly next to the blue */
   --color-cream: #f4f7f9;
@@ -64,7 +72,9 @@
   --color-sand: #d7dfe6;
   --color-bark: #262e34;
   --color-bark-light: #4f5a64;
-  --color-bark-muted: #6b7883;
+  /* grey-500 (#6b7883) only reached 4.21:1 on the page background — short of AA for
+     the small text this is used on, in 435 places. Darkened one step to 5.07:1. */
+  --color-bark-muted: #5f6b76;
 
   /* Typography - Google Fonts substitutes, no original binaries were supplied */
   --font-display: 'Baloo 2', 'Quicksand', system-ui, sans-serif;

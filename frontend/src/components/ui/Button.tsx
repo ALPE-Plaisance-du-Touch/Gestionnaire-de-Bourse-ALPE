@@ -45,10 +45,10 @@ export function Button({
     <button
       className={`
         inline-flex items-center justify-center gap-2
-        font-medium rounded-xl
+        font-semibold rounded-full
         transition-all duration-200 ease-out
         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-cream
-        disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none
+        disabled:opacity-45 disabled:cursor-not-allowed disabled:shadow-none
         active:scale-[0.98]
         ${variantStyles[variant]}
         ${sizeStyles[size]}

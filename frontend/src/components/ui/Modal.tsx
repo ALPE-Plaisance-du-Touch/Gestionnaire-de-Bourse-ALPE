@@ -100,10 +100,12 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
 
   if (!isOpen) return null;
 
+  // The scrim carries no backdrop-filter: the design system rules blur out of the
+  // brand vocabulary. It is slightly deeper instead, to keep the same separation.
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-bark/40 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4 animate-in fade-in duration-200"
       onClick={handleOverlayClick}
       role="dialog"
       aria-modal="true"

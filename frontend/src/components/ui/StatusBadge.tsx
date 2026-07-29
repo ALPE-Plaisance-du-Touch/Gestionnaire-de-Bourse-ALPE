@@ -11,21 +11,26 @@ interface StatusBadgeProps {
   children: ReactNode;
 }
 
+// Badge text is small, so every pairing has to clear 4.5:1 — the previous
+// translucent fills sat between 3.06 and 3.92. Opaque -soft backgrounds with
+// -strong text reach 4.86 to 7.99.
+// `success` no longer borrows the primary colour: that read as green only while
+// the primary itself was green.
 const variantStyles: Record<BadgeVariant, string> = {
   default: 'bg-cream-dark text-bark-light',
-  success: 'bg-primary/10 text-primary-dark',
-  warning: 'bg-accent/15 text-accent-dark',
-  error: 'bg-error/10 text-error',
-  info: 'bg-secondary/10 text-secondary-dark',
-  muted: 'bg-sand/50 text-bark-muted',
+  success: 'bg-success-soft text-success-strong',
+  warning: 'bg-warning-soft text-warning-strong',
+  error: 'bg-error-soft text-error-dark',
+  info: 'bg-info-soft text-primary-strong',
+  muted: 'bg-white border border-sand text-bark-light',
 };
 
 const dotStyles: Record<BadgeVariant, string> = {
   default: 'bg-bark-muted',
-  success: 'bg-primary',
-  warning: 'bg-accent',
+  success: 'bg-success',
+  warning: 'bg-secondary',
   error: 'bg-error',
-  info: 'bg-secondary',
+  info: 'bg-primary',
   muted: 'bg-bark-muted',
 };
 
@@ -45,7 +50,7 @@ export function StatusBadge({
     <span
       className={`
         inline-flex items-center gap-1.5
-        font-medium rounded-lg
+        font-semibold rounded-full
         ${variantStyles[variant]}
         ${sizeStyles[size]}
       `}
