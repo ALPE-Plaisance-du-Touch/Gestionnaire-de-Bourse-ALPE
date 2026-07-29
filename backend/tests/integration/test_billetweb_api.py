@@ -54,7 +54,7 @@ async def configured_edition(db_session: AsyncSession, admin_user: User) -> Edit
         end_datetime=datetime(2025, 11, 6, 18, 0),
         location="Salle des fêtes",
         status=EditionStatus.REGISTRATIONS_OPEN,
-        commission_rate=15.0,
+        commission_rate=0.15,
         deposit_start_datetime=datetime(2025, 11, 5, 14, 0),
         deposit_end_datetime=datetime(2025, 11, 5, 22, 0),
         created_by_id=admin_user.id,
