@@ -13,6 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - @.claude/rules/task-management.md
 - @.claude/rules/code-quality.md
 - @.claude/rules/communication.md
+- @.claude/rules/testing.md
 
 ## Project Overview
 
