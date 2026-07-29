@@ -80,6 +80,22 @@ disappear and the promotion PR is the only reliable place to carry them:
   without closing)
 - Promotion PR `dev → main`: write `Closes #123` for **every** issue shipped
 
+### The `corrigé` label
+An issue that is fixed but not yet in production stays open, and without a marker it
+looks like remaining work. Once the fix lands on `dev`, for each issue handled:
+
+1. Add the `corrigé` label
+2. **Comment on the issue** citing the commits (short SHA + subject) — the comment
+   carries the *when* and the *what*; the label is only there to filter
+
+| Search | Gives |
+|---|---|
+| `is:issue is:open -label:corrigé` | What is left to fix |
+| `is:issue is:open label:corrigé` | Fixed, waiting for release |
+
+The label is **never removed**: it describes the issue, not an environment. The
+environment is read from the branches (`main..dev`) and the releases.
+
 ### Promotion PR (`dev → main`)
 A direct `dev → main` PR can show a bogus `add/add` conflict, because
 squashing made the histories diverge. Go through a promotion branch:
