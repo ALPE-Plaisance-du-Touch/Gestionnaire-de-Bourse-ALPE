@@ -40,13 +40,14 @@ export interface LoginResponse {
   user: User;
 }
 
+// Request payload: snake_case, matching the backend schema.
 export interface ActivateAccountRequest {
   token: string;
   password: string;
-  firstName?: string;
-  lastName?: string;
+  first_name?: string;
+  last_name?: string;
   phone?: string;
-  acceptTerms: boolean;
+  accept_terms: boolean;
 }
 
 export interface RefreshTokenRequest {
