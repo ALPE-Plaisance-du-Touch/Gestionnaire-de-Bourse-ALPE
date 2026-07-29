@@ -26,11 +26,6 @@ vi.mock('@/api', () => ({
   },
 }));
 
-// Mock AuthProvider
-vi.mock('@/contexts', () => ({
-  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
-}));
-
 // Mock react-router-dom
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async () => {
@@ -304,7 +299,9 @@ describe('EditionDetailPage', () => {
     renderWithProviders(<EditionDetailPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Créneaux de dépôt')).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { name: /Créneaux de dépôt/ })
+      ).toBeInTheDocument();
     });
   });
 
