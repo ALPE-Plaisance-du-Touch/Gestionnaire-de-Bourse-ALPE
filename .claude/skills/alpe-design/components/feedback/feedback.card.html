@@ -1,0 +1,31 @@
+<!-- @dsCard group="Components" viewport="700x420" name="Retours — Callout, Toast, Tooltip, Dialog" subtitle="Encart de page, notification, infobulle, modale" -->
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>html,body{margin:0}body{padding:20px;background:var(--surface-page)}.grid{display:flex;flex-wrap:wrap;gap:14px;align-items:center}.col{display:flex;flex-direction:column;gap:12px}.lbl{font-size:10px;font-family:var(--font-mono);color:var(--text-muted)}</style>
+</head><body><div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { Callout, Toast, Tooltip, Dialog, Button, IconButton } = window.ALPEDesignSystem_2d31df;
+function Demo(){const [open,setOpen]=React.useState(false);return (<div className="col" style={{gap:18}}>
+<Callout tone="warning" title="Créneaux de dépôt complets">Tous nos créneaux déposants sont maintenant complets, nous vous remercions pour votre participation !</Callout>
+<Callout tone="info">La cotisation annuelle est de 10 € par famille, par chèque à l'ordre de ALPE.</Callout>
+<div className="grid" style={{alignItems:'flex-start'}}>
+<Toast tone="success" title="Message envoyé" message="Nous vous répondons sous quelques jours." onClose={()=>{}}/>
+<Toast tone="danger" title="Créneau indisponible" message="Ce créneau vient d'être réservé." onClose={()=>{}}/>
+</div>
+<div className="grid" style={{gap:24,paddingTop:12}}>
+<Tooltip label="Ouvrir la page Facebook"><IconButton icon="fa-brands fa-facebook-f" label="Facebook"/></Tooltip>
+<Tooltip label="Télécharger le règlement" placement="bottom"><Button variant="outline" size="sm" icon="fa-solid fa-download">Règlement</Button></Tooltip>
+<Button onClick={()=>setOpen(true)}>Ouvrir la modale</Button>
+</div>
+<Dialog open={open} title="Confirmer votre adhésion" onClose={()=>setOpen(false)}
+  footer={<><Button variant="ghost" onClick={()=>setOpen(false)}>Annuler</Button><Button variant="secondary">Adhérez</Button></>}>
+  La cotisation est de 10 € par famille pour l'année scolaire complète. Elle nous permet de rester indépendants de toute fédération nationale.
+</Dialog>
+</div>);}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+</script></body></html>

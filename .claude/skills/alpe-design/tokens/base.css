@@ -1,0 +1,12 @@
+/* Minimal element defaults so specimens, cards and kits share one baseline. */
+body{margin:0;font-family:var(--font-body);font-size:var(--text-base);line-height:var(--leading-relaxed);color:var(--text-body);background:var(--surface-page);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,h5,h6{margin:0;font-family:var(--font-heading);color:var(--text-heading);font-weight:var(--weight-bold);line-height:var(--leading-snug)}
+h1{font-family:var(--font-display);font-size:var(--text-4xl);line-height:var(--leading-tight)}
+h2{font-size:var(--text-3xl)}h3{font-size:var(--text-2xl)}h4{font-size:var(--text-xl)}
+p{margin:0 0 var(--space-4)}
+a{color:var(--text-link);text-decoration:none;border-bottom:1px solid transparent;transition:color var(--duration-fast) var(--ease-out),border-color var(--duration-fast) var(--ease-out)}
+a:hover{color:var(--text-link-hover);border-bottom-color:currentColor}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+strong{color:var(--text-strong);font-weight:var(--weight-bold)}
+small{font-size:var(--text-2xs)}
+*,*::before,*::after{box-sizing:border-box}

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Affiche événement A4" description="Affiche print A4 portrait pour la bourse, le forum ou une réunion ALPE." -->
+<helmet>
+<script src="./ds-base.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>@page{size:A4 portrait;margin:0}body{margin:0;background:#e9eef2}@media print{body{background:#fff}.sheet{box-shadow:none!important}}</style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:32px;font-family:'Nunito',system-ui,sans-serif">
+<div class="sheet" style="width:794px;height:1123px;background:#ffffff;box-shadow:0 20px 48px rgba(3,59,83,.16);display:flex;flex-direction:column;overflow:hidden;position:relative">
+<div style="background:#00a0d0;padding:34px 56px 30px;display:flex;align-items:center;justify-content:space-between;gap:24px">
+<img src="../../assets/logo-alpe-v2-horizontal.png" alt="ALPE — Association Locale de Parents d'Élèves" style="height:96px;background:#ffffff;border-radius:12px;padding:10px 14px">
+<div style="text-align:right;color:#ffffff;font-family:'Quicksand',system-ui,sans-serif;font-weight:700;font-size:14px;letter-spacing:.12em;text-transform:uppercase;line-height:1.6">Association locale<br>de parents d'élèves<br>Plaisance du Touch</div>
+</div>
+<div style="padding:56px 56px 0;flex:1;display:flex;flex-direction:column">
+<div style="font-family:'Quicksand',system-ui,sans-serif;font-weight:700;font-size:20px;letter-spacing:.12em;text-transform:uppercase;color:#f08040">{{ eyebrow }}</div>
+<h1 style="margin:14px 0 0;font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;font-size:76px;line-height:1.02;color:#005070;text-wrap:pretty">{{ title }}</h1>
+<svg viewBox="0 0 620 60" preserveAspectRatio="none" aria-hidden="true" style="width:100%;height:44px;margin-top:6px"><path d="M4 50 C 150 14 420 4 616 8" fill="none" stroke="#ffe000" stroke-width="11" stroke-linecap="round"></path></svg>
+<div style="margin-top:26px;font-size:26px;line-height:1.4;color:#3a444c;max-width:600px;text-wrap:pretty">{{ subtitle }}</div>
+<div style="margin-top:38px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:18px;background:#e8f6fc;border-radius:18px;padding:20px 26px"><i class="fa-solid fa-calendar-day" aria-hidden="true" style="color:#00a0d0;font-size:26px;width:32px"></i><div style="font-family:'Quicksand',system-ui,sans-serif;font-weight:700;font-size:28px;color:#005070">{{ dateLine }}</div></div>
+<div style="display:flex;align-items:center;gap:18px;background:#fef2ea;border-radius:18px;padding:20px 26px"><i class="fa-solid fa-clock" aria-hidden="true" style="color:#f08040;font-size:26px;width:32px"></i><div style="font-family:'Quicksand',system-ui,sans-serif;font-weight:700;font-size:28px;color:#8e401a">{{ timeLine }}</div></div>
+<div style="display:flex;align-items:center;gap:18px;background:#f4f7f9;border-radius:18px;padding:20px 26px"><i class="fa-solid fa-location-dot" aria-hidden="true" style="color:#4f5a64;font-size:26px;width:32px"></i><div style="font-family:'Quicksand',system-ui,sans-serif;font-weight:700;font-size:28px;color:#3a444c">{{ placeLine }}</div></div>
+</div>
+<div style="margin-top:auto;padding:28px 0 34px;display:flex;align-items:flex-end;justify-content:space-between;gap:24px">
+<div style="max-width:420px;font-size:17px;line-height:1.5;color:#6b7883">{{ footnote }}</div>
+<div style="text-align:right;flex:0 0 auto"><div style="font-family:'Quicksand',system-ui,sans-serif;font-weight:700;font-size:19px;color:#00a0d0">alpe-plaisance.org</div><div style="margin-top:8px;display:flex;gap:14px;justify-content:flex-end;color:#00a0d0;font-size:20px"><i class="fa-brands fa-facebook-f" aria-hidden="true"></i><i class="fa-brands fa-instagram" aria-hidden="true"></i><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i></div></div>
+</div>
+</div>
+<div style="height:16px;background:#f08040"></div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:860,&quot;height&quot;:1187},&quot;eyebrow&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Bourse aux vêtements et aux jouets&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Contenu&quot;},&quot;title&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Bourse Printemps 2026&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Contenu&quot;},&quot;subtitle&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Environ 10 000 articles : vêtements adultes et enfants, jouets, livres, matériels et articles de sport.&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Contenu&quot;},&quot;dateLine&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Samedi 18 &amp; dimanche 19 avril&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Informations pratiques&quot;},&quot;timeLine&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Samedi 9h à 18h · dimanche 9h à 13h&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Informations pratiques&quot;},&quot;placeLine&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Espace Monestié, Plaisance du Touch&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Informations pratiques&quot;},&quot;footnote&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Entrée libre. 20 % des ventes financent l'association ; une partie de la recette est reversée aux coopératives scolaires.&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Contenu&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    return {
+      eyebrow: p.eyebrow ?? 'Bourse aux vêtements et aux jouets',
+      title: p.title ?? 'Bourse Printemps 2026',
+      subtitle: p.subtitle ?? 'Environ 10 000 articles : vêtements adultes et enfants, jouets, livres, matériels et articles de sport.',
+      dateLine: p.dateLine ?? 'Samedi 18 & dimanche 19 avril',
+      timeLine: p.timeLine ?? 'Samedi 9h à 18h · dimanche 9h à 13h',
+      placeLine: p.placeLine ?? 'Espace Monestié, Plaisance du Touch',
+      footnote: p.footnote ?? "Entrée libre. 20 % des ventes financent l'association ; une partie de la recette est reversée aux coopératives scolaires.",
+    };
+  }
+}
+</script>
+</body>
+</html>

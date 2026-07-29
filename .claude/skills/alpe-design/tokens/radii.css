@@ -1,0 +1,15 @@
+:root {
+  /* The logo is built from soft-cornered outlined letterforms — radii run generous. */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --radius-pill: 999px;
+  --radius-circle: 50%;
+
+  --border-hairline: 1px;
+  --border-thick: 2px;
+  --border-brand: 3px; /* the logo's outline weight, used for emphasis frames */
+}

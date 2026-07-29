@@ -1,0 +1,15 @@
+:root {
+  --duration-instant: 90ms; /* @kind other */
+  --duration-fast: 150ms; /* @kind other */
+  --duration-base: 220ms; /* @kind other */
+  --duration-slow: 360ms; /* @kind other */
+
+  /* Friendly but never cartoonish: standard ease-out for entrances,
+     one soft overshoot reserved for confirmations. */
+  --ease-out: cubic-bezier(0.22, 0.72, 0.24, 1); /* @kind other */
+  --ease-in-out: cubic-bezier(0.5, 0, 0.5, 1); /* @kind other */
+  --ease-soft-back: cubic-bezier(0.34, 1.4, 0.64, 1); /* @kind other */
+
+  --transition-base: all var(--duration-base) var(--ease-out);
+  --press-scale: 0.98; /* @kind other */
+}

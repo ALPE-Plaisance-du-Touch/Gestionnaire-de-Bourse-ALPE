@@ -1,0 +1,46 @@
+<!-- @dsCard group="Components" viewport="700x760" name="Contenu — Card, EventCard, StatTile, Badge, Tag, SchoolChip, SectionTitle, Swoosh" subtitle="Les briques de contenu du site et des supports" -->
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>html,body{margin:0}body{padding:20px;background:var(--surface-page)}.grid{display:flex;flex-wrap:wrap;gap:14px;align-items:center}.col{display:flex;flex-direction:column;gap:12px}.lbl{font-size:10px;font-family:var(--font-mono);color:var(--text-muted)}</style>
+</head><body><div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { Card, EventCard, StatTile, Badge, Tag, SchoolChip, SectionTitle, Swoosh } = window.ALPEDesignSystem_2d31df;
+function Demo(){return (<div className="col" style={{gap:22}}>
+<SectionTitle eyebrow="Nos actions" title="Deux rendez-vous qui font vivre l'association" lead="La bourse aux vêtements et le forum des métiers financent l'ensemble de nos actions." swoosh/>
+<div className="grid">
+<Badge>Nouveau</Badge><Badge tone="orange">Forum</Badge><Badge tone="yellow">Bourse</Badge>
+<Badge tone="warning" icon="fa-solid fa-triangle-exclamation">Créneaux complets</Badge>
+<Badge tone="success" icon="fa-solid fa-circle-check">Adhésion validée</Badge>
+<Badge tone="neutral">Archive</Badge><Badge tone="solid">Adhérent</Badge>
+</div>
+<div className="grid"><Tag active>Toutes</Tag><Tag>Bourse</Tag><Tag>Forum</Tag><Tag onRemove={()=>{}}>Marcel Pagnol</Tag></div>
+<div style={{display:'grid',gridTemplateColumns:'repeat(4, 1fr)',gap:14,alignItems:'start',background:'var(--surface-inverse)',padding:'22px 26px',borderRadius:'var(--radius-2xl)'}}>
+<StatTile tone="inverse" value="170" label="familles adhérentes"/>
+<StatTile tone="inverse" value="12" label="établissements" sublabel="de la PS à la terminale"/>
+<StatTile tone="inverse" value="10 000" label="articles à la bourse" sublabel="deux fois par an"/>
+<StatTile tone="inverse" value="1987" label="année de création"/>
+</div>
+<div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
+<EventCard title="Bourse Printemps 2026" dateLabel="18 & 19 avril" timeLabel="9h à 18h" place="Espace Monestié" badge="Complet" badgeTone="warning" excerpt="Vêtements, jouets, livres et articles de sport déposés par les familles." href="#"/>
+<EventCard title="35ᵉ Forum des métiers" dateLabel="18 & 19 février 2026" timeLabel="Nocturne dès 18h" place="Plaisance du Touch" excerpt="Plus de 90 exposants pour environ 1 100 collégiens de huit établissements." href="#" cta="Le programme"/>
+</div>
+<div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:14}}>
+<Card accent="blue"><h4 style={{margin:0,fontSize:'var(--text-lg)'}}>Représentation</h4><p style={{margin:'8px 0 0',fontSize:'var(--text-sm)'}}>Des têtes de liste dans chacun des douze établissements.</p></Card>
+<Card accent="orange" interactive><h4 style={{margin:0,fontSize:'var(--text-lg)'}}>Commission cantine</h4><p style={{margin:'8px 0 0',fontSize:'var(--text-sm)'}}>Nous suivons les menus chaque trimestre.</p></Card>
+<Card muted><h4 style={{margin:0,fontSize:'var(--text-lg)'}}>Éco-citoyen</h4><p style={{margin:'8px 0 0',fontSize:'var(--text-sm)'}}>Actions de sensibilisation avec les écoles.</p></Card>
+</div>
+<div className="grid">
+<SchoolChip name="Trois Pommes" level="maternelle" href="#"/>
+<SchoolChip name="Jacques Prévert" level="elementaire" href="#"/>
+<SchoolChip name="Galilée" level="college" city="La Salvetat" href="#"/>
+<SchoolChip name="Dissart-Françoise" level="lycee" city="Tournefeuille" href="#"/>
+</div>
+<div><Swoosh height={60}/><div className="lbl">Swoosh — ornement unique de la marque</div></div>
+</div>);}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+</script></body></html>
