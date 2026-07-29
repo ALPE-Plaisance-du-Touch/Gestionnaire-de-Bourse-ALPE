@@ -1460,8 +1460,15 @@ async def readiness_check(db: AsyncSession = Depends(get_db)):
 ## 7.2 Mise à jour
 
 ```
+□ PRÉ-VOL (voir 7.3)
+  □ Écart réel entre main et dev établi
+  □ Migrations lues, opérations destructives repérées
+  □ Aucun secret dans le diff promu
+  □ Version bumpée dans la PR de promotion + CHANGELOG à jour
+  □ Fenêtre de déploiement OK, quelqu'un peut réagir
+
 □ AVANT
-  □ Sauvegarder la base de données
+  □ Sauvegarder la base de données (obligatoire si migration)
   □ Sauvegarder les fichiers modifiés
   □ Informer les utilisateurs si maintenance
 
@@ -1472,10 +1479,91 @@ async def readiness_check(db: AsyncSession = Depends(get_db)):
   □ Vérifier les logs
 
 □ APRÈS
-  □ Tester les fonctionnalités critiques
-  □ Vérifier les métriques
-  □ Confirmer le bon fonctionnement
+  □ /health renvoie la NOUVELLE version (voir 7.4)
+  □ Smoke tests passés (voir 7.5)
+  □ Tag posé après vérification + release publiée
 ```
+
+## 7.3 Pré-vol
+
+Établir l'état réel **avant** de proposer quoi que ce soit.
+
+```bash
+git fetch origin main dev
+git log --oneline origin/main..origin/dev      # ce qui partirait
+git diff --stat origin/main..origin/dev
+git tag -l 'v*' --sort=-v:refname | head -1    # dernier tag
+```
+
+- **Aucun commit d'écart** → rien à promouvoir, s'arrêter là.
+- **Lire le SQL des migrations** qui vont s'exécuter. Repérer les opérations
+  destructives : `DROP`, `ALTER ... DROP COLUMN`, `TRUNCATE`, renommages.
+
+  ```bash
+  git diff origin/main..origin/dev -- backend/migrations/
+  ```
+
+- **Chercher les secrets** dans le diff promu :
+
+  ```bash
+  git diff origin/main..origin/dev | grep -iE "SECRET|PASSWORD|TOKEN|API_KEY"
+  ```
+
+**Fenêtre de déploiement** : ne pas déployer la veille d'une bourse ni pendant
+l'ouverture des inscriptions. Privilégier un créneau où quelqu'un peut réagir.
+
+## 7.4 Vérifier la version réellement déployée
+
+```bash
+curl -s https://<domaine>/health
+# {"status":"healthy","version":"0.24.0"}
+```
+
+Si le numéro ne correspond pas à celui attendu : bump oublié, ou build non
+régénéré. Redéployer sans cache.
+
+La version vient de `backend/app/__init__.py`, source unique dont `pyproject.toml`
+dérive. Le frontend porte le même numéro dans `frontend/package.json`.
+
+## 7.5 Smoke tests
+
+Parcours critiques à tester dans un navigateur après chaque mise en production :
+
+```
+□ Page d'accueil : édition en cours affichée
+□ Connexion administrateur
+□ Déposant : consulter sa liste d'articles
+□ Bénévole : scanner un article et enregistrer une vente
+□ Génération d'une planche d'étiquettes (PDF téléchargé et lisible)
+□ Envoi d'un e-mail réel (invitation ou message de ticket)
+□ Console navigateur sans erreur sur ces pages
+```
+
+## 7.6 Rollback
+
+La procédure s'écrit **à l'avance**. Ne pas improviser le jour où ça casse.
+
+**Sans migration dans la release**
+
+```bash
+git checkout v<version-précédente>
+# redéployer selon le mode (Docker ou manuel), puis :
+curl -s https://<domaine>/health    # doit renvoyer l'ANCIENNE version
+```
+
+**Avec migration dans la release**
+
+Redéployer l'ancien code **ne suffit pas** : le schéma de base a déjà changé.
+
+1. Restaurer le dump pris avant le déploiement (`scripts/restore.sh`)
+2. Redéployer le tag précédent
+3. Vérifier `/health`
+
+**Sans dump, il n'y a pas de rollback propre.** C'est la raison pour laquelle la
+sauvegarde avant migration n'est pas optionnelle.
+
+**Ne jamais supprimer ni déplacer le tag fautif** : il documente ce qui est
+réellement parti en production. Créer un correctif `vX.Y.Z+1` à la place.
 
 ---
 
