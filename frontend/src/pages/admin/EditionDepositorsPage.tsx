@@ -7,8 +7,8 @@ import type { ListType, EditionDepositorWithUser, DepositorUpdateRequest } from 
 
 const LIST_TYPE_LABELS: Record<ListType, { label: string; className: string }> = {
   standard: { label: 'Standard', className: 'bg-cream-dark text-bark' },
-  list_1000: { label: 'Liste 1000', className: 'bg-primary/10 text-primary-dark' },
-  list_2000: { label: 'Liste 2000', className: 'bg-secondary/10 text-secondary-dark' },
+  list_1000: { label: 'Liste 1000', className: 'bg-info-soft text-primary-strong' },
+  list_2000: { label: 'Liste 2000', className: 'bg-warning-deep text-warning-strong' },
 };
 
 const LIST_TYPE_OPTIONS = [
@@ -151,10 +151,10 @@ export function EditionDepositorsPage() {
   if (!edition) {
     return (
       <div className="p-6 max-w-6xl mx-auto">
-        <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg mb-4">
+        <div className="bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg mb-4">
           Édition introuvable ou erreur lors du chargement.
         </div>
-        <Link to="/editions" className="text-primary hover:text-primary-dark">
+        <Link to="/editions" className="text-primary hover:text-primary-strong">
           ← Retour à la liste des éditions
         </Link>
       </div>
@@ -176,7 +176,7 @@ export function EditionDepositorsPage() {
       <div className="mb-6">
         <Link
           to={`/editions/${id}`}
-          className="text-sm text-primary hover:text-primary-dark inline-flex items-center gap-1 mb-2"
+          className="text-sm text-primary hover:text-primary-strong inline-flex items-center gap-1 mb-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -294,7 +294,7 @@ export function EditionDepositorsPage() {
                           <button
                             type="button"
                             onClick={() => openEditModal(depositor)}
-                            className="p-1.5 rounded text-bark-muted hover:text-primary hover:bg-primary/10 transition-colors"
+                            className="p-1.5 rounded text-bark-muted hover:text-primary hover:bg-info-soft transition-colors"
                             title="Modifier"
                           >
                             <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -305,7 +305,7 @@ export function EditionDepositorsPage() {
                           <button
                             type="button"
                             onClick={() => openDeleteModal(depositor)}
-                            className="p-1.5 rounded text-bark-muted hover:text-error hover:bg-error/10 transition-colors"
+                            className="p-1.5 rounded text-bark-muted hover:text-error-dark hover:bg-error-soft transition-colors"
                             title="Supprimer"
                           >
                             <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -411,7 +411,7 @@ export function EditionDepositorsPage() {
             />
           </div>
           {updateMutation.isError && (
-            <div className="bg-error/10 border border-error/30 text-error px-3 py-2 rounded text-sm">
+            <div className="bg-error-soft border border-error/40 text-error-dark px-3 py-2 rounded text-sm">
               {updateMutation.error instanceof Error
                 ? updateMutation.error.message
                 : 'Erreur lors de la modification'}
@@ -445,7 +445,7 @@ export function EditionDepositorsPage() {
           Cette action est irréversible. Le déposant devra être réinscrit manuellement.
         </p>
         {deleteError && (
-          <div className="bg-error/10 border border-error/30 text-error px-3 py-2 rounded text-sm mt-3">
+          <div className="bg-error-soft border border-error/40 text-error-dark px-3 py-2 rounded text-sm mt-3">
             {deleteError}
           </div>
         )}

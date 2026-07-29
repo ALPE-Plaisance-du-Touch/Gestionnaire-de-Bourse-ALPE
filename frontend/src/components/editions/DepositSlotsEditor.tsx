@@ -152,7 +152,7 @@ export function DepositSlotsEditor({ editionId, disabled = false, onSyncBilletwe
       </div>
 
       {error && (
-        <div className="bg-error/10 border border-error/30 text-error px-3 py-2 rounded text-sm">
+        <div className="bg-error-soft border border-error/40 text-error-dark px-3 py-2 rounded text-sm">
           {error}
         </div>
       )}
@@ -269,7 +269,7 @@ export function DepositSlotsEditor({ editionId, disabled = false, onSyncBilletwe
       )}
 
       {!disabled && slots.length === 0 && !isAdding && (
-        <div className="text-xs text-bark-muted bg-primary/10 p-3 rounded">
+        <div className="text-xs text-bark-light bg-info-soft p-3 rounded-lg">
           <strong>Exemples de créneaux standards :</strong>
           <ul className="list-disc list-inside mt-1 space-y-0.5">
             <li>Mercredi matin 9h30-11h30 : 20 déposants</li>
@@ -326,8 +326,8 @@ function CompactSlotChip({
   const count = slot.registeredCount ?? 0;
   const ratio = slot.maxCapacity > 0 ? count / slot.maxCapacity : 0;
   let occupancyClass = 'text-bark-muted';
-  if (ratio >= 0.9) occupancyClass = 'text-error font-medium';
-  else if (ratio >= 0.75) occupancyClass = 'text-secondary-dark font-medium';
+  if (ratio >= 0.9) occupancyClass = 'text-error-dark font-medium';
+  else if (ratio >= 0.75) occupancyClass = 'text-warning-strong font-medium';
 
   return (
     <div className="group relative bg-white border border-sand rounded-md px-3 py-2 hover:border-bark-muted transition-colors">
@@ -339,7 +339,7 @@ function CompactSlotChip({
           <button
             type="button"
             onClick={onDelete}
-            className="opacity-0 group-hover:opacity-100 text-error hover:text-error transition-opacity -mr-1"
+            className="opacity-0 group-hover:opacity-100 text-error-dark hover:text-error-dark transition-opacity -mr-1"
             title="Supprimer"
           >
             <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -356,7 +356,7 @@ function CompactSlotChip({
           <button
             type="button"
             onClick={onShowParticipants}
-            className="text-primary hover:text-primary-dark transition-colors"
+            className="text-primary hover:text-primary-strong transition-colors"
             title="Voir les participants"
           >
             <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -365,7 +365,7 @@ function CompactSlotChip({
           </button>
         )}
         {slot.reservedForLocals && (
-          <span className="text-xs text-secondary-dark bg-secondary/10 px-1 rounded">local</span>
+          <span className="text-xs text-warning-strong bg-warning-soft px-1 rounded">local</span>
         )}
       </div>
     </div>

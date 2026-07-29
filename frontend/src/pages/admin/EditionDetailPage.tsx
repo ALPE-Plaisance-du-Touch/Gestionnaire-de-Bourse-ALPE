@@ -9,16 +9,9 @@ import { BilletwebAttendeesSyncModal } from '@/components/billetweb/BilletwebAtt
 import { TrainingBanner } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import type { EditionStatus, User } from '@/types';
+import { EDITION_STATUS_DISPLAY } from '@/types';
 
-const STATUS_LABELS: Record<EditionStatus, { label: string; className: string }> = {
-  draft: { label: 'Brouillon', className: 'bg-cream-dark text-bark' },
-  registrations_open: { label: 'Inscriptions ouvertes', className: 'bg-secondary/10 text-secondary-dark' },
-  deposit: { label: 'Dépôt', className: 'bg-primary/10 text-primary-dark' },
-  sale: { label: 'Vente', className: 'bg-primary/10 text-primary-dark' },
-  settlement: { label: 'Bilan', className: 'bg-accent/15 text-accent-dark' },
-  closed: { label: 'Clôturé', className: 'bg-secondary/10 text-secondary-dark' },
-  archived: { label: 'Archivé', className: 'bg-cream-dark text-bark-muted' },
-};
+const STATUS_LABELS = EDITION_STATUS_DISPLAY;
 
 /**
  * Format a datetime string for datetime-local input.
@@ -540,10 +533,10 @@ export function EditionDetailPage() {
   if (fetchError || !edition) {
     return (
       <div className="p-6 max-w-4xl mx-auto">
-        <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg mb-4">
+        <div className="bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg mb-4">
           Édition introuvable ou erreur lors du chargement.
         </div>
-        <Link to="/editions" className="text-primary hover:text-primary-dark">
+        <Link to="/editions" className="text-primary hover:text-primary-strong">
           ← Retour à la liste des éditions
         </Link>
       </div>
@@ -575,7 +568,7 @@ export function EditionDetailPage() {
       <div className="mb-6">
         <Link
           to="/editions"
-          className="text-sm text-primary hover:text-primary-dark inline-flex items-center gap-1 mb-2"
+          className="text-sm text-primary hover:text-primary-strong inline-flex items-center gap-1 mb-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -599,7 +592,7 @@ export function EditionDetailPage() {
 
       {/* Success message */}
       {success && (
-        <div className="mb-6 bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-6 bg-success-soft border border-success/40 text-success-strong px-4 py-3 rounded-lg" role="alert">
           <p className="font-medium">Modifications enregistrées !</p>
           <p className="text-sm mt-1">
             {statusMutation.isSuccess
@@ -611,7 +604,7 @@ export function EditionDetailPage() {
 
       {/* Error message */}
       {error && (
-        <div ref={errorRef} className="mb-6 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg" role="alert">
+        <div ref={errorRef} className="mb-6 bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg" role="alert">
           {error}
         </div>
       )}
@@ -624,7 +617,7 @@ export function EditionDetailPage() {
             type="button"
             className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
               currentTab === tab.id
-                ? 'border-primary text-primary'
+                ? 'border-primary text-primary-strong'
                 : 'border-transparent text-bark-muted hover:text-bark'
             }`}
             onClick={() => setActiveTab(tab.id)}
@@ -640,7 +633,7 @@ export function EditionDetailPage() {
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Not editable warning */}
         {!isEditable && (
-          <div className="mb-6 bg-accent/10 border border-accent/40 text-accent-dark px-4 py-3 rounded-lg">
+          <div className="mb-6 bg-warning-soft border border-secondary/40 text-warning-strong px-4 py-3 rounded-lg">
             Cette édition est clôturée et ne peut plus être modifiée.
           </div>
         )}
@@ -655,7 +648,7 @@ export function EditionDetailPage() {
                 href={`https://www.billetweb.fr/bo/dashboard.php?event=${edition.billetwebEventId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-dark"
+                className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-strong"
               >
                 Voir sur Billetweb
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -901,7 +894,7 @@ export function EditionDetailPage() {
                   <h4 className="text-sm font-medium text-bark-light">Historique des imports</h4>
                   <Link
                     to={`/editions/${edition.id}/depositors`}
-                    className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-dark font-medium"
+                    className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-strong font-medium"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -1104,7 +1097,7 @@ export function EditionDetailPage() {
       {currentTab === 'actions' && (
         <div className="space-y-6">
           {/* Status Info */}
-          <div className="bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg text-sm">
+          <div className="bg-success-soft border border-success/40 text-success-strong px-4 py-3 rounded-lg text-sm">
             <strong>Statut actuel :</strong>{' '}
             {edition.status === 'draft'
               ? 'Brouillon - Configurez les dates et ouvrez les inscriptions'
@@ -1123,11 +1116,11 @@ export function EditionDetailPage() {
 
           {/* Training mode toggle */}
           {isAdmin && (
-            <div className="bg-accent/10 border border-accent/40 rounded-lg p-4">
+            <div className="bg-warning-soft border border-secondary/40 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-accent-dark">Mode formation</h3>
-                  <p className="text-sm text-accent-dark">
+                  <h3 className="text-sm font-semibold text-warning-strong">Mode formation</h3>
+                  <p className="text-sm text-warning-strong">
                     {edition.isTraining
                       ? 'Cette édition est en mode formation. Les données sont destinées à l\'entraînement uniquement.'
                       : 'Activer le mode formation pour pouvoir forcer les changements d\'étape et utiliser cette édition pour l\'entraînement.'}
@@ -1148,9 +1141,9 @@ export function EditionDetailPage() {
 
           {/* Training mode: Force status transition (US-015) */}
           {edition.isTraining && (
-            <div className="bg-accent/10 border border-accent/40 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-accent-dark mb-2">Forcer le changement d'étape (formation)</h3>
-              <p className="text-sm text-accent-dark mb-3">
+            <div className="bg-warning-soft border border-secondary/40 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-warning-strong mb-2">Forcer le changement d'étape (formation)</h3>
+              <p className="text-sm text-warning-strong mb-3">
                 En mode formation, vous pouvez changer librement l'étape du cycle de vie sans vérification des prérequis.
               </p>
               <div className="flex gap-2 flex-wrap">
@@ -1208,11 +1201,11 @@ export function EditionDetailPage() {
 
           {/* Revert to draft */}
           {edition.status === 'registrations_open' && isAdmin && (
-            <div className="bg-accent/10 border border-accent/40 rounded-lg p-4">
+            <div className="bg-warning-soft border border-secondary/40 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-accent-dark">Revenir en brouillon</h3>
-                  <p className="text-sm text-accent-dark">
+                  <h3 className="text-sm font-semibold text-warning-strong">Revenir en brouillon</h3>
+                  <p className="text-sm text-warning-strong">
                     Annuler l'ouverture des inscriptions et repasser l'édition en brouillon.
                   </p>
                 </div>
@@ -1231,11 +1224,11 @@ export function EditionDetailPage() {
 
           {/* Closure */}
           {edition.status === 'settlement' && (
-            <div className="bg-error/10 border border-error/30 rounded-lg p-4">
+            <div className="bg-error-soft border border-error/40 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-error">Clôture de l'édition</h3>
-                  <p className="text-sm text-error">
+                  <h3 className="text-sm font-semibold text-error-dark">Clôture de l'édition</h3>
+                  <p className="text-sm text-error-dark">
                     La clôture est définitive et irréversible. Vérifiez les prérequis avant de confirmer.
                   </p>
                 </div>
@@ -1275,11 +1268,11 @@ export function EditionDetailPage() {
 
           {/* Delete */}
           {isAdmin && edition.status === 'draft' && (
-            <div className="bg-error/10 border border-error/30 rounded-lg p-4">
+            <div className="bg-error-soft border border-error/40 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-error">Supprimer l'édition</h3>
-                  <p className="text-sm text-error">
+                  <h3 className="text-sm font-semibold text-error-dark">Supprimer l'édition</h3>
+                  <p className="text-sm text-error-dark">
                     Supprimer définitivement cette édition et toutes ses données.
                   </p>
                 </div>
@@ -1306,7 +1299,7 @@ export function EditionDetailPage() {
         size="lg"
       >
         <div className="space-y-4">
-          <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg text-sm">
+          <div className="bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg text-sm">
             La clôture est définitive et irréversible. L'édition passera en lecture seule.
           </div>
 
@@ -1327,12 +1320,12 @@ export function EditionDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   ) : (
-                    <svg className="w-5 h-5 text-error shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-error-dark shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   )}
                   <div>
-                    <span className={`text-sm font-medium ${check.passed ? 'text-primary-dark' : 'text-error'}`}>
+                    <span className={`text-sm font-medium ${check.passed ? 'text-primary-strong' : 'text-error'}`}>
                       {check.label}
                     </span>
                     {check.detail && (
@@ -1415,7 +1408,7 @@ export function EditionDetailPage() {
         <div className="flex border-b border-sand mb-4">
           <button
             type="button"
-            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${depositorMode === 'new' ? 'border-primary text-primary' : 'border-transparent text-bark-muted hover:text-bark'}`}
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${depositorMode === 'new' ? 'border-primary text-primary-strong' : 'border-transparent text-bark-muted hover:text-bark'}`}
             onClick={() => {
               setDepositorMode('new');
               setUserSearch('');
@@ -1428,7 +1421,7 @@ export function EditionDetailPage() {
           </button>
           <button
             type="button"
-            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${depositorMode === 'existing' ? 'border-primary text-primary' : 'border-transparent text-bark-muted hover:text-bark'}`}
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${depositorMode === 'existing' ? 'border-primary text-primary-strong' : 'border-transparent text-bark-muted hover:text-bark'}`}
             onClick={() => {
               setDepositorMode('existing');
               setSelectedUser(null);
@@ -1442,7 +1435,7 @@ export function EditionDetailPage() {
 
         <form onSubmit={(e) => { e.preventDefault(); manualDepositorMutation.mutate(); }} className="space-y-4">
           {manualDepositorError && (
-            <div className="bg-error/10 border border-error/30 rounded-lg p-3 text-sm text-error">
+            <div className="bg-error-soft border border-error/40 rounded-lg p-3 text-sm text-error-dark">
               {manualDepositorError}
             </div>
           )}
@@ -1494,14 +1487,14 @@ export function EditionDetailPage() {
                   )}
                 </div>
               ) : (
-                <div className="bg-primary/10 border border-primary/30 rounded-lg p-3 flex items-center justify-between">
+                <div className="bg-info-soft border border-primary/40 rounded-lg p-3 flex items-center justify-between">
                   <div>
                     <span className="font-medium text-sm">{selectedUser.firstName} {selectedUser.lastName}</span>
                     <span className="text-bark-light text-sm ml-2">{selectedUser.email}</span>
                   </div>
                   <button
                     type="button"
-                    className="text-sm text-primary hover:text-primary-dark"
+                    className="text-sm text-primary hover:text-primary-strong"
                     onClick={() => {
                       setSelectedUser(null);
                       setManualDepositorForm(f => ({ ...f, email: '', firstName: '', lastName: '', phone: '' }));
@@ -1621,7 +1614,7 @@ export function EditionDetailPage() {
             )}
           </p>
           {importStats && (
-            <div className="bg-primary/10 border border-primary/30 rounded-lg p-3 text-sm text-primary-dark">
+            <div className="bg-info-soft border border-primary/40 rounded-lg p-3 text-sm text-primary-strong">
               <p><strong>{importStats.pendingInvitations ?? 0}</strong> invitation(s) en attente d'envoi</p>
               <p className="text-xs text-primary mt-1">
                 Les nouveaux utilisateurs recevront un lien d'activation. Les utilisateurs existants recevront une notification.
@@ -1629,7 +1622,7 @@ export function EditionDetailPage() {
             </div>
           )}
           {edition.status === 'draft' && (
-            <div className="bg-accent/10 border border-accent/40 rounded-lg p-3 text-sm text-accent-dark">
+            <div className="bg-warning-soft border border-secondary/40 rounded-lg p-3 text-sm text-warning-strong">
               Cette action n'est possible que si aucune autre édition n'est déjà active.
             </div>
           )}
@@ -1664,7 +1657,7 @@ export function EditionDetailPage() {
             L'édition passera en statut <strong>Inscriptions ouvertes</strong> sans envoyer de notification aux déposants.
             Vous pourrez envoyer les invitations séparément.
           </p>
-          <div className="bg-accent/10 border border-accent/40 rounded-lg p-3 text-sm text-accent-dark">
+          <div className="bg-warning-soft border border-secondary/40 rounded-lg p-3 text-sm text-warning-strong">
             Cette action n'est possible que si aucune autre édition n'est déjà active.
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t">
@@ -1839,13 +1832,13 @@ function DeclarationProgressBlock({ editionId, hasDeadline }: { editionId: strin
           <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-cream-dark text-bark-light">
             Sans liste : {summary.depositorsNone}
           </span>
-          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-accent/15 text-accent-dark">
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-warning-soft text-warning-strong">
             En cours : {summary.depositorsStarted}
           </span>
-          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-secondary/10 text-secondary-dark">
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-warning-deep text-warning-strong">
             Partiels : {summary.depositorsPartial}
           </span>
-          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary-dark">
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-info-soft text-primary-strong">
             Complets : {summary.depositorsComplete}
           </span>
         </div>
@@ -1861,13 +1854,13 @@ function DeclarationProgressBlock({ editionId, hasDeadline }: { editionId: strin
       )}
 
       {reminderSuccess && (
-        <div className="mt-3 text-sm text-primary-dark bg-primary/10 border border-primary/30 px-3 py-2 rounded-lg">
+        <div className="mt-3 text-sm text-primary-strong bg-info-soft border border-primary/40 px-3 py-2 rounded-lg">
           {reminderSuccess}
         </div>
       )}
 
       {reminderMutation.isError && (
-        <div className="mt-3 text-sm text-error bg-error/10 border border-error/30 px-3 py-2 rounded-lg">
+        <div className="mt-3 text-sm text-error-dark bg-error-soft border border-error/40 px-3 py-2 rounded-lg">
           Erreur lors de l'envoi des rappels.
         </div>
       )}

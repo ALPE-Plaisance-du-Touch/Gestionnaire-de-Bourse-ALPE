@@ -19,7 +19,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           >
             {label}
             {props.required && (
-              <span className="text-error ml-1" aria-hidden="true">
+              <span className="text-error-dark ml-1" aria-hidden="true">
                 *
               </span>
             )}

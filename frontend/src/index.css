@@ -60,6 +60,9 @@
   --color-warning: #e0a100;
   --color-warning-soft: #fef2ea;
   --color-warning-strong: #8e401a;
+  /* A second, more saturated orange fill, so two adjacent states can both use
+     orange without looking alike. 5.77:1 against --color-warning-strong. */
+  --color-warning-deep: #fde0cd;
   --color-error: #d64545;
   --color-error-light: #fdecec;
   --color-error-soft: #fdecec;

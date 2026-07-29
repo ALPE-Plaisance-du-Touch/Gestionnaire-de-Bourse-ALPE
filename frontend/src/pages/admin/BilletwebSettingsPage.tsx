@@ -109,12 +109,12 @@ export function BilletwebSettingsPage() {
 
       {/* Messages */}
       {successMessage && (
-        <div className="mb-4 p-3 bg-primary/10 border border-primary/30 text-primary-dark rounded-lg text-sm">
+        <div className="mb-4 p-3 bg-success-soft border border-success/40 text-success-strong rounded-lg text-sm">
           {successMessage}
         </div>
       )}
       {errorMessage && (
-        <div className="mb-4 p-3 bg-error/10 border border-error/30 text-error rounded-lg text-sm">
+        <div className="mb-4 p-3 bg-error-soft border border-error/40 text-error-dark rounded-lg text-sm">
           {errorMessage}
         </div>
       )}
@@ -141,7 +141,7 @@ export function BilletwebSettingsPage() {
           <button
             type="button"
             onClick={() => setShowKey(!showKey)}
-            className="mt-1 text-xs text-primary hover:text-primary-dark"
+            className="mt-1 text-xs text-primary hover:text-primary-strong"
           >
             {showKey ? 'Masquer' : 'Afficher'} la clé
           </button>
@@ -170,8 +170,8 @@ export function BilletwebSettingsPage() {
         {testResult && (
           <div className={`mt-4 p-3 rounded-lg text-sm ${
             testResult.success
-              ? 'bg-primary/10 border border-primary/30 text-primary-dark'
-              : 'bg-error/10 border border-error/30 text-error'
+              ? 'bg-success-soft border border-success/40 text-success-strong'
+              : 'bg-error-soft border border-error/40 text-error-dark'
           }`}>
             {testResult.success ? 'Connexion réussie' : `Erreur : ${testResult.message}`}
           </div>

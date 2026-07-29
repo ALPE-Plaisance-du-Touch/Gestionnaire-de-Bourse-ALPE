@@ -127,7 +127,7 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
       <Modal isOpen={isOpen} onClose={handleClose} title="Nouvelle édition" size="lg">
         {createdEditionId ? (
           <div className="space-y-4">
-            <div className="bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg">
+            <div className="bg-info-soft border border-primary/40 text-primary-strong px-4 py-3 rounded-lg">
               <p className="font-medium">Édition créée avec succès !</p>
               <p className="text-sm mt-1">
                 L'édition <strong>{name}</strong> a été créée en statut brouillon.
@@ -150,14 +150,14 @@ export function EditionCreateModal({ isOpen, onClose }: EditionCreateModalProps)
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
+              <div className="bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg">
                 {error}
               </div>
             )}
 
             {billetwebConfigured && (
-              <div className="flex items-center gap-3 p-3 bg-primary/10 border border-primary/30 rounded-lg">
-                <span className="text-sm text-primary-dark">
+              <div className="flex items-center gap-3 p-3 bg-info-soft border border-primary/40 rounded-lg">
+                <span className="text-sm text-primary-strong">
                   {billetwebEventId
                     ? `Lié à l'événement Billetweb #${billetwebEventId}`
                     : 'Pré-remplir depuis un événement Billetweb'}

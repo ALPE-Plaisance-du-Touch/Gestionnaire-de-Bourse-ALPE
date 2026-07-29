@@ -219,7 +219,7 @@ export function LabelsManagementPage() {
               <button
                 type="button"
                 onClick={toggleAllDepositors}
-                className="text-sm text-primary hover:text-primary-dark"
+                className="text-sm text-primary hover:text-primary-strong"
               >
                 {selectedDepositorIds.size === depositors.length ? 'Tout désélectionner' : 'Tout sélectionner'}
               </button>
@@ -252,12 +252,12 @@ export function LabelsManagementPage() {
 
         {/* Messages */}
         {successMessage && (
-          <div className="mb-4 p-3 bg-primary/10 border border-primary/30 rounded-lg text-sm text-primary-dark">
+          <div className="mb-4 p-3 bg-info-soft border border-primary/40 rounded-lg text-sm text-primary-strong">
             {successMessage}
           </div>
         )}
         {errorMessage && (
-          <div className="mb-4 p-3 bg-error/10 border border-error/30 rounded-lg text-sm text-error">
+          <div className="mb-4 p-3 bg-error-soft border border-error/40 rounded-lg text-sm text-error-dark">
             {errorMessage}
           </div>
         )}
