@@ -10,7 +10,10 @@ async def test_health_check(client: AsyncClient):
     response = await client.get("/health")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "healthy"}
+    data = response.json()
+    assert data["status"] == "healthy"
+    # Deployments are verified by curl'ing /health, so the version must ship with it.
+    assert "version" in data
 
 
 @pytest.mark.asyncio
