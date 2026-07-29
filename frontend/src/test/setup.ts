@@ -2,10 +2,16 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
 
-// Cleanup after each test
+// Cleanup after each test. The localStorage store below is module-level state
+// that otherwise leaks across files and makes the suite order-dependent.
 afterEach(() => {
   cleanup();
+  window.localStorage.clear();
 });
+
+// jsdom does not implement scrollIntoView; components call it to focus the
+// first invalid field, which would otherwise throw from a post-teardown timer.
+Element.prototype.scrollIntoView = vi.fn();
 
 // Mock localStorage
 const localStorageMock = (() => {

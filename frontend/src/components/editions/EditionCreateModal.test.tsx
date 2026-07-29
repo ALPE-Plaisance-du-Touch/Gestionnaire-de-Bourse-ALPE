@@ -1,16 +1,19 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/test-utils';
 import { EditionCreateModal } from './EditionCreateModal';
-import { editionsApi, ApiException } from '@/api';
+import { editionsApi, billetwebApiSettings, ApiException } from '@/api';
 import type { Edition, EditionStatus } from '@/types';
 
 // Mock the editions API
 vi.mock('@/api', () => ({
   editionsApi: {
     createEdition: vi.fn(),
+  },
+  billetwebApiSettings: {
+    getConfig: vi.fn(),
   },
   ApiException: class ApiException extends Error {
     status: number;
@@ -21,10 +24,14 @@ vi.mock('@/api', () => ({
   },
 }));
 
-// Mock AuthProvider to avoid issues with test-utils wrapper
-vi.mock('@/contexts', () => ({
-  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
-}));
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 const mockCreatedEdition: Edition = {
   id: '1',
@@ -48,11 +55,40 @@ const mockCreatedEdition: Edition = {
 const getNameInput = () => screen.getByPlaceholderText('Bourse Printemps 2025');
 const getLocationInput = () => screen.getByPlaceholderText('Salle des fêtes de Plaisance du Touch');
 
+const getDatetimeInputs = () => {
+  const inputs = document.querySelectorAll<HTMLInputElement>('input[type="datetime-local"]');
+  return { startInput: inputs[0], endInput: inputs[1] };
+};
+
+// Modal focuses its own container from a requestAnimationFrame callback on open.
+// That rAF resolves asynchronously, so without waiting for it here it can fire in
+// the middle of a userEvent.type() sequence, pull focus off the field being typed
+// into and silently drop the remaining keystrokes. Waiting for the trap to settle
+// makes every subsequent interaction deterministic.
+const waitForModalFocusTrap = async () => {
+  const modalContainer = document.querySelector('[role="dialog"] > div');
+  await waitFor(() => {
+    expect(modalContainer).toHaveFocus();
+  });
+};
+
+// datetime-local values are set directly: userEvent.type() drives these inputs
+// segment by segment, which is needlessly brittle for what is a single value.
+const setDatetime = (input: HTMLInputElement, value: string) => {
+  fireEvent.change(input, { target: { value } });
+};
+
 describe('EditionCreateModal', () => {
   const mockOnClose = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Re-armed after the clear: the modal queries this on open.
+    vi.mocked(billetwebApiSettings.getConfig).mockResolvedValue({
+      configured: false,
+      user: null,
+      apiKeyMasked: null,
+    });
   });
 
   it('renders modal when open', () => {
@@ -91,24 +127,15 @@ describe('EditionCreateModal', () => {
       <EditionCreateModal isOpen={true} onClose={mockOnClose} />
     );
 
+    await waitForModalFocusTrap();
+
     // Fill in name
     await userEvent.type(getNameInput(), 'Test Edition');
 
-    // Get datetime inputs - they don't have placeholders so use getAllByRole
-    const datetimeInputs = screen.getAllByRole('textbox').filter(
-      (input) => input.getAttribute('type') === 'datetime-local'
-    );
-
-    // If we can't find datetime-local inputs by role, try different approach
-    const allInputs = document.querySelectorAll('input[type="datetime-local"]');
-    const startInput = allInputs[0] as HTMLInputElement;
-    const endInput = allInputs[1] as HTMLInputElement;
-
-    // Set dates with end before start using fireEvent for datetime-local
-    await userEvent.clear(startInput);
-    await userEvent.type(startInput, '2025-03-16T09:00');
-    await userEvent.clear(endInput);
-    await userEvent.type(endInput, '2025-03-15T18:00');
+    // Set dates with end before start
+    const { startInput, endInput } = getDatetimeInputs();
+    setDatetime(startInput, '2025-03-16T09:00');
+    setDatetime(endInput, '2025-03-15T18:00');
 
     // Try to submit
     await userEvent.click(screen.getByText("Créer l'édition"));
@@ -128,15 +155,14 @@ describe('EditionCreateModal', () => {
       <EditionCreateModal isOpen={true} onClose={mockOnClose} />
     );
 
+    await waitForModalFocusTrap();
+
     // Fill in form
     await userEvent.type(getNameInput(), 'Bourse Test 2025');
 
-    const allInputs = document.querySelectorAll('input[type="datetime-local"]');
-    const startInput = allInputs[0] as HTMLInputElement;
-    const endInput = allInputs[1] as HTMLInputElement;
-
-    await userEvent.type(startInput, '2025-03-15T09:00');
-    await userEvent.type(endInput, '2025-03-16T18:00');
+    const { startInput, endInput } = getDatetimeInputs();
+    setDatetime(startInput, '2025-03-15T09:00');
+    setDatetime(endInput, '2025-03-16T18:00');
     await userEvent.type(getLocationInput(), 'Salle des fêtes');
 
     // Submit
@@ -160,15 +186,14 @@ describe('EditionCreateModal', () => {
       <EditionCreateModal isOpen={true} onClose={mockOnClose} />
     );
 
+    await waitForModalFocusTrap();
+
     // Fill in minimum required fields
     await userEvent.type(getNameInput(), 'Bourse Test 2025');
 
-    const allInputs = document.querySelectorAll('input[type="datetime-local"]');
-    const startInput = allInputs[0] as HTMLInputElement;
-    const endInput = allInputs[1] as HTMLInputElement;
-
-    await userEvent.type(startInput, '2025-03-15T09:00');
-    await userEvent.type(endInput, '2025-03-16T18:00');
+    const { startInput, endInput } = getDatetimeInputs();
+    setDatetime(startInput, '2025-03-15T09:00');
+    setDatetime(endInput, '2025-03-16T18:00');
 
     // Submit
     await userEvent.click(screen.getByText("Créer l'édition"));
@@ -187,15 +212,14 @@ describe('EditionCreateModal', () => {
       <EditionCreateModal isOpen={true} onClose={mockOnClose} />
     );
 
+    await waitForModalFocusTrap();
+
     // Fill in form
     await userEvent.type(getNameInput(), 'Existing Edition');
 
-    const allInputs = document.querySelectorAll('input[type="datetime-local"]');
-    const startInput = allInputs[0] as HTMLInputElement;
-    const endInput = allInputs[1] as HTMLInputElement;
-
-    await userEvent.type(startInput, '2025-03-15T09:00');
-    await userEvent.type(endInput, '2025-03-16T18:00');
+    const { startInput, endInput } = getDatetimeInputs();
+    setDatetime(startInput, '2025-03-15T09:00');
+    setDatetime(endInput, '2025-03-16T18:00');
 
     // Submit
     await userEvent.click(screen.getByText("Créer l'édition"));
@@ -210,6 +234,8 @@ describe('EditionCreateModal', () => {
       <EditionCreateModal isOpen={true} onClose={mockOnClose} />
     );
 
+    await waitForModalFocusTrap();
+
     await userEvent.click(screen.getByText('Annuler'));
 
     expect(mockOnClose).toHaveBeenCalled();
@@ -222,15 +248,14 @@ describe('EditionCreateModal', () => {
       <EditionCreateModal isOpen={true} onClose={mockOnClose} />
     );
 
+    await waitForModalFocusTrap();
+
     // Fill and submit
     await userEvent.type(getNameInput(), 'Bourse Test 2025');
 
-    const allInputs = document.querySelectorAll('input[type="datetime-local"]');
-    const startInput = allInputs[0] as HTMLInputElement;
-    const endInput = allInputs[1] as HTMLInputElement;
-
-    await userEvent.type(startInput, '2025-03-15T09:00');
-    await userEvent.type(endInput, '2025-03-16T18:00');
+    const { startInput, endInput } = getDatetimeInputs();
+    setDatetime(startInput, '2025-03-15T09:00');
+    setDatetime(endInput, '2025-03-16T18:00');
     await userEvent.click(screen.getByText("Créer l'édition"));
 
     // Wait for success
@@ -244,22 +269,21 @@ describe('EditionCreateModal', () => {
     expect(mockOnClose).toHaveBeenCalled();
   });
 
-  it('allows creating another edition after success', async () => {
+  it('navigates to the created edition after success', async () => {
     vi.mocked(editionsApi.createEdition).mockResolvedValue(mockCreatedEdition);
 
     renderWithProviders(
       <EditionCreateModal isOpen={true} onClose={mockOnClose} />
     );
 
+    await waitForModalFocusTrap();
+
     // Fill and submit first edition
     await userEvent.type(getNameInput(), 'Bourse Test 2025');
 
-    const allInputs = document.querySelectorAll('input[type="datetime-local"]');
-    const startInput = allInputs[0] as HTMLInputElement;
-    const endInput = allInputs[1] as HTMLInputElement;
-
-    await userEvent.type(startInput, '2025-03-15T09:00');
-    await userEvent.type(endInput, '2025-03-16T18:00');
+    const { startInput, endInput } = getDatetimeInputs();
+    setDatetime(startInput, '2025-03-15T09:00');
+    setDatetime(endInput, '2025-03-16T18:00');
     await userEvent.click(screen.getByText("Créer l'édition"));
 
     // Wait for success
@@ -267,13 +291,10 @@ describe('EditionCreateModal', () => {
       expect(screen.getByText(/Édition créée avec succès/i)).toBeInTheDocument();
     });
 
-    // Click "Create another"
-    await userEvent.click(screen.getByText('Créer une autre édition'));
+    // The success screen now offers navigation to the created edition
+    await userEvent.click(screen.getByText("Voir l'édition"));
 
-    // Form should be reset - check the name input is empty
-    await waitFor(() => {
-      expect(getNameInput()).toHaveValue('');
-    });
-    expect(screen.queryByText(/Édition créée avec succès/i)).not.toBeInTheDocument();
+    expect(mockNavigate).toHaveBeenCalledWith('/editions/1');
+    expect(mockOnClose).toHaveBeenCalled();
   });
 });

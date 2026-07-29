@@ -9,6 +9,9 @@ import { invitationsApi, ApiException } from '@/api';
 vi.mock('@/api', () => ({
   invitationsApi: {
     createInvitation: vi.fn(),
+    // Called from a debounced timer as the email field is typed; without it the
+    // timer rejects after the test ends and pollutes the run.
+    lookupDepositor: vi.fn().mockResolvedValue(null),
   },
   ApiException: class ApiException extends Error {
     status: number;
@@ -18,6 +21,16 @@ vi.mock('@/api', () => ({
     }
   },
 }));
+
+// Modal focuses its own container from a requestAnimationFrame callback on open.
+// If that fires mid-typing it pulls focus off the field and silently drops the
+// remaining keystrokes, leaving the submit button disabled.
+const waitForModalFocusTrap = async () => {
+  const modalContainer = document.querySelector('[role="dialog"] > div');
+  await waitFor(() => {
+    expect(modalContainer).toHaveFocus();
+  });
+};
 
 describe('InvitationCreateModal', () => {
   const defaultProps = {
@@ -29,8 +42,9 @@ describe('InvitationCreateModal', () => {
     vi.clearAllMocks();
   });
 
-  it('renders modal with form fields when open', () => {
+  it('renders modal with form fields when open', async () => {
     renderWithProviders(<InvitationCreateModal {...defaultProps} />);
+    await waitForModalFocusTrap();
 
     expect(screen.getByText('Nouvelle invitation')).toBeInTheDocument();
     expect(screen.getByLabelText(/adresse email/i)).toBeInTheDocument();
@@ -47,6 +61,7 @@ describe('InvitationCreateModal', () => {
 
   it('validates email format', async () => {
     renderWithProviders(<InvitationCreateModal {...defaultProps} />);
+    await waitForModalFocusTrap();
 
     const emailInput = screen.getByLabelText(/adresse email/i);
     // Use an email that browser validation accepts but our regex rejects
@@ -78,6 +93,7 @@ describe('InvitationCreateModal', () => {
     });
 
     renderWithProviders(<InvitationCreateModal {...defaultProps} />);
+    await waitForModalFocusTrap();
 
     await userEvent.type(screen.getByLabelText(/adresse email/i), 'test@example.com');
     await userEvent.type(screen.getByLabelText('Prénom'), 'Jean');
@@ -109,6 +125,7 @@ describe('InvitationCreateModal', () => {
     });
 
     renderWithProviders(<InvitationCreateModal {...defaultProps} />);
+    await waitForModalFocusTrap();
 
     await userEvent.type(screen.getByLabelText(/adresse email/i), 'test@example.com');
     await userEvent.click(screen.getByText("Envoyer l'invitation"));
@@ -126,6 +143,7 @@ describe('InvitationCreateModal', () => {
     vi.mocked(invitationsApi.createInvitation).mockRejectedValue(apiError);
 
     renderWithProviders(<InvitationCreateModal {...defaultProps} />);
+    await waitForModalFocusTrap();
 
     await userEvent.type(screen.getByLabelText(/adresse email/i), 'existing@example.com');
     await userEvent.click(screen.getByText("Envoyer l'invitation"));
@@ -138,6 +156,7 @@ describe('InvitationCreateModal', () => {
   it('calls onClose when cancel is clicked', async () => {
     const onClose = vi.fn();
     renderWithProviders(<InvitationCreateModal isOpen={true} onClose={onClose} />);
+    await waitForModalFocusTrap();
 
     await userEvent.click(screen.getByText('Annuler'));
 
@@ -157,6 +176,7 @@ describe('InvitationCreateModal', () => {
     });
 
     renderWithProviders(<InvitationCreateModal {...defaultProps} />);
+    await waitForModalFocusTrap();
 
     // Submit first invitation
     await userEvent.type(screen.getByLabelText(/adresse email/i), 'test@example.com');
@@ -189,6 +209,7 @@ describe('InvitationCreateModal', () => {
     });
 
     renderWithProviders(<InvitationCreateModal {...defaultProps} />);
+    await waitForModalFocusTrap();
 
     await userEvent.type(screen.getByLabelText(/adresse email/i), 'test@example.com');
     await userEvent.selectOptions(screen.getByLabelText(/type de liste/i), 'list_1000');

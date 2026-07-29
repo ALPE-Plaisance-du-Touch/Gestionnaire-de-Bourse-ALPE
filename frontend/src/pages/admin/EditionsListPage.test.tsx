@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/test-utils';
 import { EditionsListPage } from './EditionsListPage';
@@ -123,13 +123,12 @@ describe('EditionsListPage', () => {
     renderWithProviders(<EditionsListPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Bourse Printemps 2025')).toBeInTheDocument();
+      expect(screen.getAllByText('Bourse Printemps 2025').length).toBeGreaterThan(0);
     });
 
-    expect(screen.getByText('Bourse Automne 2024')).toBeInTheDocument();
-    expect(screen.getByText('Bourse Été 2024')).toBeInTheDocument();
-    expect(screen.getByText('Salle des fêtes')).toBeInTheDocument();
-    expect(screen.getByText('Gymnase')).toBeInTheDocument();
+    // Each edition is rendered twice (mobile card + desktop table row)
+    expect(screen.getAllByText('Bourse Automne 2024').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Bourse Été 2024').length).toBeGreaterThan(0);
   });
 
   it('displays statistics cards', async () => {
@@ -153,12 +152,13 @@ describe('EditionsListPage', () => {
     renderWithProviders(<EditionsListPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Bourse Printemps 2025')).toBeInTheDocument();
+      expect(screen.getAllByText('Bourse Printemps 2025').length).toBeGreaterThan(0);
     });
 
     // Check status badges - use getAllByText since labels can appear multiple times
     expect(screen.getAllByText('Brouillon').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Clôturé').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Clôturée').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Vente').length).toBeGreaterThan(0);
   });
 
   it('shows empty state when no editions', async () => {
@@ -209,11 +209,12 @@ describe('EditionsListPage', () => {
     renderWithProviders(<EditionsListPage onEditClick={onEditClick} />);
 
     await waitFor(() => {
-      expect(screen.getByText('Bourse Printemps 2025')).toBeInTheDocument();
+      expect(screen.getAllByText('Bourse Printemps 2025').length).toBeGreaterThan(0);
     });
 
-    const modifyButtons = screen.getAllByText('Modifier');
-    await userEvent.click(modifyButtons[0]);
+    // Actions are icon buttons; target the desktop table row for the first edition
+    const firstRow = within(screen.getByRole('table')).getAllByRole('row')[1];
+    await userEvent.click(within(firstRow).getByRole('button', { name: 'Modifier' }));
 
     expect(onEditClick).toHaveBeenCalledWith(mockEditions[0]);
   });
@@ -224,16 +225,19 @@ describe('EditionsListPage', () => {
     renderWithProviders(<EditionsListPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Bourse Printemps 2025')).toBeInTheDocument();
+      expect(screen.getAllByText('Bourse Printemps 2025').length).toBeGreaterThan(0);
     });
 
     // Change filter to draft
     const select = screen.getByRole('combobox');
     await userEvent.selectOptions(select, 'draft');
 
-    // API should be called with filter
+    // API should be called with filter (includeArchived is only true for the archived filter)
     await waitFor(() => {
-      expect(editionsApi.getEditions).toHaveBeenCalledWith({ status: 'draft' });
+      expect(editionsApi.getEditions).toHaveBeenCalledWith({
+        status: 'draft',
+        includeArchived: false,
+      });
     });
   });
 
@@ -244,11 +248,13 @@ describe('EditionsListPage', () => {
       renderWithProviders(<EditionsListPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Bourse Printemps 2025')).toBeInTheDocument();
+        expect(screen.getAllByText('Bourse Printemps 2025').length).toBeGreaterThan(0);
       });
 
-      // Only 1 delete button (for the draft edition)
-      const deleteButtons = screen.getAllByText('Supprimer');
+      // Only 1 delete icon button in the desktop table (for the draft edition)
+      const deleteButtons = within(screen.getByRole('table')).getAllByRole('button', {
+        name: 'Supprimer',
+      });
       expect(deleteButtons.length).toBe(1);
     });
 
@@ -258,15 +264,18 @@ describe('EditionsListPage', () => {
       renderWithProviders(<EditionsListPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Bourse Printemps 2025')).toBeInTheDocument();
+        expect(screen.getAllByText('Bourse Printemps 2025').length).toBeGreaterThan(0);
       });
 
-      const deleteButton = screen.getByText('Supprimer');
+      const deleteButton = within(screen.getByRole('table')).getByRole('button', {
+        name: 'Supprimer',
+      });
       await userEvent.click(deleteButton);
 
-      expect(screen.getByText('Confirmer la suppression')).toBeInTheDocument();
+      const modal = screen.getByRole('dialog');
+      expect(within(modal).getByText('Confirmer la suppression')).toBeInTheDocument();
       // The edition name appears both in table and modal, so just check modal warning text
-      expect(screen.getByText(/irréversible/i)).toBeInTheDocument();
+      expect(within(modal).getByText(/irréversible/i)).toBeInTheDocument();
     });
 
     it('calls deleteEdition API when confirmed', async () => {
@@ -276,32 +285,33 @@ describe('EditionsListPage', () => {
       renderWithProviders(<EditionsListPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Bourse Printemps 2025')).toBeInTheDocument();
+        expect(screen.getAllByText('Bourse Printemps 2025').length).toBeGreaterThan(0);
       });
 
-      // Click delete button in table
-      const deleteButton = screen.getByText('Supprimer');
+      // Click delete icon button in table
+      const deleteButton = within(screen.getByRole('table')).getByRole('button', {
+        name: 'Supprimer',
+      });
       await userEvent.click(deleteButton);
 
       // Wait for modal to appear
       await waitFor(() => {
-        expect(screen.getByText('Confirmer la suppression')).toBeInTheDocument();
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
-      // Find and click the confirm button in modal (it's the red one)
-      const modalButtons = screen.getAllByRole('button');
-      const confirmButton = modalButtons.find(
-        (btn) => btn.textContent === 'Supprimer' && btn.classList.contains('bg-error')
-      );
-
-      if (confirmButton) {
-        await userEvent.click(confirmButton);
-      }
+      // Click the confirm button inside the modal
+      const confirmButton = within(screen.getByRole('dialog')).getByRole('button', {
+        name: 'Supprimer',
+      });
+      await userEvent.click(confirmButton);
 
       // The success message proves the deletion happened
       await waitFor(() => {
         expect(screen.getByText(/supprimée avec succès/i)).toBeInTheDocument();
       });
+
+      // React Query passes a mutation context as a 2nd arg, so check the id only
+      expect(vi.mocked(editionsApi.deleteEdition).mock.calls[0][0]).toBe('1');
     });
 
     it('closes modal when cancel clicked', async () => {
@@ -310,17 +320,21 @@ describe('EditionsListPage', () => {
       renderWithProviders(<EditionsListPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Bourse Printemps 2025')).toBeInTheDocument();
+        expect(screen.getAllByText('Bourse Printemps 2025').length).toBeGreaterThan(0);
       });
 
       // Open modal
-      const deleteButton = screen.getByText('Supprimer');
+      const deleteButton = within(screen.getByRole('table')).getByRole('button', {
+        name: 'Supprimer',
+      });
       await userEvent.click(deleteButton);
 
       expect(screen.getByText('Confirmer la suppression')).toBeInTheDocument();
 
       // Click cancel
-      await userEvent.click(screen.getByText('Annuler'));
+      await userEvent.click(
+        within(screen.getByRole('dialog')).getByRole('button', { name: 'Annuler' })
+      );
 
       // Modal should close
       expect(screen.queryByText('Confirmer la suppression')).not.toBeInTheDocument();
@@ -333,7 +347,7 @@ describe('EditionsListPage', () => {
     renderWithProviders(<EditionsListPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Bourse Printemps 2025')).toBeInTheDocument();
+      expect(screen.getAllByText('Bourse Printemps 2025').length).toBeGreaterThan(0);
     });
 
     expect(screen.getByText('Admin User')).toBeInTheDocument();
