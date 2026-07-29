@@ -6,6 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 
+from app.api.v1.module_guards import require_module_enabled
 from app.dependencies import DBSession, require_role
 from app.models import User
 from app.models.edition_depositor import EditionDepositor
@@ -47,6 +48,7 @@ async def generate_labels(
     edition = await edition_repo.get_by_id(edition_id)
     if not edition:
         raise HTTPException(status_code=404, detail="Édition non trouvée")
+    require_module_enabled(edition, "labels_enabled")
 
     # Check edition status
     if edition.status not in ("registrations_open", "deposit", "sale"):
@@ -130,6 +132,7 @@ async def list_label_depositors(
     edition = await edition_repo.get_by_id(edition_id)
     if not edition:
         raise HTTPException(status_code=404, detail="Édition non trouvée")
+    require_module_enabled(edition, "labels_enabled")
 
     depositors = await item_list_repo.get_depositors_with_validated_lists(edition_id)
     return [
@@ -159,6 +162,7 @@ async def list_label_slots(
     edition = await edition_repo.get_by_id(edition_id)
     if not edition:
         raise HTTPException(status_code=404, detail="Édition non trouvée")
+    require_module_enabled(edition, "labels_enabled")
 
     slots = await item_list_repo.get_slots_with_validated_lists(edition_id)
     return [
@@ -187,6 +191,7 @@ async def get_label_stats(
     edition = await edition_repo.get_by_id(edition_id)
     if not edition:
         raise HTTPException(status_code=404, detail="Édition non trouvée")
+    require_module_enabled(edition, "labels_enabled")
 
     stats = await item_list_repo.get_label_stats(edition_id)
     return LabelStatsResponse(**stats)

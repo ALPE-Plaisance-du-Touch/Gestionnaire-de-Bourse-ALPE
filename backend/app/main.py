@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
+from app import __version__ as APP_VERSION
 from app.config import settings
 from app.dependencies import DBSession
 from app.middleware import LoginRateLimitMiddleware, RateLimitMiddleware
@@ -29,7 +30,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 app = FastAPI(
     title="Bourse ALPE API",
     description="API for managing second-hand goods sales events",
-    version="1.0.0-rc",
+    version=APP_VERSION,
     docs_url="/api/docs" if settings.is_development else None,
     redoc_url="/api/redoc" if settings.is_development else None,
     openapi_url="/api/openapi.json" if settings.is_development else None,
@@ -55,7 +56,7 @@ app.add_middleware(
 async def health_check(db: DBSession) -> dict[str, str]:
     """Health check endpoint for monitoring."""
     await db.execute(text("SELECT 1"))
-    return {"status": "healthy"}
+    return {"status": "healthy", "version": APP_VERSION}
 
 
 @app.get("/api/v1", tags=["Root"])
@@ -63,7 +64,7 @@ async def api_root() -> dict[str, str]:
     """API root endpoint with version information."""
     return {
         "name": "Bourse ALPE API",
-        "version": "1.0.0-rc",
+        "version": APP_VERSION,
         "docs": "/api/docs",
     }
 

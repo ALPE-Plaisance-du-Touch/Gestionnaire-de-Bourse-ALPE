@@ -12,8 +12,14 @@ vi.mock('@/api', () => ({
     resendInvitation: vi.fn(),
     deleteInvitation: vi.fn(),
     bulkDeleteInvitations: vi.fn(),
+    bulkResendInvitations: vi.fn(),
   },
 }));
+
+// The page renders every invitation twice (mobile card + desktop table row),
+// so row-level queries are scoped to the desktop table.
+const getTable = () => screen.getByRole('table');
+const getTableCheckboxes = () => within(getTable()).getAllByRole('checkbox');
 
 const mockInvitations = [
   {
@@ -69,13 +75,16 @@ describe('InvitationsPage', () => {
     renderWithProviders(<InvitationsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+      expect(getTable()).toBeInTheDocument();
     });
 
-    expect(screen.getByText('activated@example.com')).toBeInTheDocument();
-    expect(screen.getByText('expired@example.com')).toBeInTheDocument();
-    expect(screen.getByText('Jean Dupont')).toBeInTheDocument();
-    expect(screen.getByText('Marie Martin')).toBeInTheDocument();
+    // Assert on the desktop table, since each row is also rendered as a mobile card
+    const table = within(getTable());
+    expect(table.getByText('pending@example.com')).toBeInTheDocument();
+    expect(table.getByText('activated@example.com')).toBeInTheDocument();
+    expect(table.getByText('expired@example.com')).toBeInTheDocument();
+    expect(table.getByText('Jean Dupont')).toBeInTheDocument();
+    expect(table.getByText('Marie Martin')).toBeInTheDocument();
   });
 
   it('displays statistics cards', async () => {
@@ -103,12 +112,14 @@ describe('InvitationsPage', () => {
 
     // Wait for data to load (table to appear)
     await waitFor(() => {
-      expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+      expect(getTable()).toBeInTheDocument();
     });
 
     // Check status badges exist in table
-    expect(screen.getByText('Activé')).toBeInTheDocument();
-    expect(screen.getByText('Expiré')).toBeInTheDocument();
+    const table = within(getTable());
+    expect(table.getByText('En attente')).toBeInTheDocument();
+    expect(table.getByText('Activé')).toBeInTheDocument();
+    expect(table.getByText('Expiré')).toBeInTheDocument();
   });
 
   it('shows resend button for pending invitations', async () => {
@@ -177,7 +188,7 @@ describe('InvitationsPage', () => {
     renderWithProviders(<InvitationsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+      expect(getTable()).toBeInTheDocument();
     });
 
     // Change filter to pending
@@ -197,12 +208,11 @@ describe('InvitationsPage', () => {
       renderWithProviders(<InvitationsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+        expect(getTable()).toBeInTheDocument();
       });
 
-      // Should have checkboxes (1 header + 3 rows)
-      const checkboxes = screen.getAllByRole('checkbox');
-      expect(checkboxes.length).toBe(4);
+      // Should have checkboxes in the table (1 header + 3 rows)
+      expect(getTableCheckboxes().length).toBe(4);
     });
 
     it('selects individual invitation when checkbox clicked', async () => {
@@ -211,12 +221,11 @@ describe('InvitationsPage', () => {
       renderWithProviders(<InvitationsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+        expect(getTable()).toBeInTheDocument();
       });
 
       // Click on first row checkbox (index 1, since 0 is header)
-      const checkboxes = screen.getAllByRole('checkbox');
-      await userEvent.click(checkboxes[1]);
+      await userEvent.click(getTableCheckboxes()[1]);
 
       // Selection bar should appear
       expect(screen.getByText('1 invitation sélectionnée')).toBeInTheDocument();
@@ -228,12 +237,11 @@ describe('InvitationsPage', () => {
       renderWithProviders(<InvitationsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+        expect(getTable()).toBeInTheDocument();
       });
 
       // Click header checkbox
-      const checkboxes = screen.getAllByRole('checkbox');
-      await userEvent.click(checkboxes[0]);
+      await userEvent.click(getTableCheckboxes()[0]);
 
       // Selection bar should show all selected
       expect(screen.getByText('3 invitations sélectionnées')).toBeInTheDocument();
@@ -245,11 +253,11 @@ describe('InvitationsPage', () => {
       renderWithProviders(<InvitationsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+        expect(getTable()).toBeInTheDocument();
       });
 
       // Select two items
-      const checkboxes = screen.getAllByRole('checkbox');
+      const checkboxes = getTableCheckboxes();
       await userEvent.click(checkboxes[1]);
       await userEvent.click(checkboxes[2]);
 
@@ -264,12 +272,11 @@ describe('InvitationsPage', () => {
       renderWithProviders(<InvitationsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+        expect(getTable()).toBeInTheDocument();
       });
 
       // Select an item
-      const checkboxes = screen.getAllByRole('checkbox');
-      await userEvent.click(checkboxes[1]);
+      await userEvent.click(getTableCheckboxes()[1]);
 
       // Click deselect
       await userEvent.click(screen.getByText('Désélectionner'));
@@ -284,12 +291,11 @@ describe('InvitationsPage', () => {
       renderWithProviders(<InvitationsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+        expect(getTable()).toBeInTheDocument();
       });
 
       // Select items
-      const checkboxes = screen.getAllByRole('checkbox');
-      await userEvent.click(checkboxes[0]); // Select all
+      await userEvent.click(getTableCheckboxes()[0]); // Select all
 
       // Click bulk delete
       await userEvent.click(screen.getByText('Supprimer la sélection'));
@@ -309,12 +315,11 @@ describe('InvitationsPage', () => {
       renderWithProviders(<InvitationsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+        expect(getTable()).toBeInTheDocument();
       });
 
       // Select all
-      const checkboxes = screen.getAllByRole('checkbox');
-      await userEvent.click(checkboxes[0]);
+      await userEvent.click(getTableCheckboxes()[0]);
 
       // Open modal and confirm
       await userEvent.click(screen.getByText('Supprimer la sélection'));
@@ -333,16 +338,17 @@ describe('InvitationsPage', () => {
       renderWithProviders(<InvitationsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+        expect(getTable()).toBeInTheDocument();
       });
 
       // Select and open modal
-      const checkboxes = screen.getAllByRole('checkbox');
-      await userEvent.click(checkboxes[1]);
+      await userEvent.click(getTableCheckboxes()[1]);
       await userEvent.click(screen.getByText('Supprimer la sélection'));
 
       // Click cancel
-      await userEvent.click(screen.getByText('Annuler'));
+      await userEvent.click(
+        within(screen.getByRole('dialog')).getByRole('button', { name: 'Annuler' })
+      );
 
       // Modal should close
       expect(screen.queryByText('Confirmer la suppression en masse')).not.toBeInTheDocument();
@@ -359,11 +365,11 @@ describe('InvitationsPage', () => {
       renderWithProviders(<InvitationsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+        expect(getTable()).toBeInTheDocument();
       });
 
       // Select two items and delete
-      const checkboxes = screen.getAllByRole('checkbox');
+      const checkboxes = getTableCheckboxes();
       await userEvent.click(checkboxes[1]);
       await userEvent.click(checkboxes[2]);
       await userEvent.click(screen.getByText('Supprimer la sélection'));
@@ -382,11 +388,11 @@ describe('InvitationsPage', () => {
       renderWithProviders(<InvitationsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+        expect(getTable()).toBeInTheDocument();
       });
 
-      // Should have delete buttons
-      const deleteButtons = screen.getAllByText('Supprimer');
+      // Should have one delete button per row in the table
+      const deleteButtons = within(getTable()).getAllByRole('button', { name: 'Supprimer' });
       expect(deleteButtons.length).toBe(3);
     });
 
@@ -396,19 +402,20 @@ describe('InvitationsPage', () => {
       renderWithProviders(<InvitationsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+        expect(getTable()).toBeInTheDocument();
       });
 
       // Click delete on first invitation
-      const deleteButtons = screen.getAllByText('Supprimer');
+      const deleteButtons = within(getTable()).getAllByRole('button', { name: 'Supprimer' });
       await userEvent.click(deleteButtons[0]);
 
-      // Modal should appear
+      // Modal should appear and name the targeted invitation
       await waitFor(() => {
-        expect(screen.getByText('Confirmer la suppression')).toBeInTheDocument();
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
-      // Email appears in both table and modal
-      expect(screen.getAllByText(/pending@example.com/).length).toBeGreaterThanOrEqual(1);
+      const modal = within(screen.getByRole('dialog'));
+      expect(modal.getByText('Confirmer la suppression')).toBeInTheDocument();
+      expect(modal.getByText('pending@example.com')).toBeInTheDocument();
     });
 
     it('calls deleteInvitation API when confirmed', async () => {
@@ -418,25 +425,23 @@ describe('InvitationsPage', () => {
       renderWithProviders(<InvitationsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+        expect(getTable()).toBeInTheDocument();
       });
 
       // Click delete on first row
-      const deleteButtons = screen.getAllByText('Supprimer');
+      const deleteButtons = within(getTable()).getAllByRole('button', { name: 'Supprimer' });
       await userEvent.click(deleteButtons[0]);
 
       // Wait for modal to appear
       await waitFor(() => {
-        expect(screen.getByText('Confirmer la suppression')).toBeInTheDocument();
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
-      // Find the modal (it has .fixed class) and get the confirm button inside it
-      const modal = document.querySelector('.fixed');
-      expect(modal).toBeTruthy();
-      const modalButtons = within(modal as HTMLElement).getAllByRole('button');
-      const confirmButton = modalButtons.find((btn) => btn.textContent === 'Supprimer');
-      expect(confirmButton).toBeTruthy();
-      await userEvent.click(confirmButton!);
+      // Click the confirm button inside the modal
+      const confirmButton = within(screen.getByRole('dialog')).getByRole('button', {
+        name: 'Supprimer',
+      });
+      await userEvent.click(confirmButton);
 
       await waitFor(() => {
         expect(invitationsApi.deleteInvitation).toHaveBeenCalled();
@@ -451,20 +456,22 @@ describe('InvitationsPage', () => {
       renderWithProviders(<InvitationsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('activated@example.com')).toBeInTheDocument();
+        expect(getTable()).toBeInTheDocument();
       });
 
       // Click delete on activated invitation (second row)
-      const deleteButtons = screen.getAllByText('Supprimer');
+      const deleteButtons = within(getTable()).getAllByRole('button', { name: 'Supprimer' });
       await userEvent.click(deleteButtons[1]);
 
       // Wait for modal to appear
       await waitFor(() => {
-        expect(screen.getByText('Confirmer la suppression')).toBeInTheDocument();
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
       // Should show different message for activated users
-      expect(screen.getByText(/compte sera conservé/)).toBeInTheDocument();
+      const modal = within(screen.getByRole('dialog'));
+      expect(modal.getByText('Confirmer la suppression')).toBeInTheDocument();
+      expect(modal.getByText(/compte sera conservé/)).toBeInTheDocument();
     });
   });
 });

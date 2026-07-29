@@ -8,10 +8,10 @@ import { Modal } from '@/components/ui/Modal';
 import type { User, UserRole, UserAdminUpdate } from '@/types';
 
 const ROLE_LABELS: Record<UserRole, { label: string; className: string }> = {
-  depositor: { label: 'Déposant', className: 'bg-gray-100 text-gray-800' },
-  volunteer: { label: 'Bénévole', className: 'bg-blue-100 text-blue-800' },
-  manager: { label: 'Gestionnaire', className: 'bg-purple-100 text-purple-800' },
-  administrator: { label: 'Administrateur', className: 'bg-red-100 text-red-800' },
+  depositor: { label: 'Déposant', className: 'bg-cream-dark text-bark' },
+  volunteer: { label: 'Bénévole', className: 'bg-primary/10 text-primary-dark' },
+  manager: { label: 'Gestionnaire', className: 'bg-secondary/10 text-secondary-dark' },
+  administrator: { label: 'Administrateur', className: 'bg-error/10 text-error' },
 };
 
 const ROLE_OPTIONS = [
@@ -137,8 +137,8 @@ export function UsersManagementPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Gestion des utilisateurs</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-bark">Gestion des utilisateurs</h1>
+        <p className="mt-1 text-sm text-bark-muted">
           Consultez et modifiez les comptes utilisateurs.
           {data && ` ${data.total} utilisateur${data.total > 1 ? 's' : ''} au total.`}
         </p>
@@ -167,7 +167,7 @@ export function UsersManagementPage() {
 
       {/* Messages */}
       {successMessage && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
+        <div className="mb-4 p-3 bg-primary/10 border border-primary/30 rounded-lg text-sm text-primary-dark">
           {successMessage}
         </div>
       )}
@@ -175,8 +175,8 @@ export function UsersManagementPage() {
       {/* Loading */}
       {isLoading && (
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" />
-          <p className="mt-4 text-gray-500">Chargement...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+          <p className="mt-4 text-bark-muted">Chargement...</p>
         </div>
       )}
 
@@ -184,7 +184,7 @@ export function UsersManagementPage() {
       {!isLoading && (
         <div className="bg-white rounded-lg shadow overflow-hidden">
           {users.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-bark-muted">
               Aucun utilisateur trouvé.
             </div>
           ) : (
@@ -197,28 +197,28 @@ export function UsersManagementPage() {
                   <div key={user.id} className="p-4 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <div className="font-medium text-gray-900">{user.firstName} {user.lastName}</div>
-                        <div className="text-sm text-gray-500 truncate">{user.email}</div>
+                        <div className="font-medium text-bark">{user.firstName} {user.lastName}</div>
+                        <div className="text-sm text-bark-muted truncate">{user.email}</div>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
                         <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${roleInfo.className}`}>
                           {roleInfo.label}
                         </span>
                         <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
-                          user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          user.isActive ? 'bg-primary/10 text-primary-dark' : 'bg-error/10 text-error'
                         }`}>
                           {user.isActive ? 'Actif' : 'Inactif'}
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 text-sm text-bark-muted">
                       <span>Résident : {user.isLocalResident ? 'Oui' : 'Non'}</span>
                       <span>Connexion : {formatDate(user.lastLoginAt)}</span>
                     </div>
                     <button
                       type="button"
                       onClick={() => openEditModal(user)}
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                      className="text-primary hover:text-primary-dark text-sm font-medium"
                     >
                       Modifier
                     </button>
@@ -230,26 +230,26 @@ export function UsersManagementPage() {
             {/* Desktop table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead className="bg-cream">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rôle</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Résident</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dernière connexion</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Nom</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Email</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Rôle</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Statut</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Résident</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Dernière connexion</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-bark-muted uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {users.map((user) => {
                     const roleInfo = ROLE_LABELS[user.role] || ROLE_LABELS.depositor;
                     return (
-                      <tr key={user.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm text-gray-900">
+                      <tr key={user.id} className="hover:bg-cream">
+                        <td className="px-4 py-3 text-sm text-bark">
                           {user.firstName} {user.lastName}
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-500">{user.email}</td>
+                        <td className="px-4 py-3 text-sm text-bark-muted">{user.email}</td>
                         <td className="px-4 py-3">
                           <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${roleInfo.className}`}>
                             {roleInfo.label}
@@ -258,23 +258,23 @@ export function UsersManagementPage() {
                         <td className="px-4 py-3">
                           <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
                             user.isActive
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
+                              ? 'bg-primary/10 text-primary-dark'
+                              : 'bg-error/10 text-error'
                           }`}>
                             {user.isActive ? 'Actif' : 'Inactif'}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-500">
+                        <td className="px-4 py-3 text-sm text-bark-muted">
                           {user.isLocalResident ? 'Oui' : 'Non'}
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-500">
+                        <td className="px-4 py-3 text-sm text-bark-muted">
                           {formatDate(user.lastLoginAt)}
                         </td>
                         <td className="px-4 py-3 text-right">
                           <button
                             type="button"
                             onClick={() => openEditModal(user)}
-                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                            className="text-primary hover:text-primary-dark text-sm font-medium"
                           >
                             Modifier
                           </button>
@@ -290,8 +290,8 @@ export function UsersManagementPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-              <div className="text-sm text-gray-500">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-sand">
+              <div className="text-sm text-bark-muted">
                 Page {page} / {totalPages}
               </div>
               <div className="flex gap-2">
@@ -367,32 +367,32 @@ export function UsersManagementPage() {
                 type="checkbox"
                 checked={formIsActive}
                 onChange={(e) => setFormIsActive(e.target.checked)}
-                className="h-4 w-4 text-blue-600 rounded border-gray-300"
+                className="h-4 w-4 text-primary rounded border-sand"
               />
-              <span className="text-sm text-gray-700">Compte actif</span>
+              <span className="text-sm text-bark-light">Compte actif</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={formIsLocalResident}
                 onChange={(e) => setFormIsLocalResident(e.target.checked)}
-                className="h-4 w-4 text-blue-600 rounded border-gray-300"
+                className="h-4 w-4 text-primary rounded border-sand"
               />
-              <span className="text-sm text-gray-700">Résident local</span>
+              <span className="text-sm text-bark-light">Résident local</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={formIsTester}
                 onChange={(e) => setFormIsTester(e.target.checked)}
-                className="h-4 w-4 text-amber-600 rounded border-gray-300"
+                className="h-4 w-4 text-accent-dark rounded border-sand"
               />
-              <span className="text-sm text-gray-700">Testeur (formation)</span>
+              <span className="text-sm text-bark-light">Testeur (formation)</span>
             </label>
           </div>
 
           {errorMessage && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+            <div className="p-3 bg-error/10 border border-error/30 rounded-lg text-sm text-error">
               {errorMessage}
             </div>
           )}

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="ALPE"><defs></defs>
+<g transform="translate(90,108) scale(1.0)"><g transform="rotate(-14 54 62)" stroke="#f08040" fill="none" stroke-linecap="round">
+<circle cx="54" cy="62" r="43" stroke-width="8"></circle><path d="M11 57 A43 43 0 0 1 97 57" stroke-width="15"></path><path d="M13 74 q-11 22 3 37" stroke-width="10"></path>
+<circle cx="41" cy="54" r="5.5" fill="#f08040" stroke="none"></circle><circle cx="67" cy="54" r="5.5" fill="#f08040" stroke="none"></circle>
+<path d="M35 75 q19 19 38 0" stroke-width="8"></path></g>
+<g transform="rotate(14 166 62)" stroke="#00a0d0" fill="none" stroke-linecap="round">
+<circle cx="166" cy="62" r="43" stroke-width="8"></circle><path d="M126 40 A43 43 0 0 1 206 40" stroke-width="15"></path><path d="M198 26 q16 3 13 19" stroke-width="10"></path>
+<circle cx="153" cy="54" r="5.5" fill="#00a0d0" stroke="none"></circle><circle cx="179" cy="54" r="5.5" fill="#00a0d0" stroke="none"></circle>
+<path d="M147 75 q19 19 38 0" stroke-width="8"></path></g><path d="M6 126 C 60 114 160 110 214 118" fill="none" stroke="#ffe000" stroke-width="9" stroke-linecap="round"></path></g>
+<text x="200" y="330" text-anchor="middle" font-family="Grandstander, system-ui, sans-serif" font-weight="600" font-size="112" letter-spacing="1" fill="#00a0d0">A<tspan fill="#f08040">L</tspan>PE</text></svg>

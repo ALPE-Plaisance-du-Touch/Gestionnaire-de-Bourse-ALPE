@@ -9,6 +9,9 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
+    // userEvent replays each keystroke, so form-heavy tests routinely exceed the
+    // 5s default once files run in parallel (and on slower CI runners).
+    testTimeout: 20000,
     coverage: {
       reporter: ['text', 'json', 'html'],
       include: ['src/**/*.{ts,tsx}'],

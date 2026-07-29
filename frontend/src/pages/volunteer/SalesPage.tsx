@@ -5,6 +5,8 @@ import { salesApi } from '@/api';
 import { QrScanner } from '@/components/sales/QrScanner';
 import { OfflineBanner } from '@/components/ui/OfflineBanner';
 import { TrainingBanner } from '@/components/ui/TrainingBanner';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { useOfflineSales } from '@/hooks/useOfflineSales';
 import { useAuth } from '@/contexts';
 import { playSuccessBeep, playErrorBeep } from '@/utils/sound';
@@ -12,12 +14,64 @@ import type { ScanArticleResponse, SaleResponse, OfflineSaleDisplay } from '@/ty
 import type { PendingSale } from '@/services/db';
 
 type PaymentMethod = 'cash' | 'card' | 'check';
+type CheckoutStep = 'scan' | 'cart' | 'payment';
 
 const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   cash: 'Espèces',
   card: 'CB',
   check: 'Chèque',
 };
+
+const PAYMENT_ICONS: Record<PaymentMethod, React.ReactNode> = {
+  cash: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+  card: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>,
+  check: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
+};
+
+function StepIndicator({ currentStep, cartCount }: { currentStep: CheckoutStep; cartCount: number }) {
+  const steps: { key: CheckoutStep; label: string; number: string }[] = [
+    { key: 'scan', label: 'Scanner', number: '1' },
+    { key: 'cart', label: 'Panier', number: '2' },
+    { key: 'payment', label: 'Paiement', number: '3' },
+  ];
+
+  const stepIndex = steps.findIndex(s => s.key === currentStep);
+
+  return (
+    <div className="flex items-center justify-center gap-2 mb-6">
+      {steps.map((step, i) => {
+        const isActive = step.key === currentStep;
+        const isDone = i < stepIndex;
+        return (
+          <div key={step.key} className="flex items-center gap-2">
+            {i > 0 && (
+              <div className={`w-8 h-0.5 ${isDone || isActive ? 'bg-primary' : 'bg-sand'}`} />
+            )}
+            <div className="flex items-center gap-2">
+              <div className={`
+                w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors
+                ${isActive ? 'bg-primary text-white' : isDone ? 'bg-primary/20 text-primary' : 'bg-sand text-bark-muted'}
+              `}>
+                {isDone ? (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : step.key === 'cart' && cartCount > 0 && !isActive ? (
+                  cartCount
+                ) : (
+                  step.number
+                )}
+              </div>
+              <span className={`text-sm font-medium hidden sm:inline ${isActive ? 'text-bark' : 'text-bark-muted'}`}>
+                {step.label}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export function SalesPage() {
   const { id: editionId } = useParams<{ id: string }>();
@@ -39,24 +93,22 @@ export function SalesPage() {
 
   const [scanError, setScanError] = useState<string | null>(null);
   const [cart, setCart] = useState<ScanArticleResponse[]>([]);
-  const [isPaymentMode, setIsPaymentMode] = useState(false);
+  const [currentStep, setCurrentStep] = useState<CheckoutStep>('scan');
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [offlineSalesList, setOfflineSalesList] = useState<PendingSale[]>([]);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
-  // Load offline sales for display
   useEffect(() => {
     getOfflineSales().then(setOfflineSalesList);
   }, [getOfflineSales, pendingCount]);
 
-  // Invalidate server sales after sync
   useEffect(() => {
     if (lastSyncCount > 0) {
       queryClient.invalidateQueries({ queryKey: ['sales', editionId] });
     }
   }, [lastSyncCount, queryClient, editionId]);
 
-  // Recent sales list (only fetched when online)
   const { data: recentSales } = useQuery({
     queryKey: ['sales', editionId, 'recent'],
     queryFn: () => salesApi.listSales(editionId!, { perPage: 20 }),
@@ -64,7 +116,6 @@ export function SalesPage() {
     refetchInterval: isOnline ? 5000 : false,
   });
 
-  // Scan mutation - adds directly to cart
   const scanMutation = useMutation({
     mutationFn: (barcode: string) => offlineScan(barcode),
     onSuccess: (data) => {
@@ -81,14 +132,12 @@ export function SalesPage() {
         return;
       }
 
-      // Check if already in cart
       if (cart.some(a => a.articleId === data.articleId)) {
         playErrorBeep();
         setScanError('Cet article est déjà dans le panier');
         return;
       }
 
-      // Add directly to cart
       setCart(prev => [...prev, data]);
       playSuccessBeep();
     },
@@ -98,7 +147,6 @@ export function SalesPage() {
     },
   });
 
-  // Checkout mutation (batch)
   const checkoutMutation = useMutation({
     mutationFn: (params: { articles: ScanArticleResponse[]; paymentMethod: PaymentMethod }) =>
       offlineBatchRegister(params.articles, params.paymentMethod),
@@ -110,7 +158,7 @@ export function SalesPage() {
       );
       setCart([]);
       setSelectedPayment(null);
-      setIsPaymentMode(false);
+      setCurrentStep('scan');
       if (!data.isOffline) {
         queryClient.invalidateQueries({ queryKey: ['sales', editionId] });
       }
@@ -122,7 +170,6 @@ export function SalesPage() {
     },
   });
 
-  // Cancel mutation (only available when online)
   const cancelMutation = useMutation({
     mutationFn: (saleId: string) => salesApi.cancelSale(editionId!, saleId),
     onSuccess: () => {
@@ -140,7 +187,7 @@ export function SalesPage() {
     setCart(prev => {
       const next = prev.filter(a => a.articleId !== articleId);
       if (next.length === 0) {
-        setIsPaymentMode(false);
+        setCurrentStep('scan');
         setSelectedPayment(null);
       }
       return next;
@@ -150,18 +197,7 @@ export function SalesPage() {
   const handleClearCart = () => {
     setCart([]);
     setSelectedPayment(null);
-    setIsPaymentMode(false);
-  };
-
-  const handleGoToPayment = () => {
-    setIsPaymentMode(true);
-    setScanError(null);
-    setSuccessMessage(null);
-  };
-
-  const handleBackToScan = () => {
-    setIsPaymentMode(false);
-    setSelectedPayment(null);
+    setCurrentStep('scan');
   };
 
   const handlePay = () => {
@@ -171,7 +207,6 @@ export function SalesPage() {
 
   const cartTotal = cart.reduce((sum, a) => sum + Number(a.price), 0);
 
-  // Merge server sales with offline pending sales for display
   const serverSales = recentSales?.items || [];
   const offlineDisplaySales: OfflineSaleDisplay[] = offlineSalesList
     .filter(s => s.status === 'pending')
@@ -192,197 +227,279 @@ export function SalesPage() {
   const sessionTotal = allSales.reduce((sum, s) => sum + Number(s.price), 0);
 
   return (
-    <div>
+    <div className="max-w-3xl mx-auto">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <div>
-          <Link
-            to={backLink}
-            className="text-sm text-blue-600 hover:text-blue-700 mb-1 inline-block"
+          <Link to={backLink} className="text-sm text-primary hover:text-primary-dark mb-1 inline-flex items-center gap-1">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            {canViewEdition ? "Retour à l'édition" : "Retour"}
+          </Link>
+          <h1 className="text-2xl font-bold text-bark">Caisse</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link to="/aide#guide-benevole" className="text-xs text-bark-muted hover:text-primary transition-colors">
+            Aide
+          </Link>
+          <button
+            type="button"
+            onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+            className="relative p-2 text-bark-muted hover:text-bark hover:bg-cream-dark rounded-xl transition-colors"
+            aria-label="Historique des ventes"
           >
-            &larr; {canViewEdition ? "Retour à l'édition" : "Retour à l'accueil"}
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Caisse</h1>
-          <Link to="/aide#guide-benevole" className="text-xs text-gray-500 hover:text-blue-600">
-            Besoin d'aide ?
-          </Link>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {allSales.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-secondary text-white text-xs font-bold rounded-full flex items-center justify-center">
+                {allSales.length > 99 ? '99' : allSales.length}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Private sale banner */}
+      {/* Banners */}
       <PrivateSaleBanner />
-
-      {/* Offline banner */}
-      <div className="mb-4">
+      <div className="mb-4 space-y-2">
         <OfflineBanner isOnline={isOnline} pendingCount={pendingCount} lastSyncCount={lastSyncCount} conflicts={conflicts} />
         <TrainingBanner editionId={editionId!} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left column - Scanner + Cart */}
+      {/* Step indicator */}
+      <StepIndicator currentStep={currentStep} cartCount={cart.length} />
+
+      {/* Success message */}
+      {successMessage && (
+        <div className="mb-4 bg-primary/10 border border-primary/30 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <p className="text-primary-dark font-medium">{successMessage}</p>
+        </div>
+      )}
+
+      {/* Scan error */}
+      {scanError && (
+        <div className="mb-4 bg-error/10 border border-error/30 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-error/20 text-error flex items-center justify-center shrink-0">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <p className="text-error font-medium">{scanError}</p>
+        </div>
+      )}
+
+      {/* Step 1: SCAN */}
+      {currentStep === 'scan' && (
         <div className="space-y-4">
-          {/* Scanner (hidden during payment) */}
-          {!isPaymentMode && (
-            <div className="bg-white rounded-lg shadow p-4">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Scanner un article</h2>
-              <QrScanner
-                onScan={handleScan}
-                disabled={scanMutation.isPending || checkoutMutation.isPending}
-              />
-            </div>
-          )}
+          <Card variant="default" padding="md">
+            <h2 className="text-lg font-semibold text-bark mb-4">Scanner un article</h2>
+            <QrScanner
+              onScan={handleScan}
+              disabled={scanMutation.isPending || checkoutMutation.isPending}
+            />
+          </Card>
 
-          {/* Success message */}
-          {successMessage && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-green-800 font-medium">{successMessage}</p>
-            </div>
-          )}
-
-          {/* Scan error */}
-          {scanError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-800 font-medium">{scanError}</p>
-            </div>
-          )}
-
-          {/* Cart / Panier */}
+          {/* Mini cart preview */}
           {cart.length > 0 && (
-            <div className="bg-white rounded-lg shadow border-2 border-blue-200">
-              <div className="flex items-center justify-between p-4 border-b border-blue-100 bg-blue-50 rounded-t-lg">
-                <h3 className="font-semibold text-blue-900">Panier</h3>
-                <span className="text-sm text-blue-700 font-medium">
-                  {cart.length} article{cart.length > 1 ? 's' : ''}
+            <Card variant="default" padding="none" className="overflow-hidden">
+              <div className="flex items-center justify-between p-4 bg-primary/5 border-b border-sand">
+                <span className="font-medium text-bark">
+                  {cart.length} article{cart.length > 1 ? 's' : ''} dans le panier
                 </span>
+                <span className="font-bold text-bark">{cartTotal.toFixed(2)} EUR</span>
               </div>
-
-              <div className="divide-y divide-gray-100">
-                {cart.map((article) => (
-                  <div key={article.articleId} className="flex items-center justify-between p-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{article.description}</p>
-                      <p className="text-xs text-gray-500">
-                        L{article.listNumber} &middot; {article.depositorName}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3 ml-3">
-                      <span className="font-semibold text-gray-900">{Number(article.price).toFixed(2)} EUR</span>
-                      {!isPaymentMode && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveFromCart(article.articleId)}
-                          className="text-red-500 hover:text-red-700 p-1"
-                          aria-label={`Retirer ${article.description}`}
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+              <div className="p-4 flex gap-2">
+                <Button
+                  variant="primary"
+                  className="flex-1"
+                  size="lg"
+                  onClick={() => setCurrentStep('cart')}
+                  rightIcon={
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  }
+                >
+                  Voir le panier
+                </Button>
+                <Button variant="ghost" size="lg" onClick={handleClearCart}>
+                  Vider
+                </Button>
               </div>
-
-              {/* Total */}
-              <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50">
-                <span className="font-semibold text-gray-900">TOTAL</span>
-                <span className="text-xl font-bold text-gray-900">{cartTotal.toFixed(2)} EUR</span>
-              </div>
-
-              {/* Actions */}
-              <div className="p-4 border-t border-gray-200">
-                {!isPaymentMode ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handleGoToPayment}
-                      className="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-lg mb-2"
-                    >
-                      Passer au paiement
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleClearCart}
-                      className="w-full py-2 px-4 text-gray-600 font-medium rounded-lg hover:bg-gray-100 transition-colors text-sm"
-                    >
-                      Vider le panier
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm font-medium text-gray-700 mb-3">Mode de paiement</p>
-                    <div className="flex gap-2 mb-4">
-                      {(['cash', 'card', 'check'] as PaymentMethod[]).map((method) => (
-                        <button
-                          key={method}
-                          type="button"
-                          onClick={() => setSelectedPayment(method)}
-                          className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium border-2 transition-colors ${
-                            selectedPayment === method
-                              ? 'border-blue-600 bg-blue-50 text-blue-700'
-                              : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                          }`}
-                        >
-                          {PAYMENT_LABELS[method]}
-                        </button>
-                      ))}
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={handlePay}
-                      disabled={!selectedPayment || checkoutMutation.isPending}
-                      className="w-full py-3 px-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-lg mb-2"
-                    >
-                      {checkoutMutation.isPending ? 'Enregistrement...' : 'Paye'}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handleBackToScan}
-                      disabled={checkoutMutation.isPending}
-                      className="w-full py-2 px-4 text-gray-600 font-medium rounded-lg hover:bg-gray-100 transition-colors text-sm"
-                    >
-                      Retour au scan
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
+            </Card>
           )}
         </div>
+      )}
 
-        {/* Right column - Recent sales */}
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Ventes recentes</h2>
-            <div className="text-sm text-gray-500">
-              {allSales.length} vente{allSales.length !== 1 ? 's' : ''} &middot; {sessionTotal.toFixed(2)} EUR
+      {/* Step 2: CART */}
+      {currentStep === 'cart' && (
+        <div className="space-y-4">
+          <Card variant="default" padding="none" className="overflow-hidden">
+            <div className="p-4 border-b border-sand">
+              <h2 className="text-lg font-semibold text-bark">Panier</h2>
             </div>
-          </div>
 
-          {allSales.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">Aucune vente enregistree</p>
-          ) : (
-            <div className="space-y-2 max-h-[600px] overflow-y-auto">
-              {allSales.map((sale) => (
-                'isOffline' in sale ? (
-                  <OfflineSaleItem key={sale.id} sale={sale} />
-                ) : (
-                  <SaleItem
-                    key={sale.id}
-                    sale={sale}
-                    onCancel={() => cancelMutation.mutate(sale.id)}
-                    cancelling={cancelMutation.isPending}
-                    cancelDisabled={!isOnline}
-                  />
-                )
+            <div className="divide-y divide-sand">
+              {cart.map((article) => (
+                <div key={article.articleId} className="flex items-center justify-between p-4">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-bark truncate">{article.description}</p>
+                    <p className="text-xs text-bark-muted">
+                      L{article.listNumber} &middot; {article.depositorName}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 ml-3">
+                    <span className="font-semibold text-bark">{Number(article.price).toFixed(2)} EUR</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveFromCart(article.articleId)}
+                      className="text-error/60 hover:text-error p-1 rounded-lg hover:bg-error/10 transition-colors"
+                      aria-label={`Retirer ${article.description}`}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
-          )}
+
+            {/* Total */}
+            <div className="flex items-center justify-between p-4 border-t border-sand bg-cream-dark">
+              <span className="font-semibold text-bark">TOTAL</span>
+              <span className="text-2xl font-bold text-bark">{cartTotal.toFixed(2)} EUR</span>
+            </div>
+
+            {/* Actions */}
+            <div className="p-4 flex gap-2">
+              <Button variant="outline" size="lg" onClick={() => setCurrentStep('scan')}
+                leftIcon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>}
+              >
+                Ajouter
+              </Button>
+              <Button variant="primary" size="lg" className="flex-1"
+                onClick={() => { setCurrentStep('payment'); setScanError(null); setSuccessMessage(null); }}
+                rightIcon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>}
+              >
+                Payer
+              </Button>
+            </div>
+          </Card>
         </div>
-      </div>
+      )}
+
+      {/* Step 3: PAYMENT */}
+      {currentStep === 'payment' && (
+        <div className="space-y-4">
+          {/* Total display */}
+          <div className="text-center py-6">
+            <p className="text-bark-muted text-sm mb-1">Total à encaisser</p>
+            <p className="text-5xl font-bold text-bark">{cartTotal.toFixed(2)} <span className="text-2xl">EUR</span></p>
+            <p className="text-bark-muted text-sm mt-1">{cart.length} article{cart.length > 1 ? 's' : ''}</p>
+          </div>
+
+          {/* Payment method buttons */}
+          <div className="grid grid-cols-3 gap-3">
+            {(['cash', 'card', 'check'] as PaymentMethod[]).map((method) => (
+              <button
+                key={method}
+                type="button"
+                onClick={() => setSelectedPayment(method)}
+                className={`
+                  flex flex-col items-center gap-2 p-5 rounded-2xl border-2 transition-all duration-200
+                  ${selectedPayment === method
+                    ? 'border-primary bg-primary/10 text-primary-dark shadow-md scale-[1.02]'
+                    : 'border-sand bg-white text-bark-light hover:border-bark-muted hover:bg-cream-dark'
+                  }
+                `}
+              >
+                {PAYMENT_ICONS[method]}
+                <span className="font-medium text-sm">{PAYMENT_LABELS[method]}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Pay button */}
+          <Button
+            variant="warm"
+            size="lg"
+            className="w-full text-lg py-4"
+            onClick={handlePay}
+            disabled={!selectedPayment || checkoutMutation.isPending}
+          >
+            {checkoutMutation.isPending ? 'Enregistrement...' : 'Confirmer le paiement'}
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="md"
+            className="w-full"
+            onClick={() => { setCurrentStep('cart'); setSelectedPayment(null); }}
+            disabled={checkoutMutation.isPending}
+          >
+            Retour au panier
+          </Button>
+        </div>
+      )}
+
+      {/* History slide-in panel */}
+      {isHistoryOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-bark/40 backdrop-blur-sm z-40"
+            onClick={() => setIsHistoryOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="fixed inset-y-0 right-0 w-80 sm:w-96 bg-white shadow-xl z-50 flex flex-col">
+            <div className="flex items-center justify-between px-4 py-4 border-b border-sand shrink-0">
+              <div>
+                <h3 className="font-semibold text-bark">Ventes récentes</h3>
+                <p className="text-xs text-bark-muted">
+                  {allSales.length} vente{allSales.length !== 1 ? 's' : ''} &middot; {sessionTotal.toFixed(2)} EUR
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsHistoryOpen(false)}
+                className="p-2 text-bark-muted hover:text-bark rounded-xl hover:bg-cream-dark transition-colors"
+                aria-label="Fermer"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              {allSales.length === 0 ? (
+                <p className="text-bark-muted text-center py-8">Aucune vente enregistrée</p>
+              ) : (
+                allSales.map((sale) => (
+                  'isOffline' in sale ? (
+                    <OfflineSaleItem key={sale.id} sale={sale} />
+                  ) : (
+                    <SaleItem
+                      key={sale.id}
+                      sale={sale}
+                      onCancel={() => cancelMutation.mutate(sale.id)}
+                      cancelling={cancelMutation.isPending}
+                      cancelDisabled={!isOnline}
+                    />
+                  )
+                ))
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -392,22 +509,22 @@ function OfflineSaleItem({ sale }: { sale: OfflineSaleDisplay }) {
   const time = soldAt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
+    <div className="flex items-center justify-between p-3 bg-accent/10 rounded-xl border border-accent/20">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500">{time}</span>
-          <span className="text-sm font-medium text-gray-900 truncate">{sale.articleDescription}</span>
+          <span className="text-xs text-bark-muted">{time}</span>
+          <span className="text-sm font-medium text-bark truncate">{sale.articleDescription}</span>
         </div>
         <div className="flex items-center gap-2 mt-0.5">
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-orange-200 text-orange-800">
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-accent/20 text-accent-dark">
             Hors-ligne
           </span>
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-700">
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-sand text-bark-muted">
             {PAYMENT_LABELS[sale.paymentMethod as PaymentMethod] || sale.paymentMethod}
           </span>
         </div>
       </div>
-      <span className="font-semibold text-gray-900 ml-3">{Number(sale.price).toFixed(2)} EUR</span>
+      <span className="font-semibold text-bark ml-3">{Number(sale.price).toFixed(2)} EUR</span>
     </div>
   );
 }
@@ -428,23 +545,23 @@ function SaleItem({
   const time = soldAt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+    <div className="flex items-center justify-between p-3 bg-cream-dark rounded-xl">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500">{time}</span>
-          <span className="text-sm font-medium text-gray-900 truncate">{sale.articleDescription}</span>
+          <span className="text-xs text-bark-muted">{time}</span>
+          <span className="text-sm font-medium text-bark truncate">{sale.articleDescription}</span>
         </div>
         <div className="flex items-center gap-2 mt-0.5">
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-bark-muted">
             L{sale.listNumber} &middot; {sale.depositorName}
           </span>
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-700">
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-sand text-bark-muted">
             {PAYMENT_LABELS[sale.paymentMethod as PaymentMethod] || sale.paymentMethod}
           </span>
         </div>
       </div>
       <div className="flex items-center gap-3 ml-3">
-        <span className="font-semibold text-gray-900">{Number(sale.price).toFixed(2)} EUR</span>
+        <span className="font-semibold text-bark">{Number(sale.price).toFixed(2)} EUR</span>
         {sale.canCancel && !cancelDisabled && (
           confirming ? (
             <div className="flex items-center gap-1">
@@ -452,15 +569,15 @@ function SaleItem({
                 type="button"
                 onClick={() => { onCancel(); setConfirming(false); }}
                 disabled={cancelling}
-                className="text-xs font-medium text-white bg-red-600 hover:bg-red-700 px-2 py-1 rounded disabled:opacity-50"
+                className="text-xs font-medium text-white bg-error hover:bg-error-light px-2 py-1 rounded-lg disabled:opacity-50 transition-colors"
               >
-                Confirmer
+                Oui
               </button>
               <button
                 type="button"
                 onClick={() => setConfirming(false)}
                 disabled={cancelling}
-                className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
+                className="text-xs text-bark-muted hover:text-bark px-2 py-1"
               >
                 Non
               </button>
@@ -470,7 +587,7 @@ function SaleItem({
               type="button"
               onClick={() => setConfirming(true)}
               disabled={cancelling}
-              className="text-xs text-red-600 hover:text-red-700 disabled:opacity-50"
+              className="text-xs text-error hover:text-error-light disabled:opacity-50 transition-colors"
             >
               Annuler
             </button>
@@ -490,10 +607,9 @@ function PrivateSaleBanner() {
   if (!isPrivateSaleTime) return null;
 
   return (
-    <div className="mb-4 bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800 px-4 py-3 rounded-r-lg">
-      <p className="font-medium">Vente privee ecoles/ALAE en cours (17h-18h)</p>
-      <p className="text-sm mt-1">Les ventes effectuees pendant ce creneau sont automatiquement marquees comme ventes privees.</p>
+    <div className="mb-4 bg-accent/15 border-l-4 border-accent text-accent-dark px-4 py-3 rounded-r-xl">
+      <p className="font-medium">Vente privée écoles/ALAE en cours (17h-18h)</p>
+      <p className="text-sm mt-1">Les ventes effectuées pendant ce créneau sont automatiquement marquées comme ventes privées.</p>
     </div>
   );
 }
-

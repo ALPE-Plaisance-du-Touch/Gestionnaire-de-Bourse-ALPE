@@ -1,0 +1,39 @@
+<!-- @dsCard group="Components" viewport="700x300" name="Actions — Button, IconButton" subtitle="Pilules bleu / orange / outline / ghost, 3 tailles, icônes Font Awesome" -->
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>html,body{margin:0}body{padding:20px;background:var(--surface-page)}.grid{display:flex;flex-wrap:wrap;gap:14px;align-items:center}.col{display:flex;flex-direction:column;gap:12px}.lbl{font-size:10px;font-family:var(--font-mono);color:var(--text-muted)}</style>
+</head><body><div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { Button, IconButton } = window.ALPEDesignSystem_2d31df;
+function Demo(){return (<div className="col">
+<div className="grid">
+<Button>Primaire</Button>
+<Button variant="secondary" iconRight="fa-solid fa-arrow-right">Adhérez</Button>
+<Button variant="outline" icon="fa-solid fa-download">Le règlement</Button>
+<Button variant="ghost">En savoir plus</Button>
+<Button disabled>Complet</Button>
+</div>
+<div className="grid">
+<Button size="sm">Petit</Button><Button size="md">Moyen</Button><Button size="lg" variant="secondary">Grand</Button>
+</div>
+<div className="grid" style={{background:'var(--surface-brand)',padding:14,borderRadius:'var(--radius-lg)'}}>
+<Button variant="inverse">Sur aplat bleu</Button>
+<IconButton icon="fa-brands fa-facebook-f" label="Facebook" variant="ghost" style={{color:'#fff'}}/>
+</div>
+<div className="grid">
+<IconButton icon="fa-brands fa-facebook-f" label="Facebook"/>
+<IconButton icon="fa-brands fa-instagram" label="Instagram"/>
+<IconButton icon="fa-brands fa-linkedin-in" label="LinkedIn"/>
+<IconButton icon="fa-solid fa-magnifying-glass" label="Rechercher" variant="outline"/>
+<IconButton icon="fa-solid fa-arrow-right" label="Suivant" variant="primary"/>
+<IconButton icon="fa-solid fa-xmark" label="Fermer" variant="secondary" size="sm"/>
+<span className="lbl">ghost · outline · primary · secondary</span>
+</div>
+</div>);}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+</script></body></html>

@@ -26,9 +26,9 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 const RESULT_STYLES: Record<string, string> = {
-  success: 'bg-green-100 text-green-800',
-  failure: 'bg-red-100 text-red-800',
-  error: 'bg-red-100 text-red-800',
+  success: 'bg-primary/10 text-primary-dark',
+  failure: 'bg-error/10 text-error',
+  error: 'bg-error/10 text-error',
 };
 
 export function AuditLogPage() {
@@ -57,17 +57,17 @@ export function AuditLogPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Journal d'audit</h1>
+      <h1 className="text-2xl font-bold text-bark mb-6">Journal d'audit</h1>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-sand p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Action</label>
+            <label className="block text-sm font-medium text-bark-light mb-1">Action</label>
             <select
               value={filters.action || ''}
               onChange={(e) => handleFilterChange('action', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="w-full px-3 py-2 border border-sand rounded-md text-sm"
             >
               <option value="">Toutes</option>
               {Object.entries(ACTION_LABELS).map(([key, label]) => (
@@ -76,64 +76,64 @@ export function AuditLogPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email utilisateur</label>
+            <label className="block text-sm font-medium text-bark-light mb-1">Email utilisateur</label>
             <input
               type="text"
               placeholder="Rechercher..."
               value={filters.userId || ''}
               onChange={(e) => handleFilterChange('userId', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="w-full px-3 py-2 border border-sand rounded-md text-sm"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Depuis</label>
+            <label className="block text-sm font-medium text-bark-light mb-1">Depuis</label>
             <input
               type="date"
               value={filters.dateFrom || ''}
               onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="w-full px-3 py-2 border border-sand rounded-md text-sm"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Jusqu'à</label>
+            <label className="block text-sm font-medium text-bark-light mb-1">Jusqu'à</label>
             <input
               type="date"
               value={filters.dateTo || ''}
               onChange={(e) => handleFilterChange('dateTo', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="w-full px-3 py-2 border border-sand rounded-md text-sm"
             />
           </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border border-sand overflow-hidden">
         {/* Mobile card layout */}
         {isLoading ? (
-          <div className="md:hidden p-8 text-center text-gray-500">Chargement...</div>
+          <div className="md:hidden p-8 text-center text-bark-muted">Chargement...</div>
         ) : !data?.items.length ? (
-          <div className="md:hidden p-8 text-center text-gray-500">Aucune entrée de journal trouvée.</div>
+          <div className="md:hidden p-8 text-center text-bark-muted">Aucune entrée de journal trouvée.</div>
         ) : (
           <div className="md:hidden divide-y divide-gray-200">
             {data.items.map((log) => (
               <div key={log.id} className="p-4 space-y-1">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm font-medium text-bark">
                     {ACTION_LABELS[log.action] || log.action}
                   </div>
-                  <span className={`inline-flex shrink-0 px-2 py-0.5 text-xs font-medium rounded-full ${RESULT_STYLES[log.result] || 'bg-gray-100 text-gray-800'}`}>
+                  <span className={`inline-flex shrink-0 px-2 py-0.5 text-xs font-medium rounded-full ${RESULT_STYLES[log.result] || 'bg-cream-dark text-bark'}`}>
                     {log.result}
                   </span>
                 </div>
-                <div className="text-xs text-gray-500">{formatDate(log.timestamp)}</div>
-                <div className="text-sm text-gray-600">
+                <div className="text-xs text-bark-muted">{formatDate(log.timestamp)}</div>
+                <div className="text-sm text-bark-light">
                   {log.userEmail || '-'}{log.role ? ` (${log.role})` : ''}
                 </div>
                 {log.ipAddress && (
-                  <div className="text-xs text-gray-400 font-mono">{log.ipAddress}</div>
+                  <div className="text-xs text-bark-muted font-mono">{log.ipAddress}</div>
                 )}
                 {log.detail && (
-                  <div className="text-sm text-gray-600 break-words">{log.detail}</div>
+                  <div className="text-sm text-bark-light break-words">{log.detail}</div>
                 )}
               </div>
             ))}
@@ -143,53 +143,53 @@ export function AuditLogPage() {
         {/* Desktop table */}
         <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-cream">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Utilisateur</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rôle</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">IP</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Détail</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Résultat</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Date</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Action</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Utilisateur</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Rôle</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">IP</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Détail</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Résultat</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={7} className="px-4 py-8 text-center text-bark-muted">
                     Chargement...
                   </td>
                 </tr>
               ) : !data?.items.length ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={7} className="px-4 py-8 text-center text-bark-muted">
                     Aucune entrée de journal trouvée.
                   </td>
                 </tr>
               ) : (
                 data.items.map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                  <tr key={log.id} className="hover:bg-cream">
+                    <td className="px-4 py-3 text-sm text-bark whitespace-nowrap">
                       {formatDate(log.timestamp)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
+                    <td className="px-4 py-3 text-sm text-bark">
                       {ACTION_LABELS[log.action] || log.action}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm text-bark-light">
                       {log.userEmail || '-'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 capitalize">
+                    <td className="px-4 py-3 text-sm text-bark-light capitalize">
                       {log.role || '-'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500 font-mono">
+                    <td className="px-4 py-3 text-sm text-bark-muted font-mono">
                       {log.ipAddress || '-'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">
+                    <td className="px-4 py-3 text-sm text-bark-light max-w-xs truncate">
                       {log.detail || '-'}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${RESULT_STYLES[log.result] || 'bg-gray-100 text-gray-800'}`}>
+                      <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${RESULT_STYLES[log.result] || 'bg-cream-dark text-bark'}`}>
                         {log.result}
                       </span>
                     </td>
@@ -202,8 +202,8 @@ export function AuditLogPage() {
 
         {/* Pagination */}
         {data && data.pages > 1 && (
-          <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-200">
-            <p className="text-sm text-gray-700">
+          <div className="bg-cream px-4 py-3 flex items-center justify-between border-t border-sand">
+            <p className="text-sm text-bark-light">
               Page {data.page} sur {data.pages} ({data.total} entrées)
             </p>
             <div className="flex gap-2">

@@ -71,7 +71,7 @@ export function SalesManagementPage() {
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
           Erreur lors du chargement des ventes.
         </div>
       </div>
@@ -85,8 +85,8 @@ export function SalesManagementPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Gestion des ventes</h1>
-        <p className="mt-1 text-gray-600">
+        <h1 className="text-2xl font-bold text-bark">Gestion des ventes</h1>
+        <p className="mt-1 text-bark-light">
           Consultez et gérez les ventes de l'édition. Les managers peuvent annuler les ventes sans limite de temps.
         </p>
       </div>
@@ -106,7 +106,7 @@ export function SalesManagementPage() {
             }}
           />
         </div>
-        <div className="text-sm text-gray-500 pb-2">
+        <div className="text-sm text-bark-muted pb-2">
           {totalSales} vente{totalSales > 1 ? 's' : ''} au total
         </div>
       </div>
@@ -115,52 +115,52 @@ export function SalesManagementPage() {
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center">
-            <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
-            <p className="mt-2 text-gray-500">Chargement...</p>
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+            <p className="mt-2 text-bark-muted">Chargement...</p>
           </div>
         ) : sales.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
+          <div className="p-8 text-center text-bark-muted">
             Aucune vente trouvée.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-cream">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Article</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Déposant</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Prix</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Paiement</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Caisse</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vendeur</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Article</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Déposant</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-bark-muted uppercase">Prix</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Paiement</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-bark-muted uppercase">Caisse</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Vendeur</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-bark-muted uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {sales.map((sale) => (
-                  <tr key={sale.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                  <tr key={sale.id} className="hover:bg-cream">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-bark">
                       {formatDateTime(sale.soldAt)}
                     </td>
                     <td className="px-4 py-3 text-sm">
-                      <div className="text-gray-900">{sale.articleDescription}</div>
-                      <div className="text-gray-500 text-xs">{sale.articleBarcode}</div>
+                      <div className="text-bark">{sale.articleDescription}</div>
+                      <div className="text-bark-muted text-xs">{sale.articleBarcode}</div>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-bark">
                       <div>{sale.depositorName}</div>
-                      <div className="text-gray-500 text-xs">Liste {sale.listNumber}</div>
+                      <div className="text-bark-muted text-xs">Liste {sale.listNumber}</div>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-bark">
                       {sale.price.toFixed(2)} EUR
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-bark-light">
                       {PAYMENT_LABELS[sale.paymentMethod] || sale.paymentMethod}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-700">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-center text-bark-light">
                       {sale.registerNumber}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-bark-light">
                       {sale.sellerName}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
@@ -168,7 +168,7 @@ export function SalesManagementPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => setSaleToCancel(sale)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        className="text-error hover:text-error hover:bg-error/10"
                       >
                         Annuler
                       </Button>
@@ -184,7 +184,7 @@ export function SalesManagementPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="mt-4 flex justify-between items-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-bark-muted">
             Page {page} sur {totalPages}
           </p>
           <div className="flex gap-2">
@@ -212,20 +212,20 @@ export function SalesManagementPage() {
       {saleToCancel && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg font-semibold text-bark mb-2">
               Annuler cette vente ?
             </h3>
-            <div className="mb-4 text-sm text-gray-600">
+            <div className="mb-4 text-sm text-bark-light">
               <p><strong>Article :</strong> {saleToCancel.articleDescription}</p>
               <p><strong>Prix :</strong> {saleToCancel.price.toFixed(2)} EUR</p>
               <p><strong>Déposant :</strong> {saleToCancel.depositorName}</p>
               <p><strong>Vendu le :</strong> {formatDateTime(saleToCancel.soldAt)}</p>
             </div>
-            <p className="mb-4 text-sm text-amber-600">
+            <p className="mb-4 text-sm text-accent-dark">
               L'article sera remis en vente après annulation.
             </p>
             {cancelError && (
-              <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">
+              <div className="mb-4 bg-error/10 border border-error/30 text-error px-3 py-2 rounded text-sm">
                 {cancelError}
               </div>
             )}
@@ -240,7 +240,7 @@ export function SalesManagementPage() {
                 variant="primary"
                 onClick={handleCancelConfirm}
                 disabled={cancelMutation.isPending}
-                className="bg-red-600 hover:bg-red-700"
+                className="bg-error hover:bg-error"
               >
                 {cancelMutation.isPending ? 'Annulation...' : 'Oui, annuler'}
               </Button>

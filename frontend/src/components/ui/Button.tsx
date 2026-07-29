@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'warm' | 'outline' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -13,17 +13,18 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
-  secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
-  outline: 'border-2 border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500',
-  ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
-  danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+  primary: 'bg-primary text-white hover:bg-primary-dark focus:ring-primary/40 shadow-soft hover:shadow-md',
+  secondary: 'bg-secondary text-white hover:bg-secondary-dark focus:ring-secondary/40 shadow-soft hover:shadow-md',
+  warm: 'bg-accent text-bark hover:bg-accent-dark focus:ring-accent/40 shadow-soft hover:shadow-md font-semibold',
+  outline: 'border-2 border-sand text-bark hover:bg-cream-dark hover:border-bark-muted focus:ring-primary/30',
+  ghost: 'text-bark-light hover:bg-cream-dark hover:text-bark focus:ring-primary/30',
+  danger: 'bg-error text-white hover:bg-error-light focus:ring-error/40 shadow-soft hover:shadow-md',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2.5 text-base',
-  lg: 'px-6 py-3 text-lg',
+  sm: 'px-3.5 py-1.5 text-sm',
+  md: 'px-5 py-2.5 text-base',
+  lg: 'px-7 py-3.5 text-lg',
 };
 
 export function Button({
@@ -41,10 +42,11 @@ export function Button({
     <button
       className={`
         inline-flex items-center justify-center gap-2
-        font-medium rounded-lg
-        transition-colors duration-200
-        focus:outline-none focus:ring-2 focus:ring-offset-2
-        disabled:opacity-50 disabled:cursor-not-allowed
+        font-medium rounded-xl
+        transition-all duration-200 ease-out
+        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-cream
+        disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none
+        active:scale-[0.98]
         ${variantStyles[variant]}
         ${sizeStyles[size]}
         ${className}

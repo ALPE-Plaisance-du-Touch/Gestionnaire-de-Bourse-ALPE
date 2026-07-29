@@ -233,7 +233,7 @@ export function ArticleForm({
       {/* Category & Subcategory */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-bark-light mb-1">
             Catégorie *
           </label>
           <Select
@@ -243,12 +243,12 @@ export function ArticleForm({
             disabled={isSubmitting}
           />
           {errors.category && (
-            <p className="mt-1 text-sm text-red-600">{errors.category}</p>
+            <p className="mt-1 text-sm text-error">{errors.category}</p>
           )}
         </div>
         {subcategoryOptions.length > 0 && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-light mb-1">
               Sous-catégorie
             </label>
             <Select
@@ -262,7 +262,7 @@ export function ArticleForm({
 
       {/* Description */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-bark-light mb-1">
           Description *
         </label>
         <Input
@@ -273,15 +273,15 @@ export function ArticleForm({
           maxLength={100}
         />
         {errors.description && (
-          <p className="mt-1 text-sm text-red-600">{errors.description}</p>
+          <p className="mt-1 text-sm text-error">{errors.description}</p>
         )}
-        <p className="mt-1 text-xs text-gray-500">{description.length}/100 caractères</p>
+        <p className="mt-1 text-xs text-bark-muted">{description.length}/100 caractères</p>
       </div>
 
       {/* Price, Size & Gender */}
       <div className={`grid grid-cols-1 gap-4 ${showSizeAndGender ? 'md:grid-cols-3' : 'md:grid-cols-1 max-w-xs'}`}>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-bark-light mb-1">
             Prix (€) *
           </label>
           <Input
@@ -294,10 +294,10 @@ export function ArticleForm({
             placeholder="Ex: 5"
           />
           {errors.price && (
-            <p className="mt-1 text-sm text-red-600">{errors.price}</p>
+            <p className="mt-1 text-sm text-error">{errors.price}</p>
           )}
           {priceHint && (
-            <p className="mt-1 text-xs text-blue-600 flex items-center gap-1">
+            <p className="mt-1 text-xs text-primary flex items-center gap-1">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
@@ -308,7 +308,7 @@ export function ArticleForm({
         {showSizeAndGender && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-light mb-1">
                 Taille
               </label>
               <Input
@@ -320,7 +320,7 @@ export function ArticleForm({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-light mb-1">
                 Genre
               </label>
               <Select
@@ -337,7 +337,7 @@ export function ArticleForm({
       {showSizeAndGender && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-light mb-1">
               Marque
             </label>
             <Input
@@ -349,7 +349,7 @@ export function ArticleForm({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-light mb-1">
               Couleur
             </label>
             <Input
@@ -365,21 +365,21 @@ export function ArticleForm({
 
       {/* Lot - only shown for body/pajama subcategories */}
       {canCreateLot && (
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-cream rounded-lg p-4">
           <label className="flex items-center gap-3">
             <input
               type="checkbox"
               checked={isLot}
               onChange={(e) => setIsLot(e.target.checked)}
-              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="h-4 w-4 text-primary border-sand rounded focus:ring-primary"
             />
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-bark-light">
               Vendre en lot (groupe d'articles similaires)
             </span>
           </label>
           {isLot && (
             <div className="mt-3 ml-7">
-              <label className="block text-sm text-gray-600 mb-1">
+              <label className="block text-sm text-bark-light mb-1">
                 Nombre d'articles dans le lot (max 3)
               </label>
               <Input
@@ -391,9 +391,9 @@ export function ArticleForm({
                 className="w-24"
               />
               {errors.lotQuantity && (
-                <p className="mt-1 text-sm text-red-600">{errors.lotQuantity}</p>
+                <p className="mt-1 text-sm text-error">{errors.lotQuantity}</p>
               )}
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-bark-muted">
                 Taille 36 mois maximum. Taille et marque identiques pour le lot.
               </p>
             </div>

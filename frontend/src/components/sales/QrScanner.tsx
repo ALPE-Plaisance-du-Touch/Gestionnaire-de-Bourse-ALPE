@@ -99,22 +99,22 @@ export function QrScanner({ onScan, disabled = false }: QrScannerProps) {
   return (
     <div className="space-y-4">
       {/* Camera scanner */}
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <div className="border border-sand rounded-lg overflow-hidden">
         <div id={scannerContainerId} className="w-full" />
         {!isScanning && (
-          <div className="p-8 text-center bg-gray-50">
-            <svg className="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+          <div className="p-8 text-center bg-cream">
+            <svg className="mx-auto h-12 w-12 text-bark-muted mb-3" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
             </svg>
-            <p className="text-sm text-gray-500 mb-3">
+            <p className="text-sm text-bark-muted mb-3">
               Scanner un QR code avec la caméra
             </p>
             <button
               type="button"
               onClick={startScanning}
               disabled={disabled}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Activer la caméra
             </button>
@@ -125,7 +125,7 @@ export function QrScanner({ onScan, disabled = false }: QrScannerProps) {
             <button
               type="button"
               onClick={stopScanning}
-              className="text-sm text-red-600 hover:text-red-700"
+              className="text-sm text-error hover:text-error"
             >
               Arrêter la caméra
             </button>
@@ -135,20 +135,20 @@ export function QrScanner({ onScan, disabled = false }: QrScannerProps) {
 
       {/* Scan timeout hint */}
       {showScanHint && (
-        <div className="text-sm text-blue-700 bg-blue-50 p-3 rounded-md">
+        <div className="text-sm text-primary-dark bg-primary/10 p-3 rounded-md">
           Difficulté à scanner ? Utilisez la saisie manuelle ci-dessous.
         </div>
       )}
 
       {cameraError && (
-        <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-md">
+        <div className="text-sm text-accent-dark bg-accent/10 p-3 rounded-md">
           Caméra indisponible : {cameraError}. Utilisez la saisie manuelle ci-dessous.
         </div>
       )}
 
       {/* Manual input */}
       <div className="space-y-1">
-        <label htmlFor="manual-barcode" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="manual-barcode" className="block text-sm font-medium text-bark-light">
           Saisie manuelle du code-barres
         </label>
         <form onSubmit={handleManualSubmit} className="flex gap-2">
@@ -159,19 +159,19 @@ export function QrScanner({ onScan, disabled = false }: QrScannerProps) {
             onChange={(e) => handleManualChange(e.target.value)}
             placeholder="Ex: EDI-abcd1234-L100-A01"
             disabled={disabled}
-            className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+            className="flex-1 rounded-md border border-sand px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:bg-cream-dark"
             autoFocus
           />
           <button
             type="submit"
             disabled={disabled || !manualBarcode.trim()}
-            className="px-4 py-2 bg-gray-800 text-white text-sm font-medium rounded-md hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-bark text-white text-sm font-medium rounded-md hover:bg-bark disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Rechercher
           </button>
         </form>
         {formatWarning && (
-          <p className="text-xs text-amber-600">Format inhabituel. Vérifiez le code-barres.</p>
+          <p className="text-xs text-accent-dark">Format inhabituel. Vérifiez le code-barres.</p>
         )}
       </div>
     </div>

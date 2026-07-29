@@ -1,0 +1,14 @@
+/* ALPE type stack.
+   No original font binaries were supplied with the brand assets — the logo lettering
+   is a rounded geometric sans and the descriptor line a friendly humanist sans.
+   Nearest Google Fonts matches are used as SUBSTITUTES (see readme.md → Typography).
+   Loaded from the Google Fonts CDN because no .woff2 binaries exist in this project. */
+@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@400..800&family=Grandstander:wght@400..700&family=Quicksand:wght@400..700&family=Nunito:ital,wght@0,300..900;1,300..900&display=swap");
+
+:root {
+  --font-logo: "Grandstander", "Quicksand", system-ui, sans-serif;
+  --font-display: "Baloo 2", "Quicksand", system-ui, sans-serif;
+  --font-heading: "Quicksand", "Baloo 2", system-ui, sans-serif;
+  --font-body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "Menlo", monospace;
+}

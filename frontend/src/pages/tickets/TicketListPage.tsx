@@ -36,7 +36,7 @@ export function TicketListPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Messages</h1>
+        <h1 className="text-2xl font-bold text-bark">Messages</h1>
         <Button onClick={() => navigate(`/editions/${editionId}/tickets/new`)}>
           Nouveau ticket
         </Button>
@@ -46,7 +46,7 @@ export function TicketListPage() {
       <div className="mb-4 flex gap-2">
         <button
           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            statusFilter === '' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            statusFilter === '' ? 'bg-primary/10 text-primary-dark' : 'bg-cream-dark text-bark-light hover:bg-sand'
           }`}
           onClick={() => { setStatusFilter(''); setPage(1); }}
         >
@@ -54,7 +54,7 @@ export function TicketListPage() {
         </button>
         <button
           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            statusFilter === 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            statusFilter === 'open' ? 'bg-primary/10 text-primary-dark' : 'bg-cream-dark text-bark-light hover:bg-sand'
           }`}
           onClick={() => { setStatusFilter('open'); setPage(1); }}
         >
@@ -62,7 +62,7 @@ export function TicketListPage() {
         </button>
         <button
           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            statusFilter === 'closed' ? 'bg-gray-200 text-gray-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            statusFilter === 'closed' ? 'bg-sand text-bark' : 'bg-cream-dark text-bark-light hover:bg-sand'
           }`}
           onClick={() => { setStatusFilter('closed'); setPage(1); }}
         >
@@ -71,11 +71,11 @@ export function TicketListPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-gray-500">Chargement...</p>
+        <p className="text-bark-muted">Chargement...</p>
       ) : !data || data.tickets.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">Aucun ticket pour le moment.</p>
-          <p className="text-gray-400 mt-2">Créez un ticket pour contacter le staff.</p>
+          <p className="text-bark-muted text-lg">Aucun ticket pour le moment.</p>
+          <p className="text-bark-muted mt-2">Créez un ticket pour contacter le staff.</p>
         </div>
       ) : (
         <>
@@ -83,22 +83,22 @@ export function TicketListPage() {
             {data.tickets.map((ticket) => (
               <div
                 key={ticket.id}
-                className="bg-white border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors shadow-sm"
+                className="bg-white border border-sand rounded-lg p-4 hover:bg-cream cursor-pointer transition-colors shadow-sm"
                 onClick={() => navigate(`/editions/${editionId}/tickets/${ticket.id}`)}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-gray-900 truncate">
+                      <h3 className="font-semibold text-bark truncate">
                         {ticket.subject}
                       </h3>
                       {ticket.unreadCount > 0 && (
-                        <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                        <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-error rounded-full">
                           {ticket.unreadCount}
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-bark-muted mt-1">
                       {isStaff ? (
                         <>De : {ticket.createdByName}{ticket.assignedToName && <> &rarr; {ticket.assignedToName}</>}</>
                       ) : (
@@ -110,14 +110,14 @@ export function TicketListPage() {
                     <span
                       className={`px-2 py-0.5 text-xs font-medium rounded-full ${
                         ticket.status === 'open'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-600'
+                          ? 'bg-primary/10 text-primary-dark'
+                          : 'bg-cream-dark text-bark-light'
                       }`}
                     >
                       {ticket.status === 'open' ? 'Ouvert' : 'Fermé'}
                     </span>
                     {ticket.lastMessageAt && (
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-bark-muted">
                         {formatDate(ticket.lastMessageAt)}
                       </span>
                     )}
@@ -138,7 +138,7 @@ export function TicketListPage() {
               >
                 Précédent
               </Button>
-              <span className="px-3 py-1.5 text-sm text-gray-600">
+              <span className="px-3 py-1.5 text-sm text-bark-light">
                 Page {page} / {Math.ceil(data.total / 20)}
               </span>
               <Button

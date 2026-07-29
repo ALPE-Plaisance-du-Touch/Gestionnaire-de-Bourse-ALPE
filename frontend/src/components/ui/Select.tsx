@@ -22,11 +22,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         {label && (
           <label
             htmlFor={selectId}
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-bark mb-1.5"
           >
             {label}
             {props.required && (
-              <span className="text-red-500 ml-1" aria-hidden="true">
+              <span className="text-error ml-1" aria-hidden="true">
                 *
               </span>
             )}
@@ -36,16 +36,16 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           id={selectId}
           className={`
-            w-full px-3 py-2
-            border rounded-lg
-            text-gray-900
-            bg-white
-            transition-colors duration-200
-            focus:outline-none focus:ring-2 focus:ring-offset-0
-            disabled:bg-gray-100 disabled:cursor-not-allowed
+            w-full px-4 py-2.5
+            bg-white border rounded-xl
+            text-bark
+            shadow-soft
+            transition-all duration-200
+            focus:outline-none focus:ring-2 focus:ring-offset-0 focus:shadow-md
+            disabled:bg-cream-dark disabled:cursor-not-allowed disabled:shadow-none
             ${error
-              ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+              ? 'border-error focus:border-error focus:ring-error/30'
+              : 'border-sand hover:border-bark-muted focus:border-primary focus:ring-primary/30'
             }
             ${className}
           `}
@@ -67,14 +67,14 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ))}
         </select>
         {hint && !error && (
-          <p id={`${selectId}-hint`} className="mt-1 text-sm text-gray-500">
+          <p id={`${selectId}-hint`} className="mt-1.5 text-sm text-bark-muted">
             {hint}
           </p>
         )}
         {error && (
           <p
             id={`${selectId}-error`}
-            className="mt-1 text-sm text-red-600"
+            className="mt-1.5 text-sm text-error"
             role="alert"
           >
             {error}

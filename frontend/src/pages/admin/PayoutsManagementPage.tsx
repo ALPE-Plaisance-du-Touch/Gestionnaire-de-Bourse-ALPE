@@ -18,10 +18,10 @@ function downloadBlob(blob: Blob, filename: string) {
 }
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
-  pending: { label: 'En attente', className: 'bg-gray-100 text-gray-800' },
-  ready: { label: 'Prêt', className: 'bg-amber-100 text-amber-800' },
-  paid: { label: 'Payé', className: 'bg-green-100 text-green-800' },
-  cancelled: { label: 'Annulé', className: 'bg-red-100 text-red-800' },
+  pending: { label: 'En attente', className: 'bg-cream-dark text-bark' },
+  ready: { label: 'Prêt', className: 'bg-accent/15 text-accent-dark' },
+  paid: { label: 'Payé', className: 'bg-primary/10 text-primary-dark' },
+  cancelled: { label: 'Annulé', className: 'bg-error/10 text-error' },
 };
 
 const LIST_TYPE_LABELS: Record<string, string> = {
@@ -227,15 +227,15 @@ export function PayoutsManagementPage() {
       <div className="mb-6">
         <Link
           to={`/editions/${editionId}`}
-          className="text-sm text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 mb-2"
+          className="text-sm text-primary hover:text-primary-dark inline-flex items-center gap-1 mb-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           Retour à l'édition
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Reversements</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-bark">Reversements</h1>
+        <p className="text-sm text-bark-muted mt-1">
           Actualisation automatique toutes les 10 secondes
         </p>
       </div>
@@ -244,34 +244,34 @@ export function PayoutsManagementPage() {
 
       {/* Messages */}
       {successMessage && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex justify-between">
+        <div className="mb-4 bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg flex justify-between">
           <span>{successMessage}</span>
-          <button onClick={() => setSuccessMessage('')} className="text-green-700 font-bold">x</button>
+          <button onClick={() => setSuccessMessage('')} className="text-primary-dark font-bold">x</button>
         </div>
       )}
       {errorMessage && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex justify-between">
+        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg flex justify-between">
           <span>{errorMessage}</span>
-          <button onClick={() => setErrorMessage('')} className="text-red-700 font-bold">x</button>
+          <button onClick={() => setErrorMessage('')} className="text-error font-bold">x</button>
         </div>
       )}
 
       {/* Stats cards */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="rounded-lg p-4 bg-blue-50 text-blue-700">
+          <div className="rounded-lg p-4 bg-primary/10 text-primary-dark">
             <p className="text-sm opacity-80">Total ventes</p>
             <p className="text-2xl font-bold mt-1">{Number(stats.totalSales).toFixed(2)} EUR</p>
           </div>
-          <div className="rounded-lg p-4 bg-green-50 text-green-700">
+          <div className="rounded-lg p-4 bg-primary/10 text-primary-dark">
             <p className="text-sm opacity-80">Commission ALPE</p>
             <p className="text-2xl font-bold mt-1">{Number(stats.totalCommission).toFixed(2)} EUR</p>
           </div>
-          <div className="rounded-lg p-4 bg-amber-50 text-amber-700">
+          <div className="rounded-lg p-4 bg-accent/10 text-accent-dark">
             <p className="text-sm opacity-80">À reverser</p>
             <p className="text-2xl font-bold mt-1">{Number(stats.totalNet).toFixed(2)} EUR</p>
           </div>
-          <div className="rounded-lg p-4 bg-purple-50 text-purple-700">
+          <div className="rounded-lg p-4 bg-secondary/10 text-secondary-dark">
             <p className="text-sm opacity-80">Progression</p>
             <p className="text-2xl font-bold mt-1">
               {stats.payoutsPaid}/{stats.totalPayouts} ({stats.paymentProgressPercent}%)
@@ -313,14 +313,14 @@ export function PayoutsManagementPage() {
             variant="outline"
             onClick={handleBulkReminder}
             disabled={bulkReminderMutation.isPending || !stats || stats.totalPayouts === 0}
-            className="text-purple-600 border-purple-300 hover:bg-purple-50"
+            className="text-secondary-dark border-secondary/30 hover:bg-secondary/10"
           >
             {bulkReminderMutation.isPending ? 'Envoi en cours...' : 'Relancer tous les absents'}
           </Button>
 
           <div className="ml-auto flex items-end gap-4">
             <div>
-              <label htmlFor="statusFilter" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="statusFilter" className="block text-sm font-medium text-bark-light mb-1">
                 Statut
               </label>
               <select
@@ -330,7 +330,7 @@ export function PayoutsManagementPage() {
                   setStatusFilter(e.target.value);
                   setPage(1);
                 }}
-                className="block w-40 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                className="block w-40 rounded-md border-sand shadow-sm focus:border-primary focus:ring-primary sm:text-sm border p-2"
               >
                 <option value="">Tous</option>
                 <option value="pending">En attente</option>
@@ -342,7 +342,7 @@ export function PayoutsManagementPage() {
 
             <form onSubmit={handleSearch} className="flex gap-2">
               <div>
-                <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="search" className="block text-sm font-medium text-bark-light mb-1">
                   Rechercher
                 </label>
                 <input
@@ -351,7 +351,7 @@ export function PayoutsManagementPage() {
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   placeholder="Nom du déposant..."
-                  className="block w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                  className="block w-48 rounded-md border-sand shadow-sm focus:border-primary focus:ring-primary sm:text-sm border p-2"
                 />
               </div>
               <Button type="submit" variant="outline" className="self-end">
@@ -366,30 +366,30 @@ export function PayoutsManagementPage() {
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-cream">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Déposant</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Liste</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Articles</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ventes</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Commission</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Frais</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Net</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Déposant</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Liste</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Type</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-bark-muted uppercase">Articles</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-bark-muted uppercase">Ventes</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-bark-muted uppercase">Commission</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-bark-muted uppercase">Frais</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-bark-muted uppercase">Net</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Statut</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {isLoading ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={10} className="px-4 py-12 text-center text-bark-muted">
                     Chargement...
                   </td>
                 </tr>
               ) : payouts.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={10} className="px-4 py-12 text-center text-bark-muted">
                     Aucun reversement. Cliquez sur "Calculer les reversements" pour commencer.
                   </td>
                 </tr>
@@ -398,40 +398,40 @@ export function PayoutsManagementPage() {
                   const statusInfo = STATUS_LABELS[payout.status] || STATUS_LABELS.pending;
                   const rowBg =
                     payout.status === 'paid'
-                      ? 'bg-green-50'
+                      ? 'bg-primary/10'
                       : payout.status === 'ready'
-                        ? 'bg-amber-50'
+                        ? 'bg-accent/10'
                         : '';
 
                   return (
-                    <tr key={payout.id} className={`hover:bg-gray-50 ${rowBg}`}>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <tr key={payout.id} className={`hover:bg-cream ${rowBg}`}>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-bark">
                         {payout.depositorName}
                         {payout.notes && (
-                          <span className="block text-xs text-gray-500 truncate max-w-[200px]" title={payout.notes}>
+                          <span className="block text-xs text-bark-muted truncate max-w-[200px]" title={payout.notes}>
                             {payout.notes}
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-bark">
                         {payout.listNumber}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-bark-muted">
                         {LIST_TYPE_LABELS[payout.listType] || payout.listType}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-bark">
                         {payout.soldArticles}/{payout.totalArticles}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-bark">
                         {Number(payout.grossAmount).toFixed(2)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-bark-muted">
                         {Number(payout.commissionAmount).toFixed(2)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-bark-muted">
                         {Number(payout.listFees).toFixed(2)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-bark">
                         {Number(payout.netAmount).toFixed(2)}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
@@ -443,24 +443,24 @@ export function PayoutsManagementPage() {
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleDownloadReceipt(payout)}
-                            className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+                            className="text-primary hover:text-primary-dark text-xs font-medium"
                             title="Télécharger le bordereau"
                           >
                             PDF
                           </button>
                           {payout.status !== 'paid' && payout.status !== 'cancelled' && (
                             <>
-                              <span className="text-gray-300">|</span>
+                              <span className="text-bark-muted">|</span>
                               <button
                                 onClick={() => setPaymentPayout(payout)}
-                                className="text-green-600 hover:text-green-800 text-xs font-medium"
+                                className="text-primary hover:text-primary-dark text-xs font-medium"
                               >
                                 Payer
                               </button>
-                              <span className="text-gray-300">|</span>
+                              <span className="text-bark-muted">|</span>
                               <button
                                 onClick={() => recalculateMutation.mutate(payout.id)}
-                                className="text-amber-600 hover:text-amber-800 text-xs font-medium"
+                                className="text-accent-dark hover:text-accent-dark text-xs font-medium"
                                 disabled={recalculateMutation.isPending}
                               >
                                 Recalc
@@ -469,24 +469,24 @@ export function PayoutsManagementPage() {
                           )}
                           {payout.notes?.startsWith('Absent') && payout.status !== 'paid' && (
                             <>
-                              <span className="text-gray-300">|</span>
+                              <span className="text-bark-muted">|</span>
                               <button
                                 onClick={() => reminderMutation.mutate(payout.id)}
-                                className="text-purple-600 hover:text-purple-800 text-xs font-medium"
+                                className="text-secondary-dark hover:text-secondary-dark text-xs font-medium"
                                 disabled={reminderMutation.isPending}
                               >
                                 Relancer
                               </button>
                             </>
                           )}
-                          <span className="text-gray-300">|</span>
+                          <span className="text-bark-muted">|</span>
                           <button
                             onClick={() => {
                               setNotesPayout(payout);
                               setNotesValue(payout.notes || '');
                               setIsAbsent(payout.notes?.startsWith('Absent') || false);
                             }}
-                            className="text-gray-600 hover:text-gray-800 text-xs font-medium"
+                            className="text-bark-light hover:text-bark text-xs font-medium"
                           >
                             Notes
                           </button>
@@ -502,8 +502,8 @@ export function PayoutsManagementPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="bg-gray-50 px-6 py-3 flex items-center justify-between border-t">
-            <div className="text-sm text-gray-500">
+          <div className="bg-cream px-6 py-3 flex items-center justify-between border-t">
+            <div className="text-sm text-bark-muted">
               Page {page} sur {totalPages} ({total} reversement{total !== 1 ? 's' : ''})
             </div>
             <div className="flex gap-2">
@@ -551,12 +551,12 @@ export function PayoutsManagementPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md bg-white rounded-lg shadow-xl">
             <div className="flex items-center justify-between px-6 py-4 border-b">
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-bark">
                 Notes - {notesPayout.depositorName}
               </h2>
               <button
                 onClick={() => setNotesPayout(null)}
-                className="text-gray-400 hover:text-gray-500"
+                className="text-bark-muted hover:text-bark-muted"
               >
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -570,15 +570,15 @@ export function PayoutsManagementPage() {
                     type="checkbox"
                     checked={isAbsent}
                     onChange={(e) => setIsAbsent(e.target.checked)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-sand text-primary focus:ring-primary"
                   />
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-sm font-medium text-bark-light">
                     Marquer comme absent (à recontacter)
                   </span>
                 </label>
               </div>
               <div className="mb-4">
-                <label htmlFor="notesText" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="notesText" className="block text-sm font-medium text-bark-light mb-1">
                   Notes
                 </label>
                 <textarea
@@ -586,7 +586,7 @@ export function PayoutsManagementPage() {
                   value={notesValue}
                   onChange={(e) => setNotesValue(e.target.value)}
                   rows={3}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-md border border-sand px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>
               <div className="flex justify-end gap-3">

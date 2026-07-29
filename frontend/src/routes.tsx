@@ -26,9 +26,9 @@ function NotFoundPage() {
   return (
     <MainLayout>
       <div className="text-center py-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">404</h1>
-        <p className="text-lg text-gray-600 mb-8">Page non trouvée.</p>
-        <a href="/" className="text-blue-600 hover:text-blue-700">
+        <h1 className="text-4xl font-bold text-bark mb-4">404</h1>
+        <p className="text-lg text-bark-light mb-8">Page non trouvée.</p>
+        <a href="/" className="text-primary hover:text-primary-dark font-medium">
           Retour à l'accueil
         </a>
       </div>

@@ -20,19 +20,19 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  clothing: 'bg-purple-100 text-purple-800',
-  shoes: 'bg-blue-100 text-blue-800',
+  clothing: 'bg-secondary/10 text-secondary-dark',
+  shoes: 'bg-primary/10 text-primary-dark',
   nursery: 'bg-pink-100 text-pink-800',
-  toys: 'bg-yellow-100 text-yellow-800',
-  books: 'bg-green-100 text-green-800',
-  accessories: 'bg-orange-100 text-orange-800',
-  other: 'bg-gray-100 text-gray-800',
+  toys: 'bg-accent/15 text-accent-dark',
+  books: 'bg-primary/10 text-primary-dark',
+  accessories: 'bg-secondary/10 text-secondary-dark',
+  other: 'bg-cream-dark text-bark',
 };
 
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
-  validated: { label: 'En attente', className: 'bg-amber-100 text-amber-800' },
-  accepted: { label: 'Accepté', className: 'bg-green-100 text-green-800' },
-  rejected: { label: 'Refusé', className: 'bg-red-100 text-red-800' },
+  validated: { label: 'En attente', className: 'bg-accent/15 text-accent-dark' },
+  accepted: { label: 'Accepté', className: 'bg-primary/10 text-primary-dark' },
+  rejected: { label: 'Refusé', className: 'bg-error/10 text-error' },
 };
 
 function formatPrice(price: number): string {
@@ -202,15 +202,15 @@ export function ReviewListDetailPage() {
       <div className="mb-6">
         <Link
           to={`/editions/${editionId}/review`}
-          className="text-sm text-blue-600 hover:text-blue-700 mb-1 inline-block"
+          className="text-sm text-primary hover:text-primary-dark mb-1 inline-block"
         >
           &larr; Retour aux listes
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-bark">
           Revue de la liste n&deg;{listDetail?.number}
         </h1>
         {listDetail && (
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-bark-muted mt-1">
             {listDetail.depositorName} &middot;{' '}
             {listDetail.listType === 'standard' ? 'Standard' : `Liste ${listDetail.listType}`}
           </p>
@@ -221,12 +221,12 @@ export function ReviewListDetailPage() {
 
       {/* Messages */}
       {successMessage && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+        <div className="mb-4 p-3 bg-primary/10 border border-primary/30 text-primary-dark rounded-lg text-sm">
           {successMessage}
         </div>
       )}
       {errorMessage && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+        <div className="mb-4 p-3 bg-error/10 border border-error/30 text-error rounded-lg text-sm">
           {errorMessage}
         </div>
       )}
@@ -234,20 +234,20 @@ export function ReviewListDetailPage() {
       {/* Stats bar */}
       {listDetail && (
         <div className="flex gap-4 mb-6 flex-wrap">
-          <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 text-sm">
-            <span className="font-semibold text-amber-800">{pendingCount}</span>{' '}
-            <span className="text-amber-600">en attente</span>
+          <div className="bg-accent/10 border border-accent/40 rounded-lg px-4 py-2 text-sm">
+            <span className="font-semibold text-accent-dark">{pendingCount}</span>{' '}
+            <span className="text-accent-dark">en attente</span>
           </div>
-          <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 text-sm">
-            <span className="font-semibold text-green-800">{acceptedCount}</span>{' '}
-            <span className="text-green-600">accepté(s)</span>
+          <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 py-2 text-sm">
+            <span className="font-semibold text-primary-dark">{acceptedCount}</span>{' '}
+            <span className="text-primary">accepté(s)</span>
           </div>
-          <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-2 text-sm">
-            <span className="font-semibold text-red-800">{rejectedCount}</span>{' '}
-            <span className="text-red-600">refusé(s)</span>
+          <div className="bg-error/10 border border-error/30 rounded-lg px-4 py-2 text-sm">
+            <span className="font-semibold text-error">{rejectedCount}</span>{' '}
+            <span className="text-error">refusé(s)</span>
           </div>
           {isReviewed && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 text-sm text-blue-700 font-medium">
+            <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 py-2 text-sm text-primary-dark font-medium">
               Revue finalisée
             </div>
           )}
@@ -256,30 +256,30 @@ export function ReviewListDetailPage() {
 
       {/* Articles list */}
       {isLoading ? (
-        <div className="p-8 text-center text-gray-500">Chargement...</div>
+        <div className="p-8 text-center text-bark-muted">Chargement...</div>
       ) : articles.length === 0 ? (
-        <div className="p-8 text-center text-gray-500">Aucun article dans cette liste.</div>
+        <div className="p-8 text-center text-bark-muted">Aucun article dans cette liste.</div>
       ) : (
         <>
           {/* Articles mis en vente */}
           {saleArticles.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-3">
+              <h2 className="text-lg font-semibold text-bark mb-3">
                 Articles mis en vente ({saleArticles.length})
               </h2>
               <div className="bg-white rounded-lg shadow overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-cream">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Article</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cat&eacute;gorie</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">D&eacute;tails</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Prix</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">#</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">Article</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">Cat&eacute;gorie</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">D&eacute;tails</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-bark-muted uppercase tracking-wider">Prix</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-bark-muted uppercase tracking-wider">Statut</th>
                         {!isReviewed && (
-                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-bark-muted uppercase tracking-wider">Actions</th>
                         )}
                       </tr>
                     </thead>
@@ -290,32 +290,32 @@ export function ReviewListDetailPage() {
                         return (
                           <tr
                             key={article.id}
-                            className={`hover:bg-gray-50 ${article.status === 'accepted' ? 'bg-green-50/50' : ''}`}
+                            className={`hover:bg-cream ${article.status === 'accepted' ? 'bg-primary/10/50' : ''}`}
                           >
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-bark-muted">
                               {article.lineNumber}
                             </td>
                             <td className="px-4 py-3">
-                              <div className="text-sm font-medium text-gray-900">{article.description}</div>
+                              <div className="text-sm font-medium text-bark">{article.description}</div>
                               {article.isLot && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary-dark mt-1">
                                   Lot de {article.lotQuantity}
                                 </span>
                               )}
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${CATEGORY_COLORS[article.category] ?? 'bg-gray-100 text-gray-800'}`}>
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${CATEGORY_COLORS[article.category] ?? 'bg-cream-dark text-bark'}`}>
                                 {CATEGORY_LABELS[article.category] ?? article.category}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-500">
+                            <td className="px-4 py-3 text-sm text-bark-muted">
                               <div className="space-y-0.5">
                                 {article.size && <div>Taille: {article.size}</div>}
                                 {article.brand && <div>Marque: {article.brand}</div>}
                                 {article.color && <div>Couleur: {article.color}</div>}
                               </div>
                             </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-bark">
                               {formatPrice(article.price)}
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap text-center">
@@ -330,7 +330,7 @@ export function ReviewListDetailPage() {
                                     <Button
                                       size="sm"
                                       variant="primary"
-                                      className="!bg-green-600 hover:!bg-green-700"
+                                      className="!bg-primary hover:!bg-primary-dark"
                                       onClick={() => acceptMutation.mutate(article.id)}
                                       disabled={acceptMutation.isPending}
                                     >
@@ -364,10 +364,10 @@ export function ReviewListDetailPage() {
                     </tbody>
                   </table>
                 </div>
-                <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
-                  <p className="text-sm text-gray-500">
+                <div className="px-4 py-3 bg-cream border-t border-sand">
+                  <p className="text-sm text-bark-muted">
                     {saleArticles.length} article{saleArticles.length > 1 ? 's' : ''} - Total:{' '}
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-bark">
                       {formatPrice(saleArticles.reduce((sum, a) => sum + a.price, 0))}
                     </span>
                   </p>
@@ -379,52 +379,52 @@ export function ReviewListDetailPage() {
           {/* Articles refusés */}
           {rejectedArticles.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-lg font-semibold text-red-800 mb-3">
+              <h2 className="text-lg font-semibold text-error mb-3">
                 Articles refus&eacute;s ({rejectedArticles.length})
               </h2>
               <div className="bg-white rounded-lg shadow overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-cream">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Article</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cat&eacute;gorie</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">D&eacute;tails</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Prix</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motif</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">#</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">Article</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">Cat&eacute;gorie</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">D&eacute;tails</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-bark-muted uppercase tracking-wider">Prix</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">Motif</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {rejectedArticles.map((article) => (
-                        <tr key={article.id} className="bg-red-50/50">
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                        <tr key={article.id} className="bg-error/10/50">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-bark-muted">
                             {article.lineNumber}
                           </td>
                           <td className="px-4 py-3">
-                            <div className="text-sm font-medium text-gray-900">{article.description}</div>
+                            <div className="text-sm font-medium text-bark">{article.description}</div>
                             {article.isLot && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary-dark mt-1">
                                 Lot de {article.lotQuantity}
                               </span>
                             )}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${CATEGORY_COLORS[article.category] ?? 'bg-gray-100 text-gray-800'}`}>
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${CATEGORY_COLORS[article.category] ?? 'bg-cream-dark text-bark'}`}>
                               {CATEGORY_LABELS[article.category] ?? article.category}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-500">
+                          <td className="px-4 py-3 text-sm text-bark-muted">
                             <div className="space-y-0.5">
                               {article.size && <div>Taille: {article.size}</div>}
                               {article.brand && <div>Marque: {article.brand}</div>}
                               {article.color && <div>Couleur: {article.color}</div>}
                             </div>
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-bark">
                             {formatPrice(article.price)}
                           </td>
-                          <td className="px-4 py-3 text-sm text-red-700">
+                          <td className="px-4 py-3 text-sm text-error">
                             {article.rejectionReason || '-'}
                           </td>
                         </tr>
@@ -432,10 +432,10 @@ export function ReviewListDetailPage() {
                     </tbody>
                   </table>
                 </div>
-                <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
-                  <p className="text-sm text-gray-500">
+                <div className="px-4 py-3 bg-cream border-t border-sand">
+                  <p className="text-sm text-bark-muted">
                     {rejectedArticles.length} article{rejectedArticles.length > 1 ? 's' : ''} refus&eacute;{rejectedArticles.length > 1 ? 's' : ''} - Total:{' '}
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-bark">
                       {formatPrice(rejectedArticles.reduce((sum, a) => sum + a.price, 0))}
                     </span>
                   </p>
@@ -451,13 +451,13 @@ export function ReviewListDetailPage() {
         <div className="mt-8 bg-white rounded-lg shadow p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h3 className="font-semibold text-gray-900">Finaliser la revue</h3>
+              <h3 className="font-semibold text-bark">Finaliser la revue</h3>
               {canFinalize ? (
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-bark-muted mt-1">
                   {acceptedCount} article(s) accepté(s), {rejectedCount} refusé(s). Tous les articles ont été traités.
                 </p>
               ) : (
-                <p className="text-sm text-amber-600 mt-1">
+                <p className="text-sm text-accent-dark mt-1">
                   {pendingCount} article(s) encore en attente de traitement.
                 </p>
               )}
@@ -478,8 +478,8 @@ export function ReviewListDetailPage() {
         <div className="mt-8 bg-white rounded-lg shadow p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h3 className="font-semibold text-gray-900">Étiquettes</h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <h3 className="font-semibold text-bark">Étiquettes</h3>
+              <p className="text-sm text-bark-muted mt-1">
                 Générez les étiquettes PDF pour les {acceptedCount} article(s) accepté(s) de cette liste.
               </p>
             </div>
@@ -506,25 +506,25 @@ export function ReviewListDetailPage() {
       >
         {rejectingArticle && (
           <div>
-            <div className="bg-gray-50 rounded-lg p-3 mb-4">
-              <p className="text-sm font-medium text-gray-900">{rejectingArticle.description}</p>
-              <p className="text-xs text-gray-500 mt-1">
+            <div className="bg-cream rounded-lg p-3 mb-4">
+              <p className="text-sm font-medium text-bark">{rejectingArticle.description}</p>
+              <p className="text-xs text-bark-muted mt-1">
                 {CATEGORY_LABELS[rejectingArticle.category]} &middot; {rejectingArticle.price.toFixed(2)} &euro;
               </p>
             </div>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-light mb-1">
                 Motif du refus (optionnel)
               </label>
               <textarea
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border border-sand px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 rows={3}
                 maxLength={200}
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 placeholder="Ex: Article tache, trop use..."
               />
-              <p className="text-xs text-gray-500 mt-1">{rejectionReason.length}/200 caractères</p>
+              <p className="text-xs text-bark-muted mt-1">{rejectionReason.length}/200 caractères</p>
             </div>
             <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={() => setRejectingArticle(null)}>

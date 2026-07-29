@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from app.api.v1.module_guards import require_module_enabled
 from app.dependencies import DBSession, require_role
 from app.exceptions import (
     AppException,
@@ -36,7 +37,7 @@ from app.services.sale import (
     sync_offline_sales,
     _sale_to_response,
 )
-from app.repositories import SaleRepository
+from app.repositories import EditionRepository, SaleRepository
 
 router = APIRouter()
 
@@ -45,7 +46,12 @@ def get_sale_repository(db: DBSession) -> SaleRepository:
     return SaleRepository(db)
 
 
+def get_edition_repository(db: DBSession) -> EditionRepository:
+    return EditionRepository(db)
+
+
 SaleRepoDep = Annotated[SaleRepository, Depends(get_sale_repository)]
+EditionRepoDep = Annotated[EditionRepository, Depends(get_edition_repository)]
 
 
 @router.get(
@@ -56,8 +62,14 @@ SaleRepoDep = Annotated[SaleRepository, Depends(get_sale_repository)]
 async def get_article_catalog_endpoint(
     edition_id: str,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: Annotated[User, Depends(require_role(["volunteer", "manager", "administrator"]))],
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "sales_enabled")
+
     try:
         return await get_article_catalog(edition_id, db)
     except EditionNotFoundError:
@@ -73,8 +85,14 @@ async def scan_article_endpoint(
     edition_id: str,
     request: ScanRequest,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: Annotated[User, Depends(require_role(["volunteer", "manager", "administrator"]))],
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "sales_enabled")
+
     try:
         return await scan_article(edition_id, request.barcode, db)
     except ArticleNotFoundError:
@@ -93,8 +111,14 @@ async def register_sale_endpoint(
     edition_id: str,
     request: RegisterSaleRequest,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: Annotated[User, Depends(require_role(["volunteer", "manager", "administrator"]))],
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "sales_enabled")
+
     try:
         return await register_sale(
             edition_id,
@@ -125,8 +149,14 @@ async def register_batch_sales_endpoint(
     edition_id: str,
     request: RegisterBatchSalesRequest,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: Annotated[User, Depends(require_role(["volunteer", "manager", "administrator"]))],
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "sales_enabled")
+
     try:
         return await register_batch_sales(
             edition_id,
@@ -154,12 +184,18 @@ async def list_sales_endpoint(
     edition_id: str,
     db: DBSession,
     sale_repo: SaleRepoDep,
+    edition_repo: EditionRepoDep,
     current_user: Annotated[User, Depends(require_role(["volunteer", "manager", "administrator"]))],
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
     payment_method: str | None = None,
     register_number: int | None = None,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "sales_enabled")
+
     offset = (page - 1) * per_page
     sales, total = await sale_repo.list_by_edition(
         edition_id,
@@ -189,8 +225,14 @@ async def sync_sales_endpoint(
     edition_id: str,
     request: SyncSalesRequest,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: Annotated[User, Depends(require_role(["volunteer", "manager", "administrator"]))],
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "offline_sales_enabled")
+
     try:
         return await sync_offline_sales(edition_id, request.sales, current_user, db)
     except EditionNotFoundError:
@@ -206,9 +248,15 @@ async def cancel_sale_endpoint(
     edition_id: str,
     sale_id: str,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: Annotated[User, Depends(require_role(["volunteer", "manager", "administrator"]))],
     request: CancelSaleRequest | None = None,
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "sales_enabled")
+
     try:
         await cancel_sale(sale_id, current_user, db)
     except ValidationError as e:
@@ -223,8 +271,14 @@ async def cancel_sale_endpoint(
 async def get_live_stats_endpoint(
     edition_id: str,
     db: DBSession,
+    edition_repo: EditionRepoDep,
     current_user: Annotated[User, Depends(require_role(["volunteer", "manager", "administrator"]))],
 ):
+    edition = await edition_repo.get_by_id(edition_id)
+    if not edition:
+        raise HTTPException(status_code=404, detail="Edition not found")
+    require_module_enabled(edition, "sales_enabled")
+
     try:
         return await get_live_stats(edition_id, db)
     except EditionNotFoundError:

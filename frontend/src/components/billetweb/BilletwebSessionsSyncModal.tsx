@@ -37,12 +37,12 @@ export function BilletwebSessionsSyncModal({
     <Modal isOpen={isOpen} onClose={onClose} title="Synchroniser les créneaux Billetweb" size="lg">
       {isLoading ? (
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" />
-          <p className="mt-4 text-gray-500">Chargement des créneaux...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+          <p className="mt-4 text-bark-muted">Chargement des créneaux...</p>
         </div>
       ) : error ? (
         <div className="space-y-4">
-          <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg">
+          <div className="p-4 bg-error/10 border border-error/30 text-error rounded-lg">
             Erreur lors du chargement des créneaux Billetweb.
             {error instanceof Error && error.message && (
               <p className="text-sm mt-1">{error.message}</p>
@@ -54,7 +54,7 @@ export function BilletwebSessionsSyncModal({
         </div>
       ) : syncMutation.isSuccess ? (
         <div className="space-y-4">
-          <div className="p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg">
+          <div className="p-4 bg-primary/10 border border-primary/30 text-primary-dark rounded-lg">
             <p className="font-medium">Synchronisation terminée</p>
             <p className="text-sm mt-1">
               {syncMutation.data.created} créé(s), {syncMutation.data.updated} mis à jour.
@@ -67,10 +67,10 @@ export function BilletwebSessionsSyncModal({
       ) : (
         <>
           {/* Summary */}
-          <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm">
+          <div className="mb-4 p-3 bg-cream rounded-lg text-sm">
             <span className="font-medium">{preview?.totalSessions ?? 0}</span> créneaux trouvés
             {preview && preview.newSessions > 0 && (
-              <span className="ml-2 text-blue-600">
+              <span className="ml-2 text-primary">
                 ({preview.newSessions} nouveau{preview.newSessions > 1 ? 'x' : ''})
               </span>
             )}
@@ -78,32 +78,32 @@ export function BilletwebSessionsSyncModal({
 
           {/* Sessions list */}
           {sessions.length === 0 ? (
-            <p className="text-center text-gray-500 py-4">Aucun créneau trouvé.</p>
+            <p className="text-center text-bark-muted py-4">Aucun créneau trouvé.</p>
           ) : (
             <div className="space-y-2 max-h-80 overflow-y-auto mb-4">
               {sessions.map((session) => (
                 <div
                   key={session.sessionId}
                   className={`p-3 border rounded-lg ${
-                    session.alreadySynced ? 'bg-gray-50 border-gray-200' : 'bg-white border-blue-200'
+                    session.alreadySynced ? 'bg-cream border-sand' : 'bg-white border-primary/30'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-bark">
                         {session.name || 'Créneau'}
                       </span>
                       {session.alreadySynced && (
-                        <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
+                        <span className="ml-2 text-xs bg-sand text-bark-light px-2 py-0.5 rounded-full">
                           Déjà synchronisé
                         </span>
                       )}
                     </div>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-bark-muted">
                       {session.capacity} places
                     </span>
                   </div>
-                  <div className="text-sm text-gray-500 mt-1">
+                  <div className="text-sm text-bark-muted mt-1">
                     {session.start} &mdash; {session.end}
                   </div>
                 </div>
@@ -113,7 +113,7 @@ export function BilletwebSessionsSyncModal({
 
           {/* Sync error */}
           {syncMutation.isError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">
+            <div className="mb-4 p-3 bg-error/10 border border-error/30 text-error rounded-lg text-sm">
               Erreur lors de la synchronisation.
               {syncMutation.error instanceof Error && syncMutation.error.message && (
                 <span className="block mt-1">{syncMutation.error.message}</span>

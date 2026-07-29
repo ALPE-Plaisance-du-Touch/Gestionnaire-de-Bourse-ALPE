@@ -19,12 +19,12 @@ export function LiveStatsPage() {
       <div className="mb-6">
         <Link
           to={`/editions/${editionId}`}
-          className="text-sm text-blue-600 hover:text-blue-700 mb-1 inline-block"
+          className="text-sm text-primary hover:text-primary-dark mb-1 inline-block"
         >
           &larr; Retour à l'édition
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Stats en direct</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-bark">Stats en direct</h1>
+        <p className="text-sm text-bark-muted mt-1">
           Actualisation automatique toutes les 10 secondes
         </p>
       </div>
@@ -32,7 +32,7 @@ export function LiveStatsPage() {
       <TrainingBanner editionId={editionId!} />
 
       {isLoading ? (
-        <div className="text-center py-12 text-gray-500">Chargement des statistiques...</div>
+        <div className="text-center py-12 text-bark-muted">Chargement des statistiques...</div>
       ) : stats ? (
         <div className="space-y-6">
           {/* Main stats cards */}
@@ -61,25 +61,25 @@ export function LiveStatsPage() {
 
           {/* Revenue by payment method */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <h2 className="text-lg font-semibold text-bark mb-4">
               Chiffre d'affaires par moyen de paiement
             </h2>
             <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <p className="text-sm text-gray-600">Espèces</p>
-                <p className="text-2xl font-bold text-green-700">
+              <div className="text-center p-4 bg-primary/10 rounded-lg">
+                <p className="text-sm text-bark-light">Espèces</p>
+                <p className="text-2xl font-bold text-primary-dark">
                   {Number(stats.revenueCash).toFixed(2)} EUR
                 </p>
               </div>
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-gray-600">Carte bancaire</p>
-                <p className="text-2xl font-bold text-blue-700">
+              <div className="text-center p-4 bg-primary/10 rounded-lg">
+                <p className="text-sm text-bark-light">Carte bancaire</p>
+                <p className="text-2xl font-bold text-primary-dark">
                   {Number(stats.revenueCard).toFixed(2)} EUR
                 </p>
               </div>
-              <div className="text-center p-4 bg-amber-50 rounded-lg">
-                <p className="text-sm text-gray-600">Chèque</p>
-                <p className="text-2xl font-bold text-amber-700">
+              <div className="text-center p-4 bg-accent/10 rounded-lg">
+                <p className="text-sm text-bark-light">Chèque</p>
+                <p className="text-2xl font-bold text-accent-dark">
                   {Number(stats.revenueCheck).toFixed(2)} EUR
                 </p>
               </div>
@@ -88,25 +88,25 @@ export function LiveStatsPage() {
 
           {/* Top depositors */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <h2 className="text-lg font-semibold text-bark mb-4">
               Top 5 déposants
             </h2>
             {stats.topDepositors.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">Aucune vente enregistrée</p>
+              <p className="text-bark-muted text-center py-4">Aucune vente enregistrée</p>
             ) : (
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-2 font-medium text-gray-600">#</th>
-                    <th className="text-left py-2 font-medium text-gray-600">Déposant</th>
-                    <th className="text-right py-2 font-medium text-gray-600">Articles</th>
-                    <th className="text-right py-2 font-medium text-gray-600">Total</th>
+                  <tr className="border-b border-sand">
+                    <th className="text-left py-2 font-medium text-bark-light">#</th>
+                    <th className="text-left py-2 font-medium text-bark-light">Déposant</th>
+                    <th className="text-right py-2 font-medium text-bark-light">Articles</th>
+                    <th className="text-right py-2 font-medium text-bark-light">Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {stats.topDepositors.map((dep, index) => (
-                    <tr key={dep.depositorName} className="border-b border-gray-100">
-                      <td className="py-2 text-gray-500">{index + 1}</td>
+                    <tr key={dep.depositorName} className="border-b border-sand">
+                      <td className="py-2 text-bark-muted">{index + 1}</td>
                       <td className="py-2 font-medium">{dep.depositorName}</td>
                       <td className="py-2 text-right">{dep.articlesSold}</td>
                       <td className="py-2 text-right font-semibold">
@@ -134,10 +134,10 @@ function StatCard({
   color: 'blue' | 'green' | 'gray' | 'purple';
 }) {
   const colorClasses = {
-    blue: 'bg-blue-50 text-blue-700',
-    green: 'bg-green-50 text-green-700',
-    gray: 'bg-gray-50 text-gray-700',
-    purple: 'bg-purple-50 text-purple-700',
+    blue: 'bg-primary/10 text-primary-dark',
+    green: 'bg-primary/10 text-primary-dark',
+    gray: 'bg-cream text-bark-light',
+    purple: 'bg-secondary/10 text-secondary-dark',
   };
 
   return (

@@ -80,7 +80,7 @@ export function PayoutDashboardPage() {
       <div className="mb-6">
         <Link
           to={`/editions/${editionId}/payouts`}
-          className="text-sm text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 mb-2"
+          className="text-sm text-primary hover:text-primary-dark inline-flex items-center gap-1 mb-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -89,8 +89,8 @@ export function PayoutDashboardPage() {
         </Link>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Statistiques détaillées</h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <h1 className="text-2xl font-bold text-bark">Statistiques détaillées</h1>
+            <p className="text-sm text-bark-muted mt-1">
               Actualisation automatique toutes les 10 secondes
             </p>
           </div>
@@ -106,14 +106,14 @@ export function PayoutDashboardPage() {
       </div>
 
       {errorMessage && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex justify-between">
+        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg flex justify-between">
           <span>{errorMessage}</span>
-          <button onClick={() => setErrorMessage('')} className="text-red-700 font-bold">x</button>
+          <button onClick={() => setErrorMessage('')} className="text-error font-bold">x</button>
         </div>
       )}
 
       {isLoading ? (
-        <div className="text-center py-12 text-gray-500">Chargement des statistiques...</div>
+        <div className="text-center py-12 text-bark-muted">Chargement des statistiques...</div>
       ) : dashboard ? (
         <div className="space-y-6">
           {/* Stats cards */}
@@ -144,11 +144,11 @@ export function PayoutDashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Category chart */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <h2 className="text-lg font-semibold text-bark mb-4">
                 Taux de vente par categorie
               </h2>
               {categoryData.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">Aucune donnee</p>
+                <p className="text-bark-muted text-center py-8">Aucune donnee</p>
               ) : (
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={categoryData}>
@@ -170,11 +170,11 @@ export function PayoutDashboardPage() {
 
             {/* Price distribution chart */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <h2 className="text-lg font-semibold text-bark mb-4">
                 Distribution des prix
               </h2>
               {priceData.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">Aucune donnee</p>
+                <p className="text-bark-muted text-center py-8">Aucune donnee</p>
               ) : (
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={priceData}>
@@ -193,25 +193,25 @@ export function PayoutDashboardPage() {
 
           {/* Top 10 depositors */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <h2 className="text-lg font-semibold text-bark mb-4">
               Top 10 déposants
             </h2>
             {dashboard.topDepositors.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">Aucune vente enregistrée</p>
+              <p className="text-bark-muted text-center py-4">Aucune vente enregistrée</p>
             ) : (
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-2 font-medium text-gray-600">#</th>
-                    <th className="text-left py-2 font-medium text-gray-600">Déposant</th>
-                    <th className="text-right py-2 font-medium text-gray-600">Articles vendus</th>
-                    <th className="text-right py-2 font-medium text-gray-600">Total ventes</th>
+                  <tr className="border-b border-sand">
+                    <th className="text-left py-2 font-medium text-bark-light">#</th>
+                    <th className="text-left py-2 font-medium text-bark-light">Déposant</th>
+                    <th className="text-right py-2 font-medium text-bark-light">Articles vendus</th>
+                    <th className="text-right py-2 font-medium text-bark-light">Total ventes</th>
                   </tr>
                 </thead>
                 <tbody>
                   {dashboard.topDepositors.map((dep, index) => (
-                    <tr key={dep.depositorName} className="border-b border-gray-100">
-                      <td className="py-2 text-gray-500">{index + 1}</td>
+                    <tr key={dep.depositorName} className="border-b border-sand">
+                      <td className="py-2 text-bark-muted">{index + 1}</td>
                       <td className="py-2 font-medium">{dep.depositorName}</td>
                       <td className="py-2 text-right">{dep.articlesSold}</td>
                       <td className="py-2 text-right font-semibold">
@@ -239,10 +239,10 @@ function StatCard({
   color: 'blue' | 'green' | 'amber' | 'purple';
 }) {
   const colorClasses = {
-    blue: 'bg-blue-50 text-blue-700',
-    green: 'bg-green-50 text-green-700',
-    amber: 'bg-amber-50 text-amber-700',
-    purple: 'bg-purple-50 text-purple-700',
+    blue: 'bg-primary/10 text-primary-dark',
+    green: 'bg-primary/10 text-primary-dark',
+    amber: 'bg-accent/10 text-accent-dark',
+    purple: 'bg-secondary/10 text-secondary-dark',
   };
 
   return (

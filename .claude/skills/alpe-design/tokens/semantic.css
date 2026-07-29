@@ -1,0 +1,59 @@
+:root {
+  /* Brand roles */
+  --brand-primary: var(--blue-500);
+  --brand-primary-hover: var(--blue-600);
+  --brand-primary-active: var(--blue-700);
+  --brand-secondary: var(--orange-500);
+  --brand-secondary-hover: var(--orange-600);
+  --brand-secondary-active: var(--orange-700);
+  --brand-accent: var(--yellow-500);
+
+  /* Text */
+  --text-strong: var(--grey-900);
+  --text-body: var(--grey-700);
+  --text-muted: var(--grey-500);
+  --text-subtle: var(--grey-400);
+  --text-on-brand: var(--white);
+  --text-link: var(--blue-600);
+  --text-link-hover: var(--orange-600);
+  --text-heading: var(--blue-800);
+
+  /* Surfaces */
+  --surface-page: var(--white);
+  --surface-muted: var(--grey-50);
+  --surface-card: var(--white);
+  --surface-card-muted: var(--grey-25);
+  --surface-brand: var(--blue-500);
+  --surface-brand-soft: var(--blue-50);
+  --surface-secondary-soft: var(--orange-50);
+  --surface-accent-soft: var(--yellow-300);
+  --surface-inverse: var(--blue-800);
+
+  /* Borders */
+  --border-subtle: var(--grey-100);
+  --border-default: var(--grey-200);
+  --border-strong: var(--grey-300);
+  --border-brand-color: var(--blue-500);
+
+  /* Feedback */
+  --success-fg: var(--green-500);
+  --success-bg: var(--green-50);
+  --danger-fg: var(--red-500);
+  --danger-bg: var(--red-50);
+  --warning-fg: var(--amber-500);
+  --warning-bg: var(--amber-50);
+  --info-fg: var(--blue-600);
+  --info-bg: var(--blue-50);
+
+  /* Focus */
+  --focus-ring: var(--shadow-focus);
+
+  /* Component defaults */
+  --card-radius: var(--radius-lg);
+  --card-shadow: var(--shadow-sm);
+  --card-shadow-hover: var(--shadow-lg);
+  --control-height-sm: 34px;
+  --control-height-md: 42px;
+  --control-height-lg: 52px;
+  --control-radius: var(--radius-pill);
+}

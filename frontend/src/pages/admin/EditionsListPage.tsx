@@ -19,13 +19,13 @@ const STATUS_OPTIONS = [
 ];
 
 const STATUS_LABELS: Record<EditionStatus, { label: string; className: string }> = {
-  draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-800' },
-  registrations_open: { label: 'Inscriptions ouvertes', className: 'bg-purple-100 text-purple-800' },
-  deposit: { label: 'Dépôt', className: 'bg-blue-100 text-blue-800' },
-  sale: { label: 'Vente', className: 'bg-green-100 text-green-800' },
-  settlement: { label: 'Bilan', className: 'bg-yellow-100 text-yellow-800' },
-  closed: { label: 'Clôturée', className: 'bg-orange-100 text-orange-800' },
-  archived: { label: 'Archivé', className: 'bg-gray-100 text-gray-500' },
+  draft: { label: 'Brouillon', className: 'bg-cream-dark text-bark' },
+  registrations_open: { label: 'Inscriptions ouvertes', className: 'bg-secondary/10 text-secondary-dark' },
+  deposit: { label: 'Dépôt', className: 'bg-primary/10 text-primary-dark' },
+  sale: { label: 'Vente', className: 'bg-primary/10 text-primary-dark' },
+  settlement: { label: 'Bilan', className: 'bg-accent/15 text-accent-dark' },
+  closed: { label: 'Clôturée', className: 'bg-secondary/10 text-secondary-dark' },
+  archived: { label: 'Archivé', className: 'bg-cream-dark text-bark-muted' },
 };
 
 function formatDate(dateString: string): string {
@@ -148,7 +148,7 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
           Erreur lors du chargement des éditions. Veuillez réessayer.
         </div>
       </div>
@@ -159,8 +159,8 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Gestion des éditions</h1>
-        <p className="mt-1 text-gray-600">
+        <h1 className="text-2xl font-bold text-bark">Gestion des éditions</h1>
+        <p className="mt-1 text-bark-light">
           Gérez les éditions de la bourse aux vêtements.
         </p>
       </div>
@@ -168,24 +168,24 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
       {/* Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Total</p>
-          <p className="text-2xl font-bold text-gray-900">{editionsResponse?.total ?? 0}</p>
+          <p className="text-sm text-bark-muted">Total</p>
+          <p className="text-2xl font-bold text-bark">{editionsResponse?.total ?? 0}</p>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Brouillons</p>
-          <p className="text-2xl font-bold text-gray-600">
+          <p className="text-sm text-bark-muted">Brouillons</p>
+          <p className="text-2xl font-bold text-bark-light">
             {editions.filter((e) => e.status === 'draft').length}
           </p>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Actives</p>
-          <p className="text-2xl font-bold text-green-600">
+          <p className="text-sm text-bark-muted">Actives</p>
+          <p className="text-2xl font-bold text-primary">
             {editions.filter((e) => ['registrations_open', 'deposit', 'sale', 'settlement'].includes(e.status)).length}
           </p>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Clôturées</p>
-          <p className="text-2xl font-bold text-orange-600">
+          <p className="text-sm text-bark-muted">Clôturées</p>
+          <p className="text-2xl font-bold text-secondary-dark">
             {editions.filter((e) => e.status === 'closed').length}
           </p>
         </div>
@@ -208,22 +208,22 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
 
       {/* Success/Error messages */}
       {deleteMutation.isSuccess && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg" role="alert">
           Édition supprimée avec succès !
         </div>
       )}
       {deleteMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg" role="alert">
           Erreur lors de la suppression de l'édition. Veuillez réessayer.
         </div>
       )}
       {archiveMutation.isSuccess && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg" role="alert">
           Édition archivée avec succès !
         </div>
       )}
       {archiveMutation.isError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg" role="alert">
           Erreur lors de l'archivage. Vérifiez que l'édition est bien clôturée.
         </div>
       )}
@@ -232,15 +232,15 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center">
-            <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
-            <p className="mt-2 text-gray-500">Chargement...</p>
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+            <p className="mt-2 text-bark-muted">Chargement...</p>
           </div>
         ) : editions.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
+          <div className="p-8 text-center text-bark-muted">
             Aucune édition trouvée.
             {statusFilter !== 'all' && (
               <button
-                className="block mx-auto mt-2 text-blue-600 hover:underline"
+                className="block mx-auto mt-2 text-primary hover:underline"
                 onClick={() => setStatusFilter('all')}
               >
                 Voir toutes les éditions
@@ -257,10 +257,10 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
               return (
                 <div key={edition.id} className="p-4 space-y-2">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="font-medium text-gray-900 min-w-0">
+                    <div className="font-medium text-bark min-w-0">
                       {edition.name}
                       {edition.isTraining && (
-                        <span className="ml-2 inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-amber-100 text-amber-800">Formation</span>
+                        <span className="ml-2 inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-accent/15 text-accent-dark">Formation</span>
                       )}
                     </div>
                     <span className={`inline-flex shrink-0 px-2 py-1 text-xs font-semibold rounded-full ${statusInfo.className}`}>
@@ -268,16 +268,16 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
                     </span>
                   </div>
                   {edition.description && (
-                    <p className="text-sm text-gray-500 truncate">{edition.description}</p>
+                    <p className="text-sm text-bark-muted truncate">{edition.description}</p>
                   )}
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-bark-muted">
                     {formatDate(edition.startDatetime)} au {formatDate(edition.endDatetime)}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-bark-muted">
                     Créée par : {edition.createdBy ? `${edition.createdBy.firstName} ${edition.createdBy.lastName}` : '-'}
                   </div>
                   {isStaleForArchiving(edition) && (
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">
+                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-accent/15 text-accent-dark">
                       À archiver
                     </span>
                   )}
@@ -285,7 +285,7 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
                     <button
                       type="button"
                       onClick={() => onEditClick?.(edition)}
-                      className="p-1.5 rounded text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                      className="p-1.5 rounded text-bark-muted hover:text-primary hover:bg-primary/10 transition-colors"
                       title="Modifier"
                     >
                       <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -298,7 +298,7 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
                         type="button"
                         onClick={() => setEditionToArchive(edition)}
                         disabled={archiveMutation.isPending}
-                        className="p-1.5 rounded text-gray-500 hover:text-amber-600 hover:bg-amber-50 transition-colors disabled:opacity-50"
+                        className="p-1.5 rounded text-bark-muted hover:text-accent-dark hover:bg-accent/10 transition-colors disabled:opacity-50"
                         title="Archiver"
                       >
                         <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -311,7 +311,7 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
                         type="button"
                         onClick={() => handleDeleteClick(edition)}
                         disabled={deleteMutation.isPending}
-                        className="p-1.5 rounded text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                        className="p-1.5 rounded text-bark-muted hover:text-error hover:bg-error/10 transition-colors disabled:opacity-50"
                         title="Supprimer"
                       >
                         <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -328,21 +328,21 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
           {/* Desktop table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-cream">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                     Nom
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                     Dates
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                     Statut
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-bark-muted uppercase tracking-wider">
                     Créée par
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-bark-muted uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -353,25 +353,25 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
                   const canDelete = isAdmin && edition.status === 'draft';
 
                   return (
-                    <tr key={edition.id} className="hover:bg-gray-50">
+                    <tr key={edition.id} className="hover:bg-cream">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-bark">
                           {edition.name}
                           {edition.isTraining && (
-                            <span className="ml-2 inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-amber-100 text-amber-800">Formation</span>
+                            <span className="ml-2 inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-accent/15 text-accent-dark">Formation</span>
                           )}
                         </div>
                         {edition.description && (
-                          <div className="text-sm text-gray-500 truncate max-w-xs">
+                          <div className="text-sm text-bark-muted truncate max-w-xs">
                             {edition.description}
                           </div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm text-bark">
                           {formatDate(edition.startDatetime)}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-bark-muted">
                           au {formatDate(edition.endDatetime)}
                         </div>
                       </td>
@@ -382,12 +382,12 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
                           {statusInfo.label}
                         </span>
                         {isStaleForArchiving(edition) && (
-                          <span className="ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">
+                          <span className="ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-accent/15 text-accent-dark">
                             À archiver
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-bark-muted">
                         {edition.createdBy
                           ? `${edition.createdBy.firstName} ${edition.createdBy.lastName}`
                           : '-'}
@@ -397,7 +397,7 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
                           <button
                             type="button"
                             onClick={() => onEditClick?.(edition)}
-                            className="p-1.5 rounded text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                            className="p-1.5 rounded text-bark-muted hover:text-primary hover:bg-primary/10 transition-colors"
                             title="Modifier"
                           >
                             <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -410,7 +410,7 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
                               type="button"
                               onClick={() => setEditionToArchive(edition)}
                               disabled={archiveMutation.isPending}
-                              className="p-1.5 rounded text-gray-500 hover:text-amber-600 hover:bg-amber-50 transition-colors disabled:opacity-50"
+                              className="p-1.5 rounded text-bark-muted hover:text-accent-dark hover:bg-accent/10 transition-colors disabled:opacity-50"
                               title="Archiver"
                             >
                               <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -423,7 +423,7 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
                               type="button"
                               onClick={() => handleDeleteClick(edition)}
                               disabled={deleteMutation.isPending}
-                              className="p-1.5 rounded text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                              className="p-1.5 rounded text-bark-muted hover:text-error hover:bg-error/10 transition-colors disabled:opacity-50"
                               title="Supprimer"
                             >
                               <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -445,7 +445,7 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
 
       {/* Footer info */}
       {editions.length > 0 && (
-        <p className="mt-4 text-sm text-gray-500 text-right">
+        <p className="mt-4 text-sm text-bark-muted text-right">
           {editions.length} édition{editions.length > 1 ? 's' : ''} affichée
           {editions.length > 1 ? 's' : ''}
         </p>
@@ -461,11 +461,11 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
         confirmLabel="Supprimer"
         isLoading={deleteMutation.isPending}
       >
-        <p className="text-gray-600">
+        <p className="text-bark-light">
           Êtes-vous sûr de vouloir supprimer l'édition{' '}
           <span className="font-medium">{editionToDelete?.name}</span> ?
         </p>
-        <p className="text-sm text-red-600 bg-red-50 p-3 rounded">
+        <p className="text-sm text-error bg-error/10 p-3 rounded">
           Cette action est irréversible. L'édition sera définitivement supprimée.
         </p>
       </ConfirmModal>
@@ -480,11 +480,11 @@ export function EditionsListPage({ onCreateClick, onEditClick }: EditionsListPag
         confirmLabel="Archiver"
         isLoading={archiveMutation.isPending}
       >
-        <p className="text-gray-600">
+        <p className="text-bark-light">
           Archiver l'édition{' '}
           <span className="font-medium">{editionToArchive?.name}</span> ?
         </p>
-        <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded">
+        <p className="text-sm text-accent-dark bg-accent/10 p-3 rounded">
           Une édition archivée n'apparaît plus dans la liste par défaut. Elle reste consultable via le filtre « Archivé ».
         </p>
       </ConfirmModal>

@@ -5,6 +5,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from app.api.v1.module_guards import require_billetweb_import
 from app.dependencies import DBSession, require_role
 from app.models import User
 from app.repositories.edition import EditionRepository
@@ -182,6 +183,7 @@ async def preview_sessions_sync(
 ):
     """Preview sessions from Billetweb before syncing as deposit slots."""
     edition = await _get_edition_or_404(db, edition_id)
+    require_billetweb_import(edition)
 
     if not edition.billetweb_event_id:
         raise HTTPException(
@@ -216,6 +218,7 @@ async def sync_sessions(
 ):
     """Import/upsert sessions from Billetweb as deposit slots."""
     edition = await _get_edition_or_404(db, edition_id)
+    require_billetweb_import(edition)
 
     if not edition.billetweb_event_id:
         raise HTTPException(
@@ -247,6 +250,7 @@ async def preview_attendees_sync(
 ):
     """Preview attendees from Billetweb before importing as depositors."""
     edition = await _get_edition_or_404(db, edition_id)
+    require_billetweb_import(edition)
 
     if not edition.billetweb_event_id:
         raise HTTPException(
@@ -277,6 +281,7 @@ async def import_attendees_sync(
 ):
     """Import attendees from Billetweb API as edition depositors."""
     edition = await _get_edition_or_404(db, edition_id)
+    require_billetweb_import(edition)
 
     if not edition.billetweb_event_id:
         raise HTTPException(

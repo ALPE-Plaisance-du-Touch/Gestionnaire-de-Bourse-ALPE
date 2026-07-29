@@ -1,0 +1,54 @@
+/* Base palette — sampled directly from Logo-ALPE-Complet-CouleursRVB-300dpi.jpg */
+:root {
+  /* Bleu ALPE — the primary. The "ALPE" wordmark, the boy's hair, the descriptor line. */
+  --blue-50: #e8f6fc;
+  --blue-100: #c7ebf7;
+  --blue-200: #93dbf1;
+  --blue-300: #4ec3e6;
+  --blue-400: #17aedb;
+  --blue-500: #00a0d0; /* core brand blue */
+  --blue-600: #0086b2;
+  --blue-700: #006b91;
+  --blue-800: #005070; /* deepest tone present in the logo shading */
+  --blue-900: #033b53;
+
+  /* Orange ALPE — the secondary. The girl, the "P" of ALPE, "PLAISANCE DU TOUCH". */
+  --orange-50: #fef2ea;
+  --orange-100: #fde0cd;
+  --orange-200: #fbc19c;
+  --orange-300: #f7a06c;
+  --orange-400: #f38b52;
+  --orange-500: #f08040; /* core brand orange */
+  --orange-600: #dd6c2b;
+  --orange-700: #b95520;
+  --orange-800: #8e401a;
+  --orange-900: #6b3115;
+
+  /* Jaune ALPE — accent only. The swoosh behind the wordmark. Never for text. */
+  --yellow-300: #fff08a;
+  --yellow-400: #ffe74d;
+  --yellow-500: #ffe000; /* core brand yellow */
+  --yellow-600: #e6c800;
+
+  /* Neutrals — warm-cool balanced greys so they sit calmly next to the blue */
+  --white: #ffffff;
+  --grey-25: #fafbfc;
+  --grey-50: #f4f7f9;
+  --grey-100: #e9eef2;
+  --grey-200: #d7dfe6;
+  --grey-300: #b7c3cc;
+  --grey-400: #8d9aa5;
+  --grey-500: #6b7883;
+  --grey-600: #4f5a64;
+  --grey-700: #3a444c;
+  --grey-800: #262e34;
+  --grey-900: #161c20;
+
+  /* Semantic hues — kept close to the brand so nothing reads as a foreign UI colour */
+  --green-500: #3aa650;
+  --green-50: #eaf6ec;
+  --red-500: #d64545;
+  --red-50: #fdecec;
+  --amber-500: #e0a100;
+  --amber-50: #fdf5e0;
+}

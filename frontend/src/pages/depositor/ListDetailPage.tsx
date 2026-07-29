@@ -8,12 +8,12 @@ import { ArticleList } from '@/components/articles/ArticleList';
 import type { Article, CreateArticleRequest, UpdateArticleRequest } from '@/types';
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
-  draft: { label: 'Brouillon', className: 'bg-yellow-100 text-yellow-800' },
-  not_finalized: { label: 'Non finalisée', className: 'bg-red-100 text-red-800' },
-  validated: { label: 'Validée', className: 'bg-green-100 text-green-800' },
-  checked_in: { label: 'Déposée', className: 'bg-blue-100 text-blue-800' },
-  reviewed: { label: 'Vérifiée', className: 'bg-teal-100 text-teal-800' },
-  retrieved: { label: 'Récupérée', className: 'bg-gray-100 text-gray-800' },
+  draft: { label: 'Brouillon', className: 'bg-accent/15 text-accent-dark' },
+  not_finalized: { label: 'Non finalisée', className: 'bg-error/10 text-error' },
+  validated: { label: 'Validée', className: 'bg-primary/10 text-primary-dark' },
+  checked_in: { label: 'Déposée', className: 'bg-primary/10 text-primary-dark' },
+  reviewed: { label: 'Vérifiée', className: 'bg-primary/10 text-primary-dark' },
+  retrieved: { label: 'Récupérée', className: 'bg-cream-dark text-bark' },
 };
 
 function formatPrice(price: number): string {
@@ -199,7 +199,7 @@ export function ListDetailPage() {
   if (!listId) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
           Liste non trouvée.
         </div>
       </div>
@@ -209,7 +209,7 @@ export function ListDetailPage() {
   if (listError || articlesError) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
           Erreur lors du chargement de la liste. Veuillez réessayer.
         </div>
       </div>
@@ -229,8 +229,8 @@ export function ListDetailPage() {
     return (
       <div className="p-6">
         <div className="flex items-center justify-center p-8">
-          <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
-          <span className="ml-3 text-gray-500">Chargement...</span>
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+          <span className="ml-3 text-bark-muted">Chargement...</span>
         </div>
       </div>
     );
@@ -242,7 +242,7 @@ export function ListDetailPage() {
       <div className="mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1"
+          className="text-bark-muted hover:text-bark mb-2 flex items-center gap-1"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -251,19 +251,19 @@ export function ListDetailPage() {
         </button>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-bark">
               Liste n°{list?.number}
             </h1>
             {list && (
               <span
                 className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full mt-1 ${
-                  STATUS_LABELS[list.status]?.className ?? 'bg-gray-100 text-gray-800'
+                  STATUS_LABELS[list.status]?.className ?? 'bg-cream-dark text-bark'
                 }`}
               >
                 {STATUS_LABELS[list.status]?.label ?? list.status}
               </span>
             )}
-            <Link to="/aide#guide-deposant" className="text-xs text-gray-500 hover:text-blue-600 mt-1 inline-block">
+            <Link to="/aide#guide-deposant" className="text-xs text-bark-muted hover:text-primary mt-1 inline-block">
               Besoin d'aide ?
             </Link>
           </div>
@@ -286,7 +286,7 @@ export function ListDetailPage() {
 
       {/* PDF error */}
       {pdfError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg" role="alert">
           Erreur lors du téléchargement du PDF. Veuillez réessayer.
         </div>
       )}
@@ -299,33 +299,33 @@ export function ListDetailPage() {
       {/* Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Articles</p>
-          <p className="text-2xl font-bold text-gray-900">
+          <p className="text-sm text-bark-muted">Articles</p>
+          <p className="text-2xl font-bold text-bark">
             {articles.length} / {constraints?.maxArticlesPerList ?? 24}
           </p>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Vêtements</p>
-          <p className="text-2xl font-bold text-purple-600">
+          <p className="text-sm text-bark-muted">Vêtements</p>
+          <p className="text-2xl font-bold text-secondary-dark">
             {clothingCount} / {constraints?.maxClothingPerList ?? 12}
           </p>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Valeur totale</p>
-          <p className="text-2xl font-bold text-green-600">{formatPrice(totalValue)}</p>
+          <p className="text-sm text-bark-muted">Valeur totale</p>
+          <p className="text-2xl font-bold text-primary">{formatPrice(totalValue)}</p>
         </div>
       </div>
 
       {/* Warnings */}
       {!canAddMoreClothing && isDraft && (
-        <div className="mb-4 bg-orange-50 border border-orange-200 text-orange-700 px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-secondary/10 border border-secondary/30 text-secondary-dark px-4 py-3 rounded-lg">
           Vous avez atteint le maximum de vêtements ({constraints?.maxClothingPerList ?? 12}).
         </div>
       )}
 
       {/* Error messages */}
       {(createMutation.isError || updateMutation.isError || deleteMutation.isError) && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
           Une erreur est survenue. Veuillez réessayer.
         </div>
       )}
@@ -333,7 +333,7 @@ export function ListDetailPage() {
       {/* Article Form or List */}
       {showArticleForm ? (
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <h2 className="text-lg font-semibold text-bark mb-4">
             {editingArticle
               ? 'Modifier l\'article'
               : duplicatingArticle
@@ -360,7 +360,7 @@ export function ListDetailPage() {
                 Ajouter un article
               </Button>
               {!canAddMore && (
-                <span className="ml-2 text-sm text-gray-500">
+                <span className="ml-2 text-sm text-bark-muted">
                   Maximum d'articles atteint
                 </span>
               )}
@@ -382,8 +382,8 @@ export function ListDetailPage() {
 
       {/* Rejected articles section - visible to depositor after review */}
       {!showArticleForm && articles.some((a) => a.status === 'rejected') && (
-        <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
-          <h4 className="font-medium text-red-900 mb-3">
+        <div className="mt-6 bg-error/10 border border-error/30 rounded-lg p-4">
+          <h4 className="font-medium text-error mb-3">
             Articles refuses ({articles.filter((a) => a.status === 'rejected').length})
           </h4>
           <div className="space-y-2">
@@ -392,22 +392,22 @@ export function ListDetailPage() {
               .map((article) => (
                 <div
                   key={article.id}
-                  className="bg-white border border-red-100 rounded-lg p-3"
+                  className="bg-white border border-error/30 rounded-lg p-3"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{article.description}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">
+                      <p className="text-sm font-medium text-bark">{article.description}</p>
+                      <p className="text-xs text-bark-muted mt-0.5">
                         {formatPrice(article.price)}
                         {article.size ? ` - Taille ${article.size}` : ''}
                       </p>
                     </div>
-                    <span className="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                    <span className="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-error/10 text-error">
                       Refuse
                     </span>
                   </div>
                   {article.rejectionReason && (
-                    <p className="mt-2 text-xs text-red-700">
+                    <p className="mt-2 text-xs text-error">
                       Motif : {article.rejectionReason}
                     </p>
                   )}
@@ -419,9 +419,9 @@ export function ListDetailPage() {
 
       {/* Help text for draft lists */}
       {isDraft && !showArticleForm && (
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="font-medium text-blue-900 mb-2">Conseils</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
+        <div className="mt-6 bg-primary/10 border border-primary/30 rounded-lg p-4">
+          <h4 className="font-medium text-primary-dark mb-2">Conseils</h4>
+          <ul className="text-sm text-primary-dark space-y-1">
             <li>- Maximum 24 articles par liste, dont 12 vêtements</li>
             <li>- Prix minimum : 1€ (150€ max pour les poussettes)</li>
             <li>- Une fois validée, la liste ne peut plus être modifiée</li>
@@ -455,12 +455,12 @@ export function ListDetailPage() {
         isLoading={validateMutation.isPending}
         confirmDisabled={!confirmationAccepted}
       >
-        <p className="text-gray-600">
+        <p className="text-bark-light">
           Vous êtes sur le point de valider votre liste de {articles.length} article
           {articles.length > 1 ? 's' : ''} pour un total de {formatPrice(totalValue)}.
         </p>
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <p className="text-sm text-yellow-800">
+        <div className="bg-accent/10 border border-accent/40 rounded-lg p-4">
+          <p className="text-sm text-accent-dark">
             <strong>Attention :</strong> Une fois validée, vous ne pourrez plus modifier
             votre liste. Assurez-vous que tous les articles sont correctement saisis.
           </p>
@@ -470,15 +470,15 @@ export function ListDetailPage() {
             type="checkbox"
             checked={confirmationAccepted}
             onChange={(e) => setConfirmationAccepted(e.target.checked)}
-            className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            className="mt-1 h-4 w-4 text-primary border-sand rounded focus:ring-primary"
           />
-          <span className="text-sm text-gray-700">
+          <span className="text-sm text-bark-light">
             Je certifie que tous mes articles sont propres, en bon état, et conformes aux
             conditions de vente de la bourse aux vêtements.
           </span>
         </label>
         {validateMutation.isError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm" role="alert">
+          <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg text-sm" role="alert">
             Erreur lors de la validation. Veuillez réessayer.
           </div>
         )}
@@ -495,7 +495,7 @@ function DeadlineBanner({ deadline }: { deadline: string }) {
 
   if (diffDays < 0) {
     return (
-      <div className="mb-4 bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-lg">
+      <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
         La date limite de déclaration est dépassée. Cette liste est en lecture seule.
       </div>
     );
@@ -503,7 +503,7 @@ function DeadlineBanner({ deadline }: { deadline: string }) {
 
   if (diffDays <= 3) {
     return (
-      <div className="mb-4 bg-orange-50 border border-orange-300 text-orange-800 px-4 py-3 rounded-lg">
+      <div className="mb-4 bg-secondary/10 border border-secondary/30 text-secondary-dark px-4 py-3 rounded-lg">
         Il vous reste {diffDays} jour{diffDays > 1 ? 's' : ''} pour finaliser vos articles.
       </div>
     );

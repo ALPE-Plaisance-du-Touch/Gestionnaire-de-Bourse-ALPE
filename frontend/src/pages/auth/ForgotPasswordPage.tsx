@@ -36,25 +36,25 @@ export function ForgotPasswordPage() {
   // Success state
   if (isSubmitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen flex items-center justify-center bg-cream py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full text-center">
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
-            <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 mb-6">
+            <svg className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Email envoyé</h1>
-          <p className="text-gray-600 mb-2">
+          <h1 className="text-2xl font-bold text-bark mb-4">Email envoyé</h1>
+          <p className="text-bark-light mb-2">
             Si un compte existe avec l'adresse <span className="font-medium">{email}</span>,
             vous recevrez un email avec un lien pour réinitialiser votre mot de passe.
           </p>
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="text-sm text-bark-muted mb-6">
             Le lien est valide pendant 24 heures.
           </p>
           <div className="space-y-4">
             <Link
               to="/login"
-              className="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
+              className="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-primary hover:bg-primary-dark"
             >
               Retour à la connexion
             </Link>
@@ -66,16 +66,16 @@ export function ForgotPasswordPage() {
 
   // Form
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-cream py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h1 className="text-center text-3xl font-bold text-gray-900">
+          <h1 className="text-center text-3xl font-bold text-bark">
             Bourse ALPE
           </h1>
-          <h2 className="mt-2 text-center text-xl text-gray-600">
+          <h2 className="mt-2 text-center text-xl text-bark-light">
             Mot de passe oublié
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-500">
+          <p className="mt-2 text-center text-sm text-bark-muted">
             Entrez votre adresse email pour recevoir un lien de réinitialisation.
           </p>
         </div>
@@ -83,7 +83,7 @@ export function ForgotPasswordPage() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div
-              className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
+              className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg"
               role="alert"
             >
               {error}
@@ -112,10 +112,10 @@ export function ForgotPasswordPage() {
           </Button>
         </form>
 
-        <p className="text-center text-sm text-gray-600">
+        <p className="text-center text-sm text-bark-light">
           <Link
             to="/login"
-            className="text-blue-600 hover:text-blue-500 font-medium"
+            className="text-primary hover:text-primary font-medium"
           >
             ← Retour à la connexion
           </Link>
