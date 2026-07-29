@@ -112,3 +112,22 @@ real diff before merging.
 
 The version bump belongs **in the promotion PR**, never after it — that is what
 keeps the displayed version equal to the deployed one.
+
+## Versioning
+
+`backend/app/__init__.py` is the **single source of truth**. `pyproject.toml` reads it
+dynamically, and `/health` returns it so a deployment can be verified. Three files
+carry the number and must agree:
+
+```
+backend/app/__init__.py        ← edit this one first
+frontend/package.json
+frontend/package-lock.json     ← cd frontend && npm install --package-lock-only
+```
+
+CI blocks on any mismatch (`scripts/check-version-consistency.sh`). Five values had
+drifted apart before that guard existed, which makes "the displayed version is the
+deployed version" impossible to trust.
+
+Tag **only after** the deployment is verified: the tag points at what is actually in
+production, never at code that has yet to ship.

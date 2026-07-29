@@ -1,5 +1,5 @@
 # Makefile for Bourse ALPE development
-.PHONY: help install dev up down logs shell-backend shell-frontend db-shell migrate seed seed-articles seed-sales seed-payouts seed-closure seed-all test test-backend-mariadb lint clean
+.PHONY: help install dev up down logs shell-backend shell-frontend db-shell migrate seed seed-articles seed-sales seed-payouts seed-closure seed-all test test-backend-mariadb check-version lint clean
 
 # Default target
 help:
@@ -36,6 +36,7 @@ help:
 	@echo "  make test           Run all tests"
 	@echo "  make test-backend   Run backend tests (SQLite)"
 	@echo "  make test-backend-mariadb  Run backend tests against MariaDB"
+	@echo "  make check-version  Check all version files agree"
 	@echo "  make test-frontend  Run frontend tests"
 	@echo ""
 	@echo "Code quality:"
@@ -140,6 +141,10 @@ test-backend-mariadb:
 
 test-frontend:
 	docker-compose exec frontend npm test
+
+# Same check CI runs: every file carrying the version number must agree.
+check-version:
+	bash scripts/check-version-consistency.sh
 
 # ============================================
 # Code quality

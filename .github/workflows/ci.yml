@@ -17,6 +17,19 @@ permissions:
   contents: read
 
 jobs:
+  # Blocking, and cheap: five version values had drifted apart (pyproject 0.1.0,
+  # __init__ 0.1.0, main.py 1.0.0-rc hardcoded twice, package.json 0.0.0, 0.23 in the
+  # docs). Once that happens "the displayed version is the deployed version" cannot be
+  # trusted, and /health stops being a way to verify a deployment.
+  version:
+    name: Version consistency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check version files agree
+        run: bash scripts/check-version-consistency.sh
+
   # Production runs on MariaDB while the default suite runs on in-memory SQLite,
   # which silently accepts what MariaDB rejects. This job caught two real defects
   # SQLite hid: a quoted CURRENT_TIMESTAMP default, and a value overflowing
