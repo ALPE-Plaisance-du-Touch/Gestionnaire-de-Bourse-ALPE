@@ -132,7 +132,7 @@ export function InvitationCreateModal({ isOpen, onClose }: InvitationCreateModal
     <Modal isOpen={isOpen} onClose={handleClose} title="Nouvelle invitation" size="md">
       {success ? (
         <div className="space-y-4">
-          <div className="bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg">
+          <div className="bg-info-soft border border-primary/40 text-primary-strong px-4 py-3 rounded-lg">
             <p className="font-medium">Invitation envoyée avec succès !</p>
             <p className="text-sm mt-1">
               Un email d'invitation a été envoyé à <strong>{email}</strong>.
@@ -148,7 +148,7 @@ export function InvitationCreateModal({ isOpen, onClose }: InvitationCreateModal
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
+            <div className="bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
@@ -168,7 +168,7 @@ export function InvitationCreateModal({ isOpen, onClose }: InvitationCreateModal
             <p className="text-xs text-bark-muted">Recherche du déposant...</p>
           )}
           {lookup?.found && (
-            <div className="bg-primary/10 border border-primary/30 text-primary-dark px-3 py-2 rounded-lg text-sm">
+            <div className="bg-info-soft border border-primary/40 text-primary-strong px-3 py-2 rounded-lg text-sm">
               <div className="flex items-center justify-between">
                 <span>
                   Déposant existant : <strong>{lookup.firstName} {lookup.lastName}</strong>
@@ -177,7 +177,7 @@ export function InvitationCreateModal({ isOpen, onClose }: InvitationCreateModal
                 <button
                   type="button"
                   onClick={handlePrefill}
-                  className="text-xs font-medium text-primary-dark underline hover:text-primary-dark"
+                  className="text-xs font-medium text-primary-strong underline hover:text-primary-strong"
                 >
                   Pré-remplir
                 </button>

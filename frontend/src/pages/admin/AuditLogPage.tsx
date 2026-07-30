@@ -26,9 +26,9 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 const RESULT_STYLES: Record<string, string> = {
-  success: 'bg-primary/10 text-primary-dark',
-  failure: 'bg-error/10 text-error',
-  error: 'bg-error/10 text-error',
+  success: 'bg-success-soft text-success-strong',
+  failure: 'bg-error-soft text-error-dark',
+  error: 'bg-error-soft text-error-dark',
 };
 
 export function AuditLogPage() {

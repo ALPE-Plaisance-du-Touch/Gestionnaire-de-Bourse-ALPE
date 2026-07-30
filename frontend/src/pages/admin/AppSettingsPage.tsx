@@ -71,12 +71,12 @@ export function AppSettingsPage() {
       </p>
 
       {successMessage && (
-        <div className="mb-4 p-3 bg-primary/10 border border-primary/30 text-primary-dark rounded-lg text-sm">
+        <div className="mb-4 p-3 bg-success-soft border border-success/40 text-success-strong rounded-lg text-sm">
           {successMessage}
         </div>
       )}
       {errorMessage && (
-        <div className="mb-4 p-3 bg-error/10 border border-error/30 text-error rounded-lg text-sm">
+        <div className="mb-4 p-3 bg-error-soft border border-error/40 text-error-dark rounded-lg text-sm">
           {errorMessage}
         </div>
       )}
@@ -92,7 +92,7 @@ export function AppSettingsPage() {
         />
 
         {data?.source === 'default' && (
-          <p className="text-xs text-accent-dark">
+          <p className="text-xs text-warning-strong">
             Valeur par défaut (variable d'environnement). Enregistrez pour personnaliser.
           </p>
         )}

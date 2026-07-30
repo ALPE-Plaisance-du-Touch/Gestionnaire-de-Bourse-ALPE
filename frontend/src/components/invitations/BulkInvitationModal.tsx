@@ -192,7 +192,7 @@ export function BulkInvitationModal({ isOpen, onClose }: BulkInvitationModalProp
           </div>
 
           {error && (
-            <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg text-sm">
+            <div className="bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg text-sm">
               {error}
             </div>
           )}
@@ -200,7 +200,7 @@ export function BulkInvitationModal({ isOpen, onClose }: BulkInvitationModalProp
           <div
             className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
               isDragging
-                ? 'border-primary bg-primary/10'
+                ? 'border-primary bg-info-soft'
                 : 'border-sand hover:border-bark-muted'
             }`}
             onDrop={handleDrop}
@@ -252,22 +252,22 @@ export function BulkInvitationModal({ isOpen, onClose }: BulkInvitationModalProp
       {step === 'preview' && (
         <div className="space-y-4">
           <div className="flex items-center gap-4 text-sm">
-            <span className="px-3 py-1 bg-primary/10 text-primary-dark rounded-full">
+            <span className="px-3 py-1 bg-info-soft text-primary-strong rounded-full">
               {validInvitations.length} valide{validInvitations.length > 1 ? 's' : ''}
             </span>
             {invalidInvitations.length > 0 && (
-              <span className="px-3 py-1 bg-error/10 text-error rounded-full">
+              <span className="px-3 py-1 bg-error-soft text-error-dark rounded-full">
                 {invalidInvitations.length} erreur{invalidInvitations.length > 1 ? 's' : ''}
               </span>
             )}
           </div>
 
           {invalidInvitations.length > 0 && (
-            <div className="bg-error/10 border border-error/30 rounded-lg p-3">
-              <p className="text-sm font-medium text-error mb-2">
+            <div className="bg-error-soft border border-error/40 rounded-lg p-3">
+              <p className="text-sm font-medium text-error-dark mb-2">
                 Lignes avec erreurs (seront ignorées) :
               </p>
-              <ul className="text-xs text-error space-y-1">
+              <ul className="text-xs text-error-dark space-y-1">
                 {invalidInvitations.slice(0, 5).map((inv) => (
                   <li key={inv.lineNumber}>
                     Ligne {inv.lineNumber}: {inv.email || '(vide)'} - {inv.error}
@@ -319,7 +319,7 @@ export function BulkInvitationModal({ isOpen, onClose }: BulkInvitationModalProp
           </div>
 
           {error && (
-            <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg text-sm">
+            <div className="bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg text-sm">
               {error}
             </div>
           )}
@@ -347,7 +347,7 @@ export function BulkInvitationModal({ isOpen, onClose }: BulkInvitationModalProp
 
       {step === 'result' && result && (
         <div className="space-y-4">
-          <div className="bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg">
+          <div className="bg-info-soft border border-primary/40 text-primary-strong px-4 py-3 rounded-lg">
             <p className="font-medium">Import terminé !</p>
           </div>
 
@@ -356,20 +356,20 @@ export function BulkInvitationModal({ isOpen, onClose }: BulkInvitationModalProp
               <p className="text-2xl font-bold text-bark">{result.total}</p>
               <p className="text-sm text-bark-muted">Total traité</p>
             </div>
-            <div className="bg-primary/10 rounded-lg p-4">
+            <div className="bg-info-soft rounded-lg p-4">
               <p className="text-2xl font-bold text-primary">{result.created}</p>
               <p className="text-sm text-bark-muted">Créées</p>
             </div>
-            <div className="bg-accent/10 rounded-lg p-4">
-              <p className="text-2xl font-bold text-accent-dark">{result.duplicates}</p>
+            <div className="bg-warning-soft rounded-lg p-4">
+              <p className="text-2xl font-bold text-warning-strong">{result.duplicates}</p>
               <p className="text-sm text-bark-muted">Doublons</p>
             </div>
           </div>
 
           {result.errors.length > 0 && (
-            <div className="bg-error/10 border border-error/30 rounded-lg p-3">
-              <p className="text-sm font-medium text-error mb-2">Erreurs :</p>
-              <ul className="text-xs text-error space-y-1">
+            <div className="bg-error-soft border border-error/40 rounded-lg p-3">
+              <p className="text-sm font-medium text-error-dark mb-2">Erreurs :</p>
+              <ul className="text-xs text-error-dark space-y-1">
                 {result.errors.slice(0, 5).map((err, idx) => (
                   <li key={idx}>
                     {err.email}: {err.error}

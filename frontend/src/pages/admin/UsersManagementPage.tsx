@@ -7,11 +7,13 @@ import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
 import type { User, UserRole, UserAdminUpdate } from '@/types';
 
+// Opaque fills: the translucent ones composited over the table row and fell below
+// AA. The four roles keep their existing progression, neutral through to red.
 const ROLE_LABELS: Record<UserRole, { label: string; className: string }> = {
   depositor: { label: 'Déposant', className: 'bg-cream-dark text-bark' },
-  volunteer: { label: 'Bénévole', className: 'bg-primary/10 text-primary-dark' },
-  manager: { label: 'Gestionnaire', className: 'bg-secondary/10 text-secondary-dark' },
-  administrator: { label: 'Administrateur', className: 'bg-error/10 text-error' },
+  volunteer: { label: 'Bénévole', className: 'bg-info-soft text-primary-strong' },
+  manager: { label: 'Gestionnaire', className: 'bg-warning-soft text-warning-strong' },
+  administrator: { label: 'Administrateur', className: 'bg-error-soft text-error-dark' },
 };
 
 const ROLE_OPTIONS = [
@@ -167,7 +169,7 @@ export function UsersManagementPage() {
 
       {/* Messages */}
       {successMessage && (
-        <div className="mb-4 p-3 bg-primary/10 border border-primary/30 rounded-lg text-sm text-primary-dark">
+        <div className="mb-4 p-3 bg-success-soft border border-success/40 rounded-lg text-sm text-success-strong">
           {successMessage}
         </div>
       )}
@@ -205,7 +207,7 @@ export function UsersManagementPage() {
                           {roleInfo.label}
                         </span>
                         <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
-                          user.isActive ? 'bg-primary/10 text-primary-dark' : 'bg-error/10 text-error'
+                          user.isActive ? 'bg-success-soft text-success-strong' : 'bg-error-soft text-error-dark'
                         }`}>
                           {user.isActive ? 'Actif' : 'Inactif'}
                         </span>
@@ -218,7 +220,7 @@ export function UsersManagementPage() {
                     <button
                       type="button"
                       onClick={() => openEditModal(user)}
-                      className="text-primary hover:text-primary-dark text-sm font-medium"
+                      className="text-primary-strong hover:text-primary-strong text-sm font-medium"
                     >
                       Modifier
                     </button>
@@ -258,8 +260,8 @@ export function UsersManagementPage() {
                         <td className="px-4 py-3">
                           <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
                             user.isActive
-                              ? 'bg-primary/10 text-primary-dark'
-                              : 'bg-error/10 text-error'
+                              ? 'bg-success-soft text-success-strong'
+                              : 'bg-error-soft text-error-dark'
                           }`}>
                             {user.isActive ? 'Actif' : 'Inactif'}
                           </span>
@@ -274,7 +276,7 @@ export function UsersManagementPage() {
                           <button
                             type="button"
                             onClick={() => openEditModal(user)}
-                            className="text-primary hover:text-primary-dark text-sm font-medium"
+                            className="text-primary-strong hover:text-primary-strong text-sm font-medium"
                           >
                             Modifier
                           </button>
@@ -385,14 +387,14 @@ export function UsersManagementPage() {
                 type="checkbox"
                 checked={formIsTester}
                 onChange={(e) => setFormIsTester(e.target.checked)}
-                className="h-4 w-4 text-accent-dark rounded border-sand"
+                className="h-4 w-4 text-warning-strong rounded border-sand"
               />
               <span className="text-sm text-bark-light">Testeur (formation)</span>
             </label>
           </div>
 
           {errorMessage && (
-            <div className="p-3 bg-error/10 border border-error/30 rounded-lg text-sm text-error">
+            <div className="p-3 bg-error-soft border border-error/40 rounded-lg text-sm text-error-dark">
               {errorMessage}
             </div>
           )}

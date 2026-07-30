@@ -14,11 +14,14 @@ const STATUS_OPTIONS = [
   { value: 'expired', label: 'Expirées' },
 ];
 
+// One distinct style per state: `sent` and `activated` used to share one, so an
+// invitation that had merely gone out looked like one that had been taken up.
+// Opaque fills, since translucent ones composite over the row and drop below AA.
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
-  pending: { label: 'En attente', className: 'bg-accent/15 text-accent-dark' },
-  sent: { label: 'Envoyé', className: 'bg-primary/10 text-primary-dark' },
-  activated: { label: 'Activé', className: 'bg-primary/10 text-primary-dark' },
-  expired: { label: 'Expiré', className: 'bg-error/10 text-error' },
+  pending: { label: 'En attente', className: 'bg-warning-soft text-warning-strong' },
+  sent: { label: 'Envoyé', className: 'bg-info-soft text-primary-strong' },
+  activated: { label: 'Activé', className: 'bg-success-soft text-success-strong' },
+  expired: { label: 'Expiré', className: 'bg-error-soft text-error-dark' },
   cancelled: { label: 'Annulé', className: 'bg-cream-dark text-bark' },
 };
 
@@ -248,7 +251,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
+        <div className="bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg">
           Erreur lors du chargement des invitations. Veuillez réessayer.
         </div>
       </div>
@@ -273,7 +276,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
         </div>
         <div className="bg-white rounded-lg shadow p-4">
           <p className="text-sm text-bark-muted">En attente</p>
-          <p className="text-2xl font-bold text-accent-dark">{stats.pending}</p>
+          <p className="text-2xl font-bold text-warning-strong">{stats.pending}</p>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
           <p className="text-sm text-bark-muted">Activés</p>
@@ -281,7 +284,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
         </div>
         <div className="bg-white rounded-lg shadow p-4">
           <p className="text-sm text-bark-muted">Expirés</p>
-          <p className="text-2xl font-bold text-error">{stats.expired}</p>
+          <p className="text-2xl font-bold text-error-dark">{stats.expired}</p>
         </div>
       </div>
 
@@ -308,62 +311,62 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
 
       {/* Success/Error messages */}
       {resendMutation.isSuccess && (
-        <div className="mb-4 bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-success-soft border border-success/40 text-success-strong px-4 py-3 rounded-lg" role="alert">
           Invitation renvoyée avec succès !
         </div>
       )}
       {resendMutation.isError && (
-        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg" role="alert">
           Erreur lors de l'envoi de l'invitation. Veuillez réessayer.
         </div>
       )}
       {deleteMutation.isSuccess && (
-        <div className="mb-4 bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-success-soft border border-success/40 text-success-strong px-4 py-3 rounded-lg" role="alert">
           Invitation supprimée avec succès !
         </div>
       )}
       {deleteMutation.isError && (
-        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg" role="alert">
           Erreur lors de la suppression de l'invitation. Veuillez réessayer.
         </div>
       )}
       {bulkDeleteResult && (
-        <div className="mb-4 bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg flex justify-between items-center" role="alert">
+        <div className="mb-4 bg-success-soft border border-success/40 text-success-strong px-4 py-3 rounded-lg flex justify-between items-center" role="alert">
           <span>
             {bulkDeleteResult.deleted} invitation{bulkDeleteResult.deleted > 1 ? 's' : ''} supprimée{bulkDeleteResult.deleted > 1 ? 's' : ''} avec succès
             {bulkDeleteResult.notFound > 0 && ` (${bulkDeleteResult.notFound} non trouvée${bulkDeleteResult.notFound > 1 ? 's' : ''})`}
           </span>
-          <button onClick={() => setBulkDeleteResult(null)} className="text-primary-dark hover:text-primary-dark">
+          <button onClick={() => setBulkDeleteResult(null)} className="text-primary-strong hover:text-primary-strong">
             ✕
           </button>
         </div>
       )}
       {bulkDeleteMutation.isError && (
-        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg" role="alert">
           Erreur lors de la suppression en masse. Veuillez réessayer.
         </div>
       )}
       {bulkResendResult && (
-        <div className="mb-4 bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg flex justify-between items-center" role="alert">
+        <div className="mb-4 bg-success-soft border border-success/40 text-success-strong px-4 py-3 rounded-lg flex justify-between items-center" role="alert">
           <span>
             {bulkResendResult.resent} invitation{bulkResendResult.resent > 1 ? 's' : ''} relancée{bulkResendResult.resent > 1 ? 's' : ''} avec succès
             {bulkResendResult.skipped > 0 && ` (${bulkResendResult.skipped} ignorée${bulkResendResult.skipped > 1 ? 's' : ''})`}
           </span>
-          <button onClick={() => setBulkResendResult(null)} className="text-primary-dark hover:text-primary-dark">
+          <button onClick={() => setBulkResendResult(null)} className="text-primary-strong hover:text-primary-strong">
             ✕
           </button>
         </div>
       )}
       {bulkResendMutation.isError && (
-        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg" role="alert">
           Erreur lors de la relance en masse. Veuillez réessayer.
         </div>
       )}
 
       {/* Selection bar */}
       {selectedIds.size > 0 && (
-        <div className="mb-4 bg-primary/10 border border-primary/30 px-4 py-3 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <span className="text-primary-dark">
+        <div className="mb-4 bg-success-soft border border-success/40 px-4 py-3 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <span className="text-primary-strong">
             {selectedIds.size} invitation{selectedIds.size > 1 ? 's' : ''} sélectionnée{selectedIds.size > 1 ? 's' : ''}
           </span>
           <div className="flex flex-wrap gap-2">
@@ -407,7 +410,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
             Aucune invitation trouvée.
             {statusFilter !== 'all' && (
               <button
-                className="block mx-auto mt-2 text-primary hover:underline"
+                className="block mx-auto mt-2 text-primary-strong hover:underline"
                 onClick={() => setStatusFilter('all')}
               >
                 Voir toutes les invitations
@@ -485,7 +488,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
                             size="sm"
                             onClick={() => handleDeleteClick(invitation)}
                             disabled={deleteMutation.isPending}
-                            className="text-error hover:text-error hover:bg-error/10"
+                            className="text-error-dark hover:text-error-dark hover:bg-error-soft"
                           >
                             Supprimer
                           </Button>
@@ -602,7 +605,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
                           size="sm"
                           onClick={() => handleDeleteClick(invitation)}
                           disabled={deleteMutation.isPending}
-                          className="text-error hover:text-error hover:bg-error/10"
+                          className="text-error-dark hover:text-error-dark hover:bg-error-soft"
                         >
                           Supprimer
                         </Button>
@@ -636,7 +639,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
         confirmLabel="Relancer"
         isLoading={resendMutation.isPending}
       >
-        <p className="text-sm text-primary bg-primary/10 p-3 rounded">
+        <p className="text-sm text-primary bg-info-soft p-3 rounded">
           Un nouveau lien d'activation sera généré et envoyé par email.
         </p>
       </ConfirmModal>
@@ -656,12 +659,12 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
           <span className="font-medium">{invitationToDelete?.email}</span> ?
         </p>
         {invitationToDelete?.status === 'activated' ? (
-          <p className="text-sm text-accent-dark bg-accent/10 p-3 rounded">
+          <p className="text-sm text-warning-strong bg-warning-soft p-3 rounded">
             Cette invitation a déjà été activée. L'utilisateur sera retiré de la liste
             des invitations, mais son compte sera conservé.
           </p>
         ) : (
-          <p className="text-sm text-error bg-error/10 p-3 rounded">
+          <p className="text-sm text-error-dark bg-error-soft p-3 rounded">
             Cette action est irréversible. L'invitation sera définitivement supprimée.
           </p>
         )}
@@ -681,7 +684,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
           Êtes-vous sûr de vouloir supprimer{' '}
           <span className="font-medium">{selectedIds.size} invitation{selectedIds.size > 1 ? 's' : ''}</span> ?
         </p>
-        <p className="text-sm text-error bg-error/10 p-3 rounded">
+        <p className="text-sm text-error-dark bg-error-soft p-3 rounded">
           Les invitations en attente seront définitivement supprimées.
           Les comptes déjà activés seront retirés de la liste mais conservés.
         </p>
@@ -698,7 +701,7 @@ export function InvitationsPage({ onCreateClick, onBulkCreateClick }: Invitation
         confirmLabel={`Relancer (${resendableSelectedCount})`}
         isLoading={bulkResendMutation.isPending}
       >
-        <p className="text-sm text-primary bg-primary/10 p-3 rounded">
+        <p className="text-sm text-primary bg-info-soft p-3 rounded">
           Un nouveau lien d'activation sera généré et envoyé par email pour chaque invitation en attente ou expirée.
         </p>
       </ConfirmModal>
