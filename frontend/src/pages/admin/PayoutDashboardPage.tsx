@@ -12,6 +12,7 @@ import {
   Cell,
 } from 'recharts';
 import { payoutsApi } from '@/api';
+import { CHART_COLORS, CHART_PRIMARY } from '@/lib/chart-colors';
 import { Button } from '@/components/ui';
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -22,7 +23,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   other: 'Autres',
 };
 
-const CATEGORY_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#6b7280'];
+const CATEGORY_COLORS = CHART_COLORS;
 
 function downloadBlob(blob: Blob, filename: string) {
   const url = window.URL.createObjectURL(blob);
@@ -80,7 +81,7 @@ export function PayoutDashboardPage() {
       <div className="mb-6">
         <Link
           to={`/editions/${editionId}/payouts`}
-          className="text-sm text-primary hover:text-primary-dark inline-flex items-center gap-1 mb-2"
+          className="text-sm text-primary-strong hover:text-primary-strong inline-flex items-center gap-1 mb-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -106,9 +107,9 @@ export function PayoutDashboardPage() {
       </div>
 
       {errorMessage && (
-        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg flex justify-between">
+        <div className="mb-4 bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg flex justify-between">
           <span>{errorMessage}</span>
-          <button onClick={() => setErrorMessage('')} className="text-error font-bold">x</button>
+          <button onClick={() => setErrorMessage('')} className="text-error-dark font-bold">x</button>
         </div>
       )}
 
@@ -121,22 +122,22 @@ export function PayoutDashboardPage() {
             <StatCard
               label="Total ventes"
               value={`${Number(dashboard.totalSales).toFixed(2)} EUR`}
-              color="blue"
+              tone="sales"
             />
             <StatCard
               label="Commission ALPE"
               value={`${Number(dashboard.totalCommission).toFixed(2)} EUR`}
-              color="green"
+              tone="commission"
             />
             <StatCard
               label="Total reversements"
               value={`${Number(dashboard.totalNet).toFixed(2)} EUR`}
-              color="amber"
+              tone="payout"
             />
             <StatCard
               label="Taux de vente"
               value={`${dashboard.sellThroughRate}%`}
-              color="purple"
+              tone="rate"
             />
           </div>
 
@@ -184,7 +185,7 @@ export function PayoutDashboardPage() {
                     <Tooltip
                       formatter={(value: number) => [value, 'Articles']}
                     />
-                    <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="count" fill={CHART_PRIMARY} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -229,25 +230,27 @@ export function PayoutDashboardPage() {
   );
 }
 
+// Named by role rather than by colour: the old names had stopped describing what was
+// rendered (`blue` and `green` were the same style once the palette changed).
 function StatCard({
   label,
   value,
-  color,
+  tone,
 }: {
   label: string;
   value: string | number;
-  color: 'blue' | 'green' | 'amber' | 'purple';
+  tone: 'sales' | 'commission' | 'payout' | 'rate';
 }) {
-  const colorClasses = {
-    blue: 'bg-primary/10 text-primary-dark',
-    green: 'bg-primary/10 text-primary-dark',
-    amber: 'bg-accent/10 text-accent-dark',
-    purple: 'bg-secondary/10 text-secondary-dark',
+  const toneClasses = {
+    sales: 'bg-info-soft text-primary-strong',
+    commission: 'bg-success-soft text-success-strong',
+    payout: 'bg-warning-soft text-warning-strong',
+    rate: 'bg-warning-deep text-warning-strong',
   };
 
   return (
-    <div className={`rounded-lg p-4 ${colorClasses[color]}`}>
-      <p className="text-sm opacity-80">{label}</p>
+    <div className={`rounded-lg p-4 ${toneClasses[tone]}`}>
+      <p className="text-sm font-medium">{label}</p>
       <p className="text-2xl font-bold mt-1">{value}</p>
     </div>
   );

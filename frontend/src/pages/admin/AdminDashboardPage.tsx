@@ -135,7 +135,7 @@ export function AdminDashboardPage() {
               <Link key={action.to} to={action.to}>
                 <Card hover padding="md" className="h-full">
                   <div className="flex items-start gap-3">
-                    <div className="p-2 bg-primary/10 text-primary rounded-xl shrink-0">
+                    <div className="p-2 bg-info-soft text-primary rounded-xl shrink-0">
                       {action.icon}
                     </div>
                     <div>

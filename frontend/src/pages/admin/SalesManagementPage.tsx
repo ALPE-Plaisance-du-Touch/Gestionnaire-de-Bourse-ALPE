@@ -71,7 +71,7 @@ export function SalesManagementPage() {
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
+        <div className="bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg">
           Erreur lors du chargement des ventes.
         </div>
       </div>
@@ -168,7 +168,7 @@ export function SalesManagementPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => setSaleToCancel(sale)}
-                        className="text-error hover:text-error hover:bg-error/10"
+                        className="text-error-dark hover:text-error-dark hover:bg-error-soft"
                       >
                         Annuler
                       </Button>
@@ -221,11 +221,11 @@ export function SalesManagementPage() {
               <p><strong>Déposant :</strong> {saleToCancel.depositorName}</p>
               <p><strong>Vendu le :</strong> {formatDateTime(saleToCancel.soldAt)}</p>
             </div>
-            <p className="mb-4 text-sm text-accent-dark">
+            <p className="mb-4 text-sm text-warning-strong">
               L'article sera remis en vente après annulation.
             </p>
             {cancelError && (
-              <div className="mb-4 bg-error/10 border border-error/30 text-error px-3 py-2 rounded text-sm">
+              <div className="mb-4 bg-error-soft border border-error/40 text-error-dark px-3 py-2 rounded text-sm">
                 {cancelError}
               </div>
             )}

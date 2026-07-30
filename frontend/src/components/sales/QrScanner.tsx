@@ -125,7 +125,7 @@ export function QrScanner({ onScan, disabled = false }: QrScannerProps) {
             <button
               type="button"
               onClick={stopScanning}
-              className="text-sm text-error hover:text-error"
+              className="text-sm text-error-dark hover:text-error-dark"
             >
               Arrêter la caméra
             </button>
@@ -135,13 +135,13 @@ export function QrScanner({ onScan, disabled = false }: QrScannerProps) {
 
       {/* Scan timeout hint */}
       {showScanHint && (
-        <div className="text-sm text-primary-dark bg-primary/10 p-3 rounded-md">
+        <div className="text-sm text-primary-strong bg-info-soft p-3 rounded-md">
           Difficulté à scanner ? Utilisez la saisie manuelle ci-dessous.
         </div>
       )}
 
       {cameraError && (
-        <div className="text-sm text-accent-dark bg-accent/10 p-3 rounded-md">
+        <div className="text-sm text-warning-strong bg-warning-soft p-3 rounded-md">
           Caméra indisponible : {cameraError}. Utilisez la saisie manuelle ci-dessous.
         </div>
       )}
@@ -171,7 +171,7 @@ export function QrScanner({ onScan, disabled = false }: QrScannerProps) {
           </button>
         </form>
         {formatWarning && (
-          <p className="text-xs text-accent-dark">Format inhabituel. Vérifiez le code-barres.</p>
+          <p className="text-xs text-warning-strong">Format inhabituel. Vérifiez le code-barres.</p>
         )}
       </div>
     </div>

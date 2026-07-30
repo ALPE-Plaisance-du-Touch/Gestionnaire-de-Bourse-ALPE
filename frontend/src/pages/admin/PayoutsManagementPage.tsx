@@ -19,9 +19,9 @@ function downloadBlob(blob: Blob, filename: string) {
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
   pending: { label: 'En attente', className: 'bg-cream-dark text-bark' },
-  ready: { label: 'Prêt', className: 'bg-accent/15 text-accent-dark' },
-  paid: { label: 'Payé', className: 'bg-primary/10 text-primary-dark' },
-  cancelled: { label: 'Annulé', className: 'bg-error/10 text-error' },
+  ready: { label: 'Prêt', className: 'bg-warning-soft text-warning-strong' },
+  paid: { label: 'Payé', className: 'bg-success-soft text-success-strong' },
+  cancelled: { label: 'Annulé', className: 'bg-error-soft text-error-dark' },
 };
 
 const LIST_TYPE_LABELS: Record<string, string> = {
@@ -227,7 +227,7 @@ export function PayoutsManagementPage() {
       <div className="mb-6">
         <Link
           to={`/editions/${editionId}`}
-          className="text-sm text-primary hover:text-primary-dark inline-flex items-center gap-1 mb-2"
+          className="text-sm text-primary-strong hover:text-primary-strong inline-flex items-center gap-1 mb-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -244,35 +244,35 @@ export function PayoutsManagementPage() {
 
       {/* Messages */}
       {successMessage && (
-        <div className="mb-4 bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-lg flex justify-between">
+        <div className="mb-4 bg-success-soft border border-success/40 text-success-strong px-4 py-3 rounded-lg flex justify-between">
           <span>{successMessage}</span>
-          <button onClick={() => setSuccessMessage('')} className="text-primary-dark font-bold">x</button>
+          <button onClick={() => setSuccessMessage('')} className="text-success-strong font-bold">x</button>
         </div>
       )}
       {errorMessage && (
-        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg flex justify-between">
+        <div className="mb-4 bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg flex justify-between">
           <span>{errorMessage}</span>
-          <button onClick={() => setErrorMessage('')} className="text-error font-bold">x</button>
+          <button onClick={() => setErrorMessage('')} className="text-error-dark font-bold">x</button>
         </div>
       )}
 
       {/* Stats cards */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="rounded-lg p-4 bg-primary/10 text-primary-dark">
-            <p className="text-sm opacity-80">Total ventes</p>
+          <div className="rounded-lg p-4 bg-info-soft text-primary-strong">
+            <p className="text-sm font-medium">Total ventes</p>
             <p className="text-2xl font-bold mt-1">{Number(stats.totalSales).toFixed(2)} EUR</p>
           </div>
-          <div className="rounded-lg p-4 bg-primary/10 text-primary-dark">
-            <p className="text-sm opacity-80">Commission ALPE</p>
+          <div className="rounded-lg p-4 bg-success-soft text-success-strong">
+            <p className="text-sm font-medium">Commission ALPE</p>
             <p className="text-2xl font-bold mt-1">{Number(stats.totalCommission).toFixed(2)} EUR</p>
           </div>
-          <div className="rounded-lg p-4 bg-accent/10 text-accent-dark">
-            <p className="text-sm opacity-80">À reverser</p>
+          <div className="rounded-lg p-4 bg-warning-soft text-warning-strong">
+            <p className="text-sm font-medium">À reverser</p>
             <p className="text-2xl font-bold mt-1">{Number(stats.totalNet).toFixed(2)} EUR</p>
           </div>
-          <div className="rounded-lg p-4 bg-secondary/10 text-secondary-dark">
-            <p className="text-sm opacity-80">Progression</p>
+          <div className="rounded-lg p-4 bg-warning-deep text-warning-strong">
+            <p className="text-sm font-medium">Progression</p>
             <p className="text-2xl font-bold mt-1">
               {stats.payoutsPaid}/{stats.totalPayouts} ({stats.paymentProgressPercent}%)
             </p>
@@ -313,7 +313,7 @@ export function PayoutsManagementPage() {
             variant="outline"
             onClick={handleBulkReminder}
             disabled={bulkReminderMutation.isPending || !stats || stats.totalPayouts === 0}
-            className="text-secondary-dark border-secondary/30 hover:bg-secondary/10"
+            className="text-warning-strong border-secondary/30 hover:bg-warning-deep"
           >
             {bulkReminderMutation.isPending ? 'Envoi en cours...' : 'Relancer tous les absents'}
           </Button>
@@ -398,9 +398,9 @@ export function PayoutsManagementPage() {
                   const statusInfo = STATUS_LABELS[payout.status] || STATUS_LABELS.pending;
                   const rowBg =
                     payout.status === 'paid'
-                      ? 'bg-primary/10'
+                      ? 'bg-info-soft'
                       : payout.status === 'ready'
-                        ? 'bg-accent/10'
+                        ? 'bg-warning-soft'
                         : '';
 
                   return (
@@ -443,7 +443,7 @@ export function PayoutsManagementPage() {
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleDownloadReceipt(payout)}
-                            className="text-primary hover:text-primary-dark text-xs font-medium"
+                            className="text-primary-strong hover:text-primary-strong text-xs font-medium"
                             title="Télécharger le bordereau"
                           >
                             PDF
@@ -453,14 +453,14 @@ export function PayoutsManagementPage() {
                               <span className="text-bark-muted">|</span>
                               <button
                                 onClick={() => setPaymentPayout(payout)}
-                                className="text-primary hover:text-primary-dark text-xs font-medium"
+                                className="text-primary-strong hover:text-primary-strong text-xs font-medium"
                               >
                                 Payer
                               </button>
                               <span className="text-bark-muted">|</span>
                               <button
                                 onClick={() => recalculateMutation.mutate(payout.id)}
-                                className="text-accent-dark hover:text-accent-dark text-xs font-medium"
+                                className="text-warning-strong hover:text-warning-strong text-xs font-medium"
                                 disabled={recalculateMutation.isPending}
                               >
                                 Recalc
@@ -472,7 +472,7 @@ export function PayoutsManagementPage() {
                               <span className="text-bark-muted">|</span>
                               <button
                                 onClick={() => reminderMutation.mutate(payout.id)}
-                                className="text-secondary-dark hover:text-secondary-dark text-xs font-medium"
+                                className="text-warning-strong hover:text-warning-strong text-xs font-medium"
                                 disabled={reminderMutation.isPending}
                               >
                                 Relancer

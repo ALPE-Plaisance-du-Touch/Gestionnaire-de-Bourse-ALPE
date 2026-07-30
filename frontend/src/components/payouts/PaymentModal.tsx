@@ -39,12 +39,12 @@ export function PaymentModal({ isOpen, onClose, payout, onConfirm, isLoading }: 
     <Modal isOpen={isOpen} onClose={handleClose} title="Enregistrer le paiement" size="lg">
       <form onSubmit={handleSubmit}>
         {/* Depositor & amount summary */}
-        <div className="mb-6 bg-primary/10 rounded-lg p-4">
-          <p className="text-sm text-primary-dark">
+        <div className="mb-6 bg-info-soft rounded-lg p-4">
+          <p className="text-sm text-primary-strong">
             <span className="font-semibold">{payout.depositorName}</span>
             {' '} - Liste n&deg;{payout.listNumber}
           </p>
-          <p className="text-2xl font-bold text-primary-dark mt-1">
+          <p className="text-2xl font-bold text-primary-strong mt-1">
             {Number(payout.netAmount).toFixed(2)} EUR
           </p>
         </div>
@@ -64,7 +64,7 @@ export function PaymentModal({ isOpen, onClose, payout, onConfirm, isLoading }: 
                 key={method.value}
                 className={`flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${
                   paymentMethod === method.value
-                    ? 'border-primary bg-primary/10 text-primary-dark'
+                    ? 'border-primary bg-info-soft text-primary-strong'
                     : 'border-sand hover:bg-cream'
                 }`}
               >
@@ -86,7 +86,7 @@ export function PaymentModal({ isOpen, onClose, payout, onConfirm, isLoading }: 
         {paymentMethod === 'check' && (
           <div className="mb-4">
             <label htmlFor="checkNumber" className="block text-sm font-medium text-bark-light mb-1">
-              Numéro de chèque <span className="text-error">*</span>
+              Numéro de chèque <span className="text-error-dark">*</span>
             </label>
             <input
               id="checkNumber"
@@ -104,7 +104,7 @@ export function PaymentModal({ isOpen, onClose, payout, onConfirm, isLoading }: 
         {paymentMethod === 'transfer' && (
           <div className="mb-4">
             <label htmlFor="transferRef" className="block text-sm font-medium text-bark-light mb-1">
-              Référence / Date du virement <span className="text-error">*</span>
+              Référence / Date du virement <span className="text-error-dark">*</span>
             </label>
             <input
               id="transferRef"

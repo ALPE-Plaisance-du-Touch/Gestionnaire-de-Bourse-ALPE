@@ -48,6 +48,18 @@
   /* Brand yellow - swoosh, rules and pills only. Never text, never a block background. */
   --color-swoosh: #ffe000;
 
+  /* Chart series. The design system has no dataviz palette: three brand colours are
+     not enough to separate five categories, and the yellow cannot be used as a fill.
+     These five are drawn from the brand ramps and spread on LIGHTNESS as much as hue,
+     which is what keeps them apart for colourblind readers — the closest pair sits at
+     a distance of 96 under simulated protanopia, against 44 for the palette they
+     replace. Order matters: use them in sequence. */
+  --color-chart-1: #033b53;
+  --color-chart-2: #17aedb;
+  --color-chart-3: #b95520;
+  --color-chart-4: #c7ebf7;
+  --color-chart-5: #f7a06c;
+
   /* Deep brand ink, for long headings needing more contrast than blue-500 */
   --color-ink: #005070;
 

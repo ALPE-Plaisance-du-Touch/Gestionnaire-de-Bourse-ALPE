@@ -19,7 +19,7 @@ export function LiveStatsPage() {
       <div className="mb-6">
         <Link
           to={`/editions/${editionId}`}
-          className="text-sm text-primary hover:text-primary-dark mb-1 inline-block"
+          className="text-sm text-primary-strong hover:text-primary-strong mb-1 inline-block"
         >
           &larr; Retour à l'édition
         </Link>
@@ -40,22 +40,22 @@ export function LiveStatsPage() {
             <StatCard
               label="Articles vendus"
               value={stats.totalArticlesSold}
-              color="blue"
+              tone="sold"
             />
             <StatCard
               label="Chiffre d'affaires"
               value={`${Number(stats.totalRevenue).toFixed(2)} EUR`}
-              color="green"
+              tone="revenue"
             />
             <StatCard
               label="Articles en vente"
               value={stats.articlesOnSale}
-              color="gray"
+              tone="onSale"
             />
             <StatCard
               label="Taux de vente"
               value={`${stats.sellThroughRate}%`}
-              color="purple"
+              tone="rate"
             />
           </div>
 
@@ -65,21 +65,21 @@ export function LiveStatsPage() {
               Chiffre d'affaires par moyen de paiement
             </h2>
             <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-primary/10 rounded-lg">
+              <div className="text-center p-4 bg-info-soft rounded-lg">
                 <p className="text-sm text-bark-light">Espèces</p>
-                <p className="text-2xl font-bold text-primary-dark">
+                <p className="text-2xl font-bold text-primary-strong">
                   {Number(stats.revenueCash).toFixed(2)} EUR
                 </p>
               </div>
-              <div className="text-center p-4 bg-primary/10 rounded-lg">
+              <div className="text-center p-4 bg-info-soft rounded-lg">
                 <p className="text-sm text-bark-light">Carte bancaire</p>
-                <p className="text-2xl font-bold text-primary-dark">
+                <p className="text-2xl font-bold text-primary-strong">
                   {Number(stats.revenueCard).toFixed(2)} EUR
                 </p>
               </div>
-              <div className="text-center p-4 bg-accent/10 rounded-lg">
+              <div className="text-center p-4 bg-warning-soft rounded-lg">
                 <p className="text-sm text-bark-light">Chèque</p>
-                <p className="text-2xl font-bold text-accent-dark">
+                <p className="text-2xl font-bold text-warning-strong">
                   {Number(stats.revenueCheck).toFixed(2)} EUR
                 </p>
               </div>
@@ -127,22 +127,24 @@ export function LiveStatsPage() {
 function StatCard({
   label,
   value,
-  color,
+  tone,
 }: {
   label: string;
   value: string | number;
-  color: 'blue' | 'green' | 'gray' | 'purple';
+  tone: 'sold' | 'revenue' | 'onSale' | 'rate';
 }) {
-  const colorClasses = {
-    blue: 'bg-primary/10 text-primary-dark',
-    green: 'bg-primary/10 text-primary-dark',
-    gray: 'bg-cream text-bark-light',
-    purple: 'bg-secondary/10 text-secondary-dark',
+  // Named by role: `blue` and `green` had become the same style, so the names no
+  // longer described anything.
+  const toneClasses = {
+    sold: 'bg-info-soft text-primary-strong',
+    revenue: 'bg-success-soft text-success-strong',
+    onSale: 'bg-cream-dark text-bark-light',
+    rate: 'bg-warning-deep text-warning-strong',
   };
 
   return (
-    <div className={`rounded-lg p-4 ${colorClasses[color]}`}>
-      <p className="text-sm opacity-80">{label}</p>
+    <div className={`rounded-lg p-4 ${toneClasses[tone]}`}>
+      <p className="text-sm font-medium">{label}</p>
       <p className="text-2xl font-bold mt-1">{value}</p>
     </div>
   );
