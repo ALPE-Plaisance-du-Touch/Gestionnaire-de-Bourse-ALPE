@@ -11,11 +11,12 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['vite.svg'],
+      includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'Bourse ALPE - Caisse',
+        name: 'Bourse ALPE — Association Locale de Parents d\'Élèves',
         short_name: 'Bourse ALPE',
-        description: 'Gestionnaire de ventes pour la bourse ALPE',
+        description:
+          'Déclarez vos articles, suivez vos ventes et gérez la bourse aux vêtements et jouets de l\'ALPE Plaisance du Touch.',
         theme_color: '#00A0D0',
         background_color: '#ffffff',
         display: 'standalone',
