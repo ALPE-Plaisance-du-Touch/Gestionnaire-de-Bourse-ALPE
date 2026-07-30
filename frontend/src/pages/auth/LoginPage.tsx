@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts';
 import { Button, Input } from '@/components/ui';
 import { Card } from '@/components/ui/Card';
 import { ApiException } from '@/api/client';
+import { AuthHeader } from '@/components/auth/AuthHeader';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -43,24 +44,17 @@ export function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-cream py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-primary">
-            Bourse ALPE
-          </h1>
-          <p className="mt-2 text-bark-muted">
-            Connexion à votre compte
-          </p>
-        </div>
+        <AuthHeader subtitle="Connexion à votre compte" />
 
         <Card variant="elevated" padding="lg">
           <form className="space-y-5" onSubmit={handleSubmit}>
             {successMessage && !error && (
-              <div className="bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-xl text-sm" role="status">
+              <div className="bg-info-soft border border-primary/40 text-primary-strong px-4 py-3 rounded-xl text-sm" role="status">
                 {successMessage}
               </div>
             )}
             {error && (
-              <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-xl text-sm" role="alert">
+              <div className="bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-xl text-sm" role="alert">
                 {error}
               </div>
             )}
@@ -89,7 +83,7 @@ export function LoginPage() {
             <div className="flex items-center justify-between">
               <Link
                 to="/forgot-password"
-                className="text-sm text-primary hover:text-primary-dark font-medium transition-colors"
+                className="text-sm text-primary-strong hover:text-primary-strong font-medium transition-colors"
               >
                 Mot de passe oublié ?
               </Link>
@@ -109,7 +103,7 @@ export function LoginPage() {
           Vous avez reçu une invitation ?{' '}
           <Link
             to="/activate"
-            className="text-primary hover:text-primary-dark font-medium transition-colors"
+            className="text-primary-strong hover:text-primary-strong font-medium transition-colors"
           >
             Activer mon compte
           </Link>

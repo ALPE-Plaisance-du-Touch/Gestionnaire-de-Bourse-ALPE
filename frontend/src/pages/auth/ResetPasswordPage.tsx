@@ -4,6 +4,7 @@ import { Button, Input } from '@/components/ui';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { apiClient, ApiException } from '@/api/client';
 import { useConfig } from '@/hooks';
+import { AuthHeader } from '@/components/auth/AuthHeader';
 
 export function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -88,8 +89,8 @@ export function ResetPasswordPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full text-center">
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-error/10 mb-6">
-            <svg className="h-8 w-8 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-error-soft mb-6">
+            <svg className="h-8 w-8 text-error-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
@@ -107,7 +108,7 @@ export function ResetPasswordPage() {
             <div className="pt-4">
               <Link
                 to="/login"
-                className="text-primary hover:text-primary font-medium"
+                className="text-primary-strong hover:text-primary font-medium"
               >
                 Retour à la connexion
               </Link>
@@ -123,8 +124,8 @@ export function ResetPasswordPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full text-center">
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-accent/15 mb-6">
-            <svg className="h-8 w-8 text-accent-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-warning-soft mb-6">
+            <svg className="h-8 w-8 text-warning-strong" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
@@ -145,7 +146,7 @@ export function ResetPasswordPage() {
             </p>
             <a
               href={`mailto:${config.supportEmail}`}
-              className="text-primary hover:text-primary font-medium"
+              className="text-primary-strong hover:text-primary font-medium"
             >
               {config.supportEmail}
             </a>
@@ -159,22 +160,12 @@ export function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-cream py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div>
-          <h1 className="text-center text-3xl font-bold text-bark">
-            Bourse ALPE
-          </h1>
-          <h2 className="mt-2 text-center text-xl text-bark-light">
-            Nouveau mot de passe
-          </h2>
-          <p className="mt-2 text-center text-sm text-bark-muted">
-            Choisissez un nouveau mot de passe pour votre compte.
-          </p>
-        </div>
+        <AuthHeader subtitle="Nouveau mot de passe" hint="Choisissez un nouveau mot de passe pour votre compte." />
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div
-              className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg"
+              className="bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg"
               role="alert"
             >
               {error}
@@ -217,7 +208,7 @@ export function ResetPasswordPage() {
         <p className="text-center text-sm text-bark-light">
           <Link
             to="/login"
-            className="text-primary hover:text-primary font-medium"
+            className="text-primary-strong hover:text-primary font-medium"
           >
             ← Retour à la connexion
           </Link>

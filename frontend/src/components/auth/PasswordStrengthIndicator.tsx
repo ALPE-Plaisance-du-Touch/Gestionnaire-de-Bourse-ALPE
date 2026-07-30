@@ -10,9 +10,9 @@ const CRITERIA = [
 ] as const;
 
 function getStrength(score: number): { label: string; color: string; barColor: string; segments: number } {
-  if (score <= 1) return { label: 'Faible', color: 'text-error', barColor: 'bg-error', segments: 1 };
-  if (score <= 3) return { label: 'Moyen', color: 'text-accent-dark', barColor: 'bg-accent', segments: 2 };
-  return { label: 'Fort', color: 'text-primary', barColor: 'bg-primary', segments: 3 };
+  if (score <= 1) return { label: 'Faible', color: 'text-error-dark', barColor: 'bg-error', segments: 1 };
+  if (score <= 3) return { label: 'Moyen', color: 'text-warning-strong', barColor: 'bg-secondary', segments: 2 };
+  return { label: 'Fort', color: 'text-success-strong', barColor: 'bg-success', segments: 3 };
 }
 
 export function PasswordStrengthIndicator({ password }: PasswordStrengthIndicatorProps) {
@@ -47,7 +47,7 @@ export function PasswordStrengthIndicator({ password }: PasswordStrengthIndicato
           <li
             key={i}
             className={`text-xs flex items-center gap-1.5 ${
-              results[i] ? 'text-primary' : 'text-bark-muted'
+              results[i] ? 'text-success-strong' : 'text-bark-light'
             }`}
           >
             {results[i] ? (

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Input } from '@/components/ui';
 import { apiClient, ApiException } from '@/api/client';
+import { AuthHeader } from '@/components/auth/AuthHeader';
 
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -38,7 +39,7 @@ export function ForgotPasswordPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full text-center">
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 mb-6">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-info-soft mb-6">
             <svg className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
@@ -68,22 +69,12 @@ export function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-cream py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div>
-          <h1 className="text-center text-3xl font-bold text-bark">
-            Bourse ALPE
-          </h1>
-          <h2 className="mt-2 text-center text-xl text-bark-light">
-            Mot de passe oublié
-          </h2>
-          <p className="mt-2 text-center text-sm text-bark-muted">
-            Entrez votre adresse email pour recevoir un lien de réinitialisation.
-          </p>
-        </div>
+        <AuthHeader subtitle="Mot de passe oublié" hint="Entrez votre adresse email pour recevoir un lien de réinitialisation." />
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div
-              className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg"
+              className="bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg"
               role="alert"
             >
               {error}
@@ -115,7 +106,7 @@ export function ForgotPasswordPage() {
         <p className="text-center text-sm text-bark-light">
           <Link
             to="/login"
-            className="text-primary hover:text-primary font-medium"
+            className="text-primary-strong hover:text-primary font-medium"
           >
             ← Retour à la connexion
           </Link>

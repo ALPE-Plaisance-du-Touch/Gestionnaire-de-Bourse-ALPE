@@ -5,6 +5,7 @@ import { Button, Input } from '@/components/ui';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { ApiException, apiClient } from '@/api/client';
 import { useConfig } from '@/hooks';
+import { AuthHeader } from '@/components/auth/AuthHeader';
 
 interface TokenValidationResult {
   valid: boolean;
@@ -180,8 +181,8 @@ export function ActivatePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full text-center">
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-error/10 mb-6">
-            <svg className="h-8 w-8 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-error-soft mb-6">
+            <svg className="h-8 w-8 text-error-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
@@ -193,7 +194,7 @@ export function ActivatePage() {
             </p>
             <a
               href={`mailto:${config.supportEmail}`}
-              className="text-primary hover:text-primary font-medium"
+              className="text-primary-strong hover:text-primary font-medium"
             >
               {config.supportEmail}
             </a>
@@ -216,8 +217,8 @@ export function ActivatePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full text-center">
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-accent/15 mb-6">
-            <svg className="h-8 w-8 text-accent-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-warning-soft mb-6">
+            <svg className="h-8 w-8 text-warning-strong" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
@@ -232,7 +233,7 @@ export function ActivatePage() {
             </p>
             <a
               href={`mailto:${config.supportEmail}`}
-              className="text-primary hover:text-primary font-medium"
+              className="text-primary-strong hover:text-primary font-medium"
             >
               {config.supportEmail}
             </a>
@@ -255,7 +256,7 @@ export function ActivatePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full text-center">
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 mb-6">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-info-soft mb-6">
             <svg className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
@@ -273,7 +274,7 @@ export function ActivatePage() {
             </Link>
             <p className="text-sm text-bark-muted pt-4">
               Mot de passe oublié ?{' '}
-              <Link to="/forgot-password" className="text-primary hover:text-primary">
+              <Link to="/forgot-password" className="text-primary-strong hover:text-primary">
                 Réinitialiser
               </Link>
             </p>
@@ -288,26 +289,21 @@ export function ActivatePage() {
     <div className="min-h-screen flex items-center justify-center bg-cream py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h1 className="text-center text-3xl font-bold text-bark">
-            Bourse ALPE
-          </h1>
-          <h2 className="mt-2 text-center text-xl text-bark-light">
-            Activation de votre compte
-          </h2>
+          <AuthHeader
+            subtitle="Activation de votre compte"
+            hint="Complétez vos informations et choisissez votre mot de passe"
+          />
           {userEmail && (
-            <p className="mt-2 text-center text-sm text-bark-muted">
+            <p className="mt-2 text-center text-sm text-bark-light">
               Compte : <span className="font-medium">{userEmail}</span>
             </p>
           )}
-          <p className="mt-2 text-center text-sm text-bark-muted">
-            Complétez vos informations et choisissez votre mot de passe
-          </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div
-              className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg"
+              className="bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg"
               role="alert"
             >
               {error}
@@ -402,7 +398,7 @@ export function ActivatePage() {
           Vous avez déjà un compte ?{' '}
           <Link
             to="/login"
-            className="text-primary hover:text-primary font-medium"
+            className="text-primary-strong hover:text-primary font-medium"
           >
             Se connecter
           </Link>
