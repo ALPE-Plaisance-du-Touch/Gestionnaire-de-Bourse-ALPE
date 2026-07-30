@@ -20,19 +20,19 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  clothing: 'bg-secondary/10 text-secondary-dark',
-  shoes: 'bg-primary/10 text-primary-dark',
+  clothing: 'bg-warning-deep text-warning-strong',
+  shoes: 'bg-info-soft text-primary-strong',
   nursery: 'bg-pink-100 text-pink-800',
-  toys: 'bg-accent/15 text-accent-dark',
-  books: 'bg-primary/10 text-primary-dark',
-  accessories: 'bg-secondary/10 text-secondary-dark',
+  toys: 'bg-warning-soft text-warning-strong',
+  books: 'bg-info-soft text-primary-strong',
+  accessories: 'bg-warning-deep text-warning-strong',
   other: 'bg-cream-dark text-bark',
 };
 
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
-  validated: { label: 'En attente', className: 'bg-accent/15 text-accent-dark' },
-  accepted: { label: 'Accepté', className: 'bg-primary/10 text-primary-dark' },
-  rejected: { label: 'Refusé', className: 'bg-error/10 text-error' },
+  validated: { label: 'En attente', className: 'bg-warning-soft text-warning-strong' },
+  accepted: { label: 'Accepté', className: 'bg-success-soft text-success-strong' },
+  rejected: { label: 'Refusé', className: 'bg-error-soft text-error-dark' },
 };
 
 function formatPrice(price: number): string {
@@ -202,7 +202,7 @@ export function ReviewListDetailPage() {
       <div className="mb-6">
         <Link
           to={`/editions/${editionId}/review`}
-          className="text-sm text-primary hover:text-primary-dark mb-1 inline-block"
+          className="text-sm text-primary-strong hover:text-primary-strong mb-1 inline-block"
         >
           &larr; Retour aux listes
         </Link>
@@ -221,12 +221,12 @@ export function ReviewListDetailPage() {
 
       {/* Messages */}
       {successMessage && (
-        <div className="mb-4 p-3 bg-primary/10 border border-primary/30 text-primary-dark rounded-lg text-sm">
+        <div className="mb-4 p-3 bg-info-soft border border-primary/40 text-primary-strong rounded-lg text-sm">
           {successMessage}
         </div>
       )}
       {errorMessage && (
-        <div className="mb-4 p-3 bg-error/10 border border-error/30 text-error rounded-lg text-sm">
+        <div className="mb-4 p-3 bg-error-soft border border-error/40 text-error-dark rounded-lg text-sm">
           {errorMessage}
         </div>
       )}
@@ -234,20 +234,20 @@ export function ReviewListDetailPage() {
       {/* Stats bar */}
       {listDetail && (
         <div className="flex gap-4 mb-6 flex-wrap">
-          <div className="bg-accent/10 border border-accent/40 rounded-lg px-4 py-2 text-sm">
-            <span className="font-semibold text-accent-dark">{pendingCount}</span>{' '}
-            <span className="text-accent-dark">en attente</span>
+          <div className="bg-warning-soft border border-secondary/40 rounded-lg px-4 py-2 text-sm">
+            <span className="font-semibold text-warning-strong">{pendingCount}</span>{' '}
+            <span className="text-warning-strong">en attente</span>
           </div>
-          <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 py-2 text-sm">
-            <span className="font-semibold text-primary-dark">{acceptedCount}</span>{' '}
-            <span className="text-primary">accepté(s)</span>
+          <div className="bg-success-soft border border-success/40 rounded-lg px-4 py-2 text-sm">
+            <span className="font-semibold text-success-strong">{acceptedCount}</span>{' '}
+            <span className="text-success-strong">accepté(s)</span>
           </div>
-          <div className="bg-error/10 border border-error/30 rounded-lg px-4 py-2 text-sm">
-            <span className="font-semibold text-error">{rejectedCount}</span>{' '}
-            <span className="text-error">refusé(s)</span>
+          <div className="bg-error-soft border border-error/40 rounded-lg px-4 py-2 text-sm">
+            <span className="font-semibold text-error-dark">{rejectedCount}</span>{' '}
+            <span className="text-error-dark">refusé(s)</span>
           </div>
           {isReviewed && (
-            <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 py-2 text-sm text-primary-dark font-medium">
+            <div className="bg-info-soft border border-primary/40 rounded-lg px-4 py-2 text-sm text-primary-strong font-medium">
               Revue finalisée
             </div>
           )}
@@ -290,7 +290,7 @@ export function ReviewListDetailPage() {
                         return (
                           <tr
                             key={article.id}
-                            className={`hover:bg-cream ${article.status === 'accepted' ? 'bg-primary/10/50' : ''}`}
+                            className={`hover:bg-cream ${article.status === 'accepted' ? 'bg-info-soft/50' : ''}`}
                           >
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-bark-muted">
                               {article.lineNumber}
@@ -298,7 +298,7 @@ export function ReviewListDetailPage() {
                             <td className="px-4 py-3">
                               <div className="text-sm font-medium text-bark">{article.description}</div>
                               {article.isLot && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary-dark mt-1">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-info-soft text-primary-strong mt-1">
                                   Lot de {article.lotQuantity}
                                 </span>
                               )}
@@ -379,7 +379,7 @@ export function ReviewListDetailPage() {
           {/* Articles refusés */}
           {rejectedArticles.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-lg font-semibold text-error mb-3">
+              <h2 className="text-lg font-semibold text-error-dark mb-3">
                 Articles refus&eacute;s ({rejectedArticles.length})
               </h2>
               <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -397,14 +397,14 @@ export function ReviewListDetailPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {rejectedArticles.map((article) => (
-                        <tr key={article.id} className="bg-error/10/50">
+                        <tr key={article.id} className="bg-error-soft/50">
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-bark-muted">
                             {article.lineNumber}
                           </td>
                           <td className="px-4 py-3">
                             <div className="text-sm font-medium text-bark">{article.description}</div>
                             {article.isLot && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary-dark mt-1">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-info-soft text-primary-strong mt-1">
                                 Lot de {article.lotQuantity}
                               </span>
                             )}
@@ -424,7 +424,7 @@ export function ReviewListDetailPage() {
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-bark">
                             {formatPrice(article.price)}
                           </td>
-                          <td className="px-4 py-3 text-sm text-error">
+                          <td className="px-4 py-3 text-sm text-error-dark">
                             {article.rejectionReason || '-'}
                           </td>
                         </tr>
@@ -457,7 +457,7 @@ export function ReviewListDetailPage() {
                   {acceptedCount} article(s) accepté(s), {rejectedCount} refusé(s). Tous les articles ont été traités.
                 </p>
               ) : (
-                <p className="text-sm text-accent-dark mt-1">
+                <p className="text-sm text-warning-strong mt-1">
                   {pendingCount} article(s) encore en attente de traitement.
                 </p>
               )}

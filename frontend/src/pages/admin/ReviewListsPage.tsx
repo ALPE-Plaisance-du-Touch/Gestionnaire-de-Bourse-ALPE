@@ -8,8 +8,8 @@ import type { ReviewListItem } from '@/types';
 
 const REVIEW_STATUS_LABELS: Record<string, { label: string; className: string }> = {
   pending: { label: 'À traiter', className: 'bg-cream-dark text-bark' },
-  in_progress: { label: 'En cours', className: 'bg-accent/15 text-accent-dark' },
-  reviewed: { label: 'Terminée', className: 'bg-primary/10 text-primary-dark' },
+  in_progress: { label: 'En cours', className: 'bg-warning-soft text-warning-strong' },
+  reviewed: { label: 'Terminée', className: 'bg-success-soft text-success-strong' },
 };
 
 function getListReviewStatus(item: ReviewListItem): string {
@@ -47,7 +47,7 @@ export function ReviewListsPage() {
         <div>
           <Link
             to={`/editions/${editionId}`}
-            className="text-sm text-primary hover:text-primary-dark mb-1 inline-block"
+            className="text-sm text-primary-strong hover:text-primary-strong mb-1 inline-block"
           >
             &larr; Retour à l'édition
           </Link>
@@ -72,11 +72,11 @@ export function ReviewListsPage() {
           </div>
           <div className="bg-white rounded-lg shadow p-4">
             <p className="text-sm text-bark-muted">Articles refusés</p>
-            <p className="text-2xl font-bold text-error">{summary.rejectedArticles}</p>
+            <p className="text-2xl font-bold text-error-dark">{summary.rejectedArticles}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
             <p className="text-sm text-bark-muted">En attente</p>
-            <p className="text-2xl font-bold text-accent-dark">{summary.pendingArticles}</p>
+            <p className="text-2xl font-bold text-warning-strong">{summary.pendingArticles}</p>
           </div>
         </div>
       )}
@@ -92,7 +92,7 @@ export function ReviewListsPage() {
           </div>
           <div className="w-full bg-sand rounded-full h-3 flex overflow-hidden">
             <div
-              className="bg-primary h-3"
+              className="bg-success h-3"
               style={{
                 width: `${(summary.acceptedArticles / summary.totalArticles) * 100}%`,
               }}
@@ -106,7 +106,7 @@ export function ReviewListsPage() {
           </div>
           <div className="flex gap-4 mt-2 text-xs text-bark-muted">
             <span className="flex items-center gap-1">
-              <span className="w-3 h-3 bg-primary rounded-full inline-block" /> Acceptés
+              <span className="w-3 h-3 bg-success rounded-full inline-block" /> Acceptés
             </span>
             <span className="flex items-center gap-1">
               <span className="w-3 h-3 bg-error rounded-full inline-block" /> Refusés
@@ -167,13 +167,13 @@ export function ReviewListsPage() {
                         {item.listType === 'standard' ? 'Standard' : `Liste ${item.listType}`}
                       </td>
                       <td className="px-4 py-3 text-sm text-center text-bark-light">{item.articleCount}</td>
-                      <td className="px-4 py-3 text-sm text-center text-primary-dark font-medium">
+                      <td className="px-4 py-3 text-sm text-center text-primary-strong font-medium">
                         {item.reviewStats.accepted}
                       </td>
-                      <td className="px-4 py-3 text-sm text-center text-error font-medium">
+                      <td className="px-4 py-3 text-sm text-center text-error-dark font-medium">
                         {item.reviewStats.rejected}
                       </td>
-                      <td className="px-4 py-3 text-sm text-center text-accent-dark font-medium">
+                      <td className="px-4 py-3 text-sm text-center text-warning-strong font-medium">
                         {item.reviewStats.pending}
                       </td>
                       <td className="px-4 py-3 text-sm text-center">

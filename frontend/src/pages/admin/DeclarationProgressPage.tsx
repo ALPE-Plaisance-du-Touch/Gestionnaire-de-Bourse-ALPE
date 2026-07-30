@@ -12,19 +12,21 @@ const LIST_TYPE_LABELS: Record<string, string> = {
   list_2000: 'Liste 2000',
 };
 
+// One style per step of the deposit progression: validated, checked_in and reviewed
+// used to share a single one, so three consecutive states looked identical.
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
-  draft: { label: 'Brouillon', className: 'bg-accent/15 text-accent-dark' },
-  not_finalized: { label: 'Non finalisée', className: 'bg-error/10 text-error' },
-  validated: { label: 'Validée', className: 'bg-primary/10 text-primary-dark' },
-  checked_in: { label: 'Déposée', className: 'bg-primary/10 text-primary-dark' },
-  reviewed: { label: 'Vérifiée', className: 'bg-primary/10 text-primary-dark' },
+  draft: { label: 'Brouillon', className: 'bg-cream-dark text-bark' },
+  not_finalized: { label: 'Non finalisée', className: 'bg-error-soft text-error-dark' },
+  validated: { label: 'Validée', className: 'bg-warning-soft text-warning-strong' },
+  checked_in: { label: 'Déposée', className: 'bg-info-soft text-primary-strong' },
+  reviewed: { label: 'Vérifiée', className: 'bg-success-soft text-success-strong' },
 };
 
 const DECLARATION_STATUS_LABELS: Record<DepositorDeclarationStatus, { label: string; className: string }> = {
   none: { label: 'Sans liste', className: 'bg-cream-dark text-bark' },
-  started: { label: 'En cours', className: 'bg-accent/15 text-accent-dark' },
-  partial: { label: 'Partiel', className: 'bg-secondary/10 text-secondary-dark' },
-  complete: { label: 'Complet', className: 'bg-primary/10 text-primary-dark' },
+  started: { label: 'En cours', className: 'bg-warning-soft text-warning-strong' },
+  partial: { label: 'Partiel', className: 'bg-warning-deep text-warning-strong' },
+  complete: { label: 'Complet', className: 'bg-success-soft text-success-strong' },
 };
 
 const MAX_LISTS: Record<string, number> = {
@@ -77,7 +79,7 @@ export function DeclarationProgressPage() {
       <div className="mb-6">
         <Link
           to={`/editions/${editionId}`}
-          className="text-sm text-primary hover:text-primary-dark mb-1 inline-block"
+          className="text-sm text-primary-strong hover:text-primary-strong mb-1 inline-block"
         >
           &larr; Retour à l'édition
         </Link>
@@ -105,7 +107,7 @@ export function DeclarationProgressPage() {
           </div>
           <div className="bg-white rounded-lg shadow p-4">
             <p className="text-sm text-bark-muted">Articles déclarés</p>
-            <p className="text-2xl font-bold text-secondary-dark">{summary.totalArticles}</p>
+            <p className="text-2xl font-bold text-warning-strong">{summary.totalArticles}</p>
           </div>
         </div>
       )}
@@ -145,7 +147,7 @@ export function DeclarationProgressPage() {
           onClick={() => setViewMode('depositors')}
           className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
             viewMode === 'depositors'
-              ? 'bg-primary text-white'
+              ? 'bg-primary-strong text-white'
               : 'bg-cream-dark text-bark-light hover:bg-sand'
           }`}
         >
@@ -155,7 +157,7 @@ export function DeclarationProgressPage() {
           onClick={() => setViewMode('lists')}
           className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
             viewMode === 'lists'
-              ? 'bg-primary text-white'
+              ? 'bg-primary-strong text-white'
               : 'bg-cream-dark text-bark-light hover:bg-sand'
           }`}
         >
@@ -274,7 +276,7 @@ function ListsView({ editionId }: { editionId: string }) {
                       <td className="px-4 py-3 text-sm text-bark-muted">
                         {formatDate(item.createdAt)}
                         {item.validatedAt && (
-                          <div className="text-xs text-primary">
+                          <div className="text-xs text-primary-strong">
                             Validée le {formatDate(item.validatedAt)}
                           </div>
                         )}
@@ -371,11 +373,11 @@ function DepositorsView({ editionId, hasDeadline }: { editionId: string; hasDead
           </div>
           <div className="bg-white rounded-lg shadow p-3 text-center">
             <p className="text-xs text-bark-muted">En cours</p>
-            <p className="text-xl font-bold text-accent-dark">{depositorsResponse.countStarted}</p>
+            <p className="text-xl font-bold text-warning-strong">{depositorsResponse.countStarted}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-3 text-center">
             <p className="text-xs text-bark-muted">Partiels</p>
-            <p className="text-xl font-bold text-secondary-dark">{depositorsResponse.countPartial}</p>
+            <p className="text-xl font-bold text-warning-strong">{depositorsResponse.countPartial}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-3 text-center">
             <p className="text-xs text-bark-muted">Complets</p>
@@ -418,13 +420,13 @@ function DepositorsView({ editionId, hasDeadline }: { editionId: string; hasDead
       </div>
 
       {successMessage && (
-        <div className="mb-4 text-sm text-primary-dark bg-primary/10 border border-primary/30 px-4 py-3 rounded-lg">
+        <div className="mb-4 text-sm text-primary-strong bg-info-soft border border-primary/40 px-4 py-3 rounded-lg">
           {successMessage}
         </div>
       )}
 
       {reminderMutation.isError && (
-        <div className="mb-4 text-sm text-error bg-error/10 border border-error/30 px-4 py-3 rounded-lg">
+        <div className="mb-4 text-sm text-error-dark bg-error-soft border border-error/40 px-4 py-3 rounded-lg">
           Erreur lors de l'envoi des rappels.
         </div>
       )}
@@ -486,7 +488,7 @@ function DepositorsView({ editionId, hasDeadline }: { editionId: string; hasDead
                         {hasDeadline && dep.declarationStatus !== 'complete' && (
                           <button
                             onClick={() => setReminderTarget(dep)}
-                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-secondary-dark bg-secondary/10 rounded hover:bg-secondary/10 transition-colors"
+                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-warning-strong bg-warning-deep rounded hover:bg-warning-deep transition-colors"
                             title={`Relancer ${dep.firstName} ${dep.lastName}`}
                           >
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
