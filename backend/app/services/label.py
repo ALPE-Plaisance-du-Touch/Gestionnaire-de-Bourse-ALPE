@@ -279,7 +279,7 @@ def _build_article_list_html(item_list: "ItemList") -> str:
             cat_label = CATEGORY_LABELS.get(article.category, article.category)
             size_info = article.size or ""
             lot_info = f" (lot de {article.lot_quantity})" if article.is_lot else ""
-            reason = f' <em style="color:#991b1b">({escape(article.rejection_reason)})</em>' if article.rejection_reason else ""
+            reason = f' <em style="color:#b32d2d">({escape(article.rejection_reason)})</em>' if article.rejection_reason else ""
 
             rejected_rows += f"""
             <tr>
@@ -459,17 +459,17 @@ def generate_labels_pdf(
             }}
             .cover-page h1 {{
                 font-size: 24pt;
-                color: #1e40af;
+                color: #005070;
                 margin-bottom: 5mm;
             }}
             .cover-page h2 {{
                 font-size: 16pt;
-                color: #475569;
+                color: #3a444c;
                 margin-bottom: 10mm;
             }}
             .slot-info {{
                 font-size: 14pt;
-                color: #2563eb;
+                color: #00a0d0;
                 margin-bottom: 10mm;
             }}
             .cover-stats {{
@@ -485,11 +485,11 @@ def generate_labels_pdf(
                 display: block;
                 font-size: 28pt;
                 font-weight: bold;
-                color: #2563eb;
+                color: #00a0d0;
             }}
             .cover-stat-label {{
                 font-size: 10pt;
-                color: #64748b;
+                color: #4f5a64;
             }}
             .cover-table {{
                 width: 80%;
@@ -498,7 +498,7 @@ def generate_labels_pdf(
                 text-align: left;
             }}
             .cover-table th {{
-                background: #1e40af;
+                background: #005070;
                 color: white;
                 padding: 6px 10px;
                 font-size: 9pt;
@@ -506,16 +506,16 @@ def generate_labels_pdf(
             }}
             .cover-table td {{
                 padding: 5px 10px;
-                border-bottom: 1px solid #e2e8f0;
+                border-bottom: 1px solid #d7dfe6;
                 font-size: 9pt;
             }}
             .cover-table tr:nth-child(even) {{
-                background: #f8fafc;
+                background: #f4f7f9;
             }}
             .cover-footer {{
                 margin-top: 15mm;
                 font-size: 8pt;
-                color: #94a3b8;
+                color: #4f5a64;
             }}
 
             /* ===== SEPARATOR PAGE ===== */
@@ -527,22 +527,22 @@ def generate_labels_pdf(
             }}
             .separator-name {{
                 font-size: 28pt;
-                color: #1e293b;
+                color: #262e34;
                 margin-bottom: 10mm;
             }}
             .separator-lists {{
                 font-size: 16pt;
-                color: #2563eb;
+                color: #00a0d0;
                 margin-bottom: 5mm;
             }}
             .separator-count {{
                 font-size: 14pt;
-                color: #475569;
+                color: #3a444c;
                 margin-bottom: 15mm;
             }}
             .separator-instructions {{
-                background: #f0f9ff;
-                border: 1px solid #bae6fd;
+                background: #f4f7f9;
+                border: 1px solid #b7c3cc;
                 border-radius: 6px;
                 padding: 15px 25px;
                 text-align: left;
@@ -580,9 +580,9 @@ def generate_labels_pdf(
             }}
             .article-list-page h2 {{
                 font-size: 13pt;
-                color: #1e40af;
+                color: #005070;
                 margin-bottom: 8mm;
-                border-bottom: 2px solid #2563eb;
+                border-bottom: 2px solid #00a0d0;
                 padding-bottom: 3mm;
             }}
             .article-table {{
@@ -590,7 +590,7 @@ def generate_labels_pdf(
                 border-collapse: collapse;
             }}
             .article-table th {{
-                background: #1e40af;
+                background: #005070;
                 color: white;
                 padding: 6px 8px;
                 font-size: 9pt;
@@ -599,31 +599,31 @@ def generate_labels_pdf(
             }}
             .article-table td {{
                 padding: 5px 8px;
-                border-bottom: 1px solid #e2e8f0;
+                border-bottom: 1px solid #d7dfe6;
                 font-size: 9pt;
             }}
             .article-table tr:nth-child(even) {{
-                background: #f8fafc;
+                background: #f4f7f9;
             }}
             .sale-section-title {{
                 font-size: 11pt;
-                color: #166534;
+                color: #1f7a33;
                 margin: 5mm 0 3mm 0;
             }}
             .total-row {{
-                background: #f0fdf4 !important;
+                background: #eaf6ec !important;
             }}
             .total-row td {{
-                border-top: 2px solid #22c55e;
+                border-top: 2px solid #1f7a33;
                 padding-top: 8px;
             }}
             .rejected-section-title {{
                 font-size: 11pt;
-                color: #991b1b;
+                color: #b32d2d;
                 margin: 8mm 0 3mm 0;
             }}
             .rejected-table tr:nth-child(even) {{
-                background: #fef2f2 !important;
+                background: #fdecec !important;
             }}
             .rejected-table td {{
                 color: #555;
@@ -632,8 +632,8 @@ def generate_labels_pdf(
                 border-bottom: none;
             }}
             .rejected-footer {{
-                background: #fef2f2;
-                border-top: 2px solid #dc2626;
+                background: #fdecec;
+                border-top: 2px solid #b32d2d;
                 color: #333;
                 font-weight: bold;
                 font-size: 9pt;
@@ -645,7 +645,7 @@ def generate_labels_pdf(
             .article-list-note {{
                 margin-top: 8mm;
                 font-size: 8pt;
-                color: #64748b;
+                color: #4f5a64;
                 font-style: italic;
                 text-align: center;
             }}
@@ -690,13 +690,13 @@ def generate_labels_pdf(
             .label-list-number {{
                 font-size: 14pt;
                 font-weight: bold;
-                color: #1e293b;
+                color: #262e34;
                 margin-bottom: 2mm;
             }}
 
             .label-article-num {{
                 font-size: 9pt;
-                color: #475569;
+                color: #3a444c;
             }}
 
             .label-price {{
@@ -704,12 +704,12 @@ def generate_labels_pdf(
                 font-weight: bold;
                 text-align: center;
                 margin-bottom: 2mm;
-                color: #1e293b;
+                color: #262e34;
             }}
 
             .label-desc {{
                 font-size: 8pt;
-                color: #334155;
+                color: #3a444c;
                 text-align: center;
                 margin-bottom: 2mm;
                 line-height: 1.2;
@@ -725,12 +725,12 @@ def generate_labels_pdf(
             }}
 
             .label-category {{
-                color: #475569;
+                color: #3a444c;
                 font-weight: 600;
             }}
 
             .label-code {{
-                color: #94a3b8;
+                color: #4f5a64;
                 font-family: monospace;
                 font-size: 6pt;
             }}

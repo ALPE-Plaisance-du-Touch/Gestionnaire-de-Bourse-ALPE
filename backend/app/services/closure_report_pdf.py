@@ -88,24 +88,24 @@ def _generate_report_html(edition, stats, payouts, closed_by) -> str:
 <style>
     @page {{ size: A4; margin: 15mm 12mm; }}
     body {{ font-family: Arial, sans-serif; font-size: 10pt; color: #333; }}
-    h1 {{ text-align: center; color: #1e40af; font-size: 18pt; margin-bottom: 5px; }}
-    h2 {{ color: #1e40af; font-size: 13pt; border-bottom: 2px solid #1e40af; padding-bottom: 4px; margin-top: 20px; }}
-    .subtitle {{ text-align: center; color: #6b7280; margin-top: 0; }}
+    h1 {{ text-align: center; color: #005070; font-size: 18pt; margin-bottom: 5px; }}
+    h2 {{ color: #005070; font-size: 13pt; border-bottom: 2px solid #005070; padding-bottom: 4px; margin-top: 20px; }}
+    .subtitle {{ text-align: center; color: #4f5a64; margin-top: 0; }}
     .info-grid {{ display: flex; gap: 20px; margin: 15px 0; }}
-    .info-box {{ flex: 1; background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px; text-align: center; }}
-    .info-box .value {{ font-size: 20pt; font-weight: bold; color: #1e40af; }}
-    .info-box .label {{ font-size: 8pt; color: #6b7280; margin-top: 4px; }}
+    .info-box {{ flex: 1; background: #f4f7f9; border: 1px solid #b7c3cc; border-radius: 6px; padding: 12px; text-align: center; }}
+    .info-box .value {{ font-size: 20pt; font-weight: bold; color: #005070; }}
+    .info-box .label {{ font-size: 8pt; color: #4f5a64; margin-top: 4px; }}
     .summary-table {{ width: 100%; border-collapse: collapse; margin: 10px 0; }}
-    .summary-table td {{ padding: 6px 10px; border-bottom: 1px solid #e5e7eb; }}
+    .summary-table td {{ padding: 6px 10px; border-bottom: 1px solid #d7dfe6; }}
     .summary-table td:first-child {{ font-weight: bold; width: 60%; }}
     .summary-table td:last-child {{ text-align: right; }}
     table.data {{ width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 9pt; }}
-    table.data th {{ background: #1e40af; color: white; padding: 6px 4px; text-align: center; font-size: 8pt; }}
-    table.data td {{ padding: 5px 4px; border-bottom: 1px solid #e5e7eb; }}
-    table.data tr:nth-child(even) {{ background: #f9fafb; }}
-    .footer {{ margin-top: 30px; padding-top: 15px; border-top: 2px solid #1e40af; font-size: 9pt; color: #6b7280; }}
-    .highlight {{ background: #ecfdf5; border: 1px solid #10b981; border-radius: 6px; padding: 10px; text-align: center; margin: 15px 0; }}
-    .highlight .amount {{ font-size: 16pt; font-weight: bold; color: #065f46; }}
+    table.data th {{ background: #005070; color: white; padding: 6px 4px; text-align: center; font-size: 8pt; }}
+    table.data td {{ padding: 5px 4px; border-bottom: 1px solid #d7dfe6; }}
+    table.data tr:nth-child(even) {{ background: #f4f7f9; }}
+    .footer {{ margin-top: 30px; padding-top: 15px; border-top: 2px solid #005070; font-size: 9pt; color: #4f5a64; }}
+    .highlight {{ background: #eaf6ec; border: 1px solid #1f7a33; border-radius: 6px; padding: 10px; text-align: center; margin: 15px 0; }}
+    .highlight .amount {{ font-size: 16pt; font-weight: bold; color: #1f7a33; }}
 </style>
 </head>
 <body>

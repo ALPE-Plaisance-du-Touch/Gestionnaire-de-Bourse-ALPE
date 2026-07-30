@@ -109,12 +109,12 @@ def generate_list_pdf(item_list: "ItemList", depositor_name: str) -> bytes:
                 align-items: flex-start;
                 margin-bottom: 20px;
                 padding-bottom: 15px;
-                border-bottom: 2px solid #2563eb;
+                border-bottom: 2px solid #00a0d0;
             }}
             .title {{
                 font-size: 18pt;
                 font-weight: bold;
-                color: #1e40af;
+                color: #005070;
                 margin: 0;
             }}
             .subtitle {{
@@ -125,7 +125,7 @@ def generate_list_pdf(item_list: "ItemList", depositor_name: str) -> bytes:
             .list-number {{
                 font-size: 24pt;
                 font-weight: bold;
-                color: #2563eb;
+                color: #00a0d0;
                 text-align: right;
             }}
             .info-grid {{
@@ -135,21 +135,21 @@ def generate_list_pdf(item_list: "ItemList", depositor_name: str) -> bytes:
                 margin-bottom: 20px;
             }}
             .info-box {{
-                background: #f8fafc;
-                border: 1px solid #e2e8f0;
+                background: #f4f7f9;
+                border: 1px solid #d7dfe6;
                 border-radius: 6px;
                 padding: 12px;
             }}
             .info-label {{
                 font-size: 9pt;
-                color: #64748b;
+                color: #4f5a64;
                 text-transform: uppercase;
                 margin-bottom: 4px;
             }}
             .info-value {{
                 font-size: 11pt;
                 font-weight: 600;
-                color: #1e293b;
+                color: #262e34;
             }}
             .stats-row {{
                 display: flex;
@@ -158,8 +158,8 @@ def generate_list_pdf(item_list: "ItemList", depositor_name: str) -> bytes:
             }}
             .stat-box {{
                 flex: 1;
-                background: #eff6ff;
-                border: 1px solid #bfdbfe;
+                background: #e9eef2;
+                border: 1px solid #b7c3cc;
                 border-radius: 6px;
                 padding: 10px;
                 text-align: center;
@@ -167,11 +167,11 @@ def generate_list_pdf(item_list: "ItemList", depositor_name: str) -> bytes:
             .stat-value {{
                 font-size: 16pt;
                 font-weight: bold;
-                color: #2563eb;
+                color: #00a0d0;
             }}
             .stat-label {{
                 font-size: 9pt;
-                color: #64748b;
+                color: #4f5a64;
             }}
             table {{
                 width: 100%;
@@ -179,7 +179,7 @@ def generate_list_pdf(item_list: "ItemList", depositor_name: str) -> bytes:
                 margin-bottom: 20px;
             }}
             th {{
-                background: #1e40af;
+                background: #005070;
                 color: white;
                 padding: 10px 8px;
                 text-align: left;
@@ -188,37 +188,37 @@ def generate_list_pdf(item_list: "ItemList", depositor_name: str) -> bytes:
             }}
             td {{
                 padding: 8px;
-                border-bottom: 1px solid #e2e8f0;
+                border-bottom: 1px solid #d7dfe6;
                 font-size: 10pt;
             }}
             tr:nth-child(even) {{
-                background: #f8fafc;
+                background: #f4f7f9;
             }}
             .line-num {{
                 width: 40px;
                 text-align: center;
                 font-weight: 600;
-                color: #64748b;
+                color: #4f5a64;
             }}
             .category {{
                 width: 100px;
-                color: #475569;
+                color: #3a444c;
             }}
             .description {{
-                color: #1e293b;
+                color: #262e34;
             }}
             .price {{
                 width: 70px;
                 text-align: right;
                 font-weight: 600;
-                color: #059669;
+                color: #1f7a33;
             }}
             .footer {{
                 margin-top: 30px;
                 padding-top: 15px;
-                border-top: 1px solid #e2e8f0;
+                border-top: 1px solid #d7dfe6;
                 font-size: 8pt;
-                color: #94a3b8;
+                color: #4f5a64;
                 text-align: center;
             }}
             .status-badge {{
@@ -229,19 +229,19 @@ def generate_list_pdf(item_list: "ItemList", depositor_name: str) -> bytes:
                 font-weight: 600;
             }}
             .status-validated {{
-                background: #dcfce7;
-                color: #166534;
+                background: #eaf6ec;
+                color: #1f7a33;
             }}
             .status-draft {{
-                background: #fef3c7;
-                color: #92400e;
+                background: #fef2ea;
+                color: #8e401a;
             }}
             .total-row {{
-                background: #f0fdf4 !important;
+                background: #eaf6ec !important;
                 font-weight: bold;
             }}
             .total-row td {{
-                border-top: 2px solid #22c55e;
+                border-top: 2px solid #1f7a33;
                 padding-top: 12px;
             }}
         </style>

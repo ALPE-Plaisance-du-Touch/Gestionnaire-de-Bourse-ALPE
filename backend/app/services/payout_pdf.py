@@ -162,20 +162,20 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
                 text-align: center;
                 margin-bottom: 20px;
                 padding-bottom: 15px;
-                border-bottom: 3px solid #1e40af;
+                border-bottom: 3px solid #005070;
             }}
             .header h1 {{
                 font-size: 16pt;
-                color: #1e40af;
+                color: #005070;
                 margin: 0 0 5px 0;
             }}
             .header .edition {{
                 font-size: 12pt;
-                color: #475569;
+                color: #3a444c;
             }}
             .header .date {{
                 font-size: 9pt;
-                color: #94a3b8;
+                color: #4f5a64;
                 margin-top: 5px;
             }}
             .info-grid {{
@@ -185,28 +185,28 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
                 margin-bottom: 20px;
             }}
             .info-box {{
-                background: #f8fafc;
-                border: 1px solid #e2e8f0;
+                background: #f4f7f9;
+                border: 1px solid #d7dfe6;
                 border-radius: 6px;
                 padding: 12px;
             }}
             .info-label {{
                 font-size: 9pt;
-                color: #64748b;
+                color: #4f5a64;
                 text-transform: uppercase;
                 margin-bottom: 4px;
             }}
             .info-value {{
                 font-size: 11pt;
                 font-weight: 600;
-                color: #1e293b;
+                color: #262e34;
             }}
             h2 {{
                 font-size: 12pt;
-                color: #1e40af;
+                color: #005070;
                 margin: 20px 0 10px 0;
                 padding-bottom: 5px;
-                border-bottom: 1px solid #bfdbfe;
+                border-bottom: 1px solid #b7c3cc;
             }}
             table {{
                 width: 100%;
@@ -214,7 +214,7 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
                 margin-bottom: 15px;
             }}
             th {{
-                background: #1e40af;
+                background: #005070;
                 color: white;
                 padding: 8px 6px;
                 text-align: left;
@@ -223,17 +223,17 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
             }}
             td {{
                 padding: 6px;
-                border-bottom: 1px solid #e2e8f0;
+                border-bottom: 1px solid #d7dfe6;
                 font-size: 9pt;
             }}
             tr:nth-child(even) {{
-                background: #f8fafc;
+                background: #f4f7f9;
             }}
             .line-num {{
                 width: 30px;
                 text-align: center;
                 font-weight: 600;
-                color: #64748b;
+                color: #4f5a64;
             }}
             .price {{
                 width: 80px;
@@ -241,16 +241,16 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
                 font-weight: 600;
             }}
             .total-row {{
-                background: #f0fdf4 !important;
+                background: #eaf6ec !important;
                 font-weight: bold;
             }}
             .total-row td {{
-                border-top: 2px solid #22c55e;
+                border-top: 2px solid #1f7a33;
                 padding-top: 10px;
             }}
             .calculation-box {{
-                background: #eff6ff;
-                border: 2px solid #2563eb;
+                background: #e9eef2;
+                border: 2px solid #00a0d0;
                 border-radius: 8px;
                 padding: 15px;
                 margin: 20px 0;
@@ -269,14 +269,14 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
                 font-size: 10pt;
             }}
             .calc-table .net-row td {{
-                border-top: 2px solid #2563eb;
+                border-top: 2px solid #00a0d0;
                 font-size: 14pt;
                 font-weight: bold;
-                color: #1e40af;
+                color: #005070;
                 padding-top: 12px;
             }}
             .payment-section {{
-                border: 1px solid #e2e8f0;
+                border: 1px solid #d7dfe6;
                 border-radius: 6px;
                 padding: 15px;
                 margin-top: 20px;
@@ -299,7 +299,7 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
             }}
             .signature-box .label {{
                 font-size: 9pt;
-                color: #64748b;
+                color: #4f5a64;
                 margin-bottom: 25px;
             }}
             .signature-box .line {{
@@ -308,33 +308,33 @@ def _generate_receipt_html(payout: "Payout", edition: "Edition") -> str:
             .legal-notice {{
                 margin-top: 15px;
                 font-size: 8pt;
-                color: #64748b;
+                color: #4f5a64;
                 font-style: italic;
             }}
             .info-message {{
-                background: #eff6ff;
-                border: 1px solid #bfdbfe;
+                background: #e9eef2;
+                border: 1px solid #b7c3cc;
                 border-radius: 6px;
                 padding: 12px;
-                color: #1e40af;
+                color: #005070;
                 margin: 15px 0;
                 font-size: 10pt;
             }}
             .success-message {{
-                background: #f0fdf4;
-                border: 1px solid #bbf7d0;
+                background: #eaf6ec;
+                border: 1px solid #eaf6ec;
                 border-radius: 6px;
                 padding: 12px;
-                color: #166534;
+                color: #1f7a33;
                 margin: 15px 0;
                 font-size: 10pt;
             }}
             .footer {{
                 margin-top: 30px;
                 padding-top: 10px;
-                border-top: 1px solid #e2e8f0;
+                border-top: 1px solid #d7dfe6;
                 font-size: 8pt;
-                color: #94a3b8;
+                color: #4f5a64;
                 text-align: center;
             }}
         </style>
