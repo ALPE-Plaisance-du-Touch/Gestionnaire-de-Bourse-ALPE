@@ -21,9 +21,9 @@ export function HelpPage() {
   const activeEditionId = activeEditionData?.edition?.id ?? activeEditionData?.trainingEdition?.id;
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto text-[17px] leading-relaxed">
       <h1 className="text-2xl font-bold text-bark mb-2">Aide</h1>
-      <p className="text-sm text-bark-light mb-6">
+      <p className="text-bark-light mb-6">
         Retrouvez ici toutes les informations utiles pour participer à la bourse aux vêtements et articles de puériculture organisée par l'association ALPE.
       </p>
 
@@ -32,40 +32,40 @@ export function HelpPage() {
         <h2 className="text-sm font-semibold text-bark-light uppercase tracking-wide mb-2">Sommaire</h2>
         <ul className="space-y-1 text-sm">
           <li>
-            <a href="#comment-ca-marche" className="text-primary hover:text-primary-dark underline">
+            <a href="#comment-ca-marche" className="text-primary-strong hover:text-primary-strong underline">
               Comment ça marche
             </a>
           </li>
           <li>
-            <a href="#guide-deposant" className="text-primary hover:text-primary-dark underline">
+            <a href="#guide-deposant" className="text-primary-strong hover:text-primary-strong underline">
               Guide du déposant
             </a>
           </li>
           <li>
-            <a href="#faq" className="text-primary hover:text-primary-dark underline">
+            <a href="#faq" className="text-primary-strong hover:text-primary-strong underline">
               Questions fréquentes (FAQ)
             </a>
           </li>
           <li>
-            <a href="#reglement" className="text-primary hover:text-primary-dark underline">
+            <a href="#reglement" className="text-primary-strong hover:text-primary-strong underline">
               Règlement
             </a>
           </li>
           <li>
-            <a href="#contact" className="text-primary hover:text-primary-dark underline">
+            <a href="#contact" className="text-primary-strong hover:text-primary-strong underline">
               Contact et assistance
             </a>
           </li>
           {isVolunteerOrAbove && (
             <li>
-              <a href="#guide-benevole" className="text-primary hover:text-primary-dark underline">
+              <a href="#guide-benevole" className="text-primary-strong hover:text-primary-strong underline">
                 Guide bénévole
               </a>
             </li>
           )}
           {isManagerOrAdmin && (
             <li>
-              <a href="#guide-gestionnaire" className="text-primary hover:text-primary-dark underline">
+              <a href="#guide-gestionnaire" className="text-primary-strong hover:text-primary-strong underline">
                 Guide gestionnaire
               </a>
             </li>
@@ -78,13 +78,13 @@ export function HelpPage() {
         <section id="comment-ca-marche">
           <h2 className="text-lg font-semibold text-bark mb-3">Comment ça marche</h2>
 
-          <p className="text-sm text-bark-light mb-3">
+          <p className="text-bark-light mb-3">
             La bourse ALPE est un événement organisé par l'association ALPE Plaisance du Touch.
             Elle permet aux particuliers de vendre des vêtements, jouets, livres et articles de puériculture
             d'occasion, et aux acheteurs de trouver des articles de qualité à petits prix.
           </p>
 
-          <p className="text-sm text-bark-light mb-3">
+          <p className="text-bark-light mb-3">
             <strong>Principe :</strong> les déposants déclarent leurs articles en ligne, les déposent le jour de la collecte,
             et les bénévoles se chargent de la vente au public. Après la bourse, les déposants récupèrent
             leurs invendus et reçoivent 80% du montant de leurs ventes. L'association prélève une commission
@@ -92,7 +92,7 @@ export function HelpPage() {
           </p>
 
           <h3 className="text-base font-medium text-bark mt-4 mb-2">Les grandes étapes</h3>
-          <ol className="text-sm text-bark-light list-decimal pl-5 space-y-2">
+          <ol className="text-bark-light list-decimal pl-5 space-y-2">
             <li><strong>Inscription</strong> — Les déposants s'inscrivent via la plateforme Billetweb et reçoivent une invitation par email pour activer leur compte.</li>
             <li><strong>Déclaration des articles</strong> — Chaque déposant crée sa liste d'articles en ligne : description, catégorie, prix.</li>
             <li><strong>Dépôt physique</strong> — Le jour de la collecte, les déposants apportent leurs articles avec les étiquettes préparées par l'association.</li>
@@ -101,8 +101,8 @@ export function HelpPage() {
             <li><strong>Reversement</strong> — Les déposants reçoivent 80% du montant total de leurs ventes.</li>
           </ol>
 
-          <div className="mt-4 bg-primary/10 rounded-lg p-3">
-            <p className="text-xs text-primary-dark">
+          <div className="mt-4 bg-info-soft rounded-lg p-3">
+            <p className="text-xs text-primary-strong">
               <strong>Volume typique :</strong> environ 250 déposants et 3 000 articles par édition.
             </p>
           </div>
@@ -112,12 +112,12 @@ export function HelpPage() {
         <section id="guide-deposant">
           <h2 className="text-lg font-semibold text-bark mb-3">Guide du déposant</h2>
 
-          <p className="text-sm text-bark-light mb-4">
+          <p className="text-bark-light mb-4">
             Voici le parcours complet d'un déposant, de l'inscription au reversement.
           </p>
 
           <h3 className="text-base font-medium text-bark mt-4 mb-2">1. Inscription et activation du compte</h3>
-          <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+          <ul className="text-bark-light list-disc pl-5 space-y-1">
             <li>Inscrivez-vous à la bourse via Billetweb (lien communiqué par l'association).</li>
             <li>Vous recevrez un email d'invitation avec un lien pour activer votre compte.</li>
             <li>Cliquez sur le lien et définissez votre mot de passe. Le lien est valide 7 jours.</li>
@@ -125,16 +125,16 @@ export function HelpPage() {
           </ul>
 
           <h3 className="text-base font-medium text-bark mt-4 mb-2">2. Déclaration des articles</h3>
-          <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+          <ul className="text-bark-light list-disc pl-5 space-y-1">
             <li>Connectez-vous et accédez à «&nbsp;Mes listes&nbsp;» pour créer ou compléter votre liste.</li>
             <li>Chaque liste peut contenir jusqu'à <strong>24 articles</strong> dont <strong>12 vêtements maximum</strong>.</li>
             <li>Vous pouvez avoir jusqu'à <strong>2 listes</strong> par édition.</li>
             <li>Pour chaque article : indiquez la catégorie, une description et le prix souhaité (minimum 1&nbsp;€).</li>
-            <li>Consultez la section <a href="#reglement" className="text-primary hover:text-primary-dark underline">Règlement</a> pour les prix indicatifs et les articles acceptés.</li>
+            <li>Consultez la section <a href="#reglement" className="text-primary-strong hover:text-primary-strong underline">Règlement</a> pour les prix indicatifs et les articles acceptés.</li>
           </ul>
 
           <h3 className="text-base font-medium text-bark mt-4 mb-2">3. Validation de la liste</h3>
-          <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+          <ul className="text-bark-light list-disc pl-5 space-y-1">
             <li>Une fois tous vos articles saisis, validez votre liste.</li>
             <li>Vous devez certifier que vos articles sont propres, en bon état et conformes aux conditions de vente.</li>
             <li><strong>Attention : la validation est définitive.</strong> Vous ne pourrez plus modifier votre liste après cette étape.</li>
@@ -142,7 +142,7 @@ export function HelpPage() {
           </ul>
 
           <h3 className="text-base font-medium text-bark mt-4 mb-2">4. Jour du dépôt</h3>
-          <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+          <ul className="text-bark-light list-disc pl-5 space-y-1">
             <li>Présentez-vous au créneau de dépôt qui vous a été attribué.</li>
             <li>Apportez vos articles — les étiquettes sont préparées et imprimées par l'association.</li>
             <li>Les bénévoles vérifient chaque article : conformité, état, correspondance avec la déclaration.</li>
@@ -150,7 +150,7 @@ export function HelpPage() {
           </ul>
 
           <h3 className="text-base font-medium text-bark mt-4 mb-2">5. Après la vente</h3>
-          <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+          <ul className="text-bark-light list-disc pl-5 space-y-1">
             <li>Récupérez vos articles invendus à la date prévue.</li>
             <li>Les articles non récupérés pourront être donnés à une association.</li>
             <li>Vous recevez <strong>80% du montant total de vos ventes</strong> (la commission de 20% revient à ALPE).</li>
@@ -158,29 +158,29 @@ export function HelpPage() {
           </ul>
 
           <h3 className="text-base font-medium text-bark mt-4 mb-2">Cycle de vie d'une liste</h3>
-          <p className="text-sm text-bark-light mb-2">
+          <p className="text-bark-light mb-2">
             Chaque liste passe par plusieurs étapes, de sa création jusqu'au paiement final :
           </p>
-          <ol className="text-sm text-bark-light list-decimal pl-5 space-y-2">
+          <ol className="text-bark-light list-decimal pl-5 space-y-2">
             <li>
-              <strong className="text-accent-dark">Brouillon</strong> — Votre liste vient d'être créée.
+              <strong className="text-warning-strong">Brouillon</strong> — Votre liste vient d'être créée.
               Vous pouvez ajouter, modifier et supprimer des articles librement.
             </li>
             <li>
-              <strong className="text-primary-dark">Validée</strong> — Vous avez validé votre liste.
+              <strong className="text-primary-strong">Validée</strong> — Vous avez validé votre liste.
               Vous pouvez imprimer vos étiquettes. Aucune modification n'est plus possible.
             </li>
             <li>
-              <strong className="text-primary-dark">Déposée</strong> — Vos articles ont été vérifiés et enregistrés par les bénévoles. Ils sont en vente.
+              <strong className="text-primary-strong">Déposée</strong> — Vos articles ont été vérifiés et enregistrés par les bénévoles. Ils sont en vente.
             </li>
             <li>
               <strong className="text-bark-light">Récupérée</strong> — Vous avez récupéré vos articles invendus.
             </li>
             <li>
-              <strong className="text-secondary-dark">Paiement en attente</strong> — Le décompte de vos ventes est effectué. Votre paiement est en préparation.
+              <strong className="text-warning-strong">Paiement en attente</strong> — Le décompte de vos ventes est effectué. Votre paiement est en préparation.
             </li>
             <li>
-              <strong className="text-primary-dark">Paiement effectué</strong> — Vous avez reçu le produit de vos ventes. Le cycle est terminé.
+              <strong className="text-primary-strong">Paiement effectué</strong> — Vous avez reçu le produit de vos ventes. Le cycle est terminé.
             </li>
           </ol>
         </section>
@@ -203,7 +203,7 @@ export function HelpPage() {
               <dt className="font-medium">J'ai oublié mon mot de passe</dt>
               <dd className="pl-4 mt-1">
                 Utilisez la page{' '}
-                <Link to="/forgot-password" className="text-primary hover:text-primary-dark underline">
+                <Link to="/forgot-password" className="text-primary-strong hover:text-primary-strong underline">
                   Mot de passe oublié
                 </Link>
                 {' '}pour recevoir un lien de réinitialisation par email.
@@ -222,7 +222,7 @@ export function HelpPage() {
               <dd className="pl-4 mt-1">
                 Sièges-autos, biberons, sous-vêtements, maillots de bain, chaussettes dépareillées, articles incomplets ou en mauvais état.
                 Consultez la section{' '}
-                <a href="#reglement" className="text-primary hover:text-primary-dark underline">Règlement</a>
+                <a href="#reglement" className="text-primary-strong hover:text-primary-strong underline">Règlement</a>
                 {' '}pour la liste complète.
               </dd>
             </div>
@@ -230,7 +230,7 @@ export function HelpPage() {
               <dt className="font-medium">Comment fixer le prix de mes articles ?</dt>
               <dd className="pl-4 mt-1">
                 Le prix minimum est de 1&nbsp;€. Consultez la{' '}
-                <a href="#reglement" className="text-primary hover:text-primary-dark underline">grille de prix indicatifs</a>
+                <a href="#reglement" className="text-primary-strong hover:text-primary-strong underline">grille de prix indicatifs</a>
                 {' '}dans le règlement pour vous aider.
               </dd>
             </div>
@@ -270,7 +270,7 @@ export function HelpPage() {
           <h2 className="text-lg font-semibold text-bark mb-3">Règlement</h2>
 
           <h3 className="text-base font-medium text-bark mt-4 mb-2">Catégories d'articles acceptés</h3>
-          <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+          <ul className="text-bark-light list-disc pl-5 space-y-1">
             <li>Vêtements enfant et adulte</li>
             <li>Chaussures</li>
             <li>Puériculture (poussettes, lits, chaises hautes...)</li>
@@ -281,7 +281,7 @@ export function HelpPage() {
           </ul>
 
           <h3 className="text-base font-medium text-bark mt-4 mb-2">Limites par catégorie</h3>
-          <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+          <ul className="text-bark-light list-disc pl-5 space-y-1">
             <li>12 vêtements maximum par liste</li>
             <li>1 manteau maximum par liste</li>
             <li>1 sac à main maximum par liste</li>
@@ -290,7 +290,7 @@ export function HelpPage() {
           </ul>
 
           <h3 className="text-base font-medium text-bark mt-4 mb-2">Articles refusés</h3>
-          <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+          <ul className="text-bark-light list-disc pl-5 space-y-1">
             <li>Sièges-autos et rehausseurs</li>
             <li>Biberons, tétines, sucettes</li>
             <li>Sous-vêtements (adultes et enfants)</li>
@@ -302,7 +302,7 @@ export function HelpPage() {
           </ul>
 
           <h3 className="text-base font-medium text-bark mt-4 mb-2">Prix indicatifs</h3>
-          <p className="text-sm text-bark-light mb-2">
+          <p className="text-bark-light mb-2">
             Ces prix sont donnés à titre indicatif pour vous aider à fixer un prix juste.
             Le prix minimum est de <strong>1&nbsp;€</strong> par article.
           </p>
@@ -332,10 +332,10 @@ export function HelpPage() {
           </div>
 
           <h3 className="text-base font-medium text-bark mt-4 mb-2">Critères de conformité</h3>
-          <p className="text-sm text-bark-light mb-2">
+          <p className="text-bark-light mb-2">
             Chaque article mis en vente doit respecter les critères suivants :
           </p>
-          <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+          <ul className="text-bark-light list-disc pl-5 space-y-1">
             <li><strong>Propre :</strong> l'article doit être lavé et ne présenter aucune tache</li>
             <li><strong>En bon état :</strong> pas de trou, déchirure ou usure excessive</li>
             <li><strong>Complet :</strong> boutons présents, fermetures fonctionnelles, pas de pièce manquante</li>
@@ -347,7 +347,7 @@ export function HelpPage() {
         <section id="contact">
           <h2 className="text-lg font-semibold text-bark mb-3">Contact et assistance</h2>
 
-          <p className="text-sm text-bark-light mb-3">
+          <p className="text-bark-light mb-3">
             Vous avez une question ou besoin d'aide ? Contactez l'équipe organisatrice :
           </p>
 
@@ -356,7 +356,7 @@ export function HelpPage() {
               <svg className="w-5 h-5 text-bark-muted shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
-              <a href={`mailto:${config.supportEmail}`} className="text-primary hover:text-primary-dark underline">
+              <a href={`mailto:${config.supportEmail}`} className="text-primary-strong hover:text-primary-strong underline">
                 {config.supportEmail}
               </a>
             </div>
@@ -368,7 +368,7 @@ export function HelpPage() {
                 </svg>
                 <Link
                   to={`/editions/${activeEditionId}/tickets/new`}
-                  className="text-primary hover:text-primary-dark underline"
+                  className="text-primary-strong hover:text-primary-strong underline"
                 >
                   Envoyer un message aux organisateurs
                 </Link>
@@ -386,41 +386,41 @@ export function HelpPage() {
             </p>
 
             <h3 className="text-base font-medium text-bark mt-4 mb-2">Scanner un article</h3>
-            <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+            <ul className="text-bark-light list-disc pl-5 space-y-1">
               <li>Utilisez le scanner QR intégré pour lire l'étiquette de l'article.</li>
               <li>Si le scan ne fonctionne pas, saisissez le code de l'article manuellement.</li>
               <li>Les informations de l'article (description, prix) s'affichent automatiquement.</li>
             </ul>
 
             <h3 className="text-base font-medium text-bark mt-4 mb-2">Enregistrer une vente</h3>
-            <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+            <ul className="text-bark-light list-disc pl-5 space-y-1">
               <li>Scannez l'article → vérifiez les informations → confirmez la vente.</li>
               <li>Choisissez le mode de paiement : espèces, carte bancaire ou chèque.</li>
               <li>Un signal sonore confirme l'enregistrement de la vente.</li>
             </ul>
 
             <h3 className="text-base font-medium text-bark mt-4 mb-2">Panier multi-articles</h3>
-            <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+            <ul className="text-bark-light list-disc pl-5 space-y-1">
               <li>Scannez plusieurs articles à la suite pour les regrouper dans un panier.</li>
               <li>Le total s'affiche en temps réel.</li>
               <li>Validez le panier en une seule transaction avec un seul mode de paiement.</li>
             </ul>
 
             <h3 className="text-base font-medium text-bark mt-4 mb-2">Annuler une vente</h3>
-            <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+            <ul className="text-bark-light list-disc pl-5 space-y-1">
               <li>Vous pouvez annuler une vente dans les 5 minutes suivant son enregistrement.</li>
               <li>Au-delà de 5 minutes, contactez un gestionnaire pour procéder à l'annulation.</li>
             </ul>
 
             <h3 className="text-base font-medium text-bark mt-4 mb-2">Revue des listes au dépôt</h3>
-            <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+            <ul className="text-bark-light list-disc pl-5 space-y-1">
               <li>Lors du dépôt, vérifiez chaque article de la liste du déposant.</li>
               <li>Pour chaque article : <strong>accepter</strong> (conforme), <strong>refuser</strong> (non conforme) ou <strong>corriger</strong> (description ou prix à ajuster).</li>
               <li>Une fois tous les articles vérifiés, finalisez la revue pour valider le dépôt.</li>
             </ul>
 
             <h3 className="text-base font-medium text-bark mt-4 mb-2">Mode hors ligne</h3>
-            <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+            <ul className="text-bark-light list-disc pl-5 space-y-1">
               <li>En cas de perte de connexion, l'application continue de fonctionner.</li>
               <li>Les ventes sont enregistrées localement et synchronisées automatiquement au retour du réseau.</li>
               <li>Une bannière orange indique que vous êtes en mode hors ligne.</li>
@@ -437,7 +437,7 @@ export function HelpPage() {
             </p>
 
             <h3 className="text-base font-medium text-bark mt-4 mb-2">Créer et configurer une édition</h3>
-            <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+            <ul className="text-bark-light list-disc pl-5 space-y-1">
               <li>Accédez à <strong>Éditions</strong> et cliquez sur «&nbsp;Nouvelle édition&nbsp;».</li>
               <li>Configurez les dates clés : inscription, dépôt, vente, restitution.</li>
               <li>Définissez les créneaux de dépôt avec leurs capacités.</li>
@@ -445,35 +445,35 @@ export function HelpPage() {
             </ul>
 
             <h3 className="text-base font-medium text-bark mt-4 mb-2">Importer les inscriptions</h3>
-            <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+            <ul className="text-bark-light list-disc pl-5 space-y-1">
               <li><strong>Import CSV :</strong> téléchargez l'export Billetweb et importez-le dans l'application.</li>
               <li><strong>Synchronisation API :</strong> configurez la connexion Billetweb dans les paramètres pour synchroniser automatiquement.</li>
               <li>Les déposants importés reçoivent une invitation par email pour activer leur compte.</li>
             </ul>
 
             <h3 className="text-base font-medium text-bark mt-4 mb-2">Gérer les invitations</h3>
-            <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+            <ul className="text-bark-light list-disc pl-5 space-y-1">
               <li>Création manuelle : ajoutez un déposant avec son email et ses informations.</li>
               <li>Import CSV en masse : importez une liste de déposants depuis un fichier.</li>
               <li>Relance : renvoyez l'email d'invitation aux déposants qui n'ont pas encore activé leur compte.</li>
             </ul>
 
             <h3 className="text-base font-medium text-bark mt-4 mb-2">Générer les étiquettes</h3>
-            <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+            <ul className="text-bark-light list-disc pl-5 space-y-1">
               <li>Générez les étiquettes PDF par créneau de dépôt ou pour toute l'édition.</li>
               <li>Chaque étiquette contient un QR code unique pour le scan lors de la vente.</li>
               <li>Imprimez les étiquettes sur des planches A4 standard.</li>
             </ul>
 
             <h3 className="text-base font-medium text-bark mt-4 mb-2">Suivre les reversements</h3>
-            <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+            <ul className="text-bark-light list-disc pl-5 space-y-1">
               <li>Le calcul des reversements se fait automatiquement à partir des ventes enregistrées.</li>
               <li>Générez les bordereaux de paiement individuels (PDF).</li>
               <li>Enregistrez les paiements effectués pour chaque déposant.</li>
             </ul>
 
             <h3 className="text-base font-medium text-bark mt-4 mb-2">Consulter les statistiques</h3>
-            <ul className="text-sm text-bark-light list-disc pl-5 space-y-1">
+            <ul className="text-bark-light list-disc pl-5 space-y-1">
               <li>Le tableau de bord affiche les statistiques en temps réel : ventes, articles, montants.</li>
               <li>Exportez les données au format Excel pour une analyse détaillée.</li>
               <li>Suivez l'avancement des inscriptions et des dépôts via les statistiques dédiées.</li>

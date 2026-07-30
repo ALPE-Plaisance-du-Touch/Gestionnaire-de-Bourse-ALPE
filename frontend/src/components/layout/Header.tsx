@@ -63,7 +63,7 @@ export function Header({ sidebarTrigger }: HeaderProps) {
     : '';
 
   return (
-    <header className="bg-white border-b border-sand h-16 shrink-0">
+    <header className="sticky top-0 z-30 bg-white border-b border-sand shadow-soft h-16 shrink-0">
       <div className={`h-full flex items-center justify-between ${isManagerOrAdmin ? 'px-4 lg:px-6' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'}`}>
         {/* Left side */}
         <div className="flex items-center gap-3">
@@ -117,7 +117,7 @@ export function Header({ sidebarTrigger }: HeaderProps) {
                 aria-haspopup="true"
               >
                 {/* Avatar circle */}
-                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold">
+                <div className="w-8 h-8 rounded-full bg-info-soft text-primary-strong flex items-center justify-center text-sm font-semibold">
                   {initials}
                 </div>
                 <span className="hidden md:block text-sm font-medium text-bark">
@@ -194,7 +194,7 @@ export function Header({ sidebarTrigger }: HeaderProps) {
                   <div className="border-t border-sand mt-1 pt-1">
                     <button
                       onClick={() => { setIsUserMenuOpen(false); handleLogout(); }}
-                      className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-error hover:bg-cream-dark transition-colors"
+                      className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-error-dark hover:bg-cream-dark transition-colors"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -208,7 +208,7 @@ export function Header({ sidebarTrigger }: HeaderProps) {
           ) : (
             <Link
               to="/login"
-              className="text-sm font-medium text-primary hover:text-primary-dark px-4 py-2 rounded-xl hover:bg-primary/5 transition-colors"
+              className="text-sm font-medium text-primary-strong hover:text-primary-strong px-4 py-2 rounded-xl hover:bg-primary/5 transition-colors"
             >
               Connexion
             </Link>

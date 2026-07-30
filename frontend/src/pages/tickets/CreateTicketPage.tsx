@@ -60,7 +60,7 @@ export function CreateTicketPage() {
     <div className="max-w-2xl mx-auto">
       <button
         onClick={() => navigate(`/editions/${editionId}/tickets`)}
-        className="text-sm text-primary hover:text-primary-dark mb-4 inline-block"
+        className="text-sm text-primary-strong hover:text-primary-strong mb-4 inline-block"
       >
         &larr; Retour aux tickets
       </button>
@@ -121,7 +121,7 @@ export function CreateTicketPage() {
             <p className="text-xs text-bark-muted mt-1 text-right">{content.length} / 5000</p>
           </div>
 
-          {error && <p className="text-error text-sm">{error}</p>}
+          {error && <p className="text-error-dark text-sm">{error}</p>}
 
           <div className="flex justify-end gap-3">
             <Button

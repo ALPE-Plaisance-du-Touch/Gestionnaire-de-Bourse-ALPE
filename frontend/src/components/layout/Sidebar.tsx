@@ -252,13 +252,13 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }: 
                       flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
                       transition-all duration-150
                       ${active
-                        ? 'bg-primary/10 text-primary-dark'
+                        ? 'bg-info-soft text-primary-strong'
                         : 'text-bark-light hover:bg-cream-dark hover:text-bark'
                       }
                       ${isCollapsed && !mobile ? 'justify-center' : ''}
                     `}
                   >
-                    <span className={`shrink-0 ${active ? 'text-primary' : ''}`}>
+                    <span className={`shrink-0 ${active ? 'text-primary-strong' : ''}`}>
                       {item.icon}
                     </span>
                     {(!isCollapsed || mobile) && (
@@ -286,10 +286,12 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }: 
 
   return (
     <>
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar. Sticky and viewport-tall: on a long document the nav
+          scrolled away with the page, leaving no way back without scrolling up. */}
       <aside
         className={`
           hidden lg:flex flex-col
+          sticky top-0 h-screen overflow-y-auto
           bg-white border-r border-sand
           transition-all duration-300 ease-in-out
           ${isCollapsed ? 'w-[72px]' : 'w-64'}

@@ -46,7 +46,7 @@ export function TicketListPage() {
       <div className="mb-4 flex gap-2">
         <button
           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            statusFilter === '' ? 'bg-primary/10 text-primary-dark' : 'bg-cream-dark text-bark-light hover:bg-sand'
+            statusFilter === '' ? 'bg-info-soft text-primary-strong' : 'bg-cream-dark text-bark-light hover:bg-sand'
           }`}
           onClick={() => { setStatusFilter(''); setPage(1); }}
         >
@@ -54,7 +54,7 @@ export function TicketListPage() {
         </button>
         <button
           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            statusFilter === 'open' ? 'bg-primary/10 text-primary-dark' : 'bg-cream-dark text-bark-light hover:bg-sand'
+            statusFilter === 'open' ? 'bg-info-soft text-primary-strong' : 'bg-cream-dark text-bark-light hover:bg-sand'
           }`}
           onClick={() => { setStatusFilter('open'); setPage(1); }}
         >
@@ -110,7 +110,7 @@ export function TicketListPage() {
                     <span
                       className={`px-2 py-0.5 text-xs font-medium rounded-full ${
                         ticket.status === 'open'
-                          ? 'bg-primary/10 text-primary-dark'
+                          ? 'bg-info-soft text-primary-strong'
                           : 'bg-cream-dark text-bark-light'
                       }`}
                     >

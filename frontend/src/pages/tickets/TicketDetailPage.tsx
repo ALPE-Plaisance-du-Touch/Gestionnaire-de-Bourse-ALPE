@@ -73,7 +73,7 @@ export function TicketDetailPage() {
   }
 
   if (!ticket) {
-    return <p className="text-error">Ticket introuvable.</p>;
+    return <p className="text-error-dark">Ticket introuvable.</p>;
   }
 
   return (
@@ -83,7 +83,7 @@ export function TicketDetailPage() {
         <div>
           <button
             onClick={() => navigate(`/editions/${editionId}/tickets`)}
-            className="text-sm text-primary hover:text-primary-dark mb-2 inline-block"
+            className="text-sm text-primary-strong hover:text-primary-strong mb-2 inline-block"
           >
             &larr; Retour aux tickets
           </button>
@@ -98,7 +98,7 @@ export function TicketDetailPage() {
           <span
             className={`px-2 py-0.5 text-xs font-medium rounded-full ${
               ticket.status === 'open'
-                ? 'bg-primary/10 text-primary-dark'
+                ? 'bg-info-soft text-primary-strong'
                 : 'bg-cream-dark text-bark-light'
             }`}
           >
@@ -182,7 +182,7 @@ export function TicketDetailPage() {
               </Button>
             </div>
             {replyMutation.isError && (
-              <p className="text-error text-sm mt-2">
+              <p className="text-error-dark text-sm mt-2">
                 Erreur lors de l'envoi. Réessayez.
               </p>
             )}

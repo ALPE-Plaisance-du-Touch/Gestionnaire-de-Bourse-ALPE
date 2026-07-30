@@ -64,7 +64,7 @@ export function PrivacyPolicyPage() {
           </ul>
           <p className="text-sm text-bark-light mt-2">
             Ces droits sont exercables directement depuis la page{' '}
-            <a href="/profile" className="text-primary hover:text-primary-dark underline">Mon profil</a>.
+            <a href="/profile" className="text-primary-strong hover:text-primary-strong underline">Mon profil</a>.
           </p>
         </section>
 

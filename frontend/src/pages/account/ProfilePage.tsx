@@ -151,7 +151,7 @@ export function ProfilePage() {
               </Button>
             </div>
             {updateMutation.isError && (
-              <p className="text-sm text-error">Erreur lors de la mise à jour du profil.</p>
+              <p className="text-sm text-error-dark">Erreur lors de la mise à jour du profil.</p>
             )}
           </div>
         ) : (
@@ -200,8 +200,8 @@ export function ProfilePage() {
       </div>
 
       {/* Danger zone */}
-      <div className="bg-white rounded-lg shadow-sm border border-error/30 p-6">
-        <h2 className="text-lg font-semibold text-error mb-2">Zone de danger</h2>
+      <div className="bg-white rounded-lg shadow-sm border border-error/40 p-6">
+        <h2 className="text-lg font-semibold text-error-dark mb-2">Zone de danger</h2>
         <p className="text-sm text-bark-light mb-4">
           La suppression de votre compte est irréversible. Vos données personnelles seront anonymisées
           mais l'historique des transactions sera conservé à des fins comptables.
@@ -241,7 +241,7 @@ export function ProfilePage() {
             </Button>
           </div>
           {deleteMutation.isError && (
-            <p className="text-sm text-error">Erreur lors de la suppression du compte.</p>
+            <p className="text-sm text-error-dark">Erreur lors de la suppression du compte.</p>
           )}
         </div>
       </Modal>
