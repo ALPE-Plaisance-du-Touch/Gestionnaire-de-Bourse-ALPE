@@ -45,12 +45,12 @@ function StepIndicator({ currentStep, cartCount }: { currentStep: CheckoutStep; 
         return (
           <div key={step.key} className="flex items-center gap-2">
             {i > 0 && (
-              <div className={`w-8 h-0.5 ${isDone || isActive ? 'bg-primary' : 'bg-sand'}`} />
+              <div className={`w-8 h-0.5 ${isDone ? 'bg-success' : isActive ? 'bg-primary-strong' : 'bg-sand'}`} />
             )}
             <div className="flex items-center gap-2">
               <div className={`
                 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors
-                ${isActive ? 'bg-primary text-white' : isDone ? 'bg-primary/20 text-primary' : 'bg-sand text-bark-muted'}
+                ${isActive ? 'bg-primary-strong text-white' : isDone ? 'bg-success text-white' : 'bg-sand text-bark-light'}
               `}>
                 {isDone ? (
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -231,7 +231,7 @@ export function SalesPage() {
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <Link to={backLink} className="text-sm text-primary hover:text-primary-dark mb-1 inline-flex items-center gap-1">
+          <Link to={backLink} className="text-sm text-primary-strong hover:text-primary-strong mb-1 inline-flex items-center gap-1">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
@@ -246,7 +246,7 @@ export function SalesPage() {
           <button
             type="button"
             onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-            className="relative p-2 text-bark-muted hover:text-bark hover:bg-cream-dark rounded-xl transition-colors"
+            className="relative min-h-[44px] min-w-[44px] flex items-center justify-center p-2 text-bark-muted hover:text-bark hover:bg-cream-dark rounded-xl transition-colors"
             aria-label="Historique des ventes"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -273,25 +273,25 @@ export function SalesPage() {
 
       {/* Success message */}
       {successMessage && (
-        <div className="mb-4 bg-primary/10 border border-primary/30 rounded-xl p-4 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0">
+        <div className="mb-4 bg-success-soft border border-success/40 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-success text-white flex items-center justify-center shrink-0">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <p className="text-primary-dark font-medium">{successMessage}</p>
+          <p className="text-success-strong font-medium">{successMessage}</p>
         </div>
       )}
 
       {/* Scan error */}
       {scanError && (
-        <div className="mb-4 bg-error/10 border border-error/30 rounded-xl p-4 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-error/20 text-error flex items-center justify-center shrink-0">
+        <div className="mb-4 bg-error-soft border border-error/40 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-error text-white flex items-center justify-center shrink-0">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
-          <p className="text-error font-medium">{scanError}</p>
+          <p className="text-error-dark font-medium">{scanError}</p>
         </div>
       )}
 
@@ -309,7 +309,7 @@ export function SalesPage() {
           {/* Mini cart preview */}
           {cart.length > 0 && (
             <Card variant="default" padding="none" className="overflow-hidden">
-              <div className="flex items-center justify-between p-4 bg-primary/5 border-b border-sand">
+              <div className="flex items-center justify-between p-4 bg-cream border-b border-sand">
                 <span className="font-medium text-bark">
                   {cart.length} article{cart.length > 1 ? 's' : ''} dans le panier
                 </span>
@@ -360,7 +360,7 @@ export function SalesPage() {
                     <button
                       type="button"
                       onClick={() => handleRemoveFromCart(article.articleId)}
-                      className="text-error/60 hover:text-error p-1 rounded-lg hover:bg-error/10 transition-colors"
+                      className="text-error/60 hover:text-error-dark p-1 rounded-lg hover:bg-error-soft transition-colors"
                       aria-label={`Retirer ${article.description}`}
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -416,7 +416,7 @@ export function SalesPage() {
                 className={`
                   flex flex-col items-center gap-2 p-5 rounded-2xl border-2 transition-all duration-200
                   ${selectedPayment === method
-                    ? 'border-primary bg-primary/10 text-primary-dark shadow-md scale-[1.02]'
+                    ? 'border-primary bg-info-soft text-primary-strong shadow-md scale-[1.02]'
                     : 'border-sand bg-white text-bark-light hover:border-bark-muted hover:bg-cream-dark'
                   }
                 `}
@@ -509,14 +509,14 @@ function OfflineSaleItem({ sale }: { sale: OfflineSaleDisplay }) {
   const time = soldAt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="flex items-center justify-between p-3 bg-accent/10 rounded-xl border border-accent/20">
+    <div className="flex items-center justify-between p-3 bg-warning-soft rounded-xl border border-secondary/40">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-xs text-bark-muted">{time}</span>
           <span className="text-sm font-medium text-bark truncate">{sale.articleDescription}</span>
         </div>
         <div className="flex items-center gap-2 mt-0.5">
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-accent/20 text-accent-dark">
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-warning-deep text-warning-strong">
             Hors-ligne
           </span>
           <span className="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-sand text-bark-muted">
@@ -569,7 +569,7 @@ function SaleItem({
                 type="button"
                 onClick={() => { onCancel(); setConfirming(false); }}
                 disabled={cancelling}
-                className="text-xs font-medium text-white bg-error hover:bg-error-light px-2 py-1 rounded-lg disabled:opacity-50 transition-colors"
+                className="min-h-[44px] min-w-[44px] text-sm font-semibold text-white bg-error hover:bg-error-dark px-4 py-2 rounded-full disabled:opacity-45 transition-colors"
               >
                 Oui
               </button>
@@ -577,7 +577,7 @@ function SaleItem({
                 type="button"
                 onClick={() => setConfirming(false)}
                 disabled={cancelling}
-                className="text-xs text-bark-muted hover:text-bark px-2 py-1"
+                className="min-h-[44px] min-w-[44px] text-sm text-bark-light hover:text-bark px-4 py-2"
               >
                 Non
               </button>
@@ -587,7 +587,7 @@ function SaleItem({
               type="button"
               onClick={() => setConfirming(true)}
               disabled={cancelling}
-              className="text-xs text-error hover:text-error-light disabled:opacity-50 transition-colors"
+              className="text-xs text-error-dark hover:text-error-light disabled:opacity-50 transition-colors"
             >
               Annuler
             </button>
@@ -607,7 +607,7 @@ function PrivateSaleBanner() {
   if (!isPrivateSaleTime) return null;
 
   return (
-    <div className="mb-4 bg-accent/15 border-l-4 border-accent text-accent-dark px-4 py-3 rounded-r-xl">
+    <div className="mb-4 bg-warning-soft border-t-4 border-secondary text-warning-strong px-4 py-3 rounded-xl">
       <p className="font-medium">Vente privée écoles/ALAE en cours (17h-18h)</p>
       <p className="text-sm mt-1">Les ventes effectuées pendant ce créneau sont automatiquement marquées comme ventes privées.</p>
     </div>

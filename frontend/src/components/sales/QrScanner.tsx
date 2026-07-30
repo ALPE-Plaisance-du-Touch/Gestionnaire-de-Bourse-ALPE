@@ -114,7 +114,7 @@ export function QrScanner({ onScan, disabled = false }: QrScannerProps) {
               type="button"
               onClick={startScanning}
               disabled={disabled}
-              className="inline-flex items-center px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center min-h-[44px] px-5 py-2.5 bg-primary-strong text-white text-base font-semibold rounded-full hover:bg-ink disabled:opacity-45 disabled:cursor-not-allowed"
             >
               Activer la caméra
             </button>
@@ -159,13 +159,13 @@ export function QrScanner({ onScan, disabled = false }: QrScannerProps) {
             onChange={(e) => handleManualChange(e.target.value)}
             placeholder="Ex: EDI-abcd1234-L100-A01"
             disabled={disabled}
-            className="flex-1 rounded-md border border-sand px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:bg-cream-dark"
+            className="flex-1 min-h-[44px] rounded-full border border-sand px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:bg-cream-dark"
             autoFocus
           />
           <button
             type="submit"
             disabled={disabled || !manualBarcode.trim()}
-            className="px-4 py-2 bg-bark text-white text-sm font-medium rounded-md hover:bg-bark disabled:opacity-50 disabled:cursor-not-allowed"
+            className="min-h-[44px] px-5 py-2.5 bg-bark text-white text-base font-semibold rounded-full hover:bg-bark-light disabled:opacity-45 disabled:cursor-not-allowed"
           >
             Rechercher
           </button>
