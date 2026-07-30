@@ -1,24 +1,6 @@
-import type { Article, ArticleCategory } from '@/types';
+import type { Article } from '@/types';
+import { ARTICLE_CATEGORY_COLORS, ARTICLE_CATEGORY_LABELS } from '@/types';
 
-const CATEGORY_LABELS: Record<ArticleCategory, string> = {
-  clothing: 'Vêtements',
-  shoes: 'Chaussures',
-  nursery: 'Puériculture',
-  toys: 'Jouets',
-  books: 'Livres',
-  accessories: 'Accessoires',
-  other: 'Autres',
-};
-
-const CATEGORY_COLORS: Record<ArticleCategory, string> = {
-  clothing: 'bg-secondary/10 text-secondary-dark',
-  shoes: 'bg-primary/10 text-primary-dark',
-  nursery: 'bg-pink-100 text-pink-800',
-  toys: 'bg-accent/15 text-accent-dark',
-  books: 'bg-primary/10 text-primary-dark',
-  accessories: 'bg-secondary/10 text-secondary-dark',
-  other: 'bg-cream-dark text-bark',
-};
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat('fr-FR', {
@@ -113,7 +95,7 @@ export function ArticleList({
                     {article.description}
                   </div>
                   {article.isLot && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary-dark mt-1">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-info-soft text-primary-strong mt-1">
                       Lot de {article.lotQuantity}
                     </span>
                   )}
@@ -121,10 +103,10 @@ export function ArticleList({
                 <td className="px-4 py-3 whitespace-nowrap">
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      CATEGORY_COLORS[article.category]
+                      ARTICLE_CATEGORY_COLORS[article.category]
                     }`}
                   >
-                    {CATEGORY_LABELS[article.category]}
+                    {ARTICLE_CATEGORY_LABELS[article.category]}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-sm text-bark-muted">
@@ -141,7 +123,7 @@ export function ArticleList({
                   <td className="px-4 py-3 whitespace-nowrap text-right text-sm space-x-1">
                     <button
                       onClick={() => onEdit(article)}
-                      className="p-1.5 text-bark-muted hover:text-primary hover:bg-primary/10 rounded"
+                      className="p-1.5 text-bark-muted hover:text-primary-strong hover:bg-info-soft rounded"
                       title="Modifier"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +133,7 @@ export function ArticleList({
                     <button
                       onClick={() => onDuplicate(article)}
                       disabled={!canAddMore}
-                      className="p-1.5 text-bark-muted hover:text-primary hover:bg-primary/10 rounded disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="p-1.5 text-bark-muted hover:text-primary-strong hover:bg-info-soft rounded disabled:opacity-40 disabled:cursor-not-allowed"
                       title={!canAddMore ? 'Liste complète' : 'Dupliquer'}
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -161,7 +143,7 @@ export function ArticleList({
                     <button
                       onClick={() => onDelete(article)}
                       disabled={isDeleting}
-                      className="p-1.5 text-bark-muted hover:text-error hover:bg-error/10 rounded disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="p-1.5 text-bark-muted hover:text-error-dark hover:bg-error-soft rounded disabled:opacity-40 disabled:cursor-not-allowed"
                       title="Supprimer"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

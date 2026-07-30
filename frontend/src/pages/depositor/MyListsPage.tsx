@@ -106,7 +106,7 @@ export function MyListsPage() {
     return (
       <div className="p-6">
         <Card variant="default" padding="md">
-          <p className="text-error">Aucune édition sélectionnée.</p>
+          <p className="text-error-dark">Aucune édition sélectionnée.</p>
         </Card>
       </div>
     );
@@ -116,7 +116,7 @@ export function MyListsPage() {
     return (
       <div className="p-6">
         <Card variant="default" padding="md">
-          <p className="text-error">Erreur lors du chargement de vos listes. Veuillez réessayer.</p>
+          <p className="text-error-dark">Erreur lors du chargement de vos listes. Veuillez réessayer.</p>
         </Card>
       </div>
     );
@@ -183,19 +183,19 @@ export function MyListsPage() {
 
       {/* Info messages */}
       {!canCreateMore && lists.length >= maxLists && (
-        <div className="mb-4 bg-primary/10 border border-primary/30 text-primary-dark px-4 py-3 rounded-xl text-sm">
+        <div className="mb-4 bg-info-soft border border-primary/40 text-primary-strong px-4 py-3 rounded-xl text-sm">
           Vous avez atteint le nombre maximum de listes ({maxLists}).
         </div>
       )}
 
       {createMutation.isError && (
-        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-xl text-sm">
+        <div className="mb-4 bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-xl text-sm">
           Erreur lors de la création de la liste. Veuillez réessayer.
         </div>
       )}
 
       {deleteMutation.isError && (
-        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-xl text-sm">
+        <div className="mb-4 bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-xl text-sm">
           Erreur lors de la suppression de la liste. Veuillez réessayer.
         </div>
       )}
@@ -282,7 +282,7 @@ export function MyListsPage() {
                           size="sm"
                           onClick={() => setListToDelete(list)}
                           disabled={deleteMutation.isPending}
-                          className="text-error hover:bg-error/10"
+                          className="text-error-dark hover:bg-error-soft"
                         >
                           Supprimer
                         </Button>
@@ -307,7 +307,12 @@ export function MyListsPage() {
           <li>Récupérez vos invendus puis recevez le paiement de vos ventes</li>
         </ol>
         <p className="mt-3 text-xs text-bark-muted">
-          <Link to="/aide#cycle-de-vie" className="underline font-medium hover:text-bark transition-colors">
+          {/* inline-block + padding lifts the tap target to the 24px WCAG 2.5.8 floor;
+              at 16px it was hard to hit on a phone, which is how this page is read. */}
+          <Link
+            to="/aide#cycle-de-vie"
+            className="inline-block py-1 underline font-medium hover:text-bark transition-colors"
+          >
             Voir le détail du cycle de vie
           </Link>
         </p>
@@ -327,7 +332,7 @@ export function MyListsPage() {
           Êtes-vous sûr de vouloir supprimer la{' '}
           <span className="font-medium text-bark">Liste n°{listToDelete?.number}</span> ?
         </p>
-        <p className="text-sm text-error bg-error/10 p-3 rounded-xl mt-3">
+        <p className="text-sm text-error-dark bg-error-soft p-3 rounded-xl mt-3">
           Cette action est irréversible.
         </p>
       </ConfirmModal>
@@ -343,7 +348,7 @@ function DeadlineBanner({ deadline }: { deadline: string }) {
 
   if (diffDays < 0) {
     return (
-      <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-xl text-sm font-medium">
+      <div className="mb-4 bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-xl text-sm font-medium">
         La date limite de déclaration est dépassée ({formatDate(deadline)}).
         Vos listes sont consultables en lecture seule.
       </div>
@@ -352,7 +357,7 @@ function DeadlineBanner({ deadline }: { deadline: string }) {
 
   if (diffDays <= 3) {
     return (
-      <div className="mb-4 bg-accent/15 border border-accent/40 text-accent-dark px-4 py-3 rounded-xl text-sm font-medium">
+      <div className="mb-4 bg-warning-soft border border-secondary/40 text-warning-strong px-4 py-3 rounded-xl text-sm font-medium">
         Il vous reste {diffDays} jour{diffDays > 1 ? 's' : ''} pour finaliser vos articles
         (date limite : {formatDate(deadline)}).
       </div>

@@ -243,7 +243,7 @@ export function ArticleForm({
             disabled={isSubmitting}
           />
           {errors.category && (
-            <p className="mt-1 text-sm text-error">{errors.category}</p>
+            <p className="mt-1 text-sm text-error-dark">{errors.category}</p>
           )}
         </div>
         {subcategoryOptions.length > 0 && (
@@ -273,7 +273,7 @@ export function ArticleForm({
           maxLength={100}
         />
         {errors.description && (
-          <p className="mt-1 text-sm text-error">{errors.description}</p>
+          <p className="mt-1 text-sm text-error-dark">{errors.description}</p>
         )}
         <p className="mt-1 text-xs text-bark-muted">{description.length}/100 caractères</p>
       </div>
@@ -294,7 +294,7 @@ export function ArticleForm({
             placeholder="Ex: 5"
           />
           {errors.price && (
-            <p className="mt-1 text-sm text-error">{errors.price}</p>
+            <p className="mt-1 text-sm text-error-dark">{errors.price}</p>
           )}
           {priceHint && (
             <p className="mt-1 text-xs text-primary flex items-center gap-1">
@@ -391,7 +391,7 @@ export function ArticleForm({
                 className="w-24"
               />
               {errors.lotQuantity && (
-                <p className="mt-1 text-sm text-error">{errors.lotQuantity}</p>
+                <p className="mt-1 text-sm text-error-dark">{errors.lotQuantity}</p>
               )}
               <p className="mt-1 text-xs text-bark-muted">
                 Taille 36 mois maximum. Taille et marque identiques pour le lot.

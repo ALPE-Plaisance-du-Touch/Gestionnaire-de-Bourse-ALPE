@@ -7,13 +7,19 @@ import { ArticleForm } from '@/components/articles/ArticleForm';
 import { ArticleList } from '@/components/articles/ArticleList';
 import type { Article, CreateArticleRequest, UpdateArticleRequest } from '@/types';
 
+// All eight statuses of ListStatus. payout_pending and payout_completed were missing,
+// so a depositor whose payout was done saw the raw value "payout_completed" — the
+// fallback prints list.status when the key is absent. validated, checked_in and
+// reviewed also shared one style, making three consecutive steps look identical.
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
-  draft: { label: 'Brouillon', className: 'bg-accent/15 text-accent-dark' },
-  not_finalized: { label: 'Non finalisée', className: 'bg-error/10 text-error' },
-  validated: { label: 'Validée', className: 'bg-primary/10 text-primary-dark' },
-  checked_in: { label: 'Déposée', className: 'bg-primary/10 text-primary-dark' },
-  reviewed: { label: 'Vérifiée', className: 'bg-primary/10 text-primary-dark' },
-  retrieved: { label: 'Récupérée', className: 'bg-cream-dark text-bark' },
+  draft: { label: 'Brouillon', className: 'bg-cream-dark text-bark' },
+  not_finalized: { label: 'Non finalisée', className: 'bg-error-soft text-error-dark' },
+  validated: { label: 'Validée', className: 'bg-warning-soft text-warning-strong' },
+  checked_in: { label: 'Déposée', className: 'bg-warning-deep text-warning-strong' },
+  reviewed: { label: 'Vérifiée', className: 'bg-info-soft text-primary-strong' },
+  retrieved: { label: 'Récupérée', className: 'bg-chart-4 text-ink' },
+  payout_pending: { label: 'Paiement en attente', className: 'bg-white border border-secondary text-warning-strong' },
+  payout_completed: { label: 'Paiement effectué', className: 'bg-success-soft text-success-strong' },
 };
 
 function formatPrice(price: number): string {
@@ -199,7 +205,7 @@ export function ListDetailPage() {
   if (!listId) {
     return (
       <div className="p-6">
-        <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
+        <div className="bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg">
           Liste non trouvée.
         </div>
       </div>
@@ -209,7 +215,7 @@ export function ListDetailPage() {
   if (listError || articlesError) {
     return (
       <div className="p-6">
-        <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
+        <div className="bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg">
           Erreur lors du chargement de la liste. Veuillez réessayer.
         </div>
       </div>
@@ -286,7 +292,7 @@ export function ListDetailPage() {
 
       {/* PDF error */}
       {pdfError && (
-        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg" role="alert">
+        <div className="mb-4 bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg" role="alert">
           Erreur lors du téléchargement du PDF. Veuillez réessayer.
         </div>
       )}
@@ -306,7 +312,7 @@ export function ListDetailPage() {
         </div>
         <div className="bg-white rounded-lg shadow p-4">
           <p className="text-sm text-bark-muted">Vêtements</p>
-          <p className="text-2xl font-bold text-secondary-dark">
+          <p className="text-2xl font-bold text-warning-strong">
             {clothingCount} / {constraints?.maxClothingPerList ?? 12}
           </p>
         </div>
@@ -318,14 +324,14 @@ export function ListDetailPage() {
 
       {/* Warnings */}
       {!canAddMoreClothing && isDraft && (
-        <div className="mb-4 bg-secondary/10 border border-secondary/30 text-secondary-dark px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-warning-deep border border-secondary/30 text-warning-strong px-4 py-3 rounded-lg">
           Vous avez atteint le maximum de vêtements ({constraints?.maxClothingPerList ?? 12}).
         </div>
       )}
 
       {/* Error messages */}
       {(createMutation.isError || updateMutation.isError || deleteMutation.isError) && (
-        <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
+        <div className="mb-4 bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg">
           Une erreur est survenue. Veuillez réessayer.
         </div>
       )}
@@ -382,8 +388,8 @@ export function ListDetailPage() {
 
       {/* Rejected articles section - visible to depositor after review */}
       {!showArticleForm && articles.some((a) => a.status === 'rejected') && (
-        <div className="mt-6 bg-error/10 border border-error/30 rounded-lg p-4">
-          <h4 className="font-medium text-error mb-3">
+        <div className="mt-6 bg-error-soft border border-error/40 rounded-lg p-4">
+          <h4 className="font-medium text-error-dark mb-3">
             Articles refuses ({articles.filter((a) => a.status === 'rejected').length})
           </h4>
           <div className="space-y-2">
@@ -392,7 +398,7 @@ export function ListDetailPage() {
               .map((article) => (
                 <div
                   key={article.id}
-                  className="bg-white border border-error/30 rounded-lg p-3"
+                  className="bg-white border border-error/40 rounded-lg p-3"
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -402,12 +408,12 @@ export function ListDetailPage() {
                         {article.size ? ` - Taille ${article.size}` : ''}
                       </p>
                     </div>
-                    <span className="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-error/10 text-error">
+                    <span className="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-error-soft text-error-dark">
                       Refuse
                     </span>
                   </div>
                   {article.rejectionReason && (
-                    <p className="mt-2 text-xs text-error">
+                    <p className="mt-2 text-xs text-error-dark">
                       Motif : {article.rejectionReason}
                     </p>
                   )}
@@ -419,9 +425,9 @@ export function ListDetailPage() {
 
       {/* Help text for draft lists */}
       {isDraft && !showArticleForm && (
-        <div className="mt-6 bg-primary/10 border border-primary/30 rounded-lg p-4">
-          <h4 className="font-medium text-primary-dark mb-2">Conseils</h4>
-          <ul className="text-sm text-primary-dark space-y-1">
+        <div className="mt-6 bg-info-soft border border-primary/40 rounded-lg p-4">
+          <h4 className="font-medium text-primary-strong mb-2">Conseils</h4>
+          <ul className="text-sm text-primary-strong space-y-1">
             <li>- Maximum 24 articles par liste, dont 12 vêtements</li>
             <li>- Prix minimum : 1€ (150€ max pour les poussettes)</li>
             <li>- Une fois validée, la liste ne peut plus être modifiée</li>
@@ -459,8 +465,8 @@ export function ListDetailPage() {
           Vous êtes sur le point de valider votre liste de {articles.length} article
           {articles.length > 1 ? 's' : ''} pour un total de {formatPrice(totalValue)}.
         </p>
-        <div className="bg-accent/10 border border-accent/40 rounded-lg p-4">
-          <p className="text-sm text-accent-dark">
+        <div className="bg-warning-soft border border-secondary/40 rounded-lg p-4">
+          <p className="text-sm text-warning-strong">
             <strong>Attention :</strong> Une fois validée, vous ne pourrez plus modifier
             votre liste. Assurez-vous que tous les articles sont correctement saisis.
           </p>
@@ -478,7 +484,7 @@ export function ListDetailPage() {
           </span>
         </label>
         {validateMutation.isError && (
-          <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg text-sm" role="alert">
+          <div className="bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg text-sm" role="alert">
             Erreur lors de la validation. Veuillez réessayer.
           </div>
         )}
@@ -495,7 +501,7 @@ function DeadlineBanner({ deadline }: { deadline: string }) {
 
   if (diffDays < 0) {
     return (
-      <div className="mb-4 bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
+      <div className="mb-4 bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg">
         La date limite de déclaration est dépassée. Cette liste est en lecture seule.
       </div>
     );
@@ -503,7 +509,7 @@ function DeadlineBanner({ deadline }: { deadline: string }) {
 
   if (diffDays <= 3) {
     return (
-      <div className="mb-4 bg-secondary/10 border border-secondary/30 text-secondary-dark px-4 py-3 rounded-lg">
+      <div className="mb-4 bg-warning-deep border border-secondary/30 text-warning-strong px-4 py-3 rounded-lg">
         Il vous reste {diffDays} jour{diffDays > 1 ? 's' : ''} pour finaliser vos articles.
       </div>
     );

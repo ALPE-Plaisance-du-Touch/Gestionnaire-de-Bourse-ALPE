@@ -11,6 +11,7 @@ export * from './deposit-slot';
 export * from './billetweb';
 export * from './itemList';
 export * from './article';
+export * from './article-category';
 export * from './label';
 export * from './sale';
 export * from './payout';

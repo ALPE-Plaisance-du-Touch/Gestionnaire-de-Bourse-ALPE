@@ -5,11 +5,11 @@ import type { MyEditionSummary } from '@/api/depositor-lists';
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
   draft: { label: 'Brouillon', className: 'bg-cream-dark text-bark' },
-  registrations_open: { label: 'Inscriptions ouvertes', className: 'bg-secondary/10 text-secondary-dark' },
-  deposit: { label: 'Dépôt', className: 'bg-primary/10 text-primary-dark' },
-  sale: { label: 'Vente', className: 'bg-primary/10 text-primary-dark' },
-  settlement: { label: 'Bilan', className: 'bg-accent/15 text-accent-dark' },
-  closed: { label: 'Clôturée', className: 'bg-secondary/10 text-secondary-dark' },
+  registrations_open: { label: 'Inscriptions ouvertes', className: 'bg-warning-deep text-warning-strong' },
+  deposit: { label: 'Dépôt', className: 'bg-info-soft text-primary-strong' },
+  sale: { label: 'Vente', className: 'bg-info-soft text-primary-strong' },
+  settlement: { label: 'Bilan', className: 'bg-warning-soft text-warning-strong' },
+  closed: { label: 'Clôturée', className: 'bg-warning-deep text-warning-strong' },
   archived: { label: 'Archivé', className: 'bg-cream-dark text-bark-muted' },
 };
 
@@ -67,7 +67,7 @@ export function MyEditionsPage() {
   if (error) {
     return (
       <div className="p-6 max-w-4xl mx-auto">
-        <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg">
+        <div className="bg-error-soft border border-error/40 text-error-dark px-4 py-3 rounded-lg">
           Erreur lors du chargement de vos éditions. Veuillez réessayer.
         </div>
       </div>
@@ -159,7 +159,7 @@ export function MyEditionsPage() {
                         Type de liste : <span className="font-medium">{LIST_TYPE_LABELS[edition.listType] || edition.listType}</span>
                       </p>
                       {edition.declarationDeadline && (
-                        <p className={`mt-2 text-sm ${deadlinePassed ? 'text-error' : 'text-secondary-dark'}`}>
+                        <p className={`mt-2 text-sm ${deadlinePassed ? 'text-error-dark' : 'text-warning-strong'}`}>
                           {deadlinePassed ? (
                             <>Date limite de déclaration dépassée ({formatDate(edition.declarationDeadline)})</>
                           ) : (
@@ -188,8 +188,8 @@ export function MyEditionsPage() {
                   </div>
                 </div>
                 {canAccess && (
-                  <div className={`px-5 py-3 border-t ${canDeclare ? 'bg-primary/10 border-primary/30' : 'bg-cream border-sand'}`}>
-                    <p className={`text-sm ${canDeclare ? 'text-primary-dark' : 'text-bark-light'}`}>
+                  <div className={`px-5 py-3 border-t ${canDeclare ? 'bg-info-soft border-primary/40' : 'bg-cream border-sand'}`}>
+                    <p className={`text-sm ${canDeclare ? 'text-primary-strong' : 'text-bark-light'}`}>
                       {canDeclare ? 'Cliquez pour gérer vos listes d\'articles' : 'Cliquez pour consulter vos listes (lecture seule)'}
                     </p>
                   </div>

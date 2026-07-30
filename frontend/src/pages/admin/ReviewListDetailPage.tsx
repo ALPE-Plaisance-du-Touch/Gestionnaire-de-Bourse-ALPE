@@ -8,26 +8,8 @@ import { Button, Modal, ConfirmModal } from '@/components/ui';
 import { TrainingBanner } from '@/components/ui/TrainingBanner';
 import { ArticleForm } from '@/components/articles/ArticleForm';
 import type { Article, CreateArticleRequest, UpdateArticleRequest } from '@/types';
+import { ARTICLE_CATEGORY_COLORS, ARTICLE_CATEGORY_LABELS } from '@/types';
 
-const CATEGORY_LABELS: Record<string, string> = {
-  clothing: 'Vêtements',
-  shoes: 'Chaussures',
-  nursery: 'Puériculture',
-  toys: 'Jouets',
-  books: 'Livres',
-  accessories: 'Accessoires',
-  other: 'Autres',
-};
-
-const CATEGORY_COLORS: Record<string, string> = {
-  clothing: 'bg-warning-deep text-warning-strong',
-  shoes: 'bg-info-soft text-primary-strong',
-  nursery: 'bg-pink-100 text-pink-800',
-  toys: 'bg-warning-soft text-warning-strong',
-  books: 'bg-info-soft text-primary-strong',
-  accessories: 'bg-warning-deep text-warning-strong',
-  other: 'bg-cream-dark text-bark',
-};
 
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
   validated: { label: 'En attente', className: 'bg-warning-soft text-warning-strong' },
@@ -304,8 +286,8 @@ export function ReviewListDetailPage() {
                               )}
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${CATEGORY_COLORS[article.category] ?? 'bg-cream-dark text-bark'}`}>
-                                {CATEGORY_LABELS[article.category] ?? article.category}
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ARTICLE_CATEGORY_COLORS[article.category] ?? 'bg-cream-dark text-bark'}`}>
+                                {ARTICLE_CATEGORY_LABELS[article.category] ?? article.category}
                               </span>
                             </td>
                             <td className="px-4 py-3 text-sm text-bark-muted">
@@ -410,8 +392,8 @@ export function ReviewListDetailPage() {
                             )}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${CATEGORY_COLORS[article.category] ?? 'bg-cream-dark text-bark'}`}>
-                              {CATEGORY_LABELS[article.category] ?? article.category}
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ARTICLE_CATEGORY_COLORS[article.category] ?? 'bg-cream-dark text-bark'}`}>
+                              {ARTICLE_CATEGORY_LABELS[article.category] ?? article.category}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-sm text-bark-muted">
@@ -509,7 +491,7 @@ export function ReviewListDetailPage() {
             <div className="bg-cream rounded-lg p-3 mb-4">
               <p className="text-sm font-medium text-bark">{rejectingArticle.description}</p>
               <p className="text-xs text-bark-muted mt-1">
-                {CATEGORY_LABELS[rejectingArticle.category]} &middot; {rejectingArticle.price.toFixed(2)} &euro;
+                {ARTICLE_CATEGORY_LABELS[rejectingArticle.category]} &middot; {rejectingArticle.price.toFixed(2)} &euro;
               </p>
             </div>
             <div className="mb-4">
