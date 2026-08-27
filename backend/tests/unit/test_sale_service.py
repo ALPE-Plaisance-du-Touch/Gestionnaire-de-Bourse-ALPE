@@ -82,6 +82,8 @@ def _make_sale(article, seller, **kwargs):
     sale.register_number = kwargs.get("register_number", 1)
     sale.sold_at = kwargs.get("sold_at", datetime.now(timezone.utc))
     sale.edition_id = article.item_list.edition_id
+    sale.is_private_sale = kwargs.get("is_private_sale", False)
+    sale.ticket_id = kwargs.get("ticket_id", None)
     return sale
 
 
@@ -321,10 +323,12 @@ class TestSyncOfflineSales:
 
         with patch("app.services.sale.EditionRepository") as MockEditionRepo, \
              patch("app.services.sale.ArticleRepository") as MockArticleRepo, \
-             patch("app.services.sale.SaleRepository") as MockSaleRepo:
+             patch("app.services.sale.SaleRepository") as MockSaleRepo, \
+             patch("app.repositories.UserRepository") as MockUserRepo:
             MockEditionRepo.return_value.get_by_id = AsyncMock(return_value=MagicMock())
             MockArticleRepo.return_value.get_by_id = AsyncMock(return_value=article)
             MockSaleRepo.return_value.get_by_article_id = AsyncMock(return_value=existing_sale)
+            MockUserRepo.return_value.list_users = AsyncMock(return_value=([], 0))
 
             result = await sync_offline_sales("edition-123", items, seller, db)
 
@@ -418,11 +422,13 @@ class TestSyncOfflineSales:
 
         with patch("app.services.sale.EditionRepository") as MockEditionRepo, \
              patch("app.services.sale.ArticleRepository") as MockArticleRepo, \
-             patch("app.services.sale.SaleRepository") as MockSaleRepo:
+             patch("app.services.sale.SaleRepository") as MockSaleRepo, \
+             patch("app.repositories.UserRepository") as MockUserRepo:
             MockEditionRepo.return_value.get_by_id = AsyncMock(return_value=MagicMock())
             MockArticleRepo.return_value.get_by_id = AsyncMock(side_effect=mock_get_by_id)
             MockSaleRepo.return_value.get_by_article_id = AsyncMock(side_effect=mock_get_by_article_id)
             MockSaleRepo.return_value.create = AsyncMock()
+            MockUserRepo.return_value.list_users = AsyncMock(return_value=([], 0))
 
             result = await sync_offline_sales("edition-123", items, seller, db)
 

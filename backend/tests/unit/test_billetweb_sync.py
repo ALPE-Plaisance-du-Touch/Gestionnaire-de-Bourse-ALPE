@@ -210,9 +210,9 @@ class TestAttendeeToRow:
             "name": "Dupont",
             "firstname": "Jean",
             "ticket": "Standard",
-            "paid": "1",
-            "valid": "1",
-            "session_id": "s1",
+            "order_paid": "1",
+            "disabled": "0",
+            "order_session": "s1",
             "session_start": "2025-11-05 09:00:00",
             "phone": "0612345678",
             "zip": "31000",
@@ -236,8 +236,8 @@ class TestAttendeeToRow:
             "name": "Dupont",
             "firstname": "Jean",
             "ticket": "Standard",
-            "paid": "0",
-            "valid": "1",
+            "order_paid": "0",
+            "disabled": "0",
         }
         row = service._attendee_to_parsed_row(attendee, 1, {})
         assert row is None
@@ -248,8 +248,8 @@ class TestAttendeeToRow:
             "name": "Dupont",
             "firstname": "Jean",
             "ticket": "Standard",
-            "paid": "1",
-            "valid": "0",
+            "order_paid": "1",
+            "disabled": "1",
         }
         row = service._attendee_to_parsed_row(attendee, 1, {})
         assert row is None
@@ -259,8 +259,8 @@ class TestAttendeeToRow:
             "name": "Dupont",
             "firstname": "Jean",
             "ticket": "Standard",
-            "paid": "1",
-            "valid": "1",
+            "order_paid": "1",
+            "disabled": "0",
         }
         row = service._attendee_to_parsed_row(attendee, 1, {})
         assert row is None
@@ -271,8 +271,8 @@ class TestAttendeeToRow:
             "name": "Dupont",
             "firstname": "Jean",
             "ticket": "Standard",
-            "paid": "1",
-            "valid": "1",
+            "order_paid": "1",
+            "disabled": "0",
             "session_start": "2025-11-05 09:00:00",
         }
         slot_mapping = {"2025-11-05 09:00:00": "slot-uuid-1"}

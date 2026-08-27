@@ -2,6 +2,7 @@
 
 import pytest
 from datetime import datetime, timedelta, timezone
+from unittest.mock import patch
 
 from app.exceptions import (
     AuthenticationError,
@@ -177,8 +178,17 @@ class TestRefreshTokens:
         )
         login_response = await auth_service.login(login_request)
 
-        # Refresh tokens
-        new_tokens = await auth_service.refresh_tokens(login_response.refresh_token)
+        # JWT timestamps have second granularity and the payload carries no unique
+        # claim, so refreshing within the same second would mint an identical token.
+        real_datetime = datetime
+
+        class ShiftedClock(real_datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return real_datetime.now(tz) + timedelta(seconds=60)
+
+        with patch("app.services.auth.datetime", ShiftedClock):
+            new_tokens = await auth_service.refresh_tokens(login_response.refresh_token)
 
         assert new_tokens.access_token is not None
         assert new_tokens.refresh_token is not None
