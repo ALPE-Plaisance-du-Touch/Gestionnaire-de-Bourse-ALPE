@@ -82,6 +82,26 @@ class TestCheckClosurePrerequisites:
         assert all(c.passed for c in result.checks)
 
     @pytest.mark.asyncio
+    async def test_retrieval_end_read_from_database_is_naive(self):
+        """The column has no timezone, so the stored value comes back naive."""
+        db = AsyncMock()
+        service = EditionService(db)
+        service.repository = AsyncMock()
+        service.repository.get_by_id = AsyncMock(return_value=_make_edition(
+            retrieval_end_datetime=datetime.now() - timedelta(days=1),
+        ))
+
+        with patch(
+            "app.services.edition.PayoutRepository"
+        ) as MockPayoutRepo:
+            MockPayoutRepo.return_value.get_stats = AsyncMock(
+                return_value=_make_payout_stats()
+            )
+            result = await service.check_closure_prerequisites("edition-1")
+
+        assert result.can_close is True
+
+    @pytest.mark.asyncio
     async def test_no_payouts_calculated(self):
         """No payouts -> can_close=False."""
         db = AsyncMock()
