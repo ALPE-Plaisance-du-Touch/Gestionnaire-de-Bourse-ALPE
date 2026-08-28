@@ -59,7 +59,10 @@ class DepositSlot(Base, UUIDMixin, TimestampMixin):
     @property
     def is_past(self) -> bool:
         """Check if slot has already passed."""
-        return datetime.now(timezone.utc) > self.end_datetime
+        end = self.end_datetime
+        if end.tzinfo is None:
+            end = end.replace(tzinfo=timezone.utc)
+        return datetime.now(timezone.utc) > end
 
     def __repr__(self) -> str:
         return f"<DepositSlot {self.start_datetime.strftime('%Y-%m-%d %H:%M')} - {self.max_capacity} places>"
