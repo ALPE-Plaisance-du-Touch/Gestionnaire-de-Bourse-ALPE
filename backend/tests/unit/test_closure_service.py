@@ -119,7 +119,7 @@ class TestCheckClosurePrerequisites:
 
         assert result.can_close is False
         labels = {c.label: c.passed for c in result.checks}
-        assert labels["Reversements calcules"] is False
+        assert labels["Reversements calculés"] is False
 
     @pytest.mark.asyncio
     async def test_payouts_not_finalized(self):
@@ -139,7 +139,7 @@ class TestCheckClosurePrerequisites:
 
         assert result.can_close is False
         labels = {c.label: c.passed for c in result.checks}
-        assert labels["Tous les paiements finalises"] is False
+        assert labels["Tous les paiements finalisés"] is False
 
     @pytest.mark.asyncio
     async def test_retrieval_date_not_passed(self):
@@ -162,7 +162,7 @@ class TestCheckClosurePrerequisites:
 
         assert result.can_close is False
         labels = {c.label: c.passed for c in result.checks}
-        assert labels["Periode de recuperation terminee"] is False
+        assert labels["Période de récupération terminée"] is False
 
     @pytest.mark.asyncio
     async def test_wrong_status(self):
@@ -241,7 +241,7 @@ class TestCloseEdition:
             MockPayoutRepo.return_value.get_stats = AsyncMock(
                 return_value=_make_payout_stats()
             )
-            with pytest.raises(ValidationError, match="Impossible de cloturer"):
+            with pytest.raises(ValidationError, match="Impossible de clôturer"):
                 await service.close_edition("edition-1", user)
 
 
@@ -280,5 +280,5 @@ class TestArchiveEdition:
         edition = _make_edition(status=EditionStatus.SETTLEMENT.value)
         service.repository.get_by_id = AsyncMock(return_value=edition)
 
-        with pytest.raises(ValidationError, match="cloturees"):
+        with pytest.raises(ValidationError, match="clôturées"):
             await service.archive_edition("edition-1")
