@@ -220,10 +220,16 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }: 
     }] : []),
   ];
 
-  const isActive = (path: string) => {
-    if (path === '/admin') return location.pathname === '/admin';
-    return location.pathname.startsWith(path);
-  };
+  // A nav entry also covers its sub-routes, but only the most specific one lights up:
+  // /editions/:id/sales must not activate Configuration and Editions as well.
+  const covers = (path: string) =>
+    location.pathname === path || location.pathname.startsWith(`${path}/`);
+
+  const activePath = sections
+    .flatMap((section) => section.items)
+    .map((item) => item.path)
+    .filter(covers)
+    .reduce((longest, path) => (path.length > longest.length ? path : longest), '');
 
   const renderNav = (mobile = false) => (
     <nav className={`flex-1 overflow-y-auto ${mobile ? 'px-3 py-4' : 'px-3 py-4'}`} aria-label="Navigation administration">
@@ -241,11 +247,12 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }: 
             )}
             <div className="space-y-1">
               {section.items.map((item) => {
-                const active = isActive(item.path);
+                const active = item.path === activePath;
                 return (
                   <Link
                     key={item.path}
                     to={item.path}
+                    aria-current={active ? 'page' : undefined}
                     onClick={() => onMobileClose()}
                     title={isCollapsed ? item.label : undefined}
                     className={`
