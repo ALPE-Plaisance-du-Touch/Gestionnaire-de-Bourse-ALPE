@@ -185,6 +185,10 @@ class Edition(Base, UUIDMixin, TimestampMixin):
             EditionStatus.REGISTRATIONS_OPEN.value,
         ):
             return False
-        if self.declaration_deadline and datetime.now(timezone.utc) > self.declaration_deadline:
-            return False
+        if self.declaration_deadline:
+            deadline = self.declaration_deadline
+            if deadline.tzinfo is None:
+                deadline = deadline.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) > deadline:
+                return False
         return True
