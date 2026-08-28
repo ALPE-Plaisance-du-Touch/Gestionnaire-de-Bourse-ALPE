@@ -88,3 +88,15 @@ Never weaken an assertion to get to green: no `.skip`, no deleted test, no
   `Numeric(5, 4)`. Use `server_default=func.now()`, never the string.
 - **Commission rates are stored as a fraction**, not a percentage: `0.20` means 20%.
   The column is `Numeric(5, 4)`, so anything from 10 upwards is rejected by MariaDB.
+- **Vite serves stale modules after a host edit.** The frontend container bind-mounts
+  the working tree, but on Windows the watcher never sees writes made outside the
+  container and `frontend/vite.config.ts` sets no `server.watch.usePolling`. The
+  browser then keeps running the previous code — a hard reload does not help, since
+  Vite is serving its own cached transform, not a browser cache. Symptom: a change is
+  present in the container (`docker compose exec frontend grep ... /app/src/...`) yet
+  absent from the page. Fix with `docker compose restart frontend`.
+
+  This one invalidates the browser step of the cycle above rather than merely
+  annoying: without the restart you sign off on code that never ran. Confirm what
+  the page actually executes — read back the attribute or text you changed — instead
+  of trusting that a reload picked it up.
