@@ -3,6 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 import { salesApi } from '@/api';
 import { TrainingBanner } from '@/components/ui/TrainingBanner';
 
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(price);
+}
+
 export function LiveStatsPage() {
   const { id: editionId } = useParams<{ id: string }>();
 
@@ -44,7 +51,7 @@ export function LiveStatsPage() {
             />
             <StatCard
               label="Chiffre d'affaires"
-              value={`${Number(stats.totalRevenue).toFixed(2)} EUR`}
+              value={formatPrice(Number(stats.totalRevenue))}
               tone="revenue"
             />
             <StatCard
@@ -68,19 +75,19 @@ export function LiveStatsPage() {
               <div className="text-center p-4 bg-info-soft rounded-lg">
                 <p className="text-sm text-bark-light">Espèces</p>
                 <p className="text-2xl font-bold text-primary-strong">
-                  {Number(stats.revenueCash).toFixed(2)} EUR
+                  {formatPrice(Number(stats.revenueCash))}
                 </p>
               </div>
               <div className="text-center p-4 bg-info-soft rounded-lg">
                 <p className="text-sm text-bark-light">Carte bancaire</p>
                 <p className="text-2xl font-bold text-primary-strong">
-                  {Number(stats.revenueCard).toFixed(2)} EUR
+                  {formatPrice(Number(stats.revenueCard))}
                 </p>
               </div>
               <div className="text-center p-4 bg-warning-soft rounded-lg">
                 <p className="text-sm text-bark-light">Chèque</p>
                 <p className="text-2xl font-bold text-warning-strong">
-                  {Number(stats.revenueCheck).toFixed(2)} EUR
+                  {formatPrice(Number(stats.revenueCheck))}
                 </p>
               </div>
             </div>
@@ -110,7 +117,7 @@ export function LiveStatsPage() {
                       <td className="py-2 font-medium">{dep.depositorName}</td>
                       <td className="py-2 text-right">{dep.articlesSold}</td>
                       <td className="py-2 text-right font-semibold">
-                        {Number(dep.totalRevenue).toFixed(2)} EUR
+                        {formatPrice(Number(dep.totalRevenue))}
                       </td>
                     </tr>
                   ))}
