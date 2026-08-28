@@ -1,8 +1,10 @@
 """Integration tests for authentication API endpoints."""
 
 import pytest
-from httpx import AsyncClient
+from fastapi import FastAPI
+from httpx import ASGITransport, AsyncClient
 
+from app.middleware import RateLimitMiddleware
 from app.models import User
 from app.services import AuthService
 
@@ -282,9 +284,24 @@ class TestPasswordResetEndpoints:
 class TestRateLimitHeaders:
     """Tests for rate limit headers in responses."""
 
-    async def test_rate_limit_headers_present(self, client: AsyncClient):
-        """Rate limit headers should be present in responses."""
-        response = await client.get("/api/v1")
+    async def test_rate_limit_headers_present(self):
+        """Rate limit headers should be present in responses.
+
+        The main app skips rate limiting in development, so the middleware is
+        exercised on an app of its own rather than through the shared client.
+        """
+        rate_limited_app = FastAPI()
+        rate_limited_app.add_middleware(RateLimitMiddleware)
+
+        @rate_limited_app.get("/api/v1")
+        async def _root():
+            return {"status": "ok"}
+
+        async with AsyncClient(
+            transport=ASGITransport(app=rate_limited_app),
+            base_url="http://test",
+        ) as rate_limited_client:
+            response = await rate_limited_client.get("/api/v1")
 
         assert "X-RateLimit-Limit" in response.headers
         assert "X-RateLimit-Remaining" in response.headers

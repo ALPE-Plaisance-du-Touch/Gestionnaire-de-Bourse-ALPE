@@ -482,9 +482,12 @@ class EditionService:
         ))
 
         # Check 2: Retrieval end date must be passed
+        retrieval_end = edition.retrieval_end_datetime
+        if retrieval_end is not None and retrieval_end.tzinfo is None:
+            retrieval_end = retrieval_end.replace(tzinfo=timezone.utc)
         retrieval_passed = (
-            edition.retrieval_end_datetime is not None
-            and datetime.now(timezone.utc) > edition.retrieval_end_datetime
+            retrieval_end is not None
+            and datetime.now(timezone.utc) > retrieval_end
         )
         checks.append(ClosureCheckItem(
             label="Periode de recuperation terminee",
