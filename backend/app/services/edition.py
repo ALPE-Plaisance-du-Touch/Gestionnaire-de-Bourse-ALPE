@@ -478,7 +478,7 @@ class EditionService:
         checks.append(ClosureCheckItem(
             label="Bilan en cours",
             passed=edition.status == EditionStatus.SETTLEMENT.value,
-            detail="L'edition doit etre en statut 'Bilan'" if edition.status != EditionStatus.SETTLEMENT.value else None,
+            detail="L'édition doit être en statut 'Bilan'" if edition.status != EditionStatus.SETTLEMENT.value else None,
         ))
 
         # Check 2: Retrieval end date must be passed
@@ -490,9 +490,9 @@ class EditionService:
             and datetime.now(timezone.utc) > retrieval_end
         )
         checks.append(ClosureCheckItem(
-            label="Periode de recuperation terminee",
+            label="Période de récupération terminée",
             passed=retrieval_passed,
-            detail="La date de fin de recuperation n'est pas encore passee" if not retrieval_passed else None,
+            detail="La date de fin de récupération n'est pas encore passée" if not retrieval_passed else None,
         ))
 
         # Check 3 & 4: Payout stats
@@ -501,9 +501,9 @@ class EditionService:
 
         payouts_calculated = stats["total_payouts"] > 0
         checks.append(ClosureCheckItem(
-            label="Reversements calcules",
+            label="Reversements calculés",
             passed=payouts_calculated,
-            detail="Aucun reversement n'a ete calcule" if not payouts_calculated else None,
+            detail="Aucun reversement n'a été calculé" if not payouts_calculated else None,
         ))
 
         all_final = (
@@ -512,7 +512,7 @@ class EditionService:
             and stats["payouts_ready"] == 0
         )
         checks.append(ClosureCheckItem(
-            label="Tous les paiements finalises",
+            label="Tous les paiements finalisés",
             passed=all_final,
             detail=f"{stats['payouts_pending'] + stats['payouts_ready']} paiement(s) en attente" if not all_final else None,
         ))
@@ -528,7 +528,7 @@ class EditionService:
         if not check.can_close:
             failed = [c.label for c in check.checks if not c.passed]
             raise ValidationError(
-                f"Impossible de cloturer : {', '.join(failed)}",
+                f"Impossible de clôturer : {', '.join(failed)}",
                 field="status",
             )
 
@@ -541,7 +541,7 @@ class EditionService:
 
         if edition.status != EditionStatus.CLOSED.value:
             raise ValidationError(
-                "Seules les editions cloturees peuvent etre archivees",
+                "Seules les éditions clôturées peuvent être archivées",
                 field="status",
             )
 
