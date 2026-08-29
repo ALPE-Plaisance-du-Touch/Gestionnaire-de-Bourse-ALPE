@@ -116,3 +116,8 @@ documents:
     path: docs/deploiement.md
     type: deployment
     status: validated
+
+  - id: DOC-140-DEMO
+    path: docs/demo-parcours-depot.md
+    type: operations
+    status: draft
