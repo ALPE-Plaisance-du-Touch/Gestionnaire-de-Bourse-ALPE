@@ -2,45 +2,52 @@
 id: DOC-140-DEMO
 title: Démo du parcours de dépôt
 status: draft
-version: 0.1.0
+version: 0.2.0
 updated: 2026-08-29
 owner: ALPE Plaisance du Touch
 links:
-  - rel: operations
-    href: operations.md
-    title: Opérations & Runbooks
-  - rel: user-stories
-    href: user-stories.md
-    title: User stories
+  - rel: environment
+    href: deploiement-nas-synology.md
+    title: Environnement de test dev-j
+  - rel: glossary
+    href: glossaire.md
+    title: Glossaire
 ---
 
 # Démo du parcours de dépôt
 
-Scénario de démonstration couvrant quatre étapes : inscription des participants,
-saisie des listes par un déposant, validation au dépôt par un bénévole, puis
-impression des étiquettes.
+Ce guide permet de présenter l'application de bout en bout : inscrire des
+participants, saisir une liste d'articles, la valider au moment du dépôt, puis
+imprimer les étiquettes.
 
-Durée indicative : 20 à 30 minutes selon les questions.
+Aucune compétence technique n'est nécessaire. Tout se fait depuis un navigateur.
 
-## Avant de commencer
+**Durée** : 20 à 30 minutes avec les questions.
 
-### Environnement
+## L'essentiel en trois phrases
 
-```bash
-make dev          # backend, frontend, base, MailHog
-make migrate      # applique les migrations
-make seed         # comptes, éditions et créneaux de démonstration
-```
+L'adresse de la démonstration est **<https://dev-j.bourse.alpe-plaisance.org>**.
 
-Application : <http://localhost:5173> — MailHog : <http://localhost:8025>
+Toutes les données y sont inventées : aucun vrai déposant, aucun vrai article,
+et **aucun courriel n'est réellement envoyé**. Vous pouvez donc tout essayer
+sans crainte de conséquence.
 
-MailHog capture tous les courriels sortants. Il sert à montrer l'invitation reçue
-par un déposant sans envoyer quoi que ce soit à l'extérieur.
+C'est un environnement de test : il est remis à zéro régulièrement, et ce qui y
+est saisi finit par disparaître.
 
-### Comptes
+## Les quatre étapes montrées
 
-`make seed` crée un compte par rôle. Mots de passe dans
-[backend/scripts/seed.py](../backend/scripts/seed.py) :
+| | Étape | Qui la fait |
+|---|---|---|
+| 1 | Inscrire les participants à la bourse | Gestionnaire |
+| 2 | Saisir sa liste d'articles | Déposant |
+| 3 | Vérifier les articles au dépôt | Bénévole |
+| 4 | Imprimer les étiquettes | Gestionnaire |
+
+Chaque étape se fait avec un compte différent, car chaque rôle ne voit que ce
+qui le concerne. C'est précisément ce que la démonstration cherche à montrer.
+
+## Les comptes
 
 | Rôle | Identifiant | Mot de passe |
 |---|---|---|
@@ -49,115 +56,148 @@ par un déposant sans envoyer quoi que ce soit à l'extérieur.
 | Bénévole | `volunteer@alpe-bourse.fr` | `Volunteer123!` |
 | Déposant | `deposant@example.com` | `Deposant123!` |
 
-Ces identifiants ne valent que pour l'environnement de développement local.
+Ces comptes n'existent que sur l'environnement de démonstration.
 
-La démo fait intervenir quatre rôles successivement. Ouvre **une fenêtre de
-navigation privée par rôle** : les sessions se remplacent l'une l'autre dans un
-même profil, et se reconnecter à chaque étape casse le rythme.
+> **Ouvrez une fenêtre de navigation privée par rôle.**
+> Dans une même fenêtre, se connecter avec un compte déconnecte le précédent.
+> En préparant quatre fenêtres à l'avance, vous passez d'un rôle à l'autre d'un
+> simple clic sur l'onglet, sans ressaisir de mot de passe devant votre public.
 
-### Mode formation : le point à ne pas manquer
+## Avant de commencer : deux réglages indispensables
 
-Les statuts d'une édition avancent normalement selon les dates configurées. Une
-démo doit traverser plusieurs phases en quelques minutes, ce qui n'est possible
-que sur une **édition en formation** : elle seule autorise le forçage de statut
-(`POST /editions/{id}/force-status`).
+À faire **une fois**, dix minutes avant, connecté en **administrateur**.
 
-Sur la page de l'édition, onglet **Actions**, section « Mode formation » →
-**Activer**. Un bandeau signale ensuite l'édition partout dans l'application, et
-les changements d'étape deviennent manuels.
+### 1. Activer le mode formation
 
-Active le mode formation **avant** de commencer, sinon l'étape 3 sera bloquée.
+Sans ce réglage, l'étape 3 sera impossible : la bourse ne pourra pas passer à
+l'étape « Dépôt » avant la date prévue au calendrier, et la démonstration
+s'arrêtera au milieu.
+
+Le mode formation permet de faire avancer la bourse d'une étape à l'autre
+manuellement, ce qui est indispensable pour tout montrer en vingt minutes.
+
+1. Menu de gauche → **Éditions** → ouvrir *Bourse Printemps 2026*
+2. Onglet **Actions**
+3. Section « Mode formation » → bouton **Activer**
+
+Un bandeau apparaît alors sur toutes les pages pour rappeler qu'il s'agit d'un
+entraînement. C'est normal, et plutôt rassurant pour le public.
+
+### 2. Vérifier la date limite de déclaration
+
+Passé cette date, les déposants ne peuvent plus saisir d'articles — et l'étape 2
+échouera sans explication très claire.
+
+1. Onglet **Configuration** de la même bourse
+2. Champ **Date limite de déclaration des articles**
+3. Si la date est passée, mettez-en une dans plusieurs mois
+4. **Enregistrer les modifications**
 
 ## Étape 1 — Inscrire les participants
 
-**Rôle : gestionnaire — Statut requis : Brouillon ou Inscriptions ouvertes**
+**Connectez-vous en gestionnaire.**
 
-Page de l'édition → onglet **Déposants** → section « Inscriptions Billetweb ».
+1. Menu de gauche → **Éditions** → *Bourse Printemps 2026*
+2. Onglet **Déposants**
+3. Bouton **Ajouter un déposant**
+4. Remplissez le formulaire, choisissez un type de liste, puis validez
 
-Deux boutons y apparaissent, et un seul est disponible sans configuration
-préalable :
+**Ce qu'il faut souligner :** le participant apparaît immédiatement dans la
+liste avec son type de liste et son créneau de dépôt.
 
-- **Ajouter un déposant** — saisie manuelle, toujours disponible. C'est le
-  chemin à utiliser pour la démo.
-- **Synchroniser via API** — n'apparaît que si un événement Billetweb est
-  associé à l'édition, ce qui suppose des identifiants API renseignés dans
-  *Administration → Paramètres → Billetweb*.
+Les trois types de listes correspondent à des tarifs et des couleurs
+d'étiquettes différents : **Standard**, **Liste 1000** (adhérents ALPE) et
+**Liste 2000** (famille et proches).
 
-> **Il n'existe plus d'import par fichier CSV.** L'import CSV de la v0.4 a été
-> remplacé par l'intégration API en v0.19 : le service de lecture de CSV subsiste
-> dans le code, mais aucune route HTTP ne l'expose et l'interface ne propose
-> aucun téléversement. Les fichiers de `tests/data/billetweb/` sont des fixtures
-> de tests, pas un chemin utilisable en démonstration.
+> **Sur l'import automatique.** Un bouton *Synchroniser via API* permet de
+> récupérer directement les inscriptions depuis Billetweb, mais il n'apparaît
+> que si un événement Billetweb a été associé à la bourse au préalable. Pour une
+> démonstration, la saisie manuelle est plus sûre : elle ne dépend d'aucun
+> service extérieur. Il n'existe pas d'import par fichier Excel ou CSV.
 
-Pour montrer l'arrivée d'un déposant par courriel, passe plutôt par
-*Administration → Invitations*, qui accepte un CSV
-(`email,prenom,nom,type_liste`, exemple dans
-[tests/data/valid/bulk_invitations.csv](../tests/data/valid/bulk_invitations.csv)).
-L'invitation est visible dans MailHog, et le lien d'activation fonctionne.
+### Variante : montrer le courriel d'invitation
 
-**À montrer :** le déposant ajouté apparaît immédiatement dans la liste, avec son
-type de liste (Standard, 1000 ou 2000) et son créneau de dépôt.
+Pour illustrer ce que reçoit un déposant, passez par **Administration →
+Invitations**, qui accepte une liste de personnes en un seul envoi.
 
-## Étape 2 — Saisir une liste d'articles
+Le courriel n'arrive dans aucune vraie boîte : il est capturé par un outil de
+test, consultable sur **<https://mailhog.dev-j.bourse.alpe-plaisance.org>**
+(des identifiants vous seront demandés, ceux fournis par l'administrateur).
 
-**Rôle : déposant — Statut requis : Inscriptions ouvertes**
+C'est souvent le moment le plus parlant de la démonstration : on voit le
+courriel exactement tel que le recevra le déposant, et le lien d'activation
+fonctionne réellement.
 
-Connexion avec `deposant@example.com`, puis **Mes listes** → créer une liste →
-ajouter des articles.
+## Étape 2 — Le déposant saisit sa liste
 
-Le compte seedé possède déjà une liste avec 6 articles : pratique pour montrer
-l'état d'arrivée sans ressaisir, mais crée-en une nouvelle si tu veux dérouler le
-formulaire de bout en bout.
+**Basculez sur la fenêtre du déposant** (`deposant@example.com`).
 
-**Attention à la date limite de déclaration.** Passée cette date, la saisie est
-refusée. L'édition seedée la fixe au **21 février 2026** : vérifie-la dans
-l'onglet Configuration et repousse-la avant la démo si nécessaire.
+1. Menu **Mes listes**
+2. Créer une liste, puis y ajouter des articles
+3. Une fois la saisie terminée, valider la liste
 
-**À montrer :** le contrôle des quantités par catégorie, le prix indicatif, et le
-passage de la liste en « validée » par le déposant lui-même.
+Ce compte possède déjà une liste de six articles. Pratique pour montrer le
+résultat sans tout ressaisir, mais créez-en une nouvelle si vous voulez
+dérouler le formulaire en entier.
 
-## Étape 3 — Valider au dépôt
+**Ce qu'il faut souligner :** l'application contrôle les quantités autorisées
+par catégorie et propose une aide au prix. Le déposant valide lui-même sa liste
+quand il a terminé : rien n'est figé avant ce geste.
 
-**Rôle : bénévole — Statut requis : Dépôt**
+## Étape 3 — Le bénévole vérifie les articles
 
-Force d'abord l'édition en statut **Dépôt** (onglet Actions).
+Cette étape se déroule le jour du dépôt, quand le déposant apporte ses affaires.
 
-Menu **Revue des listes au dépôt**. Le bénévole ouvre une liste et traite chaque
-article : accepter, refuser ou corriger. Puis il clôt la revue.
+**D'abord, faites avancer la bourse.** En administrateur, onglet **Actions** de
+la bourse, passez l'étape à **Dépôt**. C'est ici que le mode formation activé
+plus tôt entre en jeu.
 
-**À montrer :** un refus motivé et une correction de prix, pour illustrer que la
-déclaration du déposant n'est pas prise telle quelle. Le suivi d'avancement des
-déclarations donne la vue d'ensemble.
+**Puis basculez sur la fenêtre du bénévole.**
+
+1. Menu **Revue des listes au dépôt**
+2. Ouvrir une liste
+3. Pour chaque article : **accepter**, **refuser** ou **corriger**
+4. Clôturer la revue une fois tous les articles traités
+
+**Ce qu'il faut souligner :** refusez un article et corrigez le prix d'un autre.
+C'est le cœur du sujet — ce que le déposant a déclaré chez lui n'est pas repris
+tel quel, le bénévole garde la main sur ce qui est réellement mis en vente.
 
 ## Étape 4 — Imprimer les étiquettes
 
-**Rôle : gestionnaire — Statut requis : Dépôt**
+**Revenez sur la fenêtre du gestionnaire.**
 
-Menu **Étiquettes** → *Gestion des étiquettes* → choisir le mode de génération,
-puis générer le PDF.
+1. Menu **Étiquettes**
+2. Choisir le mode de génération
+3. Générer le PDF
 
-**À montrer :** le code-barres et le QR code d'un article, et le fait que les
-planches sont produites en PDF séparés par liste — ce qui permet de remettre à
-chaque déposant ses propres étiquettes.
+**Ce qu'il faut souligner :** chaque étiquette porte un code-barres et un QR
+code qui permettront le passage en caisse. Les planches sont produites en
+fichiers séparés par liste, de façon à remettre à chaque déposant les siennes
+sans avoir à les trier.
 
-## Réinitialiser entre deux démos
+## Si quelque chose ne va pas
 
-```bash
-make down
-docker volume rm gestionnaire-de-bourse-alpe_db-data
-make dev && make migrate && make seed
-```
+| Symptôme | Cause la plus fréquente |
+|---|---|
+| Impossible de faire avancer la bourse d'une étape | Le mode formation n'est pas activé |
+| Le déposant ne peut pas ajouter d'article | La date limite de déclaration est dépassée |
+| Le menu **Revue des listes** est absent | La bourse n'est pas à l'étape « Dépôt » |
+| Un compte semble déconnecté tout seul | Deux rôles ouverts dans la même fenêtre |
+| Le bouton *Synchroniser via API* n'apparaît pas | Aucun événement Billetweb associé — utilisez la saisie manuelle |
 
-La base repart vierge. Compte deux à trois minutes.
+En cas de blocage réel, la remise à zéro complète prend quelques minutes et
+rend l'environnement identique à sa sortie d'usine. Elle est décrite dans
+[l'installation de l'environnement](deploiement-nas-synology.md), section
+« Remettre à zéro avant une démonstration ».
 
-## Pièges connus
+## Préparation, en résumé
 
-- **Le mode formation conditionne tout.** Sans lui, pas de forçage de statut,
-  donc pas de passage à l'étape 3.
-- **La date limite de déclaration** bloque silencieusement l'étape 2 si elle est
-  dépassée.
-- **Vite peut servir du code périmé** après une modification faite depuis l'hôte
-  (voir [.claude/rules/testing.md](../.claude/rules/testing.md)). Sans
-  conséquence si tu ne modifies rien pendant la démo ; sinon
-  `docker compose restart frontend`.
-- **Les sessions se chassent l'une l'autre** dans un même profil de navigateur.
+À dérouler dix minutes avant :
+
+- [ ] Le site répond sur <https://dev-j.bourse.alpe-plaisance.org>
+- [ ] Quatre fenêtres de navigation privée ouvertes, une connectée par rôle
+- [ ] Mode formation activé sur *Bourse Printemps 2026*
+- [ ] Date limite de déclaration dans le futur
+- [ ] La bourse est à l'étape **Inscriptions ouvertes**
+- [ ] Si vous montrez les courriels : MailHog accessible et identifiants en main

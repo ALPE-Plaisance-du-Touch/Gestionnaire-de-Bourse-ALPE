@@ -30,6 +30,7 @@ Application web pour gérer les Bourses d’ALPE (inscriptions/dépôts, étique
 - Bonnes pratiques: `bonnes-pratiques.md`
 - Déploiement: `deploiement.md`
 - Démo du parcours de dépôt: `demo-parcours-depot.md`
+- Environnement de test dev-j (NAS Synology): `deploiement-nas-synology.md`
 - API (OpenAPI): `api/openapi.yaml`
 - Manifest: `index.yaml`
 - Changelog: `CHANGELOG.md`

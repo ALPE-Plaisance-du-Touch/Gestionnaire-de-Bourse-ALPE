@@ -121,3 +121,8 @@ documents:
     path: docs/demo-parcours-depot.md
     type: operations
     status: draft
+
+  - id: DOC-150-DEVJ
+    path: docs/deploiement-nas-synology.md
+    type: deployment
+    status: draft
