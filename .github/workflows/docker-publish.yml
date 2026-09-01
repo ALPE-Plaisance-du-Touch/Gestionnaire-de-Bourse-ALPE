@@ -1,0 +1,83 @@
+name: Build & publish Docker images
+
+# Construit les images backend et frontend et les publie sur GHCR, pour que le
+# NAS n'ait qu'à faire `docker compose pull`. Rien n'est compilé sur le NAS :
+# ni source à transférer, ni dépendance à sa mémoire disponible.
+on:
+  push:
+    branches: [main, dev, 'dev-*']
+    tags: ['v*.*.*']
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  # GHCR impose des minuscules. Le nom du dépôt est en casse mixte
+  # (ALPE-Plaisance-du-Touch), donc on écrit la forme canonique en dur pour
+  # qu'elle corresponde mot pour mot aux références du fichier compose.
+  IMAGE_NAMESPACE: alpe-plaisance-du-touch
+
+jobs:
+  build-and-push:
+    name: build · push (${{ matrix.image }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: backend
+            context: ./backend
+          - image: frontend
+            context: ./frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute image tags & labels
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/bourse-alpe-${{ matrix.image }}
+          # `type=ref,event=branch` produit le tag `dev-j` sur la branche dev-j :
+          # c'est celui que suit l'environnement de test.
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          target: production
+          push: true
+          # Les NAS Synology visés sont en x86_64. Publier aussi en arm64
+          # doublerait la durée de construction sans usage aujourd'hui.
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Cache par image : un cache commun ferait se piétiner les couches
+          # backend et frontend à chaque exécution.
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}

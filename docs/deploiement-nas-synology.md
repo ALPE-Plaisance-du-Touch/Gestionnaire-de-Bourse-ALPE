@@ -2,8 +2,8 @@
 id: DOC-150-DEVJ
 title: Environnement de test dev-j sur NAS Synology
 status: draft
-version: 0.1.0
-updated: 2026-08-29
+version: 0.3.0
+updated: 2026-09-01
 owner: ALPE Plaisance du Touch
 links:
   - rel: deployment
@@ -20,19 +20,29 @@ Installation de la branche `dev-j` sur un NAS Synology, accessible en HTTPS,
 destinée aux démonstrations et aux tests. Les données y sont fictives et les
 courriels ne sortent jamais de la machine.
 
-## Pourquoi pas `docker-compose.prod.yml`
+Une fois installé, mettre à jour tient en deux gestes : récupérer les images,
+redémarrer.
 
-Le fichier de production publie les ports 80 et 443 et gère lui-même les
-certificats via certbot. Or **Traefik occupe déjà ce rôle** sur le NAS : il
-termine le HTTPS, obtient les certificats Let's Encrypt et route vers les
-conteneurs selon leurs labels.
+## Principe
 
-Deux services qui demandent les mêmes ports et le même certificat entreraient en
-conflit. On confie donc tout le front à Traefik, et la pile dev-j ne parle
-qu'en HTTP.
+Les images sont **construites par GitHub Actions** à chaque push sur `dev-j`,
+puis publiées sur GHCR :
 
-D'où un fichier dédié, `docker-compose.dev-j.yml`, plutôt qu'une adaptation du
-fichier de production.
+```
+ghcr.io/alpe-plaisance-du-touch/bourse-alpe-backend:dev-j
+ghcr.io/alpe-plaisance-du-touch/bourse-alpe-frontend:dev-j
+```
+
+Le NAS ne compile rien et n'a pas besoin du code source. Il ne lui faut que deux
+fichiers : `docker-compose.yml` et `.env`. Cela évite d'installer `git` sur le
+NAS, d'y transférer des archives, et surtout de dépendre de sa mémoire
+disponible — compiler l'application React demande bien plus qu'un NAS d'entrée
+de gamme n'en offre confortablement.
+
+**`docker-compose.prod.yml` n'est pas utilisable ici** : il publie les ports 80
+et 443 et gère ses propres certificats via certbot, alors que Traefik occupe
+déjà ce rôle sur le NAS. Deux services réclamant les mêmes ports et le même
+certificat entreraient en conflit.
 
 ## Architecture
 
@@ -41,123 +51,62 @@ fichier de production.
                     │  HTTPS 443  (redirigé vers 9443 sur le NAS)
                     ▼
         ┌───────────────────────┐
-        │       Traefik         │   certificats Let's Encrypt, entrypoint websecure
+        │       Traefik         │  Let's Encrypt, entrypoint websecure
         └───────────┬───────────┘
-                    │  réseau Docker « web », en HTTP
-                    ▼
-        ┌───────────────────────┐
-        │   nginx (conteneur)   │
-        │   :8080  application  │
-        │   :8081  MailHog      │
-        └───────────┬───────────┘
-                    │
-        ┌───────────┼────────────────┐
-        ▼           ▼                ▼
-   SPA React   backend:8000     mailhog:8025
-                    │
-                    ▼
-                 db:3306
+                    │  réseau Docker « web »
+      ┌─────────────┼──────────────────┐
+      ▼             ▼                  ▼
+  /api/*        tout le reste     mailhog.dev-j…
+  backend:8000  frontend:80       mailhog:8025
+      │                            (mot de passe)
+      ▼
+   db:3306   ── réseau « internal », hors de portée de Traefik
 ```
 
-Traefik joint nginx par le réseau `web` ; aucun port n'a besoin d'être publié
-pour que le routage fonctionne. Les ports 8080 et 8081 le sont tout de même,
-mais sur `127.0.0.1` uniquement, pour pouvoir diagnostiquer depuis le NAS sans
-passer par Traefik.
+La règle `Host(...) && PathPrefix(/api)` est plus spécifique que `Host(...)` :
+Traefik la classe d'office avant, sans qu'il faille fixer de priorité. L'API
+étant déjà montée sur `/api/v1`, **aucun `stripprefix` ne doit être ajouté**.
+
+Aucun port n'est publié sur l'hôte : tout entre par Traefik.
 
 ## Prérequis
 
-- DSM 7.x avec **Container Manager** installé
-- **File Station** pour transférer les fichiers (aucun accès SSH nécessaire, et
-  `git` n'a pas besoin d'être installé sur le NAS)
-- **Traefik en fonctionnement**, avec son réseau `web` et le certresolver
-  `letsencrypt` déjà utilisés par d'autres services
-- Les deux noms pointant vers l'adresse publique du NAS :
-  - `dev-j.bourse.alpe-plaisance.org`
-  - `mailhog.dev-j.bourse.alpe-plaisance.org`
-- Depuis la box, le port 443 redirigé vers le **9443** du NAS et le port 80 vers
-  le **9080** — ce sont les ports que publie la pile Traefik. Le 80 n'est pas
-  facultatif : le défi ACME de Let's Encrypt passe par lui.
+| Élément | Vérification |
+|---|---|
+| DSM 7.x, Container Manager installé | Centre de paquets |
+| NAS x86_64 | Les images sont publiées en `linux/amd64` uniquement ; les NAS ARM ne sont pas pris en charge |
+| Traefik actif sur le réseau `web` | `sudo docker network ls` doit lister `web` |
+| Résolveur ACME nommé `letsencrypt` | sinon, ajuster `TRAEFIK_CERTRESOLVER` dans le `.env` |
+| Les deux noms pointant vers le NAS | `dev-j.bourse.alpe-plaisance.org` et `mailhog.dev-j.bourse.alpe-plaisance.org` |
+| Redirections depuis la box | 443 vers 9443 et **80 vers 9080**, ports publiés par la pile Traefik |
 
-Vérifier que le réseau existe avant de démarrer :
+Le port 80 n'est pas facultatif : le défi ACME de Let's Encrypt passe par lui.
 
-```bash
-sudo docker network ls | grep web
-```
+## 1. Publier les images
 
-## 1. Préparer et transférer le projet
+Les images sont produites par le workflow
+[`.github/workflows/docker-publish.yml`](../.github/workflows/docker-publish.yml),
+déclenché à chaque push sur `dev-j`. Vérifier dans l'onglet **Actions** du dépôt
+que la dernière exécution est verte avant d'installer.
 
-`git` n'étant pas installé sur le NAS, l'archive se fabrique sur le poste de
-développement puis se dépose par File Station.
+Les paquets apparaissent ensuite sur la page *Packages* de l'organisation. S'ils
+sont **privés**, le NAS devra s'authentifier (étape 3).
 
-**Sur le poste**, depuis le dépôt :
+## 2. Déposer les deux fichiers sur le NAS
 
-```bash
-git archive --format=zip --output=bourse-dev-j.zip dev-j
-```
+Dans File Station, créer le dossier `docker/bourse-devj` et y placer :
 
-`git archive` n'emporte que les fichiers suivis : ni `.git`, ni `node_modules`,
-ni aucun secret. C'est exactement ce qu'il faut envoyer.
+| Fichier sur le NAS | Source dans le dépôt |
+|---|---|
+| `docker-compose.yml` | `deploy/docker-compose.dev-j.yml` |
+| `.env` | `deploy/.env.dev-j.example`, complété |
 
-**Sur le NAS**, dans File Station :
+Le renommage n'est pas cosmétique : Container Manager cherche un fichier nommé
+`docker-compose.yml`, et Compose ne charge automatiquement que le fichier
+`.env`.
 
-1. Créer le dossier `docker/bourse-alpe`
-2. Y déposer `bourse-dev-j.zip`
-3. Clic droit → **Extraire** → *Extraire ici*
-4. Supprimer l'archive
-
-**Puis, important**, remplacer le fichier Compose. Le dépôt en contient deux et
-celui qui porte le nom attendu par Container Manager est celui de
-développement — le laisser en place démarrerait la mauvaise pile :
-
-1. Supprimer `docker-compose.yml`
-2. Renommer `docker-compose.dev-j.yml` en `docker-compose.yml`
-
-## 2. Configurer l'environnement
-
-Le fichier doit s'appeler **`.env`**, dans le dossier du projet : Container
-Manager ne sait pas passer `--env-file`, et Compose charge ce nom-là tout seul.
-
-Le créer avec File Station (clic droit dans le dossier → *Créer* → *Fichier*),
-puis l'ouvrir dans l'éditeur de texte intégré et y coller :
-
-```bash
-# --- Environnement ---
-# "staging" désactive la documentation d'API et active la limitation de débit,
-# comme en production, sans imposer le contrôle strict du secret JWT au
-# démarrage. Ne jamais mettre "development" sur une machine exposée.
-APP_ENV=staging
-DEBUG=false
-
-# --- Base de données ---
-DB_NAME=bourse_devj
-DB_USER=bourse
-DB_PASSWORD=CHANGE_ME
-DB_ROOT_PASSWORD=CHANGE_ME
-
-# --- Sécurité ---
-JWT_SECRET_KEY=CHANGE_ME
-SETTINGS_ENCRYPTION_KEY=CHANGE_ME
-
-# --- Domaines ---
-CORS_ORIGINS=https://dev-j.bourse.alpe-plaisance.org
-FRONTEND_URL=https://dev-j.bourse.alpe-plaisance.org
-
-# --- Courriel ---
-SMTP_HOST=mailhog
-SMTP_PORT=1025
-SMTP_USER=
-SMTP_PASSWORD=
-SMTP_USE_TLS=false
-SMTP_FROM_EMAIL=noreply@dev-j.bourse.alpe-plaisance.org
-SMTP_FROM_NAME=Bourse ALPE (test)
-SUPPORT_EMAIL=noreply@dev-j.bourse.alpe-plaisance.org
-
-# --- Limitation de débit ---
-RATE_LIMIT_REQUESTS=600
-RATE_LIMIT_WINDOW_SECONDS=60
-```
-
-Générer les secrets **sur le poste de développement** :
+Renseigner ensuite le `.env` avec l'éditeur de texte de File Station. Les
+secrets se génèrent sur le poste de développement :
 
 ```bash
 openssl rand -hex 32     # JWT_SECRET_KEY
@@ -165,39 +114,42 @@ openssl rand -base64 32  # SETTINGS_ENCRYPTION_KEY
 openssl rand -base64 24  # chaque mot de passe de base
 ```
 
-Ce fichier contient tous les secrets de l'environnement : le dossier
-`docker/bourse-alpe` ne doit être partagé avec personne, et surtout pas exposé
-par un service de fichiers.
+### Le mot de passe MailHog, et son piège
 
-**`RATE_LIMIT_REQUESTS` mérite une explication.** Derrière Traefik, les
-participants d'une démonstration sortent souvent par une seule adresse publique
-et partagent donc le même compteur. La valeur de production, 100 requêtes par
-minute, est vite atteinte à plusieurs ; 600 laisse de la marge sans désactiver
-la protection.
+MailHog n'a aucune authentification propre et affiche **tous** les courriels,
+jetons d'invitation et liens de réinitialisation compris : quiconque connaît
+l'adresse pourrait activer un compte à la place d'un autre. L'accès passe donc
+par le middleware `basicauth` de Traefik.
 
-**`FRONTEND_URL` est utilisé dans les courriels** (activation de compte,
-réinitialisation). Une erreur ici produit des liens qui ne mènent nulle part.
-
-## 3. Protéger l'accès à MailHog
-
-MailHog n'a aucune authentification et affiche **tous** les courriels, jetons
-d'invitation et liens de réinitialisation compris. Quiconque connaît l'adresse
-pourrait activer un compte à la place d'un autre. L'accès est donc protégé par
-mot de passe au niveau de nginx.
-
-Créer, toujours avec File Station, le fichier `docker/nginx/mailhog.htpasswd`
-dans le dossier du projet. Il contient **une seule ligne**, de la forme
-`identifiant:empreinte`.
-
-L'empreinte se fabrique sur le poste de développement, jamais à la main :
+Fabriquer l'empreinte sur le poste de développement :
 
 ```bash
 docker run --rm httpd:alpine htpasswd -nbB alpe 'MOT_DE_PASSE_CHOISI'
 ```
 
-`-n` affiche le résultat sans écrire de fichier : il ne reste qu'à copier la
-ligne produite. Ce fichier ne doit jamais être commité ; il figure déjà dans
-`.gitignore`.
+**Doubler ensuite chaque `$` du résultat avant de le coller dans le `.env`.**
+Compose interprète un `$` isolé comme une variable et ampute le hash sans rien
+signaler — l'authentification échoue alors sans message exploitable.
+
+```
+htpasswd affiche   alpe:$2y$10$abcdef...
+le .env contient   alpe:$$2y$$10$$abcdef...
+```
+
+## 3. Autoriser le NAS à récupérer les images
+
+À faire **uniquement si les paquets GHCR sont privés**. Depuis un terminal du
+NAS :
+
+```bash
+echo "<TOKEN>" | sudo docker login ghcr.io -u <utilisateur> --password-stdin
+```
+
+Le token est un *Personal Access Token* GitHub avec la seule portée
+`read:packages`. L'identifiant est enregistré durablement et sert à toutes les
+piles du NAS.
+
+Si les paquets sont publics, il n'y a rien à faire.
 
 ## 4. Créer le projet dans Container Manager
 
@@ -206,91 +158,24 @@ ligne produite. Ce fichier ne doit jamais être commité ; il figure déjà dans
 | Champ | Valeur |
 |---|---|
 | Nom du projet | `bourse-devj` |
-| Chemin | le dossier `docker/bourse-alpe` préparé plus haut |
+| Chemin | le dossier `docker/bourse-devj` |
 | Source | *Utiliser le fichier docker-compose.yml existant* |
 
-Container Manager affiche le contenu du fichier pour relecture, puis propose de
-lancer la construction. Accepter.
-
-**La première construction prend de longues minutes** : elle compile le backend
-Python et l'application React. Les journaux défilent dans l'interface.
-
-Deux comportements normaux, qui ressemblent à des erreurs :
-
-- le conteneur `bourse-devj-frontend-build` **s'arrête tout seul** une fois
-  l'application compilée et déposée dans un volume partagé. Ne pas le relancer ;
-- `bourse-devj-backend` peut redémarrer une ou deux fois en attendant que la
-  base soit prête.
+Container Manager télécharge les images et démarre la pile. C'est rapide : rien
+n'est compilé.
 
 ### Appliquer le schéma et charger les données
 
-Container Manager donne un terminal sans passer par SSH :
-
-**Conteneur** → `bourse-devj-backend` → onglet **Terminal** → **Créer** → `bash`
-
-Puis, dans ce terminal :
+**Conteneur** → `bourse-devj-backend` → onglet **Terminal** → **Créer** →
+`bash`, puis :
 
 ```bash
 alembic upgrade head
 python scripts/seed.py
 ```
 
-Le second affiche la liste des comptes créés. C'est le moment de vérifier que
-les identifiants correspondent à ceux du guide de démonstration.
-
-### Vérifier avant d'aller plus loin
-
-Toujours dans le terminal du conteneur backend. L'image ne contient pas `curl`,
-mais Python y est par construction :
-
-```bash
-python -c "import urllib.request; print(urllib.request.urlopen('http://nginx:8080/').status)"
-```
-
-Une réponse `200` signifie que l'application est servie correctement. Si ce
-n'est pas le cas, inutile de chercher du côté de Traefik : le problème est
-interne à la pile.
-
-## 5. Routage et certificats : rien à faire
-
-Traefik découvre la pile tout seul, par les labels portés par le service nginx
-dans `docker-compose.dev-j.yml`. Il n'y a **aucune configuration à saisir**, ni
-dans DSM, ni dans les fichiers de Traefik.
-
-Les labels déclarent deux routeurs vers un même conteneur, chacun sur son port :
-
-| Routeur | Nom demandé | Port interne |
-|---|---|---|
-| `devj-app` | `dev-j.bourse.alpe-plaisance.org` | 8080 |
-| `devj-mailhog` | `mailhog.dev-j.bourse.alpe-plaisance.org` | 8081 |
-
-Trois détails conditionnent le bon fonctionnement, et sont déjà dans le fichier :
-
-- `traefik.enable=true` — la pile Traefik tourne avec `exposedByDefault=false`,
-  donc un conteneur sans ce label est purement ignoré.
-- `traefik.docker.network=web` — nginx appartient à deux réseaux ; sans cette
-  précision Traefik peut retenir la mauvaise adresse et le routage échoue de
-  façon intermittente.
-- `...loadbalancer.server.port` — obligatoire sur chaque service, le conteneur
-  écoutant sur deux ports.
-
-Les certificats sont demandés à Let's Encrypt au premier appel de chaque nom,
-puis renouvelés automatiquement. Le premier chargement peut donc prendre
-quelques secondes de plus.
-
-Si un nom renvoie une erreur 404 de Traefik, c'est presque toujours que le
-conteneur n'a pas été détecté :
-
-```bash
-sudo docker logs traefik 2>&1 | tail -30
-```
-
-## 6. Pare-feu
-
-Si le pare-feu DSM est actif, autoriser **9080** et **9443** — les ports que
-publie Traefik. Les ports 8080 et 8081 de la pile dev-j n'ont pas à être
-ouverts : ils n'écoutent que sur `127.0.0.1` et ne servent qu'au diagnostic
-local, Traefik passant par le réseau Docker.
+Le second affiche la liste des comptes créés — l'occasion de vérifier qu'ils
+correspondent au guide de démonstration.
 
 ## Vérifier l'installation
 
@@ -302,35 +187,49 @@ local, Traefik passant par le réseau Docker.
 | Mot de passe oublié depuis l'application | le courriel apparaît dans MailHog |
 | Console du navigateur (F12) | aucune erreur |
 
-Le dernier point compte : une erreur CORS ou un lien cassé dans un courriel
-vient presque toujours de `CORS_ORIGINS` ou `FRONTEND_URL` mal renseignés.
+Une erreur CORS, ou un lien de courriel qui ne mène nulle part, vient presque
+toujours de `CORS_ORIGINS` ou `FRONTEND_URL` mal renseignés.
+
+Un **404 de Traefik** signale au contraire que le conteneur n'a pas été
+détecté ; ses journaux le disent :
+
+```bash
+sudo docker logs traefik
+```
 
 ## Mettre à jour
 
-1. **Sur le poste** : `git archive --format=zip --output=bourse-dev-j.zip dev-j`
-2. **File Station** : déposer l'archive dans `docker/bourse-alpe`, extraire en
-   écrasant, supprimer l'archive
-3. Remplacer à nouveau `docker-compose.yml` par `docker-compose.dev-j.yml`
-   — l'extraction a remis le fichier de développement en place
-4. **Container Manager** → projet `bourse-devj` → **Action** → **Construire**
-5. Si la mise à jour touche la base, ouvrir le terminal du conteneur backend et
-   lancer `alembic upgrade head`
+C'est tout l'intérêt du montage. Après un push sur `dev-j`, une fois le workflow
+au vert :
 
-`.env` et `docker/nginx/mailhog.htpasswd` ne figurent pas dans l'archive : ils
-survivent à la mise à jour.
+**Container Manager** → projet `bourse-devj` → **Action** → **Reconstruire**
+
+L'interface récupère les nouvelles images et redémarre les conteneurs. Les
+services portent `pull_policy: always`, donc le tag `dev-j` est bien
+retéléchargé et non repris du cache local.
+
+En ligne de commande, l'équivalent tient en une ligne :
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+Si la mise à jour touche la base, ouvrir ensuite le terminal du conteneur
+backend et lancer `alembic upgrade head`. Ni le `.env` ni les données ne sont
+affectés.
 
 ## Remettre à zéro avant une démonstration
 
-Efface toutes les données et recharge le jeu de démonstration, sans supprimer le
-projet ni reconstruire les images.
+Efface toutes les données et recharge le jeu de démonstration, sans toucher aux
+images.
 
-**Conteneur** → `bourse-devj-db` → **Terminal** → **Créer** → `bash`, puis :
+Terminal du conteneur `bourse-devj-db` :
 
 ```bash
 mariadb -u root -p
 ```
 
-Le mot de passe est celui de `DB_ROOT_PASSWORD`. Une fois dans l'invite SQL :
+Le mot de passe est celui de `DB_ROOT_PASSWORD`. Puis, dans l'invite SQL :
 
 ```sql
 DROP DATABASE bourse_devj;
@@ -340,30 +239,26 @@ FLUSH PRIVILEGES;
 EXIT;
 ```
 
-Puis dans le terminal du conteneur `bourse-devj-backend` :
+Puis, dans le terminal du conteneur `bourse-devj-backend` :
 
 ```bash
 alembic upgrade head
 python scripts/seed.py
 ```
 
-Compter deux à trois minutes en tout. La base repart identique à sa sortie
-d'usine, et les images n'ont pas bougé.
+Deux à trois minutes en tout.
 
-## Sauvegarde
+## Revenir à une version antérieure
 
-Sur un environnement de test, une sauvegarde n'a d'intérêt que si un jeu de
-données y a été saisi à la main et qu'on ne veut pas le ressaisir. Dans le cas
-contraire, la remise à zéro ci-dessus suffit.
+Chaque image est aussi taguée par son empreinte de commit. Pour repasser à une
+version précise, renseigner `IMAGE_TAG` dans le `.env` :
 
-Le cas échéant, depuis le terminal du conteneur `bourse-devj-db` :
-
-```bash
-mariadb-dump -u root -p bourse_devj > /tmp/sauvegarde-devj.sql
+```
+IMAGE_TAG=sha-a1b2c3d
 ```
 
-Le fichier reste dans le conteneur. Pour le récupérer, écrire plutôt dans un
-dossier monté depuis le NAS, ou copier son contenu depuis le terminal.
+puis reconstruire le projet. C'est le moyen le plus rapide de sortir d'une
+régression sans attendre un correctif.
 
 ## Limites connues
 
@@ -375,8 +270,13 @@ dossier monté depuis le NAS, ou copier son contenu depuis le terminal.
 - **La limitation de débit est approximative.** Le backend tourne avec quatre
   processus qui comptent chacun de leur côté (issue #52) : la limite réelle vaut
   environ quatre fois la valeur configurée.
-- **`docker-compose.prod.yml` n'est pas utilisable tel quel**, et pas seulement
-  à cause des ports : `docker/nginx/nginx.prod.conf` contient des `${DOMAIN}`
-  qui ne sont jamais substitués, le fichier étant monté directement dans
-  `conf.d/`. nginx refuse de démarrer sur une variable inconnue. À corriger
-  avant la vraie mise en production.
+- **Les en-têtes de sécurité sont ceux de l'image frontend**
+  (`frontend/docker/nginx.conf`), moins stricts que le
+  `docker/nginx/security-headers.conf` prévu pour la production : ni CSP, ni
+  HSTS. Acceptable pour un environnement de test, à revoir avant la mise en
+  production.
+- **`docker/nginx/nginx.prod.conf` contient des `${DOMAIN}`** qui ne sont jamais
+  substitués, le fichier étant monté directement dans `conf.d/`. nginx refuse de
+  démarrer sur une variable inconnue : la configuration de production ne peut
+  pas démarrer en l'état. Sans effet ici, à corriger avant la vraie mise en
+  production.

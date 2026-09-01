@@ -1,0 +1,117 @@
+# Environnement de test dev-j — Bourse ALPE (NAS Synology, DSM 7.x)
+#
+# Les images sont construites par GitHub Actions et publiées sur GHCR : le NAS
+# ne compile rien, il fait `docker compose pull` puis `up -d`. Ni source, ni
+# git, ni contrainte de mémoire sur le NAS.
+#
+#   ghcr.io/alpe-plaisance-du-touch/bourse-alpe-backend:dev-j
+#   ghcr.io/alpe-plaisance-du-touch/bourse-alpe-frontend:dev-j
+#
+# Traefik, déjà en place sur le réseau externe `web`, termine le TLS et répartit :
+#   dev-j.bourse.alpe-plaisance.org/api/*   -> backend:8000
+#   dev-j.bourse.alpe-plaisance.org/*       -> frontend:80
+#   mailhog.dev-j.bourse.alpe-plaisance.org -> mailhog:8025 (mot de passe)
+#
+# Aucun port n'est publié sur l'hôte : tout passe par Traefik.
+#
+# Procédure complète : docs/deploiement-nas-synology.md
+
+# Nom de projet fixe : containers et volumes gardent les mêmes noms quel que
+# soit le dossier d'installation.
+name: bourse-devj
+
+services:
+  db:
+    image: mariadb:10.11
+    container_name: bourse-devj-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD est obligatoire}
+      MYSQL_DATABASE: ${DB_NAME:-bourse_devj}
+      MYSQL_USER: ${DB_USER:-bourse}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD est obligatoire}
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    # Jamais exposée à Traefik.
+    networks:
+      - internal
+
+  backend:
+    image: ghcr.io/alpe-plaisance-du-touch/bourse-alpe-backend:${IMAGE_TAG:-dev-j}
+    container_name: bourse-devj-backend
+    pull_policy: always
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: mysql+aiomysql://${DB_USER:-bourse}:${DB_PASSWORD}@db:3306/${DB_NAME:-bourse_devj}
+    networks:
+      - internal
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      # Règle plus spécifique que celle du frontend : Traefik la classe d'office
+      # avant, le préfixe /api est donc servi ici.
+      - "traefik.http.routers.devj-api.rule=Host(`${PUBLIC_HOST:-dev-j.bourse.alpe-plaisance.org}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.devj-api.entrypoints=websecure"
+      - "traefik.http.routers.devj-api.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}"
+      - "traefik.http.services.devj-api.loadbalancer.server.port=8000"
+      # L'API est déjà montée sur /api/v1 : surtout pas de stripprefix.
+
+  frontend:
+    image: ghcr.io/alpe-plaisance-du-touch/bourse-alpe-frontend:${IMAGE_TAG:-dev-j}
+    container_name: bourse-devj-frontend
+    pull_policy: always
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.devj-web.rule=Host(`${PUBLIC_HOST:-dev-j.bourse.alpe-plaisance.org}`)"
+      - "traefik.http.routers.devj-web.entrypoints=websecure"
+      - "traefik.http.routers.devj-web.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}"
+      - "traefik.http.services.devj-web.loadbalancer.server.port=80"
+
+  # Capture tous les courriels sortants : rien ne part vers une vraie adresse.
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: bourse-devj-mailhog
+    restart: unless-stopped
+    networks:
+      - internal
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.devj-mailhog.rule=Host(`${MAILHOG_HOST:-mailhog.dev-j.bourse.alpe-plaisance.org}`)"
+      - "traefik.http.routers.devj-mailhog.entrypoints=websecure"
+      - "traefik.http.routers.devj-mailhog.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}"
+      - "traefik.http.services.devj-mailhog.loadbalancer.server.port=8025"
+      # MailHog n'a aucune authentification et affiche tous les courriels,
+      # jetons d'invitation et liens de réinitialisation compris.
+      - "traefik.http.routers.devj-mailhog.middlewares=devj-mailhog-auth"
+      - "traefik.http.middlewares.devj-mailhog-auth.basicauth.users=${MAILHOG_BASICAUTH:?MAILHOG_BASICAUTH est obligatoire}"
+
+networks:
+  # Base et backend uniquement : Traefik n'y a pas accès.
+  internal:
+    driver: bridge
+  # Réseau de Traefik, créé par sa propre pile.
+  web:
+    external: true
+
+volumes:
+  db-data:

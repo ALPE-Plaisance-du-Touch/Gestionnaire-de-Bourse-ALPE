@@ -25,12 +25,8 @@ env/
 .env.local
 .env.*.local
 .env.production
-.env.dev-j
 !.env.example
 !.env.production.example
-
-# Secrets de l'environnement de test dev-j
-docker/nginx/mailhog.htpasswd
 
 # IDE
 .idea/
