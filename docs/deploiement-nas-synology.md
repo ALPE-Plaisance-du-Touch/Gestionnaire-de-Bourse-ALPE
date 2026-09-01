@@ -67,7 +67,8 @@ passer par Traefik.
 ## Prérequis
 
 - DSM 7.x avec **Container Manager** installé
-- Accès SSH au NAS activé (Panneau de configuration → Terminal & SNMP)
+- **File Station** pour transférer les fichiers (aucun accès SSH nécessaire, et
+  `git` n'a pas besoin d'être installé sur le NAS)
 - **Traefik en fonctionnement**, avec son réseau `web` et le certresolver
   `letsencrypt` déjà utilisés par d'autres services
 - Les deux noms pointant vers l'adresse publique du NAS :
@@ -83,22 +84,41 @@ Vérifier que le réseau existe avant de démarrer :
 sudo docker network ls | grep web
 ```
 
-## 1. Récupérer le code
+## 1. Préparer et transférer le projet
 
-En SSH sur le NAS :
+`git` n'étant pas installé sur le NAS, l'archive se fabrique sur le poste de
+développement puis se dépose par File Station.
+
+**Sur le poste**, depuis le dépôt :
 
 ```bash
-mkdir -p /volume1/docker/bourse-alpe
-cd /volume1/docker/bourse-alpe
-git clone https://github.com/ALPE-Plaisance-du-Touch/Gestionnaire-de-Bourse-ALPE.git .
-git checkout dev-j
+git archive --format=zip --output=bourse-dev-j.zip dev-j
 ```
 
-Adapte `/volume1` si ton volume porte un autre nom.
+`git archive` n'emporte que les fichiers suivis : ni `.git`, ni `node_modules`,
+ni aucun secret. C'est exactement ce qu'il faut envoyer.
+
+**Sur le NAS**, dans File Station :
+
+1. Créer le dossier `docker/bourse-alpe`
+2. Y déposer `bourse-dev-j.zip`
+3. Clic droit → **Extraire** → *Extraire ici*
+4. Supprimer l'archive
+
+**Puis, important**, remplacer le fichier Compose. Le dépôt en contient deux et
+celui qui porte le nom attendu par Container Manager est celui de
+développement — le laisser en place démarrerait la mauvaise pile :
+
+1. Supprimer `docker-compose.yml`
+2. Renommer `docker-compose.dev-j.yml` en `docker-compose.yml`
 
 ## 2. Configurer l'environnement
 
-Créer `.env.dev-j` à la racine du projet :
+Le fichier doit s'appeler **`.env`**, dans le dossier du projet : Container
+Manager ne sait pas passer `--env-file`, et Compose charge ce nom-là tout seul.
+
+Le créer avec File Station (clic droit dans le dossier → *Créer* → *Fichier*),
+puis l'ouvrir dans l'éditeur de texte intégré et y coller :
 
 ```bash
 # --- Environnement ---
@@ -137,7 +157,7 @@ RATE_LIMIT_REQUESTS=600
 RATE_LIMIT_WINDOW_SECONDS=60
 ```
 
-Générer les secrets :
+Générer les secrets **sur le poste de développement** :
 
 ```bash
 openssl rand -hex 32     # JWT_SECRET_KEY
@@ -145,11 +165,9 @@ openssl rand -base64 32  # SETTINGS_ENCRYPTION_KEY
 openssl rand -base64 24  # chaque mot de passe de base
 ```
 
-Puis restreindre l'accès au fichier :
-
-```bash
-chmod 600 .env.dev-j
-```
+Ce fichier contient tous les secrets de l'environnement : le dossier
+`docker/bourse-alpe` ne doit être partagé avec personne, et surtout pas exposé
+par un service de fichiers.
 
 **`RATE_LIMIT_REQUESTS` mérite une explication.** Derrière Traefik, les
 participants d'une démonstration sortent souvent par une seule adresse publique
@@ -165,40 +183,73 @@ réinitialisation). Une erreur ici produit des liens qui ne mènent nulle part.
 MailHog n'a aucune authentification et affiche **tous** les courriels, jetons
 d'invitation et liens de réinitialisation compris. Quiconque connaît l'adresse
 pourrait activer un compte à la place d'un autre. L'accès est donc protégé par
-mot de passe au niveau de nginx :
+mot de passe au niveau de nginx.
+
+Créer, toujours avec File Station, le fichier `docker/nginx/mailhog.htpasswd`
+dans le dossier du projet. Il contient **une seule ligne**, de la forme
+`identifiant:empreinte`.
+
+L'empreinte se fabrique sur le poste de développement, jamais à la main :
 
 ```bash
-docker run --rm httpd:alpine htpasswd -nbB alpe 'MOT_DE_PASSE_CHOISI' \
-  > docker/nginx/mailhog.htpasswd
-chmod 600 docker/nginx/mailhog.htpasswd
+docker run --rm httpd:alpine htpasswd -nbB alpe 'MOT_DE_PASSE_CHOISI'
 ```
 
-Ce fichier ne doit jamais être commité — vérifie qu'il est ignoré par git.
+`-n` affiche le résultat sans écrire de fichier : il ne reste qu'à copier la
+ligne produite. Ce fichier ne doit jamais être commité ; il figure déjà dans
+`.gitignore`.
 
-## 4. Démarrer
+## 4. Créer le projet dans Container Manager
+
+**Container Manager** → **Projet** → **Créer** :
+
+| Champ | Valeur |
+|---|---|
+| Nom du projet | `bourse-devj` |
+| Chemin | le dossier `docker/bourse-alpe` préparé plus haut |
+| Source | *Utiliser le fichier docker-compose.yml existant* |
+
+Container Manager affiche le contenu du fichier pour relecture, puis propose de
+lancer la construction. Accepter.
+
+**La première construction prend de longues minutes** : elle compile le backend
+Python et l'application React. Les journaux défilent dans l'interface.
+
+Deux comportements normaux, qui ressemblent à des erreurs :
+
+- le conteneur `bourse-devj-frontend-build` **s'arrête tout seul** une fois
+  l'application compilée et déposée dans un volume partagé. Ne pas le relancer ;
+- `bourse-devj-backend` peut redémarrer une ou deux fois en attendant que la
+  base soit prête.
+
+### Appliquer le schéma et charger les données
+
+Container Manager donne un terminal sans passer par SSH :
+
+**Conteneur** → `bourse-devj-backend` → onglet **Terminal** → **Créer** → `bash`
+
+Puis, dans ce terminal :
 
 ```bash
-cd /volume1/docker/bourse-alpe
-sudo docker compose -f docker-compose.dev-j.yml --env-file .env.dev-j up -d --build
+alembic upgrade head
+python scripts/seed.py
 ```
 
-La première construction prend plusieurs minutes. Le conteneur
-`bourse-devj-frontend-build` se termine normalement après avoir déposé le SPA
-compilé : ce n'est pas une erreur.
+Le second affiche la liste des comptes créés. C'est le moment de vérifier que
+les identifiants correspondent à ceux du guide de démonstration.
 
-Puis appliquer le schéma et charger les données de démonstration :
+### Vérifier avant d'aller plus loin
+
+Toujours dans le terminal du conteneur backend. L'image ne contient pas `curl`,
+mais Python y est par construction :
 
 ```bash
-sudo docker compose -f docker-compose.dev-j.yml exec backend alembic upgrade head
-sudo docker compose -f docker-compose.dev-j.yml exec backend python scripts/seed.py
+python -c "import urllib.request; print(urllib.request.urlopen('http://nginx:8080/').status)"
 ```
 
-Vérifier que l'application répond localement avant d'aller plus loin :
-
-```bash
-curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/
-curl -s http://127.0.0.1:8080/api/v1/../../health
-```
+Une réponse `200` signifie que l'application est servie correctement. Si ce
+n'est pas le cas, inutile de chercher du côté de Traefik : le problème est
+interne à la pile.
 
 ## 5. Routage et certificats : rien à faire
 
@@ -256,40 +307,63 @@ vient presque toujours de `CORS_ORIGINS` ou `FRONTEND_URL` mal renseignés.
 
 ## Mettre à jour
 
-```bash
-cd /volume1/docker/bourse-alpe
-git pull origin dev-j
-sudo docker compose -f docker-compose.dev-j.yml --env-file .env.dev-j up -d --build
-sudo docker compose -f docker-compose.dev-j.yml exec backend alembic upgrade head
-```
+1. **Sur le poste** : `git archive --format=zip --output=bourse-dev-j.zip dev-j`
+2. **File Station** : déposer l'archive dans `docker/bourse-alpe`, extraire en
+   écrasant, supprimer l'archive
+3. Remplacer à nouveau `docker-compose.yml` par `docker-compose.dev-j.yml`
+   — l'extraction a remis le fichier de développement en place
+4. **Container Manager** → projet `bourse-devj` → **Action** → **Construire**
+5. Si la mise à jour touche la base, ouvrir le terminal du conteneur backend et
+   lancer `alembic upgrade head`
+
+`.env` et `docker/nginx/mailhog.htpasswd` ne figurent pas dans l'archive : ils
+survivent à la mise à jour.
 
 ## Remettre à zéro avant une démonstration
 
-Efface toutes les données et recharge le jeu de démonstration :
+Efface toutes les données et recharge le jeu de démonstration, sans supprimer le
+projet ni reconstruire les images.
+
+**Conteneur** → `bourse-devj-db` → **Terminal** → **Créer** → `bash`, puis :
 
 ```bash
-cd /volume1/docker/bourse-alpe
-sudo docker compose -f docker-compose.dev-j.yml --env-file .env.dev-j down
-sudo docker volume rm bourse-alpe_db_data
-sudo docker compose -f docker-compose.dev-j.yml --env-file .env.dev-j up -d
-sudo docker compose -f docker-compose.dev-j.yml exec backend alembic upgrade head
-sudo docker compose -f docker-compose.dev-j.yml exec backend python scripts/seed.py
+mariadb -u root -p
 ```
 
-Le nom exact du volume dépend du dossier du projet ; `docker volume ls` le donne.
+Le mot de passe est celui de `DB_ROOT_PASSWORD`. Une fois dans l'invite SQL :
+
+```sql
+DROP DATABASE bourse_devj;
+CREATE DATABASE bourse_devj CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT ALL PRIVILEGES ON bourse_devj.* TO 'bourse'@'%';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+Puis dans le terminal du conteneur `bourse-devj-backend` :
+
+```bash
+alembic upgrade head
+python scripts/seed.py
+```
+
+Compter deux à trois minutes en tout. La base repart identique à sa sortie
+d'usine, et les images n'ont pas bougé.
 
 ## Sauvegarde
 
-Les scripts de `scripts/` fonctionnent sur cet environnement. Pour une simple
-copie ponctuelle de la base :
+Sur un environnement de test, une sauvegarde n'a d'intérêt que si un jeu de
+données y a été saisi à la main et qu'on ne veut pas le ressaisir. Dans le cas
+contraire, la remise à zéro ci-dessus suffit.
+
+Le cas échéant, depuis le terminal du conteneur `bourse-devj-db` :
 
 ```bash
-sudo docker compose -f docker-compose.dev-j.yml exec db \
-  mariadb-dump -u root -p"$DB_ROOT_PASSWORD" bourse_devj > sauvegarde-devj.sql
+mariadb-dump -u root -p bourse_devj > /tmp/sauvegarde-devj.sql
 ```
 
-Sur un environnement de test, une sauvegarde n'a d'intérêt que si tu y as saisi
-un jeu de données que tu ne veux pas ressaisir. Sinon, `seed.py` suffit.
+Le fichier reste dans le conteneur. Pour le récupérer, écrire plutôt dans un
+dossier monté depuis le NAS, ou copier son contenu depuis le terminal.
 
 ## Limites connues
 

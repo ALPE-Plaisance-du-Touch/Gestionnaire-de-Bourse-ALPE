@@ -6,6 +6,9 @@
 #   dev-j.bourse.alpe-plaisance.org         -> nginx:8080
 #   mailhog.dev-j.bourse.alpe-plaisance.org -> nginx:8081
 #
+# Déployé par Container Manager : copier ce fichier en « docker-compose.yml »
+# dans le dossier du projet, et la configuration en « .env ».
+#
 # Mise en route : voir docs/deploiement-nas-synology.md
 
 services:
@@ -36,8 +39,11 @@ services:
       dockerfile: Dockerfile
       target: production
     container_name: bourse-devj-backend
+    # Container Manager ne sait pas passer --env-file : Compose charge de
+    # lui-même le fichier « .env » du dossier du projet, pour l'interpolation
+    # des ${...} ci-dessous comme pour les variables du backend.
     env_file:
-      - .env.dev-j
+      - .env
     environment:
       DATABASE_URL: mysql+aiomysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}
     depends_on:
