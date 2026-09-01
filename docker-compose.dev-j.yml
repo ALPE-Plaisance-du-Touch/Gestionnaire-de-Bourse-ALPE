@@ -1,11 +1,10 @@
 # Environnement de test dev-j - Bourse ALPE (NAS Synology)
 #
-# TLS et noms de domaine sont pris en charge par le reverse proxy de DSM :
-# les conteneurs n'exposent que du HTTP en clair sur des ports hauts, DSM
-# occupant déjà 80 et 443.
+# Le routage et le TLS sont assurés par Traefik, déjà en place sur le NAS :
+# les conteneurs ne parlent qu'en HTTP et se déclarent par des labels.
 #
-#   dev-j.bourse.alpe-plaisance.org         -> 127.0.0.1:8080
-#   mailhog.dev-j.bourse.alpe-plaisance.org -> 127.0.0.1:8081
+#   dev-j.bourse.alpe-plaisance.org         -> nginx:8080
+#   mailhog.dev-j.bourse.alpe-plaisance.org -> nginx:8081
 #
 # Mise en route : voir docs/deploiement-nas-synology.md
 
@@ -64,6 +63,8 @@ services:
   nginx:
     image: nginx:1.27-alpine
     container_name: bourse-devj-nginx
+    # Publiés sur la boucle locale uniquement, pour pouvoir diagnostiquer depuis
+    # le NAS sans passer par Traefik. Rien n'est joignable depuis le réseau.
     ports:
       - "127.0.0.1:8080:8080"
       - "127.0.0.1:8081:8081"
@@ -77,7 +78,29 @@ services:
       - mailhog
     networks:
       - devj-network
+      - web
     restart: unless-stopped
+    labels:
+      # Traefik tourne avec exposedByDefault=false : sans cette ligne, rien
+      # n'est routé.
+      - "traefik.enable=true"
+      # Le conteneur est sur deux réseaux ; il faut désigner celui que Traefik
+      # doit emprunter, sinon il peut choisir la mauvaise adresse.
+      - "traefik.docker.network=web"
+
+      # --- Application ---
+      - "traefik.http.routers.devj-app.rule=Host(`dev-j.bourse.alpe-plaisance.org`)"
+      - "traefik.http.routers.devj-app.entrypoints=websecure"
+      - "traefik.http.routers.devj-app.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.devj-app.service=devj-app"
+      - "traefik.http.services.devj-app.loadbalancer.server.port=8080"
+
+      # --- MailHog ---
+      - "traefik.http.routers.devj-mailhog.rule=Host(`mailhog.dev-j.bourse.alpe-plaisance.org`)"
+      - "traefik.http.routers.devj-mailhog.entrypoints=websecure"
+      - "traefik.http.routers.devj-mailhog.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.devj-mailhog.service=devj-mailhog"
+      - "traefik.http.services.devj-mailhog.loadbalancer.server.port=8081"
 
   # Capture tous les courriels sortants : rien ne part vers de vraies adresses.
   mailhog:
@@ -90,6 +113,9 @@ services:
 networks:
   devj-network:
     driver: bridge
+  # Réseau de Traefik, créé par sa propre pile.
+  web:
+    external: true
 
 volumes:
   db_data:

@@ -23,12 +23,13 @@ courriels ne sortent jamais de la machine.
 ## Pourquoi pas `docker-compose.prod.yml`
 
 Le fichier de production publie les ports 80 et 443 et gère lui-même les
-certificats via certbot. Sur un Synology, **DSM occupe déjà ces deux ports** :
-le conteneur ne peut pas s'y attacher.
+certificats via certbot. Or **Traefik occupe déjà ce rôle** sur le NAS : il
+termine le HTTPS, obtient les certificats Let's Encrypt et route vers les
+conteneurs selon leurs labels.
 
-DSM sait faire ce travail nativement, et mieux : son reverse proxy termine le
-HTTPS et ses certificats Let's Encrypt se renouvellent tout seuls. On lui confie
-donc le TLS, et les conteneurs ne parlent qu'en HTTP sur des ports hauts.
+Deux services qui demandent les mêmes ports et le même certificat entreraient en
+conflit. On confie donc tout le front à Traefik, et la pile dev-j ne parle
+qu'en HTTP.
 
 D'où un fichier dédié, `docker-compose.dev-j.yml`, plutôt qu'une adaptation du
 fichier de production.
@@ -37,36 +38,50 @@ fichier de production.
 
 ```
                 Internet
-                    │  HTTPS 443
+                    │  HTTPS 443  (redirigé vers 9443 sur le NAS)
                     ▼
         ┌───────────────────────┐
-        │  Reverse proxy DSM    │   certificat Let's Encrypt géré par DSM
+        │       Traefik         │   certificats Let's Encrypt, entrypoint websecure
         └───────────┬───────────┘
-                    │  HTTP, en local uniquement
-        ┌───────────┴────────────┐
-        ▼                        ▼
-   127.0.0.1:8080          127.0.0.1:8081
-   application             MailHog (mot de passe)
-        │                        │
-        ▼                        ▼
-   nginx (conteneur) ──────► mailhog:8025
-        │
-        ├──► SPA React (fichiers statiques)
-        └──► /api ──► backend:8000 ──► db:3306
+                    │  réseau Docker « web », en HTTP
+                    ▼
+        ┌───────────────────────┐
+        │   nginx (conteneur)   │
+        │   :8080  application  │
+        │   :8081  MailHog      │
+        └───────────┬───────────┘
+                    │
+        ┌───────────┼────────────────┐
+        ▼           ▼                ▼
+   SPA React   backend:8000     mailhog:8025
+                    │
+                    ▼
+                 db:3306
 ```
 
-Les ports 8080 et 8081 sont publiés sur `127.0.0.1` seulement : ils ne sont pas
-joignables depuis le réseau, uniquement par le proxy DSM.
+Traefik joint nginx par le réseau `web` ; aucun port n'a besoin d'être publié
+pour que le routage fonctionne. Les ports 8080 et 8081 le sont tout de même,
+mais sur `127.0.0.1` uniquement, pour pouvoir diagnostiquer depuis le NAS sans
+passer par Traefik.
 
 ## Prérequis
 
 - DSM 7.x avec **Container Manager** installé
 - Accès SSH au NAS activé (Panneau de configuration → Terminal & SNMP)
+- **Traefik en fonctionnement**, avec son réseau `web` et le certresolver
+  `letsencrypt` déjà utilisés par d'autres services
 - Les deux noms pointant vers l'adresse publique du NAS :
   - `dev-j.bourse.alpe-plaisance.org`
   - `mailhog.dev-j.bourse.alpe-plaisance.org`
-- Ports 80 et 443 redirigés depuis la box vers le NAS
-  (le 80 est nécessaire à la validation Let's Encrypt)
+- Depuis la box, le port 443 redirigé vers le **9443** du NAS et le port 80 vers
+  le **9080** — ce sont les ports que publie la pile Traefik. Le 80 n'est pas
+  facultatif : le défi ACME de Let's Encrypt passe par lui.
+
+Vérifier que le réseau existe avant de démarrer :
+
+```bash
+sudo docker network ls | grep web
+```
 
 ## 1. Récupérer le code
 
@@ -136,7 +151,7 @@ Puis restreindre l'accès au fichier :
 chmod 600 .env.dev-j
 ```
 
-**`RATE_LIMIT_REQUESTS` mérite une explication.** Derrière le proxy DSM, les
+**`RATE_LIMIT_REQUESTS` mérite une explication.** Derrière Traefik, les
 participants d'une démonstration sortent souvent par une seule adresse publique
 et partagent donc le même compteur. La valeur de production, 100 requêtes par
 minute, est vite atteinte à plusieurs ; 600 laisse de la marge sans désactiver
@@ -185,36 +200,46 @@ curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/
 curl -s http://127.0.0.1:8080/api/v1/../../health
 ```
 
-## 5. Certificat Let's Encrypt
+## 5. Routage et certificats : rien à faire
 
-Panneau de configuration → **Sécurité** → **Certificat** → Ajouter →
-*Obtenir un certificat de Let's Encrypt*.
+Traefik découvre la pile tout seul, par les labels portés par le service nginx
+dans `docker-compose.dev-j.yml`. Il n'y a **aucune configuration à saisir**, ni
+dans DSM, ni dans les fichiers de Traefik.
 
-- Nom de domaine : `dev-j.bourse.alpe-plaisance.org`
-- Autre nom du sujet : `mailhog.dev-j.bourse.alpe-plaisance.org`
+Les labels déclarent deux routeurs vers un même conteneur, chacun sur son port :
 
-Un seul certificat couvre les deux noms. DSM le renouvelle automatiquement.
-
-## 6. Reverse proxy DSM
-
-Panneau de configuration → **Portail de connexion** → **Avancé** →
-**Proxy inversé** → Créer, deux fois :
-
-| | Source | Destination |
+| Routeur | Nom demandé | Port interne |
 |---|---|---|
-| Application | HTTPS · `dev-j.bourse.alpe-plaisance.org` · 443 | HTTP · `localhost` · 8080 |
-| MailHog | HTTPS · `mailhog.dev-j.bourse.alpe-plaisance.org` · 443 | HTTP · `localhost` · 8081 |
+| `devj-app` | `dev-j.bourse.alpe-plaisance.org` | 8080 |
+| `devj-mailhog` | `mailhog.dev-j.bourse.alpe-plaisance.org` | 8081 |
 
-Sur l'entrée **MailHog**, onglet *En-tête personnalisé* → Créer → **WebSocket**.
-Sans cela l'interface ne se rafraîchit pas à l'arrivée d'un courriel.
+Trois détails conditionnent le bon fonctionnement, et sont déjà dans le fichier :
 
-Puis, dans l'onglet **Certificat** de chaque entrée, sélectionner le certificat
-créé à l'étape précédente.
+- `traefik.enable=true` — la pile Traefik tourne avec `exposedByDefault=false`,
+  donc un conteneur sans ce label est purement ignoré.
+- `traefik.docker.network=web` — nginx appartient à deux réseaux ; sans cette
+  précision Traefik peut retenir la mauvaise adresse et le routage échoue de
+  façon intermittente.
+- `...loadbalancer.server.port` — obligatoire sur chaque service, le conteneur
+  écoutant sur deux ports.
 
-## 7. Pare-feu
+Les certificats sont demandés à Let's Encrypt au premier appel de chaque nom,
+puis renouvelés automatiquement. Le premier chargement peut donc prendre
+quelques secondes de plus.
 
-Si le pare-feu DSM est actif, autoriser 80 et 443 depuis Internet. Les ports
-8080 et 8081 n'ont **pas** à être ouverts : ils n'écoutent que sur `127.0.0.1`.
+Si un nom renvoie une erreur 404 de Traefik, c'est presque toujours que le
+conteneur n'a pas été détecté :
+
+```bash
+sudo docker logs traefik 2>&1 | tail -30
+```
+
+## 6. Pare-feu
+
+Si le pare-feu DSM est actif, autoriser **9080** et **9443** — les ports que
+publie Traefik. Les ports 8080 et 8081 de la pile dev-j n'ont pas à être
+ouverts : ils n'écoutent que sur `127.0.0.1` et ne servent qu'au diagnostic
+local, Traefik passant par le réseau Docker.
 
 ## Vérifier l'installation
 
