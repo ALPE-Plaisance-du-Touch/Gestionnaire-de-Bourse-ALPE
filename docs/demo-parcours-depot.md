@@ -2,8 +2,8 @@
 id: DOC-140-DEMO
 title: Démo du parcours de dépôt
 status: draft
-version: 0.2.0
-updated: 2026-08-29
+version: 0.3.0
+updated: 2026-09-06
 owner: ALPE Plaisance du Touch
 links:
   - rel: environment
@@ -76,14 +76,27 @@ s'arrêtera au milieu.
 Le mode formation permet de faire avancer la bourse d'une étape à l'autre
 manuellement, ce qui est indispensable pour tout montrer en vingt minutes.
 
-1. Menu de gauche → **Éditions** → ouvrir *Bourse Printemps 2026*
+1. Menu de gauche → **Éditions** → ouvrir *Bourse Printemps 2027*
 2. Onglet **Actions**
 3. Section « Mode formation » → bouton **Activer**
 
 Un bandeau apparaît alors sur toutes les pages pour rappeler qu'il s'agit d'un
 entraînement. C'est normal, et plutôt rassurant pour le public.
 
-### 2. Vérifier la date limite de déclaration
+### 2. Ramener la bourse à l'étape « Inscriptions ouvertes »
+
+Le jeu de données livre la bourse à l'étape **Vente**, soit après les étapes que
+la démonstration veut montrer. Tant qu'elle y reste, le déposant ne peut rien
+saisir : la déclaration d'articles n'est acceptée qu'aux étapes *Brouillon* et
+*Inscriptions ouvertes*.
+
+1. Onglet **Actions** de la même bourse
+2. Section « Forcer l'étape » → choisir **Inscriptions ouvertes**
+
+Ce bouton n'apparaît que si le mode formation est actif : c'est pourquoi il vient
+en second.
+
+### 3. Vérifier la date limite de déclaration
 
 Passé cette date, les déposants ne peuvent plus saisir d'articles — et l'étape 2
 échouera sans explication très claire.
@@ -97,7 +110,7 @@ Passé cette date, les déposants ne peuvent plus saisir d'articles — et l'ét
 
 **Connectez-vous en gestionnaire.**
 
-1. Menu de gauche → **Éditions** → *Bourse Printemps 2026*
+1. Menu de gauche → **Éditions** → *Bourse Printemps 2027*
 2. Onglet **Déposants**
 3. Bouton **Ajouter un déposant**
 4. Remplissez le formulaire, choisissez un type de liste, puis validez
@@ -197,7 +210,7 @@ rend l'environnement identique à sa sortie d'usine. Elle est décrite dans
 
 - [ ] Le site répond sur <https://dev-j.bourse.alpe-plaisance.org>
 - [ ] Quatre fenêtres de navigation privée ouvertes, une connectée par rôle
-- [ ] Mode formation activé sur *Bourse Printemps 2026*
+- [ ] Mode formation activé sur *Bourse Printemps 2027*
+- [ ] La bourse ramenée à l'étape **Inscriptions ouvertes**
 - [ ] Date limite de déclaration dans le futur
-- [ ] La bourse est à l'étape **Inscriptions ouvertes**
 - [ ] Si vous montrez les courriels : MailHog accessible et identifiants en main
