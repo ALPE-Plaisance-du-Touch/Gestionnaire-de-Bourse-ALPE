@@ -555,7 +555,7 @@ function DepositorsView({ editionId, hasDeadline }: { editionId: string; hasDead
       <ConfirmModal
         isOpen={showBulkConfirm}
         onClose={() => setShowBulkConfirm(false)}
-        onConfirm={() => reminderMutation.mutate()}
+        onConfirm={() => reminderMutation.mutate(undefined)}
         title="Relancer les déposants"
         confirmLabel="Envoyer"
         isLoading={reminderMutation.isPending}

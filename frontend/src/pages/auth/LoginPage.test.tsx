@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/test-utils';
 import { LoginPage } from './LoginPage';
 import { authApi } from '@/api';
+import { baseLoginResponse } from '@/test/fixtures';
 
 // Mock the auth API
 vi.mock('@/api', () => ({
@@ -91,20 +92,7 @@ describe('LoginPage', () => {
 
   it('navigates to home on successful login', async () => {
     const user = userEvent.setup();
-    const mockLoginResponse = {
-      accessToken: 'access-token',
-      refreshToken: 'refresh-token',
-      user: {
-        id: '1',
-        email: 'test@example.com',
-        first_name: 'Jean',
-        last_name: 'Dupont',
-        role: 'depositor' as const,
-        is_active: true,
-        is_verified: true,
-      },
-      tokenType: 'bearer',
-    };
+    const mockLoginResponse = baseLoginResponse;
     vi.mocked(authApi.login).mockResolvedValue(mockLoginResponse);
 
     renderWithProviders(<LoginPage />);

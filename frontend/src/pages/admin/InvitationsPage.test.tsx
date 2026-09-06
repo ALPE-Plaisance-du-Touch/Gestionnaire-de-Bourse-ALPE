@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/test-utils';
 import { InvitationsPage } from './InvitationsPage';
 import { invitationsApi } from '@/api';
+import type { Invitation } from '@/types';
 
 // Mock the invitations API
 vi.mock('@/api', () => ({
@@ -21,7 +22,7 @@ vi.mock('@/api', () => ({
 const getTable = () => screen.getByRole('table');
 const getTableCheckboxes = () => within(getTable()).getAllByRole('checkbox');
 
-const mockInvitations = [
+const mockInvitations: Invitation[] = [
   {
     id: '1',
     email: 'pending@example.com',

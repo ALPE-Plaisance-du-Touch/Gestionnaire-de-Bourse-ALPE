@@ -2,7 +2,7 @@
  * Billetweb types.
  */
 
-export type ListType = 'standard' | 'list_1000' | 'list_2000';
+import type { ListType } from './invitation';
 
 // --- Edition Depositor Types ---
 

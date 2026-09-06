@@ -13,11 +13,19 @@ vi.mock('@/api', () => ({
     // timer rejects after the test ends and pollutes the run.
     lookupDepositor: vi.fn().mockResolvedValue(null),
   },
+  // Fidèle à la vraie classe (src/api/client.ts) : le mock prenait (message,
+  // status), si bien que les tests compilaient contre une signature et
+  // s'exécutaient contre une autre.
   ApiException: class ApiException extends Error {
+    code: string;
     status: number;
-    constructor(message: string, status: number) {
+    field?: string;
+    constructor(code: string, message: string, status: number, field?: string) {
       super(message);
+      this.name = 'ApiException';
+      this.code = code;
       this.status = status;
+      this.field = field;
     }
   },
 }));
@@ -138,8 +146,7 @@ describe('InvitationCreateModal', () => {
   });
 
   it('shows error for duplicate email (409)', async () => {
-    const apiError = new ApiException('Duplicate', 409);
-    (apiError as ApiException).status = 409;
+    const apiError = new ApiException('CONFLICT', 'Duplicate', 409);
     vi.mocked(invitationsApi.createInvitation).mockRejectedValue(apiError);
 
     renderWithProviders(<InvitationCreateModal {...defaultProps} />);

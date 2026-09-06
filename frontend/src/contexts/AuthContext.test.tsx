@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth, useUser, useIsAuthenticated } from './AuthContext';
 import { authApi } from '@/api';
 import type { ReactNode } from 'react';
+import { baseLoginResponse, baseUser } from '@/test/fixtures';
 
 // Mock the auth API
 vi.mock('@/api', () => ({
@@ -62,15 +63,7 @@ describe('AuthContext', () => {
     });
 
     it('restores session from localStorage on mount', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'test@example.com',
-        first_name: 'Jean',
-        last_name: 'Dupont',
-        role: 'depositor' as const,
-        is_active: true,
-        is_verified: true,
-      };
+      const mockUser = { ...baseUser, role: 'depositor' as const };
 
       localStorage.setItem('accessToken', 'valid-token');
       vi.mocked(authApi.getProfile).mockResolvedValue(mockUser);
@@ -88,20 +81,7 @@ describe('AuthContext', () => {
 
   describe('login', () => {
     it('stores tokens and sets user on successful login', async () => {
-      const mockLoginResponse = {
-        accessToken: 'access-token',
-        refreshToken: 'refresh-token',
-        user: {
-          id: '1',
-          email: 'test@example.com',
-          first_name: 'Jean',
-          last_name: 'Dupont',
-          role: 'depositor' as const,
-          is_active: true,
-          is_verified: true,
-        },
-        tokenType: 'bearer',
-      };
+      const mockLoginResponse = baseLoginResponse;
 
       vi.mocked(authApi.getProfile).mockRejectedValue(new Error('No token'));
       vi.mocked(authApi.login).mockResolvedValue(mockLoginResponse);
@@ -144,15 +124,7 @@ describe('AuthContext', () => {
 
   describe('logout', () => {
     it('clears tokens and resets state', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'test@example.com',
-        first_name: 'Jean',
-        last_name: 'Dupont',
-        role: 'depositor' as const,
-        is_active: true,
-        is_verified: true,
-      };
+      const mockUser = { ...baseUser, role: 'depositor' as const };
 
       localStorage.setItem('accessToken', 'valid-token');
       localStorage.setItem('refreshToken', 'refresh-token');
@@ -176,15 +148,7 @@ describe('AuthContext', () => {
     });
 
     it('clears tokens even if logout API fails', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'test@example.com',
-        first_name: 'Jean',
-        last_name: 'Dupont',
-        role: 'depositor' as const,
-        is_active: true,
-        is_verified: true,
-      };
+      const mockUser = { ...baseUser, role: 'depositor' as const };
 
       localStorage.setItem('accessToken', 'valid-token');
       vi.mocked(authApi.getProfile).mockResolvedValue(mockUser);
@@ -217,15 +181,7 @@ describe('AuthContext', () => {
     });
 
     it('returns user when authenticated', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'test@example.com',
-        first_name: 'Jean',
-        last_name: 'Dupont',
-        role: 'depositor' as const,
-        is_active: true,
-        is_verified: true,
-      };
+      const mockUser = { ...baseUser, role: 'depositor' as const };
 
       localStorage.setItem('accessToken', 'valid-token');
       vi.mocked(authApi.getProfile).mockResolvedValue(mockUser);
@@ -250,15 +206,7 @@ describe('AuthContext', () => {
     });
 
     it('returns true when authenticated', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'test@example.com',
-        first_name: 'Jean',
-        last_name: 'Dupont',
-        role: 'depositor' as const,
-        is_active: true,
-        is_verified: true,
-      };
+      const mockUser = { ...baseUser, role: 'depositor' as const };
 
       localStorage.setItem('accessToken', 'valid-token');
       vi.mocked(authApi.getProfile).mockResolvedValue(mockUser);

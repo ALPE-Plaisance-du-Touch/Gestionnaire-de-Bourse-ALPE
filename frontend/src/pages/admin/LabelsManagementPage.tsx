@@ -6,7 +6,7 @@ import { labelsApi } from '@/api/labels';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { TrainingBanner } from '@/components/ui/TrainingBanner';
-import type { LabelGenerationMode, LabelStats, LabelDepositor } from '@/types';
+import type { LabelGenerationMode, LabelDepositor } from '@/types';
 
 function formatSlotLabel(startDatetime: string, endDatetime: string): string {
   const start = new Date(startDatetime);

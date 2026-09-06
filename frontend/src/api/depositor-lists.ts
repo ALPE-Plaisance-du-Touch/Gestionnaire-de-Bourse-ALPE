@@ -17,7 +17,7 @@ export interface MyEditionSummary {
   id: string;
   name: string;
   status: string;
-  listType: string;
+  listType: ListType;
   startDatetime: string;
   endDatetime: string;
   declarationDeadline: string | null;
