@@ -61,14 +61,16 @@ function keysToCamelCase(obj: unknown): unknown {
  * Custom API exception class.
  */
 export class ApiException extends Error {
-  constructor(
-    public code: string,
-    message: string,
-    public status: number,
-    public field?: string
-  ) {
+  code: string;
+  status: number;
+  field?: string;
+
+  constructor(code: string, message: string, status: number, field?: string) {
     super(message);
     this.name = 'ApiException';
+    this.code = code;
+    this.status = status;
+    this.field = field;
   }
 }
 

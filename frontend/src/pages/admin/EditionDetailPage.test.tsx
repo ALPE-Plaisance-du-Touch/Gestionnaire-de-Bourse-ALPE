@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -6,6 +5,7 @@ import { renderWithProviders } from '@/test/test-utils';
 import { EditionDetailPage } from './EditionDetailPage';
 import { editionsApi, depositSlotsApi, ApiException } from '@/api';
 import type { Edition, EditionStatus } from '@/types';
+import { baseEdition } from '@/test/fixtures';
 
 // Mock the APIs
 vi.mock('@/api', () => ({
@@ -17,11 +17,19 @@ vi.mock('@/api', () => ({
   depositSlotsApi: {
     getDepositSlots: vi.fn(),
   },
+  // Fidèle à la vraie classe (src/api/client.ts) : le mock prenait (message,
+  // status), si bien que les tests compilaient contre une signature et
+  // s'exécutaient contre une autre.
   ApiException: class ApiException extends Error {
+    code: string;
     status: number;
-    constructor(message: string, status: number) {
+    field?: string;
+    constructor(code: string, message: string, status: number, field?: string) {
       super(message);
+      this.name = 'ApiException';
+      this.code = code;
       this.status = status;
+      this.field = field;
     }
   },
 }));
@@ -38,6 +46,7 @@ vi.mock('react-router-dom', async () => {
 });
 
 const mockEdition: Edition = {
+  ...baseEdition,
   id: 'test-edition-id',
   name: 'Bourse Printemps 2025',
   description: 'Test description',
@@ -68,7 +77,7 @@ const mockClosedEdition: Edition = {
 describe('EditionDetailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(depositSlotsApi.getDepositSlots).mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 50 });
+    vi.mocked(depositSlotsApi.getDepositSlots).mockResolvedValue({ items: [], total: 0 });
   });
 
   it('shows loading state initially', async () => {
@@ -263,7 +272,7 @@ describe('EditionDetailPage', () => {
 
   it('shows error message on conflict (duplicate name)', async () => {
     vi.mocked(editionsApi.getEdition).mockResolvedValue(mockEdition);
-    vi.mocked(editionsApi.updateEdition).mockRejectedValue(new ApiException('Conflict', 409));
+    vi.mocked(editionsApi.updateEdition).mockRejectedValue(new ApiException('CONFLICT', 'Conflict', 409));
 
     renderWithProviders(<EditionDetailPage />);
 

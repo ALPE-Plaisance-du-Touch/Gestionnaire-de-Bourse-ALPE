@@ -145,7 +145,7 @@ export function EditionDetailPage() {
   });
 
   // Fetch import stats for non-draft editions
-  const { data: importStats, refetch: refetchImportStats } = useQuery({
+  const { data: importStats } = useQuery({
     queryKey: ['billetweb-stats', id],
     queryFn: () => billetwebApi.getImportStats(id!),
     enabled: !!id && edition?.status !== 'draft',

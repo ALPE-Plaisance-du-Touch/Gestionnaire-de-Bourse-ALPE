@@ -175,9 +175,8 @@ jobs:
       - name: Test (vitest)
         run: npm test
 
-      # Non-blocking for now: `tsc -b` reports pre-existing type errors
-      # (duplicate ListType export, Recharts formatter signatures, a snake_case
-      # payload in ActivatePage). Drop continue-on-error once they are fixed.
+      # Blocking: the type errors this used to waive are fixed. It must stay
+      # blocking because the GHCR image build runs the same `tsc -b` with no such
+      # indulgence — red here means no frontend image is published at all.
       - name: Build
         run: npm run build
-        continue-on-error: true

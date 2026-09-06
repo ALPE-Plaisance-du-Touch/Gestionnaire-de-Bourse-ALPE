@@ -3,8 +3,7 @@
  */
 
 import type { Article } from './article';
-
-export type ListType = 'standard' | 'list_1000' | 'list_2000';
+import type { ListType } from './invitation';
 
 export type ListStatus =
   | 'draft'

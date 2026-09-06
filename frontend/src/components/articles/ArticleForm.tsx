@@ -150,7 +150,7 @@ export function ArticleForm({
   }, [priceHints, category, subcategory, gender]);
 
   // Track whether category/subcategory have been changed by the user (skip initial render)
-  const initialCategoryRef = useRef(category);
+  const initialCategoryRef = useRef<ArticleCategory | ''>(category);
   const initialSubcategoryRef = useRef(subcategory);
 
   // Reset subcategory and clothing-specific fields when category changes

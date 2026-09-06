@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import { renderWithProviders } from '@/test/test-utils';
 import { ProtectedRoute } from './ProtectedRoute';
 import { authApi } from '@/api';
+import { baseUser } from '@/test/fixtures';
 
 // Mock the auth API
 vi.mock('@/api', () => ({
@@ -64,15 +65,7 @@ describe('ProtectedRoute', () => {
   });
 
   it('renders protected content when authenticated', async () => {
-    const mockUser = {
-      id: '1',
-      email: 'test@example.com',
-      first_name: 'Jean',
-      last_name: 'Dupont',
-      role: 'depositor' as const,
-      is_active: true,
-      is_verified: true,
-    };
+    const mockUser = { ...baseUser, role: 'depositor' as const };
     localStorage.setItem('accessToken', 'valid-token');
     vi.mocked(authApi.getProfile).mockResolvedValue(mockUser);
 
@@ -84,15 +77,7 @@ describe('ProtectedRoute', () => {
   });
 
   it('shows forbidden page when user lacks required role', async () => {
-    const mockUser = {
-      id: '1',
-      email: 'test@example.com',
-      first_name: 'Jean',
-      last_name: 'Dupont',
-      role: 'depositor' as const,
-      is_active: true,
-      is_verified: true,
-    };
+    const mockUser = { ...baseUser, role: 'depositor' as const };
     localStorage.setItem('accessToken', 'valid-token');
     vi.mocked(authApi.getProfile).mockResolvedValue(mockUser);
 
@@ -104,15 +89,7 @@ describe('ProtectedRoute', () => {
   });
 
   it('allows access when user has required role', async () => {
-    const mockUser = {
-      id: '1',
-      email: 'admin@example.com',
-      first_name: 'Admin',
-      last_name: 'User',
-      role: 'administrator' as const,
-      is_active: true,
-      is_verified: true,
-    };
+    const mockUser = { ...baseUser, email: 'admin@example.com', firstName: 'Admin', lastName: 'User', role: 'administrator' as const };
     localStorage.setItem('accessToken', 'valid-token');
     vi.mocked(authApi.getProfile).mockResolvedValue(mockUser);
 
@@ -124,15 +101,7 @@ describe('ProtectedRoute', () => {
   });
 
   it('allows any authenticated user when no roles specified', async () => {
-    const mockUser = {
-      id: '1',
-      email: 'test@example.com',
-      first_name: 'Jean',
-      last_name: 'Dupont',
-      role: 'volunteer' as const,
-      is_active: true,
-      is_verified: true,
-    };
+    const mockUser = { ...baseUser, role: 'volunteer' as const };
     localStorage.setItem('accessToken', 'valid-token');
     vi.mocked(authApi.getProfile).mockResolvedValue(mockUser);
 

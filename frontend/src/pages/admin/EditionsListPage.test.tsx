@@ -6,6 +6,7 @@ import { renderWithProviders } from '@/test/test-utils';
 import { EditionsListPage } from './EditionsListPage';
 import { editionsApi } from '@/api';
 import type { Edition, EditionListResponse, EditionStatus } from '@/types';
+import { baseEdition } from '@/test/fixtures';
 
 // Mock the editions API
 vi.mock('@/api', () => ({
@@ -37,6 +38,7 @@ vi.mock('@/contexts', () => ({
 
 const mockEditions: Edition[] = [
   {
+    ...baseEdition,
     id: '1',
     name: 'Bourse Printemps 2025',
     description: 'Édition de printemps',
@@ -59,6 +61,7 @@ const mockEditions: Edition[] = [
     },
   },
   {
+    ...baseEdition,
     id: '2',
     name: 'Bourse Automne 2024',
     description: null,
@@ -76,6 +79,7 @@ const mockEditions: Edition[] = [
     createdBy: null,
   },
   {
+    ...baseEdition,
     id: '3',
     name: 'Bourse Été 2024',
     description: null,

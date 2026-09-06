@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -6,6 +5,7 @@ import { renderWithProviders } from '@/test/test-utils';
 import { EditionCreateModal } from './EditionCreateModal';
 import { editionsApi, billetwebApiSettings, ApiException } from '@/api';
 import type { Edition, EditionStatus } from '@/types';
+import { baseEdition } from '@/test/fixtures';
 
 // Mock the editions API
 vi.mock('@/api', () => ({
@@ -15,11 +15,19 @@ vi.mock('@/api', () => ({
   billetwebApiSettings: {
     getConfig: vi.fn(),
   },
+  // Fidèle à la vraie classe (src/api/client.ts) : le mock prenait (message,
+  // status), si bien que les tests compilaient contre une signature et
+  // s'exécutaient contre une autre.
   ApiException: class ApiException extends Error {
+    code: string;
     status: number;
-    constructor(message: string, status: number) {
+    field?: string;
+    constructor(code: string, message: string, status: number, field?: string) {
       super(message);
+      this.name = 'ApiException';
+      this.code = code;
       this.status = status;
+      this.field = field;
     }
   },
 }));
@@ -34,6 +42,7 @@ vi.mock('react-router-dom', async () => {
 });
 
 const mockCreatedEdition: Edition = {
+  ...baseEdition,
   id: '1',
   name: 'Bourse Test 2025',
   description: 'Test description',
@@ -205,7 +214,7 @@ describe('EditionCreateModal', () => {
 
   it('shows error message on duplicate name', async () => {
     vi.mocked(editionsApi.createEdition).mockRejectedValue(
-      new ApiException('Conflict', 409)
+      new ApiException('CONFLICT', 'Conflict', 409)
     );
 
     renderWithProviders(
