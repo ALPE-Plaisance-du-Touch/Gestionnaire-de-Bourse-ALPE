@@ -1,8 +1,8 @@
-# Environnement de test dev-j — Bourse ALPE (NAS Synology, DSM 7.x)
+# Environnement de test dev-j — Bourse ALPE
 #
-# Les images sont construites par GitHub Actions et publiées sur GHCR : le NAS
-# ne compile rien, il fait `docker compose pull` puis `up -d`. Ni source, ni
-# git, ni contrainte de mémoire sur le NAS.
+# Les images sont construites par GitHub Actions et publiées sur GHCR : la
+# machine hôte ne compile rien, elle fait `docker compose pull` puis `up -d`.
+# Ni source, ni git, ni contrainte de mémoire sur l'hôte.
 #
 #   ghcr.io/alpe-plaisance-du-touch/bourse-alpe-backend:dev-j
 #   ghcr.io/alpe-plaisance-du-touch/bourse-alpe-frontend:dev-j
@@ -15,15 +15,24 @@
 # Aucun port n'est publié sur l'hôte : tout passe par Traefik.
 #
 # Procédure complète : docs/deploiement-nas-synology.md
+#
+# NOMENCLATURE  <projet>-<service>-<environnement>
+#
+# La clé de service est aussi le nom DNS interne : `alpebourse-db-devj` est
+# l'hôte que le backend contacte. Compose refuse `${VAR}` dans une clé de
+# service (le schéma est validé avant substitution), donc l'environnement y est
+# écrit en dur — d'où un fichier par environnement, et non un fichier
+# paramétré. Dupliquer ce fichier pour un nouvel étage demande de remplacer
+# `devj` partout, `.env` compris.
 
-# Nom de projet fixe : containers et volumes gardent les mêmes noms quel que
-# soit le dossier d'installation.
-name: bourse-devj
+name: alpebourse-devj
 
 services:
-  db:
+  alpebourse-db-devj:
     image: mariadb:10.11
-    container_name: bourse-devj-db
+    # Redondant avec la clé de service, mais garantit le nom exact quel que
+    # soit le nom de projet. À retirer sous Coolify, qui gère le nommage.
+    container_name: alpebourse-db-devj
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD est obligatoire}
@@ -42,18 +51,18 @@ services:
     networks:
       - internal
 
-  backend:
+  alpebourse-backend-devj:
     image: ghcr.io/alpe-plaisance-du-touch/bourse-alpe-backend:${IMAGE_TAG:-dev-j}
-    container_name: bourse-devj-backend
+    container_name: alpebourse-backend-devj
     pull_policy: always
     restart: unless-stopped
     depends_on:
-      db:
+      alpebourse-db-devj:
         condition: service_healthy
     env_file:
       - .env
     environment:
-      DATABASE_URL: mysql+aiomysql://${DB_USER:-bourse}:${DB_PASSWORD}@db:3306/${DB_NAME:-bourse_devj}
+      DATABASE_URL: mysql+aiomysql://${DB_USER:-bourse}:${DB_PASSWORD}@alpebourse-db-devj:3306/${DB_NAME:-bourse_devj}
     networks:
       - internal
       - web
@@ -62,33 +71,34 @@ services:
       - "traefik.docker.network=web"
       # Règle plus spécifique que celle du frontend : Traefik la classe d'office
       # avant, le préfixe /api est donc servi ici.
-      - "traefik.http.routers.devj-api.rule=Host(`${PUBLIC_HOST:-dev-j.bourse.alpe-plaisance.org}`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.devj-api.entrypoints=websecure"
-      - "traefik.http.routers.devj-api.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}"
-      - "traefik.http.services.devj-api.loadbalancer.server.port=8000"
+      - "traefik.http.routers.alpebourse-api-devj.rule=Host(`${PUBLIC_HOST:-dev-j.bourse.alpe-plaisance.org}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.alpebourse-api-devj.entrypoints=websecure"
+      - "traefik.http.routers.alpebourse-api-devj.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}"
+      - "traefik.http.services.alpebourse-api-devj.loadbalancer.server.port=8000"
       # L'API est déjà montée sur /api/v1 : surtout pas de stripprefix.
 
-  frontend:
+  alpebourse-frontend-devj:
     image: ghcr.io/alpe-plaisance-du-touch/bourse-alpe-frontend:${IMAGE_TAG:-dev-j}
-    container_name: bourse-devj-frontend
+    container_name: alpebourse-frontend-devj
     pull_policy: always
     restart: unless-stopped
     depends_on:
-      - backend
+      - alpebourse-backend-devj
     networks:
       - web
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
-      - "traefik.http.routers.devj-web.rule=Host(`${PUBLIC_HOST:-dev-j.bourse.alpe-plaisance.org}`)"
-      - "traefik.http.routers.devj-web.entrypoints=websecure"
-      - "traefik.http.routers.devj-web.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}"
-      - "traefik.http.services.devj-web.loadbalancer.server.port=80"
+      - "traefik.http.routers.alpebourse-web-devj.rule=Host(`${PUBLIC_HOST:-dev-j.bourse.alpe-plaisance.org}`)"
+      - "traefik.http.routers.alpebourse-web-devj.entrypoints=websecure"
+      - "traefik.http.routers.alpebourse-web-devj.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}"
+      - "traefik.http.services.alpebourse-web-devj.loadbalancer.server.port=80"
 
   # Capture tous les courriels sortants : rien ne part vers une vraie adresse.
-  mailhog:
+  # Le backend le joint par SMTP_HOST, à tenir aligné sur cette clé.
+  alpebourse-mailhog-devj:
     image: mailhog/mailhog:v1.0.1
-    container_name: bourse-devj-mailhog
+    container_name: alpebourse-mailhog-devj
     restart: unless-stopped
     networks:
       - internal
@@ -96,14 +106,14 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
-      - "traefik.http.routers.devj-mailhog.rule=Host(`${MAILHOG_HOST:-mailhog.dev-j.bourse.alpe-plaisance.org}`)"
-      - "traefik.http.routers.devj-mailhog.entrypoints=websecure"
-      - "traefik.http.routers.devj-mailhog.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}"
-      - "traefik.http.services.devj-mailhog.loadbalancer.server.port=8025"
+      - "traefik.http.routers.alpebourse-mailhog-devj.rule=Host(`${MAILHOG_HOST:-mailhog.dev-j.bourse.alpe-plaisance.org}`)"
+      - "traefik.http.routers.alpebourse-mailhog-devj.entrypoints=websecure"
+      - "traefik.http.routers.alpebourse-mailhog-devj.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}"
+      - "traefik.http.services.alpebourse-mailhog-devj.loadbalancer.server.port=8025"
       # MailHog n'a aucune authentification et affiche tous les courriels,
       # jetons d'invitation et liens de réinitialisation compris.
-      - "traefik.http.routers.devj-mailhog.middlewares=devj-mailhog-auth"
-      - "traefik.http.middlewares.devj-mailhog-auth.basicauth.users=${MAILHOG_BASICAUTH:?MAILHOG_BASICAUTH est obligatoire}"
+      - "traefik.http.routers.alpebourse-mailhog-devj.middlewares=alpebourse-mailhogauth-devj"
+      - "traefik.http.middlewares.alpebourse-mailhogauth-devj.basicauth.users=${MAILHOG_BASICAUTH:?MAILHOG_BASICAUTH est obligatoire}"
 
 networks:
   # Base et backend uniquement : Traefik n'y a pas accès.

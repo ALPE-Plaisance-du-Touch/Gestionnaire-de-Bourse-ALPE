@@ -69,6 +69,33 @@ Traefik la classe d'office avant, sans qu'il faille fixer de priorité. L'API
 
 Aucun port n'est publié sur l'hôte : tout entre par Traefik.
 
+## Nomenclature des services
+
+Les services suivent `<projet>-<service>-<environnement>` :
+
+| Service | Rôle |
+|---|---|
+| `alpebourse-db-devj` | base MariaDB |
+| `alpebourse-backend-devj` | API FastAPI |
+| `alpebourse-frontend-devj` | interface React |
+| `alpebourse-mailhog-devj` | capture des courriels |
+
+Ce nom n'est pas décoratif : **c'est le nom DNS interne du conteneur**. Le
+backend joint la base sur `alpebourse-db-devj:3306` et MailHog sur
+`alpebourse-mailhog-devj:1025`. Renommer un service sans reporter le changement
+dans `DATABASE_URL` et dans `SMTP_HOST` casse la pile sans message clair.
+
+Compose refuse `${VAR}` dans une clé de service, le schéma étant validé avant
+substitution :
+
+```
+services additional properties 'alpebourse-db-${ENVSLUG}' not allowed
+```
+
+L'environnement est donc écrit en dur, et **chaque étage a son propre fichier
+compose**. Pour en ouvrir un nouveau, dupliquer le fichier et remplacer `devj`
+partout, `.env` compris.
+
 ## Prérequis
 
 | Élément | Vérification |
@@ -94,7 +121,7 @@ sont **privés**, le NAS devra s'authentifier (étape 3).
 
 ## 2. Déposer les deux fichiers sur le NAS
 
-Dans File Station, créer le dossier `docker/bourse-devj` et y placer :
+Dans File Station, créer le dossier `docker/alpebourse-devj` et y placer :
 
 | Fichier sur le NAS | Source dans le dépôt |
 |---|---|
@@ -157,8 +184,8 @@ Si les paquets sont publics, il n'y a rien à faire.
 
 | Champ | Valeur |
 |---|---|
-| Nom du projet | `bourse-devj` |
-| Chemin | le dossier `docker/bourse-devj` |
+| Nom du projet | `alpebourse-devj` |
+| Chemin | le dossier `docker/alpebourse-devj` |
 | Source | *Utiliser le fichier docker-compose.yml existant* |
 
 Container Manager télécharge les images et démarre la pile. C'est rapide : rien
@@ -166,7 +193,7 @@ n'est compilé.
 
 ### Appliquer le schéma et charger les données
 
-**Conteneur** → `bourse-devj-backend` → onglet **Terminal** → **Créer** →
+**Conteneur** → `alpebourse-backend-devj` → onglet **Terminal** → **Créer** →
 `bash`, puis :
 
 ```bash
@@ -202,7 +229,7 @@ sudo docker logs traefik
 C'est tout l'intérêt du montage. Après un push sur `dev-j`, une fois le workflow
 au vert :
 
-**Container Manager** → projet `bourse-devj` → **Action** → **Reconstruire**
+**Container Manager** → projet `alpebourse-devj` → **Action** → **Reconstruire**
 
 L'interface récupère les nouvelles images et redémarre les conteneurs. Les
 services portent `pull_policy: always`, donc le tag `dev-j` est bien
@@ -223,7 +250,7 @@ affectés.
 Efface toutes les données et recharge le jeu de démonstration, sans toucher aux
 images.
 
-Terminal du conteneur `bourse-devj-db` :
+Terminal du conteneur `alpebourse-db-devj` :
 
 ```bash
 mariadb -u root -p
@@ -239,7 +266,7 @@ FLUSH PRIVILEGES;
 EXIT;
 ```
 
-Puis, dans le terminal du conteneur `bourse-devj-backend` :
+Puis, dans le terminal du conteneur `alpebourse-backend-devj` :
 
 ```bash
 alembic upgrade head
