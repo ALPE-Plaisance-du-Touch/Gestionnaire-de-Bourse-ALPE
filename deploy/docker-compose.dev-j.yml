@@ -70,8 +70,13 @@ services:
     environment:
       DATABASE_URL: mysql+aiomysql://${DB_USER:-bourse}:${DB_PASSWORD}@alpebourse-db-devj:3306/${DB_NAME:-bourse_devj}
     networks:
-      - internal
-      - web
+      # L'alias `backend` est indispensable : le nginx de l'image frontend porte
+      # `proxy_pass http://backend:8000` en dur, et résout ce nom au démarrage.
+      # Sans lui, le frontend sort en erreur et boucle en redémarrage.
+      internal:
+        aliases:
+          - backend
+      web:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
@@ -90,7 +95,12 @@ services:
     restart: unless-stopped
     depends_on:
       - alpebourse-backend-devj
+    # `internal` sert uniquement à joindre l'alias `backend` ci-dessus. En
+    # pratique Traefik sert déjà /api directement, sa règle étant plus
+    # spécifique : ce proxy nginx reste inutilisé, mais nginx exige que le nom
+    # résolve pour démarrer.
     networks:
+      - internal
       - web
     labels:
       - "traefik.enable=true"
