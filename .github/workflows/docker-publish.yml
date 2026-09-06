@@ -7,6 +7,16 @@ on:
   push:
     branches: [main, dev, 'dev-*']
     tags: ['v*.*.*']
+    # Rien de tout cela n'entre dans une image : reconstruire les deux pour une
+    # ligne de documentation encombrait la liste des versions du paquet de tags
+    # `sha-` sans contenu neuf. Les tags ne sont pas concernés — GitHub n'évalue
+    # pas les filtres de chemin sur un push de tag, donc les releases partent
+    # toujours.
+    paths-ignore:
+      - 'docs/**'
+      - 'deploy/**'
+      - '.claude/**'
+      - '**.md'
   workflow_dispatch:
 
 concurrency:
