@@ -244,33 +244,36 @@ affectés.
 
 ## Remettre à zéro avant une démonstration
 
-Efface toutes les données et recharge le jeu de démonstration, sans toucher aux
-images.
+Rejouer les vingt migrations Alembic prend plusieurs minutes sur le NAS. Un
+instantané pris une fois évite de les repayer : la remise à zéro devient une
+commande de quelques secondes.
 
-Terminal du conteneur `alpebourse-db-devj` :
+### Prendre l'instantané, une fois
 
-```bash
-mariadb -u root -p
-```
-
-Le mot de passe est celui de `DB_ROOT_PASSWORD`. Puis, dans l'invite SQL :
-
-```sql
-DROP DATABASE bourse_devj;
-CREATE DATABASE bourse_devj CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-GRANT ALL PRIVILEGES ON bourse_devj.* TO 'bourse'@'%';
-FLUSH PRIVILEGES;
-EXIT;
-```
-
-Puis, dans le terminal du conteneur `alpebourse-backend-devj` :
+Après `alembic upgrade head` et `python scripts/seed.py`, l'état de référence
+est en place. Le figer, schéma, données de démonstration et `alembic_version`
+compris :
 
 ```bash
-alembic upgrade head
-python scripts/seed.py
+sudo docker exec alpebourse-db-devj sh -c   'mariadb-dump -u root -p"$MYSQL_ROOT_PASSWORD" --add-drop-database --databases bourse_devj'   > /volume1/docker/alpebourse-devj/demo-snapshot.sql
 ```
 
-Deux à trois minutes en tout.
+Le mot de passe est lu dans l'environnement du conteneur : il n'est jamais tapé
+et ne reste pas dans l'historique du shell.
+
+### Remettre à zéro, autant de fois que voulu
+
+```bash
+sudo docker exec -i alpebourse-db-devj sh -c 'mariadb -u root -p"$MYSQL_ROOT_PASSWORD"'   < /volume1/docker/alpebourse-devj/demo-snapshot.sql
+```
+
+`--add-drop-database` fait que l'instantané supprime la base avant de la
+recréer : le résultat est identique à chaque fois, quoi qu'on ait saisi entre
+deux.
+
+**Reprendre l'instantané après toute mise à jour touchant la base.** Il fige un
+schéma daté : restaurer un instantané plus ancien que les migrations déployées
+remettrait la base dans un état que le code ne sait plus lire.
 
 ## Revenir à une version antérieure
 
