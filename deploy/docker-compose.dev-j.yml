@@ -46,7 +46,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      # La toute première initialisation de MariaDB — tables système, base,
+      # utilisateur, puis redémarrage — prend une quarantaine de secondes sur le
+      # disque d'un NAS. À 30s, le start_period expirait en plein milieu :
+      # Compose déclarait la dépendance en échec et laissait backend et frontend
+      # en « Created ». Le volume existant, les démarrages suivants sont
+      # immédiats ; cette marge ne sert qu'au premier.
+      start_period: 120s
     # Jamais exposée à Traefik.
     networks:
       - internal

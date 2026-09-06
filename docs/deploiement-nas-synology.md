@@ -176,6 +176,18 @@ le .env contient   alpe:$$2y$$10$$abcdef...
 Container Manager télécharge les images et démarre la pile. C'est rapide : rien
 n'est compilé.
 
+Si la création s'arrête sur `dependency failed to start: container
+alpebourse-db-devj is unhealthy`, ce n'est pas une panne. La toute première
+initialisation de MariaDB prend une quarantaine de secondes et le reste de la
+pile a renoncé à l'attendre. La base est en réalité saine — `sudo docker ps` le
+confirme. Il suffit de relancer, depuis le dossier du projet :
+
+```bash
+sudo docker compose up -d
+```
+
+Le volume existant, la base démarre alors en quelques secondes.
+
 ### Appliquer le schéma et charger les données
 
 **Conteneur** → `alpebourse-backend-devj` → onglet **Terminal** → **Créer** →
