@@ -2,8 +2,8 @@
 id: DOC-150-DEVJ
 title: Environnement de test dev-j sur NAS Synology
 status: draft
-version: 0.3.0
-updated: 2026-09-01
+version: 0.4.0
+updated: 2026-09-06
 owner: ALPE Plaisance du Touch
 links:
   - rel: deployment
@@ -116,8 +116,8 @@ Les images sont produites par le workflow
 déclenché à chaque push sur `dev-j`. Vérifier dans l'onglet **Actions** du dépôt
 que la dernière exécution est verte avant d'installer.
 
-Les paquets apparaissent ensuite sur la page *Packages* de l'organisation. S'ils
-sont **privés**, le NAS devra s'authentifier (étape 3).
+Les paquets apparaissent ensuite sur la page *Packages* de l'organisation. Les
+deux sont **publics** : le NAS les récupère sans identifiants.
 
 ## 2. Déposer les deux fichiers sur le NAS
 
@@ -163,22 +163,7 @@ htpasswd affiche   alpe:$2y$10$abcdef...
 le .env contient   alpe:$$2y$$10$$abcdef...
 ```
 
-## 3. Autoriser le NAS à récupérer les images
-
-À faire **uniquement si les paquets GHCR sont privés**. Depuis un terminal du
-NAS :
-
-```bash
-echo "<TOKEN>" | sudo docker login ghcr.io -u <utilisateur> --password-stdin
-```
-
-Le token est un *Personal Access Token* GitHub avec la seule portée
-`read:packages`. L'identifiant est enregistré durablement et sert à toutes les
-piles du NAS.
-
-Si les paquets sont publics, il n'y a rien à faire.
-
-## 4. Créer le projet dans Container Manager
+## 3. Créer le projet dans Container Manager
 
 **Container Manager** → **Projet** → **Créer** :
 
@@ -286,6 +271,20 @@ IMAGE_TAG=sha-a1b2c3d
 
 puis reconstruire le projet. C'est le moyen le plus rapide de sortir d'une
 régression sans attendre un correctif.
+
+## Annexe — si les paquets redevenaient privés
+
+Rien à faire tant qu'ils sont publics. S'ils basculaient en privé, le
+téléchargement échouerait sur un `denied` et le NAS devrait s'authentifier une
+fois, depuis un terminal :
+
+```bash
+echo "<TOKEN>" | sudo docker login ghcr.io -u <utilisateur> --password-stdin
+```
+
+Le token est un *Personal Access Token* GitHub avec la seule portée
+`read:packages`. L'identifiant est enregistré durablement et sert à toutes les
+piles du NAS.
 
 ## Limites connues
 
